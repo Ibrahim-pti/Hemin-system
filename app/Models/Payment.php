@@ -38,7 +38,7 @@ class Payment extends Model
 
     public const DIRECTIONS = [
         'in' => 'وەرگرتنی پارە',
-        'out' => 'دانی پارە',
+        'out' => 'پارە دان',
     ];
 
     public function party(): MorphTo

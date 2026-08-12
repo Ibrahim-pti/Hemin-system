@@ -4,74 +4,63 @@
 @section('content')
 
 @php
-    // مێنیوی سەرەکی — هەر گرووپێک ڕەنگی خۆی هەیە بۆ ئەوەی خێرا بناسرێتەوە.
-    // خانەیەک تەنها دەردەکەوێت ئەگەر بەکارهێنەر مۆڵەتی هەبێت.
-    $groups = [
-        ['color' => 'tile-blue', 'tiles' => [
-            ['route' => 'items.index',      'label' => 'کاڵا و مەواد',   'icon' => 'items',        'can' => 'view_stock'],
-            ['route' => 'stock.index',      'label' => 'جوڵەی مەخزەن',   'icon' => 'stock',        'can' => 'view_stock'],
-            ['route' => 'stock.create',     'label' => 'زیاد/کەمکردن',   'icon' => 'stock',        'can' => 'manage_stock'],
-            ['route' => 'counts.index',     'label' => 'جەردی کۆگا',     'icon' => 'counts',       'can' => 'manage_stock_counts'],
-            ['route' => 'warehouses.index', 'label' => 'کۆگاکان',        'icon' => 'warehouses',   'can' => 'manage_items'],
-            ['route' => 'customers.index',  'label' => 'کڕیارەکان',      'icon' => 'customers',    'can' => 'manage_customers'],
-            ['route' => 'suppliers.index',  'label' => 'فرۆشیارەکان',    'icon' => 'suppliers',    'can' => 'manage_suppliers'],
-            ['route' => 'employees.index',  'label' => 'کارمەندان',      'icon' => 'employees',    'can' => 'manage_employees'],
-        ]],
+    // مێنیوی سەرەکی — هەموو خانەکان لە یەک لیستدان و لە یەک خشتەدا دەڕژێن،
+    // بۆیە هیچ بۆشاییەک لە نێوان گرووپەکاندا نامێنێتەوە.
+    // ڕەنگ گرووپەکان جیا دەکاتەوە: شین=داتا، پرتەقاڵی=کڕین/فرۆشتن،
+    // سوور=پارە، قاوەیی تۆخ=راپۆرت، قاوەیی=سیستەم.
+    // ٣٠ خانە = ٥ ڕیزی تەواوی ٦ خانەیی.
+    $tiles = [
+        ['c' => 'tile-blue',   'route' => 'items.index',      'label' => 'کاڵا و مەواد',     'icon' => 'items',      'can' => 'view_stock'],
+        ['c' => 'tile-blue',   'route' => 'items.create',     'label' => 'کاڵای نوێ',        'icon' => 'items',      'can' => 'manage_items'],
+        ['c' => 'tile-blue',   'route' => 'stock.index',      'label' => 'جوڵەی مەخزەن',     'icon' => 'stock',      'can' => 'view_stock'],
+        ['c' => 'tile-blue',   'route' => 'stock.create',     'label' => 'زیاد / کەمکردن',   'icon' => 'stock',      'can' => 'manage_stock'],
+        ['c' => 'tile-blue',   'route' => 'counts.index',     'label' => 'جەردی کۆگا',       'icon' => 'counts',     'can' => 'manage_stock_counts'],
+        ['c' => 'tile-blue',   'route' => 'warehouses.index', 'label' => 'کۆگاکان',          'icon' => 'warehouses', 'can' => 'manage_items'],
+        ['c' => 'tile-blue',   'route' => 'customers.index',  'label' => 'کڕیارەکان',        'icon' => 'customers',  'can' => 'manage_customers'],
+        ['c' => 'tile-blue',   'route' => 'customers.create', 'label' => 'کڕیاری نوێ',       'icon' => 'customers',  'can' => 'manage_customers'],
+        ['c' => 'tile-blue',   'route' => 'suppliers.index',  'label' => 'فرۆشیارەکان',      'icon' => 'suppliers',  'can' => 'manage_suppliers'],
+        ['c' => 'tile-blue',   'route' => 'employees.index',  'label' => 'کارمەندان',        'icon' => 'employees',  'can' => 'manage_employees'],
 
-        ['color' => 'tile-orange', 'tiles' => [
-            ['route' => 'orders.create',    'label' => 'وەسڵی نوێ',      'icon' => 'orders',       'can' => 'manage_orders'],
-            ['route' => 'orders.index',     'label' => 'وەسڵ و داواکاری', 'icon' => 'orders',      'can' => 'manage_orders'],
-            ['route' => 'purchases.create', 'label' => 'کڕینی نوێ',      'icon' => 'purchases',    'can' => 'manage_purchases'],
-            ['route' => 'purchases.index',  'label' => 'پسوولەی کڕین',   'icon' => 'purchases',    'can' => 'manage_purchases'],
-            ['route' => 'external-jobs.index', 'label' => 'ئیشی خاریجی', 'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
-        ]],
+        ['c' => 'tile-orange', 'route' => 'orders.create',    'label' => 'وەسڵی نوێ',        'icon' => 'orders',        'can' => 'manage_orders'],
+        ['c' => 'tile-orange', 'route' => 'orders.index',     'label' => 'وەسڵ و داواکاری',  'icon' => 'orders',        'can' => 'manage_orders'],
+        ['c' => 'tile-orange', 'route' => 'purchases.create', 'label' => 'کڕینی نوێ',        'icon' => 'purchases',     'can' => 'manage_purchases'],
+        ['c' => 'tile-orange', 'route' => 'purchases.index',  'label' => 'پسوولەی کڕین',     'icon' => 'purchases',     'can' => 'manage_purchases'],
+        ['c' => 'tile-orange', 'route' => 'external-jobs.index', 'label' => 'ئیشی خاریجی',   'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
 
-        ['color' => 'tile-red', 'tiles' => [
-            ['route' => 'payments.create', 'params' => ['type' => 'in'],  'label' => 'وەرگرتنی پارە', 'icon' => 'payments', 'can' => 'manage_payments'],
-            ['route' => 'payments.create', 'params' => ['type' => 'out'], 'label' => 'دانی پارە',     'icon' => 'cash',     'can' => 'manage_payments'],
-            ['route' => 'payments.index',   'label' => 'حەقدییەکان',     'icon' => 'payments',     'can' => 'manage_payments'],
-            ['route' => 'cash.index',       'label' => 'قاسە',           'icon' => 'cash',         'can' => 'manage_cash'],
-            ['route' => 'debts.index',      'label' => 'قەرزەکان',       'icon' => 'debts',        'can' => 'manage_payments'],
-        ]],
+        ['c' => 'tile-red', 'route' => 'payments.create', 'params' => ['type' => 'in'],  'label' => 'وەرگرتنی پارە', 'icon' => 'payments', 'can' => 'manage_payments'],
+        ['c' => 'tile-red', 'route' => 'payments.create', 'params' => ['type' => 'out'], 'label' => 'دانی پارە',     'icon' => 'cash',     'can' => 'manage_payments'],
+        ['c' => 'tile-red', 'route' => 'payments.index',   'label' => 'حەقدییەکان',       'icon' => 'payments', 'can' => 'manage_payments'],
+        ['c' => 'tile-red', 'route' => 'cash.index',       'label' => 'قاسە',             'icon' => 'cash',     'can' => 'manage_cash'],
+        ['c' => 'tile-red', 'route' => 'debts.index',      'label' => 'قەرزەکان',         'icon' => 'debts',    'can' => 'manage_payments'],
 
-        ['color' => 'tile-maroon', 'tiles' => [
-            ['route' => 'reports.show', 'params' => 'sales',     'label' => 'راپۆرتی فرۆشتن', 'icon' => 'orders',    'can' => 'view_reports'],
-            ['route' => 'reports.show', 'params' => 'purchases', 'label' => 'راپۆرتی کڕین',   'icon' => 'purchases', 'can' => 'view_reports'],
-            ['route' => 'reports.show', 'params' => 'profit',    'label' => 'قازانج',         'icon' => 'reports',   'can' => 'view_reports'],
-            ['route' => 'reports.show', 'params' => 'stock',     'label' => 'راپۆرتی مەخزەن', 'icon' => 'items',     'can' => 'view_reports'],
-            ['route' => 'reports.show', 'params' => 'cash',      'label' => 'راپۆرتی قاسە',   'icon' => 'cash',      'can' => 'view_reports'],
-            ['route' => 'reports.index',                         'label' => 'هەموو راپۆرت',   'icon' => 'reports',   'can' => 'view_reports'],
-        ]],
+        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'sales',     'label' => 'راپۆرتی فرۆشتن', 'icon' => 'orders',    'can' => 'view_reports'],
+        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'purchases', 'label' => 'راپۆرتی کڕین',   'icon' => 'purchases', 'can' => 'view_reports'],
+        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'profit',    'label' => 'قازانج',         'icon' => 'reports',   'can' => 'view_reports'],
+        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'stock',     'label' => 'راپۆرتی مەخزەن', 'icon' => 'items',     'can' => 'view_reports'],
+        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'cash',      'label' => 'راپۆرتی قاسە',   'icon' => 'cash',      'can' => 'view_reports'],
+        ['c' => 'tile-maroon', 'route' => 'reports.index',                         'label' => 'هەموو راپۆرت',   'icon' => 'reports',   'can' => 'view_reports'],
 
-        ['color' => 'tile-brown', 'tiles' => [
-            ['route' => 'attendance.index', 'label' => 'هاتن و چوون',    'icon' => 'attendance',   'can' => 'manage_employees'],
-            ['route' => 'attendance.wages', 'label' => 'حەقدەستەکان',    'icon' => 'employees',    'can' => 'manage_employees'],
-            ['route' => 'activity.index',   'label' => 'مێژووی کردارەکان', 'icon' => 'activity',   'can' => 'manage_settings'],
-            ['route' => 'settings.index',   'label' => 'ڕێکخستن و باکەپ', 'icon' => 'settings',    'can' => 'manage_settings'],
-        ]],
+        ['c' => 'tile-brown', 'route' => 'attendance.index', 'label' => 'هاتن و چوون',      'icon' => 'attendance', 'can' => 'manage_employees'],
+        ['c' => 'tile-brown', 'route' => 'attendance.wages', 'label' => 'حەقدەستەکان',      'icon' => 'employees',  'can' => 'manage_employees'],
+        ['c' => 'tile-brown', 'route' => 'activity.index',   'label' => 'مێژووی کردارەکان', 'icon' => 'activity',   'can' => 'manage_settings'],
+        ['c' => 'tile-brown', 'route' => 'settings.index',   'label' => 'ڕێکخستن و باکەپ',  'icon' => 'settings',   'can' => 'manage_settings'],
     ];
+
+    $visible = collect($tiles)->filter(
+        fn ($tile) => ! $tile['can'] || auth()->user()->can($tile['can'])
+    );
 @endphp
 
-{{-- ── خانەکانی مێنیو ── --}}
-<div class="space-y-3">
-    @foreach ($groups as $group)
-        @php
-            $visible = collect($group['tiles'])->filter(
-                fn ($tile) => ! $tile['can'] || auth()->user()->can($tile['can'])
-            );
-        @endphp
-
-        @if ($visible->isNotEmpty())
-            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                @foreach ($visible as $tile)
-                    <a href="{{ isset($tile['params']) ? route($tile['route'], $tile['params']) : route($tile['route']) }}"
-                       class="tile {{ $group['color'] }}">
-                        @include('partials.icon', ['name' => $tile['icon'], 'class' => 'size-7'])
-                        <span class="tile-label">{{ $tile['label'] }}</span>
-                    </a>
-                @endforeach
-            </div>
-        @endif
+{{-- ── خانەکانی مێنیو — یەک خشتەی بەردەوام ── --}}
+<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+    @foreach ($visible as $tile)
+        <a href="{{ isset($tile['params']) ? route($tile['route'], $tile['params']) : route($tile['route']) }}"
+           class="tile {{ $tile['c'] }}">
+            <span class="tile-icon">
+                @include('partials.icon', ['name' => $tile['icon'], 'class' => 'size-6'])
+            </span>
+            <span class="tile-label">{{ $tile['label'] }}</span>
+        </a>
     @endforeach
 </div>
 
