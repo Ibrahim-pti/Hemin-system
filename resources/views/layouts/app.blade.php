@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'داشبۆرد') — {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="min-h-screen" x-data="{ menuOpen: false }">
 
@@ -63,5 +64,7 @@
     </div>
 
     @include('partials.calculator')
+    @livewireScripts
+    @stack('scripts')
 </body>
 </html>

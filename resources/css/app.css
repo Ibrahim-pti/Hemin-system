@@ -56,6 +56,11 @@
         direction: rtl;
     }
 
+    /* Alpine — ڕێگری لە دەرکەوتنی ناوەڕۆکی شاراوە پێش بارکردن */
+    [x-cloak] {
+        display: none !important;
+    }
+
     body {
         background-color: var(--color-canvas);
         color: var(--color-ink);
