@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -12,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class StockMovement extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'item_id', 'warehouse_id', 'direction', 'qty', 'reason',
         'unit_cost', 'currency', 'exchange_rate',

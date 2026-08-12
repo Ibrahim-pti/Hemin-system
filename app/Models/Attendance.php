@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +15,8 @@ use Illuminate\Support\Carbon;
  */
 class Attendance extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'employee_id', 'work_date', 'check_in', 'check_out', 'status',
         'hours', 'overtime_hours', 'wage_snapshot', 'user_id', 'note',

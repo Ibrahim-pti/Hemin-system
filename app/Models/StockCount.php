@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 class StockCount extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'count_no', 'warehouse_id', 'count_date', 'status', 'user_id', 'note',
     ];

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+
 use App\Models\Concerns\ConvertsCurrency;
 use App\Support\KurdishNumber;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Payment extends Model
 {
+    use Auditable;
     use ConvertsCurrency, SoftDeletes;
 
     protected $fillable = [

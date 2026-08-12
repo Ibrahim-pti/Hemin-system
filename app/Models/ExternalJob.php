@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+
 use App\Models\Concerns\ConvertsCurrency;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class ExternalJob extends Model
 {
+    use Auditable;
     use ConvertsCurrency, SoftDeletes;
 
     protected $fillable = [

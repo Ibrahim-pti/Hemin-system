@@ -47,8 +47,9 @@ class CustomerController extends Controller
      */
     public function statement(Customer $customer, Request $request): View
     {
-        $from = $request->date('from') ?? now()->startOfYear();
-        $to = $request->date('to') ?? now();
+        $from = ($request->date('from') ?? now()->startOfYear())->startOfDay();
+        // تا کۆتایی ڕۆژ — ئەگەر نا مامەڵەکانی هەمان ڕۆژ دەرناکەون.
+        $to = ($request->date('to') ?? now())->endOfDay();
 
         $orders = $customer->orders()
             ->whereNotIn('status', ['draft', 'cancelled'])
