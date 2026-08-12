@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Supplier extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = [
+        'name', 'phone', 'phone2', 'address',
+        'opening_balance', 'opening_currency', 'is_active', 'note',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'opening_balance' => 'decimal:2',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(Purchase::class);
+    }
+
+    public function externalJobs(): HasMany
+    {
+        return $this->hasMany(ExternalJob::class);
+    }
+
+    public function payments(): MorphMany
+    {
+        return $this->morphMany(Payment::class, 'party');
+    }
+
+    public function openingIqd(): float
+    {
+        if ($this->opening_currency === 'USD') {
+            return (float) $this->opening_balance * ExchangeRate::current();
+        }
+
+        return (float) $this->opening_balance;
+    }
+
+    /**
+     * قەرزی ئێستا بە دینار.
+     * ئەرێنی = کارگە قەرزاری ئەم فرۆشیارەیە.
+     */
+    public function balance(): float
+    {
+        $purchased = $this->purchases()
+            ->where('status', 'confirmed')
+            ->sum(Purchase::totalIqdExpression());
+
+        $jobs = $this->externalJobs()
+            ->where('status', '!=', 'cancelled')
+            ->sum(ExternalJob::costIqdExpression());
+
+        $paid = $this->payments()
+            ->where('direction', 'out')
+            ->sum('amount_iqd');
+
+        return $this->openingIqd() + (float) $purchased + (float) $jobs - (float) $paid;
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        return $query->when($term, fn ($q) => $q->where(
+            fn ($w) => $w->where('name', 'like', "%{$term}%")->orWhere('phone', 'like', "%{$term}%")
+        ));
+    }
+}
