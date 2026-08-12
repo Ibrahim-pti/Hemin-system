@@ -1,5 +1,4 @@
-@extends('layouts.app')
-@section('title', 'سەرەکی')
+@extends('layouts.menu')
 
 @section('content')
 
