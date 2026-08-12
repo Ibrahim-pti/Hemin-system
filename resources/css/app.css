@@ -97,15 +97,22 @@
 }
 
 @layer components {
-    /* ── باری خوارەوە — کاتژمێر و بەکارهێنەر، سووک و ڕوون ── */
-    .footbar {
+    /* ── سەرەوەی مێنیو — ناوی کارگە، بەکارهێنەر، کاتژمێر ── */
+    .menu-head {
         display: grid;
         grid-template-columns: 1fr auto 1fr;
         align-items: center;
         gap: 1rem;
-        border-top: 1px solid var(--color-line);
         background-color: var(--color-surface);
-        padding: 0.625rem 1rem;
+        border-bottom: 1px solid var(--color-line);
+        padding: 0.875rem 1.25rem;
+    }
+
+    .menu-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-brand-800);
+        line-height: 1.25;
     }
 
     /* کاتژمێر — ژمارە گەورە و ڕوون، بەروار لە خوارەوە */

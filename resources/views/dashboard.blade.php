@@ -63,131 +63,25 @@
     @endforeach
 </div>
 
-{{-- ── کورتەی ڕۆژ ── --}}
-@can('view_reports')
-    <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        @include('partials.stat-tile', [
-            'label' => 'فرۆشتنی ئەمڕۆ', 'value' => fmt_money($todaySales), 'tone' => null, 'icon' => 'orders',
-        ])
-        @include('partials.stat-tile', [
-            'label' => 'وەرگیراوی ئەمڕۆ', 'value' => fmt_money($todayIn), 'tone' => 'ok', 'icon' => 'payments',
-        ])
-        @include('partials.stat-tile', [
-            'label' => 'قەرزی کڕیاران', 'value' => fmt_money($receivables),
-            'tone' => $receivables > 0 ? 'danger' : null, 'icon' => 'debts',
-        ])
-        @include('partials.stat-tile', [
-            'label' => 'قەرزی کارگە', 'value' => fmt_money($payables),
-            'tone' => $payables > 0 ? 'warn' : null, 'icon' => 'suppliers',
-        ])
-    </div>
-
-    <div class="mt-3 grid gap-3 lg:grid-cols-3">
-        {{-- قاسەکان --}}
-        <div class="card">
-            <div class="card-head">قاسە</div>
-            <div class="card-body space-y-2.5 text-sm">
-                @foreach ($cashBoxes as $box)
-                    <div class="flex items-center justify-between border-b border-[--color-line] pb-2.5 last:border-0 last:pb-0">
-                        <span>{{ $box->name }}</span>
-                        <span class="num font-semibold">{{ fmt_money($box->balance(), $box->currency) }}</span>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
-        {{-- کاری بەردەوام --}}
-        <div class="card">
-            <div class="card-head">کاری بەردەوام</div>
-            <div class="card-body space-y-2.5 text-sm">
-                @foreach ([
-                    'داواکاری کراوە' => fmt_num($openOrders),
-                    'وەسڵی ئەمڕۆ' => fmt_num($todayOrders),
-                    'کارمەندی ئامادە' => fmt_num($presentToday),
-                    'جوڵەی مەخزەنی ئەمڕۆ' => fmt_num($todayMovements),
-                ] as $label => $value)
-                    <div class="flex items-center justify-between">
-                        <span class="text-[--color-ink-soft]">{{ $label }}</span>
-                        <span class="num font-semibold">{{ $value }}</span>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
-        {{-- دوایین وەسڵەکان --}}
-        <div class="card">
-            <div class="card-head">دوایین وەسڵەکان</div>
-            <div class="card-body !p-0">
-                @forelse ($recentOrders as $order)
-                    <a href="{{ route('orders.show', $order) }}"
-                       class="flex items-center justify-between border-b border-[--color-line] px-4 py-2.5 last:border-0 hover:bg-[--color-surface-soft]">
-                        <div class="min-w-0">
-                            <div class="truncate text-sm">{{ $order->customer?->name }}</div>
-                            <div class="num text-xs text-[--color-ink-soft]">ژ. {{ $order->invoice_no }}</div>
-                        </div>
-                        <span class="num text-sm font-medium">{{ fmt_money($order->total_iqd) }}</span>
-                    </a>
-                @empty
-                    <p class="p-4 text-sm text-[--color-ink-soft]">هێشتا هیچ وەسڵێک نییە.</p>
-                @endforelse
-            </div>
-        </div>
-    </div>
-@else
-    <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
-        @include('partials.stat-tile', [
-            'label' => 'کۆی کاڵا', 'value' => fmt_num($itemsCount), 'tone' => null, 'icon' => 'items',
-        ])
-        @include('partials.stat-tile', [
-            'label' => 'جوڵەی ئەمڕۆ', 'value' => fmt_num($todayMovements), 'tone' => null, 'icon' => 'stock',
-        ])
-        @include('partials.stat-tile', [
-            'label' => 'کاڵای کەم', 'value' => fmt_num($lowStock->count()),
-            'tone' => $lowStock->count() ? 'warn' : null, 'icon' => 'counts',
-        ])
-    </div>
-@endcan
-
-{{-- ── ئاگاداری کەمی مەخزەن ── --}}
-<div class="card mt-3">
-    <div class="card-head flex items-center justify-between">
-        <span>ئاگاداری کەمی مەخزەن</span>
-        @if ($lowStock->isNotEmpty())
-            <span class="badge badge-warn">{{ fmt_num($lowStock->count()) }} کاڵا</span>
-        @endif
-    </div>
-
-    @if ($lowStock->isEmpty())
-        <div class="card-body text-sm text-[--color-ink-soft]">
-            هیچ کاڵایەک لە سنووری ئاگاداری کەمتر نەبووەتەوە.
-        </div>
-    @else
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>کاڵا</th><th>کۆد</th>
-                        <th class="num">ماوە</th><th class="num">سنووری کەمترین</th><th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($lowStock as $item)
-                        <tr>
-                            <td>{{ $item->name }}</td>
-                            <td class="num text-[--color-ink-soft]">{{ $item->code }}</td>
-                            <td class="num font-medium text-[--color-warn]">
-                                {{ fmt_qty($item->stock_qty) }} {{ $item->unit?->name }}
-                            </td>
-                            <td class="num text-[--color-ink-soft]">{{ fmt_qty($item->min_qty) }}</td>
-                            <td class="text-left">
-                                <a href="{{ route('items.show', $item) }}" class="text-sm text-[--color-brand-700]">بینین</a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
-</div>
+{{-- ئاگاداری کەمی مەخزەن — تەنها یەک دێڕ، لە خوارەوەی کارتەکان.
+     نابێت بەتەواوی لابدرێت، چونکە داواکراوە سیستەم ئاگادار بکاتەوە. --}}
+@if ($lowStock->isNotEmpty())
+    <a href="{{ route('items.index', ['low' => 1]) }}"
+       class="mt-3 flex items-center gap-2.5 rounded-[--radius-card] border border-[--color-warn]/30 bg-[--color-warn-soft] px-4 py-3 text-sm">
+        <svg class="size-5 shrink-0 text-[--color-warn]" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.3 4l-8 13.5A1 1 0 003.2 19h17.6a1 1 0 00.9-1.5l-8-13.5a1 1 0 00-1.7 0z"/>
+            <path d="M12 9v4M12 16h.01"/>
+        </svg>
+        <span class="text-[--color-ink]">
+            <span class="num font-semibold text-[--color-warn]">{{ fmt_num($lowStock->count()) }}</span>
+            کاڵا لە سنووری کەمترین کەمتر بوونەتەوە —
+            <span class="text-[--color-ink-soft]">
+                {{ $lowStock->take(3)->pluck('name')->implode('، ') }}{{ $lowStock->count() > 3 ? '...' : '' }}
+            </span>
+        </span>
+        <span class="mr-auto text-sm font-medium text-[--color-brand-700]">بینین</span>
+    </a>
+@endif
 
 @endsection

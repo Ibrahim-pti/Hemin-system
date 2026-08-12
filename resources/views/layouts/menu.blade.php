@@ -8,10 +8,50 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-{{-- لایەقی مێنیوی سەرەکی — بێ هێدەر، بێ خەت. تەنها کارتەکان. --}}
-<body class="flex min-h-screen flex-col">
+{{-- لایەقی مێنیوی سەرەکی — ناوی کارگە و کاتژمێر لە سەرەوە، پاشان کارتەکان. --}}
+<body class="min-h-screen">
 
-    <main class="flex-1 p-4 pb-3">
+    {{-- ── سەرەوەی کارتەکان ── --}}
+    <header class="menu-head" x-data="clock()">
+
+        {{-- ڕاست: کاتژمێر و بەروار --}}
+        <div>
+            <div class="clock-time" dir="ltr" style="text-align: right" x-text="time"></div>
+            <div class="clock-date" x-text="date"></div>
+        </div>
+
+        {{-- ناوەڕاست: ناوی کارگە --}}
+        <div class="menu-title">{{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}</div>
+
+        {{-- چەپ: بەکارهێنەر و دوگمەکان --}}
+        <div class="flex items-center justify-end gap-2">
+            <button @click="$dispatch('open-calculator')" class="btn btn-ghost !px-2.5 !py-1.5" title="حاسیبە">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                    <rect x="4" y="3" width="16" height="18" rx="2"/>
+                    <path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/>
+                </svg>
+            </button>
+
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button class="btn btn-ghost !px-2.5 !py-1.5" title="دەرچوون">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 17l5-5-5-5M20 12H9M12 3H6a1 1 0 00-1 1v16a1 1 0 001 1h6"/>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="hidden text-left leading-tight sm:block">
+                <div class="text-sm font-medium">{{ auth()->user()->name }}</div>
+                <div class="text-xs text-[--color-ink-soft]">
+                    {{ auth()->user()->isAdmin() ? 'بەڕێوەبەر' : 'بەرپرسی کۆگا' }}
+                </div>
+            </div>
+            <div class="footbar-avatar">{{ mb_substr(auth()->user()->name, 0, 1) }}</div>
+        </div>
+    </header>
+
+    <main class="p-4 pt-3">
         @if (session('ok'))
             <div class="mb-3 flex items-center gap-2.5 rounded-[--radius-card] border border-[--color-ok]/25 bg-[--color-ok-soft] px-4 py-3 text-sm text-[--color-ok]">
                 <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -33,49 +73,10 @@
         @yield('content')
     </main>
 
-    {{-- ── باری خوارەوە — کاتژمێر، ناوی کارگە، بەکارهێنەر ── --}}
-    <footer class="footbar" x-data="clock()">
-
-        <div class="flex items-center gap-2">
-            <div class="footbar-avatar">{{ mb_substr(auth()->user()->name, 0, 1) }}</div>
-            <div class="leading-tight">
-                <div class="text-sm font-medium">{{ auth()->user()->name }}</div>
-                <div class="text-xs text-[--color-ink-soft]">
-                    {{ auth()->user()->isAdmin() ? 'بەڕێوەبەر' : 'بەرپرسی کۆگا' }}
-                </div>
-            </div>
-
-            <button @click="$dispatch('open-calculator')" class="btn btn-ghost mr-2 !px-2.5 !py-1.5" title="حاسیبە">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-                    <rect x="4" y="3" width="16" height="18" rx="2"/>
-                    <path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/>
-                </svg>
-            </button>
-
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button class="btn btn-ghost !px-2.5 !py-1.5" title="دەرچوون">
-                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 17l5-5-5-5M20 12H9M12 3H6a1 1 0 00-1 1v16a1 1 0 001 1h6"/>
-                    </svg>
-                </button>
-            </form>
-        </div>
-
-        <div class="hidden text-center text-sm font-semibold text-[--color-ink] sm:block">
-            {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}
-        </div>
-
-        <div class="text-left">
-            <div class="clock-time" dir="ltr" x-text="time"></div>
-            <div class="clock-date" x-text="date"></div>
-        </div>
-    </footer>
-
     @include('partials.calculator')
 
     <script>
-    // کاتژمێری زیندووی باری خوارەوە.
+    // کاتژمێری زیندووی سەرەوەی کارتەکان.
     function clock() {
         const days = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
 
