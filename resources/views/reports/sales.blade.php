@@ -56,7 +56,7 @@
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="bg-[--color-canvas] font-semibold">
+                <tr class="bg-[--color-surface-soft] font-semibold">
                     <td colspan="3">کۆی گشتی</td>
                     <td class="num">{{ fmt_money($total) }}</td>
                     <td colspan="2"></td>

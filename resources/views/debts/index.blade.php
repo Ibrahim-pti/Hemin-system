@@ -4,8 +4,8 @@
 @section('content')
 
 <div class="mb-4 grid grid-cols-2 gap-3">
-    @include('partials.stat-tile', ['label' => 'کڕیاران قەرزارن', 'value' => fmt_money($totalReceivable), 'tone' => 'danger'])
-    @include('partials.stat-tile', ['label' => 'کارگە قەرزارە', 'value' => fmt_money($totalPayable), 'tone' => 'warn'])
+    @include('partials.stat-tile', ['label' => 'کڕیاران قەرزارن', 'value' => fmt_money($totalReceivable), 'tone' => 'danger', 'icon' => 'customers'])
+    @include('partials.stat-tile', ['label' => 'کارگە قەرزارە', 'value' => fmt_money($totalPayable), 'tone' => 'warn', 'icon' => 'suppliers'])
 </div>
 
 {{-- وەسڵە نەدراوەکان --}}

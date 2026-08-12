@@ -22,7 +22,7 @@
                         <label class="cursor-pointer rounded-md border px-3 py-2 text-center text-sm transition-colors"
                                :class="type === '{{ $value }}'
                                    ? 'border-[--color-brand-700] bg-[--color-brand-700] text-white'
-                                   : 'border-[--color-line-strong] bg-white hover:bg-[--color-canvas]'">
+                                   : 'border-[--color-line-strong] bg-[--color-surface] hover:bg-[--color-surface-soft]'">
                             <input type="radio" name="type" value="{{ $value }}" x-model="type" class="sr-only">
                             {{ $label }}
                         </label>

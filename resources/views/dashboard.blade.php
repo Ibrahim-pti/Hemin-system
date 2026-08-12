@@ -3,18 +3,23 @@
 
 @section('content')
 
-@php
-    // ژمارەی سەرەکی هەمیشە بە دەقی ئاسایی دەنووسرێت — رەنگ تەنها بۆ مانای دۆخە
-    // (قەرز = سوور، کەمی مەخزەن = پرتەقاڵی)، نەک بۆ جوانی.
-    $tile = fn ($label, $value, $tone = null) => view('partials.stat-tile', compact('label', 'value', 'tone'));
-@endphp
-
+{{-- رەنگ تەنها بۆ مانای دۆخە (قەرز = سوور، ئاگاداری = پرتەقاڵی)، نەک بۆ جوانی. --}}
 @can('view_reports')
     <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {!! $tile('فرۆشتنی ئەمڕۆ', fmt_money($todaySales)) !!}
-        {!! $tile('وەرگیراوی ئەمڕۆ', fmt_money($todayIn), 'ok') !!}
-        {!! $tile('قەرزی کڕیاران', fmt_money($receivables), $receivables > 0 ? 'danger' : null) !!}
-        {!! $tile('قەرزی کارگە', fmt_money($payables), $payables > 0 ? 'warn' : null) !!}
+        @include('partials.stat-tile', [
+            'label' => 'فرۆشتنی ئەمڕۆ', 'value' => fmt_money($todaySales), 'tone' => null, 'icon' => 'orders',
+        ])
+        @include('partials.stat-tile', [
+            'label' => 'وەرگیراوی ئەمڕۆ', 'value' => fmt_money($todayIn), 'tone' => 'ok', 'icon' => 'payments',
+        ])
+        @include('partials.stat-tile', [
+            'label' => 'قەرزی کڕیاران', 'value' => fmt_money($receivables),
+            'tone' => $receivables > 0 ? 'danger' : null, 'icon' => 'debts',
+        ])
+        @include('partials.stat-tile', [
+            'label' => 'قەرزی کارگە', 'value' => fmt_money($payables),
+            'tone' => $payables > 0 ? 'warn' : null, 'icon' => 'suppliers',
+        ])
     </div>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-3">
@@ -83,10 +88,17 @@
     </div>
 @else
     {{-- ڕووی بەرپرسی کۆگا — بێ هیچ نرخێک --}}
-    <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {!! $tile('کۆی کاڵا', fmt_num($itemsCount)) !!}
-        {!! $tile('جوڵەی ئەمڕۆ', fmt_num($todayMovements)) !!}
-        {!! $tile('کاڵای کەم', fmt_num($lowStock->count()), $lowStock->count() ? 'warn' : null) !!}
+    <div class="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        @include('partials.stat-tile', [
+            'label' => 'کۆی کاڵا', 'value' => fmt_num($itemsCount), 'tone' => null, 'icon' => 'items',
+        ])
+        @include('partials.stat-tile', [
+            'label' => 'جوڵەی ئەمڕۆ', 'value' => fmt_num($todayMovements), 'tone' => null, 'icon' => 'stock',
+        ])
+        @include('partials.stat-tile', [
+            'label' => 'کاڵای کەم', 'value' => fmt_num($lowStock->count()),
+            'tone' => $lowStock->count() ? 'warn' : null, 'icon' => 'counts',
+        ])
     </div>
 @endcan
 

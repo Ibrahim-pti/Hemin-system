@@ -17,14 +17,14 @@
     {{-- ── مێنیوی لای ڕاست ── --}}
     <aside x-cloak
            :class="menuOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'"
-           class="fixed top-0 right-0 z-40 h-screen w-64 overflow-y-auto border-l border-[--color-line] bg-white transition-transform duration-200 no-print">
+           class="fixed top-0 right-0 z-40 h-screen w-64 overflow-y-auto border-l border-[--color-line] bg-[--color-surface] transition-transform duration-200 no-print">
         @include('partials.sidebar')
     </aside>
 
     {{-- ── ناوەڕۆک ── --}}
     <div class="lg:mr-64">
 
-        <header class="sticky top-0 z-20 border-b border-[--color-line] bg-white no-print">
+        <header class="no-print sticky top-0 z-20 border-b border-[--color-line] bg-[--color-surface]">
             <div class="flex items-center gap-3 px-4 py-3">
                 <button @click="menuOpen = true" class="btn btn-ghost !p-2 lg:hidden" aria-label="مێنیو">
                     <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -48,14 +48,20 @@
 
         <main class="p-4">
             @if (session('ok'))
-                <div class="card mb-4 border-r-4 !border-r-[--color-ok] px-4 py-3 text-sm no-print">
-                    {{ session('ok') }}
+                <div class="no-print mb-4 flex items-center gap-2.5 rounded-[--radius-card] border border-[--color-ok]/25 bg-[--color-ok-soft] px-4 py-3 text-sm text-[--color-ok]">
+                    <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>
+                    </svg>
+                    <span class="text-[--color-ink]">{{ session('ok') }}</span>
                 </div>
             @endif
 
             @if (session('err'))
-                <div class="card mb-4 border-r-4 !border-r-[--color-danger] px-4 py-3 text-sm no-print">
-                    {{ session('err') }}
+                <div class="no-print mb-4 flex items-center gap-2.5 rounded-[--radius-card] border border-[--color-danger]/25 bg-[--color-danger-soft] px-4 py-3 text-sm text-[--color-danger]">
+                    <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>
+                    </svg>
+                    <span class="text-[--color-ink]">{{ session('err') }}</span>
                 </div>
             @endif
 

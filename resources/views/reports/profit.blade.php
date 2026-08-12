@@ -41,7 +41,7 @@
                     @endforeach
                 </tbody>
                 <tfoot>
-                    <tr class="bg-[--color-canvas]">
+                    <tr class="bg-[--color-surface-soft]">
                         <td class="text-base font-bold">قازانج</td>
                         <td class="num text-base font-bold {{ $profit >= 0 ? 'text-[--color-ok]' : 'text-[--color-danger]' }}">
                             {{ fmt_money($profit) }}

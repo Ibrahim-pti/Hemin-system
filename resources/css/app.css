@@ -25,21 +25,28 @@
     --color-brand-800: #115e59;
     --color-brand-900: #134e4a;
 
-    /* پاشبنەما و دەق */
+    /* پاشبنەما و دەق — تۆنێکی نەرمی مینتی، نەک سپی ساردی ڕەق */
     --color-surface: #ffffff;
-    --color-canvas: #f8fafc;
-    --color-line: #e2e8f0;
-    --color-line-strong: #cbd5e1;
-    --color-ink: #1e293b;
-    --color-ink-soft: #64748b;
+    --color-surface-soft: #f7faf9;
+    --color-canvas: #eef4f2;
+    --color-line: #e0e9e6;
+    --color-line-strong: #c8d6d2;
+    --color-ink: #1c2b2f;
+    --color-ink-soft: #6b8085;
 
-    /* دۆخەکان */
-    --color-ok: #16a34a;
-    --color-warn: #d97706;
-    --color-danger: #dc2626;
+    /* تۆنی نەرمی سەرەکی — بۆ ئایکۆن و دۆخی چالاک */
+    --color-brand-soft: #e3f2ee;
+
+    /* دۆخەکان + تۆنی نەرمیان */
+    --color-ok: #14875a;
+    --color-ok-soft: #e6f5ed;
+    --color-warn: #c2740b;
+    --color-warn-soft: #fdf3e2;
+    --color-danger: #cf3a34;
+    --color-danger-soft: #fceceb;
 
     /* گۆشەی ڕاونەکراو */
-    --radius-card: 0.5rem;
+    --radius-card: 0.625rem;
 }
 
 /* ── بێ شادۆ لە هەموو سیستەمەکە ───────────────────────────────────
@@ -95,9 +102,27 @@
 
     .card-head {
         border-bottom: 1px solid var(--color-line);
+        background-color: var(--color-surface-soft);
+        border-radius: var(--radius-card) var(--radius-card) 0 0;
         padding: 0.875rem 1rem;
         font-weight: 600;
     }
+
+    /* بازنەی ئایکۆن — تۆنی نەرم لە پشتەوە */
+    .icon-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        flex-shrink: 0;
+        border-radius: 0.5rem;
+        background-color: var(--color-brand-soft);
+        color: var(--color-brand-700);
+    }
+    .icon-chip-ok { background-color: var(--color-ok-soft); color: var(--color-ok); }
+    .icon-chip-warn { background-color: var(--color-warn-soft); color: var(--color-warn); }
+    .icon-chip-danger { background-color: var(--color-danger-soft); color: var(--color-danger); }
 
     .card-body {
         padding: 1rem;
@@ -174,7 +199,7 @@
         font-size: 0.875rem;
     }
     .table th {
-        background-color: var(--color-canvas);
+        background-color: var(--color-surface-soft);
         border-bottom: 1px solid var(--color-line);
         padding: 0.625rem 0.75rem;
         text-align: right;

@@ -42,7 +42,7 @@
                     @endforelse
                 </tbody>
                 <tfoot>
-                    <tr class="bg-[--color-canvas] font-semibold">
+                    <tr class="bg-[--color-surface-soft] font-semibold">
                         <td>کۆی گشتی</td>
                         <td class="num">{{ fmt_money($totalIn) }}</td>
                         <td class="num">{{ fmt_money($totalOut) }}</td>

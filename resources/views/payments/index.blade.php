@@ -9,9 +9,9 @@
 @section('content')
 
 <div class="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
-    @include('partials.stat-tile', ['label' => 'کۆی وەرگیراو', 'value' => fmt_money($totalIn), 'tone' => 'ok'])
-    @include('partials.stat-tile', ['label' => 'کۆی دراو', 'value' => fmt_money($totalOut), 'tone' => 'warn'])
-    @include('partials.stat-tile', ['label' => 'جیاوازی', 'value' => fmt_money($totalIn - $totalOut), 'tone' => null])
+    @include('partials.stat-tile', ['label' => 'کۆی وەرگیراو', 'value' => fmt_money($totalIn), 'tone' => 'ok', 'icon' => 'payments'])
+    @include('partials.stat-tile', ['label' => 'کۆی دراو', 'value' => fmt_money($totalOut), 'tone' => 'warn', 'icon' => 'cash'])
+    @include('partials.stat-tile', ['label' => 'جیاوازی', 'value' => fmt_money($totalIn - $totalOut), 'tone' => null, 'icon' => 'reports'])
 </div>
 
 <form method="GET" class="card mb-4">

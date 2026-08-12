@@ -54,7 +54,7 @@
             </thead>
             <tbody>
                 {{-- باڵانسی پێشوو --}}
-                <tr class="bg-[--color-canvas]">
+                <tr class="bg-[--color-surface-soft]">
                     <td colspan="5" class="font-medium">باڵانسی پێشوو</td>
                     <td class="num font-semibold">{{ fmt_money($openingBalance) }}</td>
                 </tr>
@@ -81,7 +81,7 @@
                 @endif
             </tbody>
             <tfoot>
-                <tr class="bg-[--color-canvas]">
+                <tr class="bg-[--color-surface-soft]">
                     <td colspan="3" class="font-semibold">کۆتا باڵانس</td>
                     <td class="num">{{ fmt_money($rows->sum('debit')) }}</td>
                     <td class="num">{{ fmt_money($rows->sum('credit')) }}</td>
