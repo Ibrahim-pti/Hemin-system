@@ -93,6 +93,51 @@
 }
 
 @layer components {
+    /* ── باری سەرەوە — تۆخ، وەک دیزاینی داواکراو ── */
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        background-color: var(--color-brand-900);
+        color: #fff;
+        padding: 0.5rem 1rem;
+    }
+
+    /* ── خانەکانی مێنیوی سەرەکی ── */
+    .tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 6.25rem;
+        padding: 0.875rem 0.5rem;
+        border-radius: 0.375rem;
+        color: #fff;
+        text-align: center;
+        line-height: 1.35;
+        transition: filter 0.15s;
+    }
+    .tile:hover {
+        filter: brightness(1.12);
+    }
+    .tile:active {
+        filter: brightness(0.94);
+    }
+    .tile-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    /* ڕەنگی گرووپەکان — هەر ڕیزێک بابەتێکی جیاوازە */
+    .tile-blue { background-color: #1a6cc4; }
+    .tile-orange { background-color: #e08a1e; }
+    .tile-red { background-color: #cc3a33; }
+    .tile-maroon { background-color: #7d4030; }
+    .tile-brown { background-color: #6b5238; }
+    .tile-teal { background-color: #0f766e; }
+
     /* کارت — یەکەی بنەڕەتی هەموو لاپەڕەکان */
     .card {
         background-color: var(--color-surface);
