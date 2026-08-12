@@ -109,10 +109,12 @@
     }
 
     .menu-title {
-        font-size: 1.25rem;
+        font-size: 1.375rem;
         font-weight: 700;
         color: var(--color-brand-800);
         line-height: 1.25;
+        text-align: center;
+        white-space: nowrap;
     }
 
     /* کاتژمێر — ژمارە گەورە و ڕوون، بەروار لە خوارەوە */
