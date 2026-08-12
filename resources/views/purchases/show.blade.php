@@ -36,7 +36,7 @@
                     @foreach ($purchase->items as $line)
                         <tr>
                             <td>{{ $line->item?->name }}</td>
-                            <td class="num">{{ fmt_qty($line->qty) }} {{ $line->item->unit?->name }}</td>
+                            <td class="num">{{ fmt_qty($line->qty) }} {{ $line->item?->unit?->name }}</td>
                             <td class="num">{{ fmt_money($line->unit_price, $purchase->currency) }}</td>
                             <td class="num font-medium">{{ fmt_money($line->line_total, $purchase->currency) }}</td>
                             <td class="text-[--color-ink-soft]">{{ $line->note ?? '—' }}</td>

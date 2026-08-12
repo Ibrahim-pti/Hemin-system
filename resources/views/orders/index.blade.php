@@ -57,7 +57,7 @@
                         <td class="num font-medium">{{ $order->invoice_no }}</td>
                         <td class="num whitespace-nowrap">{{ fmt_date($order->order_date) }}</td>
                         <td>
-                            {{ $order->customer->name }}
+                            {{ $order->customer?->name }}
                             @if ($order->customer->phone)
                                 <span class="num block text-xs text-[--color-ink-soft]" dir="ltr">{{ $order->customer->phone }}</span>
                             @endif

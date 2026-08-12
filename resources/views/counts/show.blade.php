@@ -55,8 +55,8 @@
                         @php $diff = (float) $line->counted_qty - (float) $line->system_qty; @endphp
                         <tr>
                             <td>{{ $line->item?->name }}</td>
-                            <td class="num text-[--color-ink-soft]">{{ $line->item->code }}</td>
-                            <td class="num">{{ fmt_qty($line->system_qty) }} {{ $line->item->unit?->name }}</td>
+                            <td class="num text-[--color-ink-soft]">{{ $line->item?->code }}</td>
+                            <td class="num">{{ fmt_qty($line->system_qty) }} {{ $line->item?->unit?->name }}</td>
                             <td class="num">
                                 @if ($count->status === 'posted')
                                     {{ fmt_qty($line->counted_qty) }}

@@ -53,7 +53,7 @@
 
         {{-- زانیاری کڕیار --}}
         <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
-            <div>بەڕێز: <span class="dotted font-medium">{{ $order->customer->name }}</span></div>
+            <div>بەڕێز: <span class="dotted font-medium">{{ $order->customer?->name }}</span></div>
             <div>ناونیشان: <span class="dotted">{{ $order->address_snapshot ?? $order->customer->address }}</span></div>
             <div>بەروار: <span class="dotted num">{{ fmt_date($order->order_date) }}</span></div>
         </div>

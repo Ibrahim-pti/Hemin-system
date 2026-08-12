@@ -136,7 +136,7 @@
             <tbody>
                 @forelse ($transactions as $transaction)
                     <tr>
-                        <td>{{ $transaction->cashBox->name }}</td>
+                        <td>{{ $transaction->cashBox?->name }}</td>
                         <td>
                             <span class="badge {{ $transaction->direction === 'in' ? 'badge-ok' : 'badge-warn' }}">
                                 {{ $transaction->direction === 'in' ? 'داهات' : 'خەرجی' }}
@@ -144,7 +144,7 @@
                         </td>
                         <td>{{ $transaction->category_label }}</td>
                         <td class="num font-medium {{ $transaction->direction === 'in' ? 'text-[--color-ok]' : 'text-[--color-danger]' }}">
-                            {{ $transaction->direction === 'in' ? '+' : '−' }}{{ fmt_money($transaction->amount, $transaction->cashBox->currency) }}
+                            {{ $transaction->direction === 'in' ? '+' : '−' }}{{ fmt_money($transaction->amount, $transaction->cashBox?->currency) }}
                         </td>
                         <td class="text-[--color-ink-soft]">{{ $transaction->note ?? '—' }}</td>
                         <td class="text-[--color-ink-soft]">{{ $transaction->user?->name ?? '—' }}</td>

@@ -57,7 +57,7 @@
                 <div class="flex justify-between">
                     <span class="text-[--color-ink-soft]">بەڕێز</span>
                     <a href="{{ route('customers.show', $order->customer) }}" class="text-[--color-brand-700]">
-                        {{ $order->customer->name }}
+                        {{ $order->customer?->name }}
                     </a>
                 </div>
                 <div class="flex justify-between">

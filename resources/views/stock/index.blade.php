@@ -84,7 +84,7 @@
                         <td>{{ $movement->reason_label }}</td>
                         <td class="num font-medium {{ $movement->direction === 'in' ? 'text-[--color-ok]' : 'text-[--color-danger]' }}">
                             {{ $movement->direction === 'in' ? '+' : '−' }}{{ fmt_qty($movement->qty) }}
-                            <span class="text-[--color-ink-soft]">{{ $movement->item->unit?->name }}</span>
+                            <span class="text-[--color-ink-soft]">{{ $movement->item?->unit?->name }}</span>
                         </td>
                         <td class="text-[--color-ink-soft]">{{ $movement->user?->name ?? '—' }}</td>
                         <td class="text-[--color-ink-soft]">{{ $movement->note ?? '—' }}</td>

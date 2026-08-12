@@ -28,7 +28,7 @@
                     <tr>
                         <td class="num font-medium">{{ $order->invoice_no }}</td>
                         <td class="num whitespace-nowrap">{{ fmt_date($order->order_date) }}</td>
-                        <td>{{ $order->customer->name }}</td>
+                        <td>{{ $order->customer?->name }}</td>
                         <td class="num" dir="ltr">{{ $order->customer->phone ?? '—' }}</td>
                         <td class="num">{{ fmt_money($order->total, $order->currency) }}</td>
                         <td class="num font-medium text-[--color-danger]">{{ fmt_money($row['remaining']) }}</td>

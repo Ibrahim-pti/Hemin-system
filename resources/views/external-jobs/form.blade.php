@@ -49,7 +49,7 @@
                     <option value="">— هیچ —</option>
                     @foreach ($orders as $order)
                         <option value="{{ $order->id }}" @selected(old('order_id', $job->order_id) == $order->id)>
-                            ژ. {{ $order->invoice_no }} — {{ $order->customer->name }}
+                            ژ. {{ $order->invoice_no }} — {{ $order->customer?->name }}
                         </option>
                     @endforeach
                 </select>

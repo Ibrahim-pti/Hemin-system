@@ -46,7 +46,7 @@
                             <a href="{{ route('orders.show', $order) }}" class="text-[--color-brand-700]">{{ $order->invoice_no }}</a>
                         </td>
                         <td class="num whitespace-nowrap">{{ fmt_date($order->order_date) }}</td>
-                        <td>{{ $order->customer->name }}</td>
+                        <td>{{ $order->customer?->name }}</td>
                         <td class="num">{{ fmt_money($order->total_iqd) }}</td>
                         <td class="num {{ $order->remaining() > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
                             {{ fmt_money($order->remaining()) }}
