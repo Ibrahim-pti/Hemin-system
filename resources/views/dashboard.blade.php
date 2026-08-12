@@ -3,14 +3,9 @@
 @section('content')
 
 @php
-    // مێنیوی سەرەکی — هەموو خانەکان لە یەک لیستدان و لە یەک خشتەدا دەڕژێن،
-    // بۆیە هیچ بۆشاییەک لە نێوان گرووپەکاندا نامێنێتەوە.
-    // ڕەنگ گرووپەکان جیا دەکاتەوە: شین=داتا، پرتەقاڵی=کڕین/فرۆشتن،
-    // سوور=پارە، قاوەیی تۆخ=راپۆرت، قاوەیی=سیستەم.
-    // ٣٠ خانە = ٥ ڕیزی تەواوی ٦ خانەیی.
+   
     $tiles = [
-        ['c' => 'tile-blue',   'route' => 'items.index',      'label' => 'کاڵا و مەواد',     'icon' => 'items',      'can' => 'view_stock'],
-        ['c' => 'tile-blue',   'route' => 'items.create',     'label' => 'کاڵای نوێ',        'icon' => 'items',      'can' => 'manage_items'],
+        ['c' => 'tile-blue',   'route' => 'items.index',      'label' => 'دۆخی کۆگا',     'icon' => 'items',      'can' => 'view_stock'],
         ['c' => 'tile-blue',   'route' => 'stock.index',      'label' => 'جوڵەی مەخزەن',     'icon' => 'stock',      'can' => 'view_stock'],
         ['c' => 'tile-blue',   'route' => 'stock.create',     'label' => 'زیاد / کەمکردن',   'icon' => 'stock',      'can' => 'manage_stock'],
         ['c' => 'tile-blue',   'route' => 'counts.index',     'label' => 'جەردی کۆگا',       'icon' => 'counts',     'can' => 'manage_stock_counts'],
