@@ -1,0 +1,311 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Customer;
+use App\Models\ExchangeRate;
+use App\Models\Item;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Setting;
+use App\Models\Warehouse;
+use App\Services\PaymentService;
+use App\Services\StockService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+
+class OrderController extends Controller
+{
+    public function __construct(
+        private readonly PaymentService $payments,
+        private readonly StockService $stock,
+    ) {}
+
+    public function index(Request $request): View
+    {
+        $orders = Order::query()
+            ->with('customer')
+            ->search($request->string('q')->toString())
+            ->when($request->string('status')->toString(), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->date('from'), fn ($q, $d) => $q->whereDate('order_date', '>=', $d))
+            ->when($request->date('to'), fn ($q, $d) => $q->whereDate('order_date', '<=', $d))
+            ->latest('order_date')
+            ->latest('id')
+            ->paginate(25)
+            ->withQueryString();
+
+        return view('orders.index', compact('orders'));
+    }
+
+    public function create(Request $request): View
+    {
+        return view('orders.form', [
+            'order' => new Order([
+                'currency' => 'IQD',
+                'order_date' => now()->toDateString(),
+                'customer_id' => $request->integer('customer') ?: null,
+            ]),
+            'customers' => Customer::active()->orderBy('name')->get(),
+            'items' => Item::active()->orderBy('name')->get(['id', 'name']),
+            'nextNo' => Order::nextInvoiceNo(),
+            'rate' => ExchangeRate::current(),
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $this->validated($request);
+
+        $order = DB::transaction(function () use ($data, $request) {
+            $customer = Customer::find($data['customer_id']);
+
+            $order = Order::create($this->header($data, $customer) + [
+                'invoice_no' => $data['invoice_no'] ?: Order::nextInvoiceNo(),
+                'status' => $request->boolean('confirm') ? 'confirmed' : 'draft',
+                'user_id' => auth()->id(),
+            ]);
+
+            $this->syncLines($order, $data['lines']);
+            $this->recordPrepaid($order, $customer, (float) ($data['prepaid_amount'] ?? 0));
+
+            return $order;
+        });
+
+        return redirect()->route('orders.show', $order)->with('ok', "وەسڵی ژمارە {$order->invoice_no} تۆمارکرا.");
+    }
+
+    public function show(Order $order): View
+    {
+        $order->load(['customer', 'items.item', 'payments', 'externalJobs', 'user']);
+
+        return view('orders.show', compact('order'));
+    }
+
+    /** چاپی وەسڵ — هەمان پێکهاتەی دەفتەرە چاپکراوەکەی کارگە. */
+    public function print(Order $order): View
+    {
+        $order->load(['customer', 'items']);
+
+        return view('orders.print', [
+            'order' => $order,
+            'settings' => Setting::all_(),
+        ]);
+    }
+
+    public function edit(Order $order): View
+    {
+        if (in_array($order->status, ['delivered', 'cancelled'], true)) {
+            abort(403, 'ئەم وەسڵە ناگۆڕدرێت.');
+        }
+
+        $order->load('items');
+
+        return view('orders.form', [
+            'order' => $order,
+            'customers' => Customer::active()->orderBy('name')->get(),
+            'items' => Item::active()->orderBy('name')->get(['id', 'name']),
+            'nextNo' => $order->invoice_no,
+            'rate' => ExchangeRate::current(),
+        ]);
+    }
+
+    public function update(Request $request, Order $order)
+    {
+        if (in_array($order->status, ['delivered', 'cancelled'], true)) {
+            return back()->with('err', 'ئەم وەسڵە ناگۆڕدرێت.');
+        }
+
+        $data = $this->validated($request, $order);
+
+        DB::transaction(function () use ($order, $data) {
+            $order->update($this->header($data, Customer::find($data['customer_id'])));
+            $order->items()->delete();
+            $this->syncLines($order, $data['lines']);
+        });
+
+        return redirect()->route('orders.show', $order)->with('ok', 'وەسڵەکە نوێکرایەوە.');
+    }
+
+    /**
+     * گۆڕینی دۆخ. کاتێک دەبێتە «گەیەنراوە»، ئەو دێڕانەی پەیوەستن بە کاڵایەکی
+     * مەخزەنەوە لە مەخزەن کەم دەکرێنەوە.
+     */
+    public function setStatus(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'status' => ['required', 'in:'.implode(',', array_keys(Order::STATUSES))],
+        ]);
+
+        DB::transaction(function () use ($order, $data) {
+            $was = $order->status;
+            $order->update(['status' => $data['status']]);
+
+            if ($data['status'] === 'delivered' && $was !== 'delivered') {
+                $this->releaseStock($order);
+            }
+
+            if ($was === 'delivered' && $data['status'] !== 'delivered') {
+                $order->morphMany(\App\Models\StockMovement::class, 'reference')->delete();
+            }
+        });
+
+        return back()->with('ok', 'دۆخ گۆڕدرا بۆ «'.Order::STATUSES[$data['status']].'».');
+    }
+
+    public function destroy(Order $order)
+    {
+        if ($order->payments()->exists()) {
+            return back()->with('err', 'ناتوانرێت بسڕدرێتەوە — حەقدی بۆ ئەم وەسڵە تۆمارکراوە.');
+        }
+
+        DB::transaction(function () use ($order) {
+            $order->morphMany(\App\Models\StockMovement::class, 'reference')->delete();
+            $order->items()->delete();
+            $order->delete();
+        });
+
+        return redirect()->route('orders.index')->with('ok', 'وەسڵەکە سڕدرایەوە.');
+    }
+
+    private function validated(Request $request, ?Order $order = null): array
+    {
+        $unique = 'unique:orders,invoice_no'.($order ? ",{$order->id}" : '');
+
+        return $request->validate([
+            'invoice_no' => ['nullable', 'string', 'max:30', $unique],
+            'customer_id' => ['required', 'exists:customers,id'],
+            'order_date' => ['required', 'date'],
+            'delivery_date' => ['nullable', 'date', 'after_or_equal:order_date'],
+            'currency' => ['required', 'in:IQD,USD'],
+            'exchange_rate' => ['nullable', 'numeric', 'min:0'],
+            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'prepaid_amount' => ['nullable', 'numeric', 'min:0'],
+            'note' => ['nullable', 'string'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.description' => ['required', 'string', 'max:255'],
+            'lines.*.item_id' => ['nullable', 'exists:items,id'],
+            'lines.*.pricing_mode' => ['required', 'in:area,length,count'],
+            'lines.*.width' => ['nullable', 'numeric', 'min:0'],
+            'lines.*.height' => ['nullable', 'numeric', 'min:0'],
+            'lines.*.qty' => ['required', 'numeric', 'gt:0'],
+            'lines.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'lines.*.note' => ['nullable', 'string', 'max:255'],
+        ], [
+            'lines.required' => 'لانیکەم یەک دێڕ زیاد بکە.',
+            'invoice_no.unique' => 'ئەم ژمارە وەسڵە پێشتر بەکارهاتووە.',
+            'delivery_date.after_or_equal' => 'بەرواری گەیاندن ناتوانێت پێش بەرواری وەسڵ بێت.',
+        ], [
+            'customer_id' => 'کڕیار',
+            'lines.*.description' => 'ناوەڕۆک',
+        ]);
+    }
+
+    private function header(array $data, ?Customer $customer): array
+    {
+        $subtotal = collect($data['lines'])->sum(fn ($line) => $this->lineTotal($line));
+
+        // داشکاندن یان بە ڕێژە یان بە بڕ — ڕێژە پێشینەی هەیە.
+        $percent = (float) ($data['discount_percent'] ?? 0);
+        $discount = $percent > 0
+            ? $subtotal * $percent / 100
+            : (float) ($data['discount_amount'] ?? 0);
+
+        return [
+            'customer_id' => $data['customer_id'],
+            'order_date' => $data['order_date'],
+            'delivery_date' => $data['delivery_date'] ?? null,
+            'currency' => $data['currency'],
+            'exchange_rate' => $data['currency'] === 'USD'
+                ? ($data['exchange_rate'] ?: ExchangeRate::forDate($data['order_date']))
+                : null,
+            'subtotal' => $subtotal,
+            'discount_percent' => $percent,
+            'discount_amount' => $discount,
+            'total' => max(0, $subtotal - $discount),
+            'prepaid_amount' => $data['prepaid_amount'] ?? 0,
+            'address_snapshot' => $customer?->address,
+            'note' => $data['note'] ?? null,
+        ];
+    }
+
+    private function lineTotal(array $line): float
+    {
+        $computed = OrderItem::compute(
+            $line['pricing_mode'],
+            isset($line['width']) ? (float) $line['width'] : null,
+            isset($line['height']) ? (float) $line['height'] : null,
+            (float) $line['qty'],
+        );
+
+        return round($computed * (float) $line['unit_price'], 2);
+    }
+
+    private function syncLines(Order $order, array $lines): void
+    {
+        foreach ($lines as $line) {
+            $computed = OrderItem::compute(
+                $line['pricing_mode'],
+                isset($line['width']) ? (float) $line['width'] : null,
+                isset($line['height']) ? (float) $line['height'] : null,
+                (float) $line['qty'],
+            );
+
+            OrderItem::create([
+                'order_id' => $order->id,
+                'description' => $line['description'],
+                'item_id' => $line['item_id'] ?? null,
+                'pricing_mode' => $line['pricing_mode'],
+                'width' => $line['width'] ?? null,
+                'height' => $line['height'] ?? null,
+                'qty' => $line['qty'],
+                'computed_qty' => $computed,
+                'unit_price' => $line['unit_price'],
+                'line_total' => round($computed * (float) $line['unit_price'], 2),
+                'note' => $line['note'] ?? null,
+            ]);
+        }
+    }
+
+    /** پێشەکی وەک حەقدییەکی جیا تۆمار دەکرێت تا دووجار نەژمێردرێت. */
+    private function recordPrepaid(Order $order, ?Customer $customer, float $amount): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+
+        $this->payments->record([
+            'direction' => 'in',
+            'amount' => $amount,
+            'currency' => $order->currency,
+            'paid_at' => $order->order_date->toDateString(),
+            'party' => $customer,
+            'order_id' => $order->id,
+            'category' => 'customer_payment',
+            'note' => 'پێشەکی وەسڵی ژمارە '.$order->invoice_no,
+        ]);
+    }
+
+    /** کەمکردنەوەی مەخزەن بۆ ئەو دێڕانەی کاڵایەکی دیاریکراویان هەیە. */
+    private function releaseStock(Order $order): void
+    {
+        $warehouseId = Warehouse::defaultId();
+
+        if (! $warehouseId) {
+            return;
+        }
+
+        foreach ($order->items()->whereNotNull('item_id')->get() as $line) {
+            $this->stock->record(
+                itemId: $line->item_id,
+                warehouseId: $warehouseId,
+                direction: 'out',
+                qty: (float) $line->computed_qty,
+                reason: 'sale',
+                reference: $order,
+                extra: ['moved_at' => $order->order_date->toDateString()],
+            );
+        }
+    }
+}

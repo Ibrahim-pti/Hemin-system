@@ -64,7 +64,10 @@
     </div>
 
     @include('partials.calculator')
-    @livewireScripts
+
+    {{-- سکریپتەکانی لاپەڕە دەبێت پێش Alpine (کە لەگەڵ Livewire دێت) بارببن،
+         ئەگەر نا فەنکشنەکانی x-data هێشتا پێناسە نەکراون. --}}
     @stack('scripts')
+    @livewireScripts
 </body>
 </html>
