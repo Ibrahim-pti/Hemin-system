@@ -10,29 +10,27 @@
 </head>
 <body class="min-h-screen">
 
-    {{-- ── باری سەرەوە ── --}}
+    {{-- ── باری سەرەوە — ڕاست: کاتژمێر · ناوەڕاست: ناوی کارگە · چەپ: بەکارهێنەر ── --}}
     <header class="topbar no-print" x-data="clock()">
-        {{-- ڕاست: کاتژمێر و بەروار --}}
-        <div class="flex items-center gap-3">
-            <div class="flex size-8 items-center justify-center rounded bg-[--color-danger] text-xs font-bold text-white">
-                هـ
+
+        <div>
+            {{-- کات بە ئاراستەی چەپ، بەڵام بەروار بە کوردی دەمێنێتەوە --}}
+            <div class="clock-time" dir="ltr" style="text-align: right" x-text="time"></div>
+            <div class="clock-date" x-text="date"></div>
+        </div>
+
+        <div class="topbar-title">
+            {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}
+        </div>
+
+        <div class="topbar-user">
+            <div class="hidden text-left leading-tight sm:block">
+                <div class="font-medium">{{ auth()->user()->name }}</div>
+                <div class="text-[0.6875rem] text-white/55">
+                    {{ auth()->user()->isAdmin() ? 'بەڕێوەبەر' : 'بەرپرسی کۆگا' }}
+                </div>
             </div>
-            <div class="num text-sm" x-text="time"></div>
-            <div class="num hidden text-sm text-white/70 sm:block" x-text="date"></div>
-        </div>
-
-        {{-- ناوەڕاست: بەکارهێنەر --}}
-        <div class="flex items-center gap-2 text-sm">
-            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0114 0"/>
-            </svg>
-            <span>{{ auth()->user()->name }}</span>
-        </div>
-
-        {{-- چەپ: زانیاری کارگە --}}
-        <div class="hidden items-center gap-2 text-sm md:flex">
-            <span>{{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}</span>
-            <span class="num text-white/70" dir="ltr">{{ \App\Models\Setting::get('company_phone') }}</span>
+            <div class="topbar-avatar">{{ mb_substr(auth()->user()->name, 0, 1) }}</div>
         </div>
     </header>
 
@@ -93,16 +91,20 @@
     @include('partials.calculator')
 
     <script>
-    // کاتژمێری زیندووی باری سەرەوە.
+    // کاتژمێری زیندووی باری سەرەوە — کات بە گەورەیی، بەروار لە خوارەوە.
     function clock() {
+        const days = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
+
         return {
             time: '',
             date: '',
             init() {
                 const tick = () => {
                     const now = new Date();
-                    this.time = now.toLocaleTimeString('en-GB', { hour12: false });
-                    this.date = now.toLocaleDateString('en-CA');
+                    const pad = (n) => String(n).padStart(2, '0');
+
+                    this.time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                    this.date = `${days[now.getDay()]} · ${now.getFullYear()}/${pad(now.getMonth() + 1)}/${pad(now.getDate())}`;
                 };
                 tick();
                 setInterval(tick, 1000);

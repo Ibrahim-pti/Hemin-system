@@ -26,7 +26,7 @@
         @endif
     </div>
 
-    <div class="sheet border-2 border-[#0f766e] p-6">
+    <div class="sheet border-2 border-[#1d4ed8] p-6">
 
         {{-- سەردێڕ --}}
         <div class="flex items-start justify-between border-b border-[--color-line] pb-3">
@@ -37,7 +37,7 @@
 
             <div class="text-center">
                 <h1 class="text-xl font-bold text-[#b91c1c]">{{ $settings['company_name'] ?? '' }}</h1>
-                <p class="mt-1 inline-block rounded border border-[#0f766e] px-3 py-1 text-sm font-semibold text-[#0f766e]">
+                <p class="mt-1 inline-block rounded border border-[#1d4ed8] px-3 py-1 text-sm font-semibold text-[#1d4ed8]">
                     {{ $payment->direction === 'in' ? 'حەقدی — وەرگرتنی پارە' : 'حەقدی — دانی پارە' }}
                 </p>
             </div>
@@ -57,7 +57,7 @@
 
             <div class="flex items-center gap-3">
                 <span>بڕی:</span>
-                <span class="num rounded border border-[#0f766e] bg-[#f0fdfa] px-4 py-2 text-xl font-bold">
+                <span class="num rounded border border-[#1d4ed8] bg-[#eff4ff] px-4 py-2 text-xl font-bold">
                     {{ fmt_money($payment->amount, $payment->currency) }}
                 </span>
             </div>
