@@ -28,6 +28,16 @@ class Warehouse extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    public function stockCounts(): HasMany
+    {
+        return $this->hasMany(StockCount::class);
+    }
+
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(Purchase::class);
+    }
+
     public static function defaultId(): ?int
     {
         return static::where('is_default', true)->value('id')

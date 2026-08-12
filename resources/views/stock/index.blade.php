@@ -77,10 +77,10 @@
                         <td class="num whitespace-nowrap">{{ fmt_date($movement->moved_at) }}</td>
                         <td>
                             <a href="{{ route('items.show', $movement->item_id) }}" class="text-[--color-brand-700]">
-                                {{ $movement->item->name }}
+                                {{ $movement->item?->name }}
                             </a>
                         </td>
-                        <td class="text-[--color-ink-soft]">{{ $movement->warehouse->name }}</td>
+                        <td class="text-[--color-ink-soft]">{{ $movement->warehouse?->name }}</td>
                         <td>{{ $movement->reason_label }}</td>
                         <td class="num font-medium {{ $movement->direction === 'in' ? 'text-[--color-ok]' : 'text-[--color-danger]' }}">
                             {{ $movement->direction === 'in' ? '+' : '−' }}{{ fmt_qty($movement->qty) }}

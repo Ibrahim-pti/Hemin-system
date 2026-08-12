@@ -8,7 +8,7 @@
     <div class="card-body flex flex-wrap items-center gap-4 text-sm">
         <div>
             <span class="text-[--color-ink-soft]">کۆگا:</span>
-            <span class="font-medium">{{ $count->warehouse->name }}</span>
+            <span class="font-medium">{{ $count->warehouse?->name }}</span>
         </div>
         <div>
             <span class="text-[--color-ink-soft]">بەروار:</span>
@@ -54,7 +54,7 @@
                     @foreach ($count->items as $line)
                         @php $diff = (float) $line->counted_qty - (float) $line->system_qty; @endphp
                         <tr>
-                            <td>{{ $line->item->name }}</td>
+                            <td>{{ $line->item?->name }}</td>
                             <td class="num text-[--color-ink-soft]">{{ $line->item->code }}</td>
                             <td class="num">{{ fmt_qty($line->system_qty) }} {{ $line->item->unit?->name }}</td>
                             <td class="num">

@@ -47,6 +47,16 @@ class WarehouseController extends Controller
             return back()->with('err', 'ناتوانرێت بسڕدرێتەوە — ئەم کۆگایە جوڵەی مەخزەنی هەیە.');
         }
 
+        // جەرد و پسوولەی کڕینیش پەیوەندییان بە کۆگاوە هەیە — بەبێ ئەم پشکنینە
+        // ئەو تۆمارانە دەبنە هەتیو و لاپەڕەکانیان دەشکێن.
+        if ($warehouse->stockCounts()->exists() || $warehouse->purchases()->exists()) {
+            return back()->with('err', 'ناتوانرێت بسڕدرێتەوە — جەرد یان پسوولەی کڕینی پەیوەستی هەیە. لەبری ئەوە ناچالاکی بکە.');
+        }
+
+        if ($warehouse->is_default) {
+            return back()->with('err', 'کۆگای بنەڕەت ناسڕدرێتەوە — سەرەتا کۆگایەکی تر بکە بە بنەڕەت.');
+        }
+
         $warehouse->delete();
 
         return redirect()->route('warehouses.index')->with('ok', 'کۆگاکە سڕدرایەوە.');

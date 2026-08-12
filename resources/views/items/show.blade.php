@@ -95,7 +95,7 @@
                     <tr>
                         <td class="num whitespace-nowrap">{{ fmt_date($movement->moved_at) }}</td>
                         <td>{{ $movement->reason_label }}</td>
-                        <td class="text-[--color-ink-soft]">{{ $movement->warehouse->name }}</td>
+                        <td class="text-[--color-ink-soft]">{{ $movement->warehouse?->name }}</td>
                         <td class="num font-medium {{ $movement->direction === 'in' ? 'text-[--color-ok]' : 'text-[--color-danger]' }}">
                             {{ $movement->direction === 'in' ? '+' : '−' }}{{ fmt_qty($movement->qty) }}
                         </td>

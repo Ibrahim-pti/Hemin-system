@@ -56,7 +56,7 @@
                     <tr>
                         <td class="num font-medium">{{ $count->count_no }}</td>
                         <td class="num">{{ fmt_date($count->count_date) }}</td>
-                        <td>{{ $count->warehouse->name }}</td>
+                        <td>{{ $count->warehouse?->name }}</td>
                         <td class="num">{{ fmt_num($count->items_count) }}</td>
                         <td>
                             <span class="badge {{ $count->status === 'posted' ? 'badge-ok' : 'badge-warn' }}">

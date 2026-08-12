@@ -35,7 +35,7 @@
                 <tbody>
                     @foreach ($purchase->items as $line)
                         <tr>
-                            <td>{{ $line->item->name }}</td>
+                            <td>{{ $line->item?->name }}</td>
                             <td class="num">{{ fmt_qty($line->qty) }} {{ $line->item->unit?->name }}</td>
                             <td class="num">{{ fmt_money($line->unit_price, $purchase->currency) }}</td>
                             <td class="num font-medium">{{ fmt_money($line->line_total, $purchase->currency) }}</td>
@@ -53,7 +53,7 @@
                 <div class="flex justify-between">
                     <span class="text-[--color-ink-soft]">فرۆشیار</span>
                     <a href="{{ route('suppliers.show', $purchase->supplier) }}" class="text-[--color-brand-700]">
-                        {{ $purchase->supplier->name }}
+                        {{ $purchase->supplier?->name }}
                     </a>
                 </div>
                 <div class="flex justify-between">
@@ -62,7 +62,7 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-[--color-ink-soft]">کۆگا</span>
-                    <span>{{ $purchase->warehouse->name }}</span>
+                    <span>{{ $purchase->warehouse?->name }}</span>
                 </div>
                 @if ($purchase->currency === 'USD')
                     <div class="flex justify-between">
