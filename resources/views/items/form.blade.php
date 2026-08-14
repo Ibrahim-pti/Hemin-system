@@ -57,7 +57,7 @@
             @can('view_reports')
                 <div class="flex items-end gap-2">
                     <div class="flex-1">
-                        <label class="label" for="last_cost">کڕین</label>
+                        <label class="label" for="last_cost">کڕین (لەسەر خۆمان)</label>
                         <input id="last_cost" name="last_cost" type="number" step="0.01" min="0" class="field num"
                                value="{{ old('last_cost', $item->last_cost) }}">
                     </div>
