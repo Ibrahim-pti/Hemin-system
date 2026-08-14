@@ -52,32 +52,26 @@
                 @error('unit_id') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
             </div>
 
-            <div>
-                <label class="label" for="min_qty">سنووری ئاگاداری (کەمترین بڕ)</label>
-                <input id="min_qty" name="min_qty" type="number" step="0.001" min="0" class="field num"
-                       value="{{ old('min_qty', $item->min_qty ?: '') }}" placeholder="0">
-                <p class="mt-1 text-xs text-[--color-ink-soft]">
-                    کاتێک بڕ لەمە کەمتر بێت، لە داشبۆرد ئاگادار دەکرێیتەوە.
-                </p>
-            </div>
+
 
             @can('view_reports')
-                <div>
-                    <label class="label" for="cost_currency">دراوی کڕین</label>
-                    <select id="cost_currency" name="cost_currency" class="field">
-                        <option value="IQD" @selected(old('cost_currency', $item->cost_currency) === 'IQD')>دینار</option>
-                        <option value="USD" @selected(old('cost_currency', $item->cost_currency) === 'USD')>دۆلار</option>
-                    </select>
+                <div class="flex items-end gap-2">
+                    <div class="flex-1">
+                        <label class="label" for="last_cost">کڕین</label>
+                        <input id="last_cost" name="last_cost" type="number" step="0.01" min="0" class="field num"
+                               value="{{ old('last_cost', $item->last_cost) }}">
+                    </div>
+                    <div class="w-24">
+                        <label class="label" for="cost_currency">دراو</label>
+                        <select id="cost_currency" name="cost_currency" class="field">
+                            <option value="IQD" @selected(old('cost_currency', $item->cost_currency) === 'IQD')>دینار</option>
+                            <option value="USD" @selected(old('cost_currency', $item->cost_currency) === 'USD')>دۆلار</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
-                    <label class="label" for="last_cost">دوایین نرخی کڕین</label>
-                    <input id="last_cost" name="last_cost" type="number" step="0.01" min="0" class="field num"
-                           value="{{ old('last_cost', $item->last_cost) }}">
-                </div>
-
-                <div>
-                    <label class="label" for="sale_price">نرخی فرۆشتن (پێشنیازکراو)</label>
+                    <label class="label" for="sale_price">نرخی فرۆشتن</label>
                     <input id="sale_price" name="sale_price" type="number" step="0.01" min="0" class="field num"
                            value="{{ old('sale_price', $item->sale_price) }}">
                 </div>
@@ -88,12 +82,7 @@
                 <textarea id="note" name="note" rows="2" class="field">{{ old('note', $item->note) }}</textarea>
             </div>
 
-            <label class="flex items-center gap-2 text-sm sm:col-span-2">
-                <input type="checkbox" name="is_active" value="1"
-                       @checked(old('is_active', $item->exists ? $item->is_active : true))
-                       class="size-4 rounded border-[--color-line-strong]">
-                چالاکە
-            </label>
+            <input type="hidden" name="is_active" value="1">
         </div>
     </div>
 
