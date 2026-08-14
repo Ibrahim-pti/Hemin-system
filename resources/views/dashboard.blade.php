@@ -6,8 +6,6 @@
    
     $tiles = [
         ['c' => 'tile-blue',   'route' => 'items.index',      'label' => 'دۆخی کۆگا',     'icon' => 'items',      'can' => 'view_stock'],
-        ['c' => 'tile-blue',   'route' => 'stock.index',      'label' => 'جوڵەی مەخزەن',     'icon' => 'stock',      'can' => 'view_stock'],
-        ['c' => 'tile-blue',   'route' => 'stock.create',     'label' => 'زیاد / کەمکردن',   'icon' => 'stock',      'can' => 'manage_stock'],
         ['c' => 'tile-blue',   'route' => 'counts.index',     'label' => 'جەردی کۆگا',       'icon' => 'counts',     'can' => 'manage_stock_counts'],
         ['c' => 'tile-blue',   'route' => 'warehouses.index', 'label' => 'کۆگاکان',          'icon' => 'warehouses', 'can' => 'manage_items'],
         ['c' => 'tile-blue',   'route' => 'customers.index',  'label' => 'کڕیارەکان',        'icon' => 'customers',  'can' => 'manage_customers'],
