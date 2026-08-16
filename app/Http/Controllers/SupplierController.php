@@ -36,6 +36,7 @@ class SupplierController extends Controller
         return view('suppliers.form', [
             'supplier' => new Supplier(['opening_currency' => 'IQD', 'is_active' => true]),
             'items' => Item::active()->with('unit')->orderBy('name')->get(),
+            'units' => \App\Models\Unit::where('is_active', true)->orderBy('name')->get(),
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
@@ -47,16 +48,50 @@ class SupplierController extends Controller
         $supplier = DB::transaction(function () use ($data, $request) {
             $supplier = Supplier::create($data);
 
-            // ئەگەر زانیاری کڕینی سەرەتایی مەواد داخڵکرابوو
-            $itemId = $request->input('item_id');
-            $qty = (float) str_replace(',', '', (string) $request->input('purchase_qty', 0));
-            $unitPrice = (float) str_replace(',', '', (string) $request->input('purchase_unit_price', 0));
-            $purchaseDate = $request->input('purchase_date', now()->toDateString());
-            $paymentType = $request->input('payment_type', 'debt'); // 'full', 'debt', 'partial'
-            $paidAmount = 0;
+            // وەرگرتنی مەوادە داخڵکراوەکان بە دەست
+            $lines = $request->input('purchase_lines', []);
+            $validLines = [];
+            $totalCost = 0;
 
-            if ($itemId && $qty > 0) {
-                $totalCost = $qty * $unitPrice;
+            foreach ($lines as $line) {
+                $name = trim((string) ($line['name'] ?? ''));
+                $qty = (float) str_replace(',', '', (string) ($line['qty'] ?? 0));
+                $unitPrice = (float) str_replace(',', '', (string) ($line['unit_price'] ?? 0));
+                $unitId = (int) ($line['unit_id'] ?? (\App\Models\Unit::first()?->id ?? 1));
+
+                if ($name !== '' && $qty > 0) {
+                    $item = Item::where('name', $name)->first();
+                    if (!$item) {
+                        $item = Item::create([
+                            'name' => $name,
+                            'code' => Item::nextCode(),
+                            'unit_id' => $unitId,
+                            'last_cost' => $unitPrice,
+                            'purchase_date' => $request->input('purchase_date', now()->toDateString()),
+                            'cost_currency' => 'IQD',
+                            'is_for_sale' => false,
+                            'is_active' => true,
+                        ]);
+                    } elseif ($unitPrice > 0) {
+                        $item->update(['last_cost' => $unitPrice]);
+                    }
+
+                    $lineTotal = $qty * $unitPrice;
+                    $totalCost += $lineTotal;
+
+                    $validLines[] = [
+                        'item' => $item,
+                        'qty' => $qty,
+                        'unit_price' => $unitPrice,
+                        'line_total' => $lineTotal,
+                    ];
+                }
+            }
+
+            if (!empty($validLines)) {
+                $purchaseDate = $request->input('purchase_date', now()->toDateString());
+                $paymentType = $request->input('payment_type', 'debt'); // 'full', 'debt', 'partial'
+                $paidAmount = 0;
 
                 if ($paymentType === 'full') {
                     $paidAmount = $totalCost;
@@ -84,32 +119,34 @@ class SupplierController extends Controller
                     'note' => 'کڕینی سەرەتایی لە کاتی تۆمارکردنی فرۆشیار',
                 ]);
 
-                // دانانی کاڵای ناو پسوولە
-                PurchaseItem::create([
-                    'purchase_id' => $purchase->id,
-                    'item_id' => $itemId,
-                    'qty' => $qty,
-                    'unit_price' => $unitPrice,
-                    'line_total' => $totalCost,
-                ]);
+                foreach ($validLines as $vl) {
+                    // دانانی کاڵا لەناو پسوولە
+                    PurchaseItem::create([
+                        'purchase_id' => $purchase->id,
+                        'item_id' => $vl['item']->id,
+                        'qty' => $vl['qty'],
+                        'unit_price' => $vl['unit_price'],
+                        'line_total' => $vl['line_total'],
+                    ]);
 
-                // جوڵەی کۆگا (چوونی کاڵا بۆ ناو کۆگا)
-                if ($defaultWarehouse) {
-                    app(\App\Services\StockService::class)->record(
-                        itemId: $itemId,
-                        warehouseId: $defaultWarehouse->id,
-                        direction: 'in',
-                        qty: $qty,
-                        reason: 'purchase',
-                        extra: [
-                            'unit_cost' => $unitPrice,
-                            'currency' => 'IQD',
-                            'reference_type' => Purchase::class,
-                            'reference_id' => $purchase->id,
-                            'moved_at' => $purchaseDate,
-                            'note' => 'کڕین لە پسوولەی '.$purchase->invoice_no,
-                        ]
-                    );
+                    // جوڵەی کۆگا (چوونی کاڵا بۆ ناو کۆگا)
+                    if ($defaultWarehouse) {
+                        app(\App\Services\StockService::class)->record(
+                            itemId: $vl['item']->id,
+                            warehouseId: $defaultWarehouse->id,
+                            direction: 'in',
+                            qty: $vl['qty'],
+                            reason: 'purchase',
+                            extra: [
+                                'unit_cost' => $vl['unit_price'],
+                                'currency' => 'IQD',
+                                'reference_type' => Purchase::class,
+                                'reference_id' => $purchase->id,
+                                'moved_at' => $purchaseDate,
+                                'note' => 'کڕین لە پسوولەی '.$purchase->invoice_no,
+                            ]
+                        );
+                    }
                 }
 
                 // تۆمارکردنی پارەدان ئەگەر هەبوو
@@ -130,7 +167,7 @@ class SupplierController extends Controller
             return $supplier;
         });
 
-        return redirect()->route('suppliers.show', $supplier)->with('ok', 'فرۆشیار زیادکرا.');
+        return redirect()->route('suppliers.show', $supplier)->with('ok', 'فرۆشیار و زانیاری کڕین زیادکرا.');
     }
 
     /** پرۆفایلی فرۆشیار — دەفتەری حیسابات، کڕینەکان، پارەدان و قەرز. */

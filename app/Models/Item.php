@@ -111,6 +111,20 @@ class Item extends Model
         return $query->where('is_for_sale', false);
     }
 
+    /** کۆدی داهاتوو بە شێوەیەکی یەکتا. */
+    public static function nextCode(): string
+    {
+        $maxId = (int) (static::withTrashed()->max('id') ?? 0);
+        $next = $maxId + 1;
+        $code = 'M-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        while (static::withTrashed()->where('code', $code)->exists()) {
+            $next++;
+            $code = 'M-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $code;
+    }
+
     /** گەڕان بە ناو یان کۆد. */
     public function scopeSearch(Builder $query, ?string $term): Builder
     {

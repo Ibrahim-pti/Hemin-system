@@ -7,15 +7,28 @@
       action="{{ $supplier->exists ? route('suppliers.update', $supplier) : route('suppliers.store') }}"
       class="w-full"
       x-data="{
-          hasMaterial: false,
+          lines: [
+              { name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}' }
+          ],
           paymentType: 'debt',
-          qty: '',
-          price: '',
           paidAmount: '',
-          get total() {
-              let q = parseFloat(this.qty) || 0;
-              let p = parseFloat(this.price.toString().replace(/,/g, '')) || 0;
+          addLine() {
+              this.lines.push({ name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}' });
+          },
+          removeLine(index) {
+              if (this.lines.length > 1) {
+                  this.lines.splice(index, 1);
+              } else {
+                  this.lines[0] = { name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}' };
+              }
+          },
+          lineTotal(line) {
+              let q = parseFloat(line.qty) || 0;
+              let p = parseFloat(line.unit_price.toString().replace(/,/g, '')) || 0;
               return q * p;
+          },
+          get grandTotal() {
+              return this.lines.reduce((sum, line) => sum + this.lineTotal(line), 0);
           },
           formatInput(e) {
               let clean = e.target.value.replace(/[^0-9.]/g, '');
@@ -28,6 +41,13 @@
       }">
     @csrf
     @if ($supplier->exists) @method('PUT') @endif
+
+    {{-- لیستی پێشنیارکراوی کاڵاکان بۆ خۆتەواوکردن لە کاتی نووسیندا --}}
+    <datalist id="existing-items">
+        @foreach ($items as $item)
+            <option value="{{ $item->name }}">
+        @endforeach
+    </datalist>
 
     <div class="space-y-4">
         {{-- ١. کارتی زانیاری فرۆشیار --}}
@@ -88,90 +108,141 @@
             </div>
         </div>
 
-        {{-- ٢. کارتی هێنانی مەواد (کڕینی سەرەتایی) --}}
+        {{-- ٢. کارتی هێنانی مەواد (کڕین) بە دەست بۆ چەندین مەواد --}}
         @if (!$supplier->exists)
             <div class="card">
                 <div class="card-head flex items-center justify-between">
+                    <span>هێنانی مەواد / کڕین</span>
                     <div class="flex items-center gap-2">
-                        <span>هێنانی مەواد / کڕین</span>
-                        <span class="text-xs font-normal text-[--color-ink-soft]">(ئارەزوومەندانە - دەتوانیت لەگەڵ تۆمارکردن مەوادی کڕدراو بنووسیت)</span>
+                        <label class="text-xs text-[--color-ink-soft]" for="purchase_date">بەرواری هێنان:</label>
+                        <input id="purchase_date" name="purchase_date" type="date" class="field num !py-1 text-xs w-36"
+                               value="{{ old('purchase_date', now()->toDateString()) }}">
                     </div>
                 </div>
 
                 <div class="card-body space-y-4">
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {{-- بەرواری هێنانی مەواد --}}
-                        <div>
-                            <label class="label" for="purchase_date">بەرواری هێنانی مەواد</label>
-                            <input id="purchase_date" name="purchase_date" type="date" class="field num"
-                                   value="{{ old('purchase_date', now()->toDateString()) }}">
-                        </div>
+                    {{-- خشتەی مەوادەکان --}}
+                    <div class="overflow-x-auto">
+                        <table class="table w-full" style="direction: rtl;">
+                            <thead>
+                                <tr class="bg-slate-50/80 text-xs text-slate-700">
+                                    <th style="width: 36px; text-align: center;">#</th>
+                                    <th style="text-align: right;">ناوی مەواد (بە دەست بنووسە)</th>
+                                    <th style="width: 140px; text-align: right;">یەکە</th>
+                                    <th style="width: 130px; text-align: right;">بڕ</th>
+                                    <th style="width: 170px; text-align: right;">نرخی تاک (تێچوو)</th>
+                                    <th style="width: 150px; text-align: right;">کۆی نرخ</th>
+                                    <th style="width: 44px; text-align: center;"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm">
+                                <template x-for="(line, index) in lines" :key="index">
+                                    <tr>
+                                        {{-- # --}}
+                                        <td style="text-align: center;" class="text-xs text-slate-400 font-bold" x-text="index + 1"></td>
 
-                        {{-- ناوی مەواد --}}
-                        <div>
-                            <label class="label" for="item_id">ناوی مەواد</label>
-                            <select id="item_id" name="item_id" class="field">
-                                <option value="">— هیچ مەوادێک دیاری نەکراوە —</option>
-                                @foreach ($items as $item)
-                                    <option value="{{ $item->id }}" @selected(old('item_id') == $item->id)>
-                                        {{ $item->name }} ({{ $item->unit?->name ?? 'دانە' }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                                        {{-- ناوی مەواد بە دەستنووس --}}
+                                        <td>
+                                            <input type="text"
+                                                   :name="'purchase_lines[' + index + '][name]'"
+                                                   x-model="line.name"
+                                                   list="existing-items"
+                                                   class="field w-full py-1.5 text-sm"
+                                                   placeholder="ناوی مەواد بنووسە...">
+                                        </td>
 
-                        {{-- بڕ --}}
-                        <div>
-                            <label class="label" for="purchase_qty">بڕ</label>
-                            <input id="purchase_qty" name="purchase_qty" type="number" step="any" min="0"
-                                   x-model="qty"
-                                   class="field num" placeholder="0">
-                        </div>
+                                        {{-- یەکە --}}
+                                        <td>
+                                            <select :name="'purchase_lines[' + index + '][unit_id]'"
+                                                    x-model="line.unit_id"
+                                                    class="field w-full py-1.5 text-sm">
+                                                @foreach ($units as $unit)
+                                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
 
-                        {{-- نرخی تاک --}}
-                        <div>
-                            <label class="label" for="purchase_unit_price">نرخی تاک (تێچووی کڕین)</label>
-                            <div class="relative">
-                                <input id="purchase_unit_price" name="purchase_unit_price" type="text" inputmode="numeric"
-                                       x-model="price"
-                                       @input="formatInput($event)"
-                                       class="field num pl-14 font-semibold" placeholder="0">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-slate-400 pointer-events-none">
-                                    د.ع
-                                </span>
-                            </div>
+                                        {{-- بڕ --}}
+                                        <td>
+                                            <input type="number" step="any" min="0"
+                                                   :name="'purchase_lines[' + index + '][qty]'"
+                                                   x-model="line.qty"
+                                                   class="field num w-full py-1.5 text-sm text-right"
+                                                   placeholder="0">
+                                        </td>
+
+                                        {{-- نرخی تاک --}}
+                                        <td>
+                                            <div class="relative">
+                                                <input type="text" inputmode="numeric"
+                                                       :name="'purchase_lines[' + index + '][unit_price]'"
+                                                       x-model="line.unit_price"
+                                                       @input="formatInput($event)"
+                                                       class="field num w-full py-1.5 text-sm pl-12 font-semibold text-right"
+                                                       placeholder="0">
+                                                <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 text-xs font-bold text-slate-400 pointer-events-none">
+                                                    د.ع
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        {{-- کۆی گشتی دێڕ --}}
+                                        <td class="num font-bold text-slate-900" style="text-align: right;">
+                                            <span x-text="lineTotal(line).toLocaleString('en-US') + ' د.ع'">0 د.ع</span>
+                                        </td>
+
+                                        {{-- دوگمەی سڕینەوەی دێڕ --}}
+                                        <td style="text-align: center;">
+                                            <button type="button" @click="removeLine(index)"
+                                                    class="inline-flex items-center justify-center size-8 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+                                                    title="سڕینەوەی ئەم دێڕە">
+                                                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- دوگمەی زیادکردنی مەوادی تر --}}
+                    <div class="flex items-center justify-between pt-1">
+                        <button type="button" @click="addLine()" class="btn btn-ghost !py-1.5 !px-3 text-xs font-semibold text-[--color-brand-700] hover:bg-blue-50 border border-dashed border-blue-300">
+                            + زیادکردنی مەوادی تر
+                        </button>
+
+                        {{-- کۆی گشتی هەموو مەوادەکان --}}
+                        <div class="bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 flex items-center gap-3">
+                            <span class="text-xs text-[--color-ink-soft]">کۆی گشتی کڕین:</span>
+                            <span class="text-base font-bold text-slate-900 num" x-text="grandTotal.toLocaleString('en-US') + ' د.ع'">0 د.ع</span>
                         </div>
                     </div>
 
-                    {{-- شێوازی پارەدان و کۆی گشتی --}}
+                    {{-- شێوازی پارەدان --}}
                     <div class="pt-3 border-t border-[--color-line] grid gap-4 sm:grid-cols-2 lg:grid-cols-3 items-end">
-                        {{-- شێوازی پارەدان --}}
                         <div>
                             <label class="label" for="payment_type">شێوازی پارەدان</label>
                             <select id="payment_type" name="payment_type" x-model="paymentType" class="field font-medium">
-                                <option value="debt">قەرز (هەمووی دەچێتە سەر قەرز)</option>
-                                <option value="full">پارەدانی کامل (کاش و واصلکراو)</option>
+                                <option value="debt">قەرز (هەمووی دەچێتە سەر قەرزی کارگە)</option>
+                                <option value="full">پارەدانی کامل (کاش و واصل بە تەواوی)</option>
                                 <option value="partial">بەشێکی دراو و بەشێکی قەرز</option>
                             </select>
                         </div>
 
-                        {{-- بڕی پارەی دراو ئەگەر partial بێت --}}
+                        {{-- بڕی پارەی دراو ئەگەر بەشێکی دراو بێت --}}
                         <div x-show="paymentType === 'partial'">
                             <label class="label" for="paid_amount">بڕی پارەی دراو (کاش)</label>
                             <div class="relative">
                                 <input id="paid_amount" name="paid_amount" type="text" inputmode="numeric"
                                        @input="formatInput($event)"
                                        class="field num pl-14 font-semibold text-emerald-700" placeholder="0">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-slate-400 pointer-events-none">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-xs font-bold text-slate-400 pointer-events-none">
                                     د.ع
                                 </span>
                             </div>
-                        </div>
-
-                        {{-- کۆی گشتی تێچووی کڕین --}}
-                        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                            <span class="text-xs text-[--color-ink-soft] block">کۆی تێچووی کڕین:</span>
-                            <span class="text-base font-bold text-slate-900 num" x-text="(total).toLocaleString('en-US') + ' د.ع'">0 د.ع</span>
                         </div>
                     </div>
                 </div>
