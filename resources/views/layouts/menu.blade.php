@@ -7,6 +7,20 @@
     <title>داشبۆرد — {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <script>
+        if (localStorage.getItem('sidebar_open') === 'false') {
+            document.documentElement.classList.add('sidebar-collapsed');
+        }
+    </script>
+    <style>
+        html.sidebar-collapsed aside.sidebar-nav {
+            width: 5rem !important;
+            min-width: 5rem !important;
+        }
+        html.sidebar-collapsed aside.sidebar-nav [x-show="sidebarOpen"] {
+            display: none !important;
+        }
+    </style>
 </head>
 <body class="h-full bg-slate-100 text-slate-800 antialiased font-sans"
       x-data="{
@@ -15,8 +29,9 @@
           toggleSidebar() {
               this.sidebarOpen = !this.sidebarOpen;
               localStorage.setItem('sidebar_open', this.sidebarOpen);
+              document.documentElement.classList.toggle('sidebar-collapsed', !this.sidebarOpen);
           },
-          clock: clock()
+          clock: typeof clock === 'function' ? clock() : null
       }">
 
     <div style="display: flex; height: 100vh; width: 100%; overflow: hidden;">

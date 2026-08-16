@@ -6,14 +6,14 @@
         minWidth: sidebarOpen ? '16rem' : '5rem',
         transform: (window.innerWidth < 640 && !mobileOpen) ? 'translateX(100%)' : 'translateX(0)',
     }"
-    style="position: sticky; top: 0; height: 100vh; background: #0f172a; border-left: 1px solid rgba(51,65,85,0.5); z-index: 50; flex-shrink: 0; transition: all 0.2s ease; display: flex; flex-direction: column; user-select: none;"
+    style="position: sticky; top: 0; height: 100vh; background: #0f172a; border-left: 1px solid rgba(51,65,85,0.5); z-index: 50; flex-shrink: 0; transition: width 0.2s ease, min-width 0.2s ease, transform 0.2s ease; display: flex; flex-direction: column; user-select: none;"
     class="sidebar-nav"
     x-cloak>
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}
     <div style="height: 4rem; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; border-bottom: 1px solid rgba(51,65,85,0.5); flex-shrink: 0;">
         <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden; text-decoration: none;">
-            <span style="display: flex; width: 2.25rem; height: 2.25rem; align-items: center; justify-content: center; border-radius: 0.75rem; background: #2563eb; color: white; font-weight: bold; font-size: 1rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(37,99,235,0.4);">
+            <span style="display: flex; width: 2.25rem; height: 2.25rem; align-items: center; justify-content: center; border-radius: 0.75rem; background: #2563eb; color: white; font-weight: bold; font-size: 1rem; flex-shrink: 0;">
                 هـ
             </span>
             <div x-show="sidebarOpen" x-transition.opacity style="min-width: 0;">
@@ -38,7 +38,7 @@
         {{-- سەرەکی / داشبۆرد --}}
         <div>
             <a href="{{ route('dashboard') }}"
-               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ request()->routeIs('dashboard') ? 'background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3);' : 'color: #cbd5e1;' }}"
+               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ request()->routeIs('dashboard') ? 'background: #2563eb; color: white;' : 'color: #cbd5e1;' }}"
                onmouseover="if(!this.classList.contains('active-link'))this.style.background='rgba(30,41,59,0.7)';this.style.color='white';"
                onmouseout="if(!this.classList.contains('active-link')){this.style.background='';this.style.color='#cbd5e1';}"
                class="{{ request()->routeIs('dashboard') ? 'active-link' : '' }}"
@@ -108,7 +108,7 @@
                                 $isActive = request()->routeIs($item['route']);
                             @endphp
                             <a href="{{ $item['href'] }}"
-                               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ $isActive ? 'background: ' . $section['color'] . '; color: white; box-shadow: 0 4px 12px ' . $section['color'] . '4d;' : 'color: #cbd5e1;' }}"
+                               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ $isActive ? 'background: ' . $section['color'] . '; color: white;' : 'color: #cbd5e1;' }}"
                                onmouseover="if(!this.classList.contains('active-link'))this.style.background='rgba(30,41,59,0.7)';this.style.color='white';"
                                onmouseout="if(!this.classList.contains('active-link')){this.style.background='';this.style.color='#cbd5e1';}"
                                class="{{ $isActive ? 'active-link' : '' }}"
