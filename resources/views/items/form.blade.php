@@ -88,7 +88,7 @@
                     <div class="relative">
                         <input id="min_qty" name="min_qty" type="number" step="any" min="0" 
                                class="field num py-2.5 text-sm pl-20"
-                               value="{{ old('min_qty', $item->min_qty ?: 0) }}" placeholder="0">
+                               value="{{ old('min_qty', ($item->exists && (float)$item->min_qty > 0) ? (float)$item->min_qty : '') }}" placeholder="0">
                         <div class="absolute inset-y-1 left-1 flex items-center bg-gray-100/90 text-gray-700 px-2.5 rounded-md text-xs font-bold pointer-events-none border border-gray-200/60"
                              x-show="unitText" x-text="unitText"></div>
                     </div>
@@ -110,7 +110,7 @@
                         <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="last_cost">تێچووی کڕین</label>
                         <div class="relative">
                             <input id="last_cost" name="last_cost" type="text" inputmode="numeric"
-                                   value="{{ old('last_cost', $item->last_cost ? number_format((float)$item->last_cost, 0, '.', ',') : '') }}"
+                                   value="{{ old('last_cost', ($item->exists && (float)$item->last_cost > 0) ? number_format((float)$item->last_cost, 0, '.', ',') : '') }}"
                                    @input="formatInput($event)"
                                    class="field num py-2.5 text-sm pl-14 font-semibold"
                                    placeholder="0">
