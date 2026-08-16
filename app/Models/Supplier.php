@@ -52,25 +52,34 @@ class Supplier extends Model
         return (float) $this->opening_balance;
     }
 
+    public function totalPurchases(): float
+    {
+        return (float) $this->purchases()
+            ->where('status', 'confirmed')
+            ->sum(Purchase::totalIqdExpression());
+    }
+
+    public function totalPaid(): float
+    {
+        return (float) $this->payments()
+            ->where('direction', 'out')
+            ->sum('amount_iqd');
+    }
+
+    public function totalJobs(): float
+    {
+        return (float) $this->externalJobs()
+            ->where('status', '!=', 'cancelled')
+            ->sum(ExternalJob::costIqdExpression());
+    }
+
     /**
      * قەرزی ئێستا بە دینار.
      * ئەرێنی = کارگە قەرزاری ئەم فرۆشیارەیە.
      */
     public function balance(): float
     {
-        $purchased = $this->purchases()
-            ->where('status', 'confirmed')
-            ->sum(Purchase::totalIqdExpression());
-
-        $jobs = $this->externalJobs()
-            ->where('status', '!=', 'cancelled')
-            ->sum(ExternalJob::costIqdExpression());
-
-        $paid = $this->payments()
-            ->where('direction', 'out')
-            ->sum('amount_iqd');
-
-        return $this->openingIqd() + (float) $purchased + (float) $jobs - (float) $paid;
+        return $this->openingIqd() + $this->totalPurchases() + $this->totalJobs() - $this->totalPaid();
     }
 
     public function scopeActive(Builder $query): Builder
