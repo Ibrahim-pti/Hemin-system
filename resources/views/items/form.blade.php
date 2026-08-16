@@ -62,7 +62,7 @@
                     ناوی مەواد <span class="text-[--color-danger]">*</span>
                 </label>
                 <input id="name" name="name" class="field py-2.5 text-sm" required
-                       value="{{ old('name', $item->name) }}" placeholder="بۆ نموونە: لوولەی ٤٠×٤٠، وایەری لەحیم، بۆیاخی ڕەش...">
+                       value="{{ old('name', $item->name) }}" placeholder="ناوی مەواد لێرە داخڵ بکە">
                 @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
             </div>
 

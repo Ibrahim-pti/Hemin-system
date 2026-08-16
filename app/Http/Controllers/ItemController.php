@@ -8,6 +8,7 @@ use App\Models\Unit;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class ItemController extends Controller
 {
@@ -62,6 +63,20 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $item = Item::create($this->validated($request));
+
+        // زیادکردن بۆ جەردە کراوەکان (Draft)
+        $draftCounts = \App\Models\StockCount::where('status', 'draft')->get();
+        foreach ($draftCounts as $draftCount) {
+            \App\Models\StockCountItem::firstOrCreate([
+                'stock_count_id' => $draftCount->id,
+                'item_id' => $item->id,
+            ], [
+                'system_qty' => 0,
+                'counted_qty' => null,
+                'difference' => 0,
+                'unit_price' => $item->last_cost > 0 ? $item->last_cost : ($item->sale_price ?? 0),
+            ]);
+        }
 
         return redirect()->route('items.index')->with('ok', "مەوادی «{$item->name}» زیادکرا.");
     }
@@ -119,8 +134,13 @@ class ItemController extends Controller
             if ($item && $item->code) {
                 $request->merge(['code' => $item->code]);
             } else {
-                $nextId = ((int) Item::max('id')) + 1;
-                $request->merge(['code' => 'M-' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT)]);
+                $nextNum = ((int) Item::withTrashed()->max('id')) + 1;
+                do {
+                    $generatedCode = 'M-' . str_pad((string) $nextNum, 4, '0', STR_PAD_LEFT);
+                    $nextNum++;
+                } while (Item::withTrashed()->where('code', $generatedCode)->exists());
+
+                $request->merge(['code' => $generatedCode]);
             }
         }
 
@@ -134,10 +154,13 @@ class ItemController extends Controller
             $request->merge(['min_qty' => $rawMinQty !== '' ? $rawMinQty : 0]);
         }
 
-        $unique = 'unique:items,code'.($item ? ",{$item->id}" : '');
+        $codeRule = Rule::unique('items', 'code')->whereNull('deleted_at');
+        if ($item) {
+            $codeRule->ignore($item->id);
+        }
 
         $data = $request->validate([
-            'code' => ['nullable', 'string', 'max:50', $unique],
+            'code' => ['nullable', 'string', 'max:50', $codeRule],
             'name' => ['required', 'string', 'max:255'],
             'item_category_id' => ['nullable', 'exists:item_categories,id'],
             'unit_id' => ['required', 'exists:units,id'],
