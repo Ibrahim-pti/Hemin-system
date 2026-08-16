@@ -87,7 +87,7 @@
                     <th class="px-5 py-4 whitespace-nowrap font-semibold">ناوی مەواد</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold">کۆد</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold num">باڵانس</th>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold num">حەدەد</th>
+                    <th class="px-5 py-4 whitespace-nowrap font-semibold num">نرخی بڕ</th>
                     @can('view_reports')
                         <th class="px-5 py-4 whitespace-nowrap font-semibold num">تێچووی کڕین</th>
                     @endcan

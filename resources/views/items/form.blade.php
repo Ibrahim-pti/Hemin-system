@@ -73,7 +73,7 @@
                         یەکە <span class="text-[--color-danger]">*</span>
                     </label>
                     <select id="unit_id" name="unit_id" x-model="selectedUnit" class="field py-2.5 text-sm" required>
-                        <option value="">— هەڵبژێرە (دانە، پارچە، کارتۆن، مەتر...) —</option>
+                        <option value="">— هەڵبژێرە (دانە، پارچە، کارتۆن...) —</option>
                         @foreach ($units as $unit)
                             <option value="{{ $unit->id }}" @selected(old('unit_id', $item->unit_id) == $unit->id)>
                                 {{ $unit->name }}
@@ -84,14 +84,13 @@
                 </div>
 
                 <div>
-                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="min_qty">
-                        حەدەد (کەمترین بڕی پێویست)
-                    </label>
+                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="min_qty">نرخی بڕ</label>
                     <div class="relative">
-                        <input id="min_qty" name="min_qty" type="number" step="any" min="0" class="field num py-2.5 text-sm pl-16"
+                        <input id="min_qty" name="min_qty" type="number" step="any" min="0" 
+                               class="field num py-2.5 text-sm pl-20"
                                value="{{ old('min_qty', $item->min_qty ?: 0) }}" placeholder="0">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-[--color-brand-700] pointer-events-none"
-                              x-text="unitText"></span>
+                        <div class="absolute inset-y-1 left-1 flex items-center bg-gray-100/90 text-gray-700 px-2.5 rounded-md text-xs font-bold pointer-events-none border border-gray-200/60"
+                             x-show="unitText" x-text="unitText"></div>
                     </div>
                 </div>
             </div>
@@ -99,24 +98,35 @@
             {{-- تێچووی کڕین (بە دینار) --}}
             @can('view_reports')
                 <div x-data="{
-                    cost: '{{ old('last_cost', $item->last_cost ? (float)$item->last_cost : '') }}',
-                    get formattedCost() {
-                        if (!this.cost || isNaN(this.cost) || Number(this.cost) <= 0) return '';
-                        return Number(this.cost).toLocaleString('en-US') + ' د.ع';
+                    rawCost: '{{ old('last_cost', $item->last_cost ? (float)$item->last_cost : '') }}',
+                    displayCost: '{{ old('last_cost', $item->last_cost ? number_format((float)$item->last_cost, 0, '.', ',') : '') }}',
+                    formatInput(val) {
+                        let clean = val.replace(/[^0-9.]/g, '');
+                        let parts = clean.split('.');
+                        if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+                        
+                        let integerPart = parts[0];
+                        let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+                        
+                        if (integerPart) {
+                            integerPart = parseInt(integerPart, 10).toLocaleString('en-US');
+                        }
+                        
+                        this.rawCost = clean;
+                        this.displayCost = integerPart ? integerPart + decimalPart : '';
                     }
                 }">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="label !mb-0 text-xs font-bold text-[--color-ink-soft]" for="last_cost">تێچووی کڕین</label>
-                        <span class="text-xs font-bold text-[--color-brand-700] num" x-show="cost > 0" x-text="formattedCost"></span>
-                    </div>
+                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="display_cost">تێچووی کڕین</label>
                     <div class="relative">
-                        <input id="last_cost" name="last_cost" type="number" step="any" min="0" 
-                               x-model="cost"
-                               class="field num py-2.5 text-sm pl-14"
+                        <input id="display_cost" type="text" inputmode="numeric"
+                               x-model="displayCost"
+                               @input="formatInput($event.target.value)"
+                               class="field num py-2.5 text-sm pl-14 font-semibold"
                                placeholder="0">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-xs font-bold text-gray-400 pointer-events-none">
                             د.ع
                         </span>
+                        <input type="hidden" name="last_cost" :value="rawCost">
                     </div>
                     <input type="hidden" name="cost_currency" value="IQD">
                 </div>
