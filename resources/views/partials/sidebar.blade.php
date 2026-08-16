@@ -12,7 +12,7 @@
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}
     <div style="height: 4rem; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; border-bottom: 1px solid rgba(51,65,85,0.5); flex-shrink: 0;">
-        <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden; text-decoration: none;">
+        <a wire:navigate href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden; text-decoration: none;">
             <span style="display: flex; width: 2.25rem; height: 2.25rem; align-items: center; justify-content: center; border-radius: 0.75rem; background: #2563eb; color: white; font-weight: bold; font-size: 1rem; flex-shrink: 0;">
                 هـ
             </span>
@@ -37,7 +37,8 @@
 
         {{-- سەرەکی / داشبۆرد --}}
         <div>
-            <a href="{{ route('dashboard') }}"
+            <a wire:navigate
+               href="{{ route('dashboard') }}"
                style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ request()->routeIs('dashboard') ? 'background: #2563eb; color: white;' : 'color: #cbd5e1;' }}"
                onmouseover="if(!this.classList.contains('active-link'))this.style.background='rgba(30,41,59,0.7)';this.style.color='white';"
                onmouseout="if(!this.classList.contains('active-link')){this.style.background='';this.style.color='#cbd5e1';}"
@@ -107,7 +108,8 @@
                             @php
                                 $isActive = request()->routeIs($item['route']);
                             @endphp
-                            <a href="{{ $item['href'] }}"
+                            <a wire:navigate
+                               href="{{ $item['href'] }}"
                                style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ $isActive ? 'background: ' . $section['color'] . '; color: white;' : 'color: #cbd5e1;' }}"
                                onmouseover="if(!this.classList.contains('active-link'))this.style.background='rgba(30,41,59,0.7)';this.style.color='white';"
                                onmouseout="if(!this.classList.contains('active-link')){this.style.background='';this.style.color='#cbd5e1';}"
