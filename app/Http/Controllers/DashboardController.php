@@ -68,6 +68,7 @@ class DashboardController extends Controller
                 'presentToday' => Attendance::whereDate('work_date', $today)->where('status', 'present')->count(),
                 'absentToday' => Attendance::whereDate('work_date', $today)->where('status', 'absent')->count(),
                 'totalEmployees' => Employee::active()->count(),
+                'todayAttendances' => Attendance::with('employee')->whereDate('work_date', $today)->orderByDesc('id')->limit(8)->get(),
                 'todayPurchases' => (float) Purchase::where('status', 'confirmed')->whereDate('purchase_date', $today)->sum(Purchase::totalIqdExpression()),
             ];
         }
