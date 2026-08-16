@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'جەردی ' . $count->count_no)
+@section('title', 'جەرد و خەمڵاندنی سەروەت')
 
 @section('content')
 
@@ -38,54 +38,82 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('counts.update', $count) }}">
+    <form method="POST" action="{{ route('counts.update', $count) }}" id="count-form">
         @csrf @method('PUT')
 
-        <div class="card">
+        <div class="card overflow-hidden">
             <div class="card-head flex items-center justify-between">
-                <span>لیستی کاڵاکان بۆ جەردکردن</span>
+                <span>جەرد و خەمڵاندنی سەروەت</span>
                 @if ($count->status !== 'posted')
                     <button type="submit" class="btn btn-ghost !py-1 text-xs">پاشەکەوتکردن</button>
                 @endif
             </div>
 
             <div class="overflow-x-auto">
-                <table class="table" id="count-table">
+                <table class="table w-full" id="count-table">
                     <thead>
-                        <tr>
+                        <tr class="bg-slate-50 border-b border-[--color-line]">
                             <th class="w-12 text-center">#</th>
-                            <th>کاڵا</th>
-                            <th>کۆد</th>
-                            <th class="num">ژمارەی سیستەم</th>
-                            <th class="num w-36">ژمێردراو</th>
-                            <th class="num w-32">جیاوازی</th>
+                            <th class="text-right">جۆری سەروەت / کاڵا</th>
+                            <th class="num text-right w-36">ژمارە (ژمێردراو)</th>
+                            <th class="num text-right w-40">نرخی خەمڵاندراو (تاک)</th>
+                            <th class="num text-right w-44">کۆی گشتی</th>
+                            <th class="num text-right w-28">جیاوازی</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php $grandTotal = 0; @endphp
                         @foreach ($count->items as $idx => $line)
-                            @php $diff = (float) $line->counted_qty - (float) $line->system_qty; @endphp
-                            <tr data-sys="{{ (float) $line->system_qty }}">
+                            @php
+                                $diff = (float) $line->counted_qty - (float) $line->system_qty;
+                                $qtyForVal = $line->counted_qty !== null ? (float) $line->counted_qty : (float) $line->system_qty;
+                                $price = (float) ($line->unit_price ?? 0);
+                                $total = $qtyForVal * $price;
+                                $grandTotal += $total;
+                            @endphp
+                            <tr data-sys="{{ (float) $line->system_qty }}" class="hover:bg-slate-50/60 transition-colors">
                                 <td class="text-center text-xs text-[--color-ink-soft] num">{{ $idx + 1 }}</td>
-                                <td class="font-medium text-slate-800">{{ $line->item?->name }}</td>
-                                <td class="num text-[--color-ink-soft] text-xs">{{ $line->item?->code ?? '—' }}</td>
-                                <td class="num font-semibold text-slate-700">
-                                    {{ fmt_qty($line->system_qty) }} <span class="text-xs text-[--color-ink-soft] font-normal">{{ $line->item?->unit?->name }}</span>
+                                
+                                {{-- جۆری سەروەت --}}
+                                <td class="font-medium text-slate-800">
+                                    {{ $line->item?->name }}
                                 </td>
+
+                                {{-- ژمارە --}}
                                 <td class="num">
                                     @if ($count->status === 'posted')
                                         <span class="font-semibold">{{ fmt_qty($line->counted_qty) }}</span>
                                     @else
                                         <input type="number" step="any" name="counted[{{ $line->id }}]"
-                                               value="{{ $line->counted_qty }}"
-                                               class="field num w-28 !py-1 text-left counted-input"
-                                               placeholder="—">
+                                               value="{{ $line->counted_qty !== null ? $line->counted_qty : $line->system_qty }}"
+                                               class="field num w-32 !py-1 text-left counted-input"
+                                               placeholder="{{ fmt_qty($line->system_qty) }}">
                                     @endif
                                 </td>
+
+                                {{-- نرخی خەمڵاندراو (تاک) --}}
+                                <td class="num">
+                                    @if ($count->status === 'posted')
+                                        <span class="font-medium">{{ fmt_money($line->unit_price ?? 0) }}</span>
+                                    @else
+                                        <input type="number" step="any" name="unit_price[{{ $line->id }}]"
+                                               value="{{ (float) ($line->unit_price ?? 0) }}"
+                                               class="field num w-36 !py-1 text-left price-input"
+                                               placeholder="0">
+                                    @endif
+                                </td>
+
+                                {{-- کۆی گشتی نرخ --}}
+                                <td class="num font-bold text-slate-800 row-total" data-value="{{ $total }}">
+                                    {{ fmt_money($total) }}
+                                </td>
+
+                                {{-- جیاوازی --}}
                                 <td class="num font-medium diff-cell
                                     {{ $line->counted_qty === null ? 'text-[--color-ink-soft]'
                                        : (abs($diff) < 0.0005 ? 'text-slate-600' : ($diff > 0 ? 'text-[--color-ok]' : 'text-[--color-danger]')) }}">
                                     @if ($line->counted_qty === null)
-                                        —
+                                        0
                                     @else
                                         {{ $diff > 0 ? '+' : '' }}{{ fmt_qty($diff) }}
                                     @endif
@@ -93,6 +121,17 @@
                             </tr>
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr class="bg-slate-100/90 font-bold border-t-2 border-slate-300">
+                            <td colspan="4" class="text-right py-3.5 px-4 text-slate-900 text-sm font-bold">
+                                کۆی گشتی سەروەت
+                            </td>
+                            <td class="num text-right py-3.5 px-4 text-emerald-700 text-base font-bold" id="grand-total-display">
+                                {{ fmt_money($grandTotal) }}
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>
@@ -140,33 +179,56 @@
         </template>
 
         <script>
-            document.querySelectorAll('.counted-input').forEach(function(input) {
-                input.addEventListener('input', function() {
-                    const tr = this.closest('tr');
+            function formatMoney(num) {
+                return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+            }
+
+            function recalculateTotals() {
+                let grandTotal = 0;
+                document.querySelectorAll('#count-table tbody tr').forEach(function(tr) {
                     const sys = parseFloat(tr.dataset.sys) || 0;
+                    const countInput = tr.querySelector('.counted-input');
+                    const priceInput = tr.querySelector('.price-input');
                     const diffCell = tr.querySelector('.diff-cell');
-                    const val = this.value.trim();
+                    const totalCell = tr.querySelector('.row-total');
 
-                    if (val === '') {
-                        diffCell.textContent = '—';
-                        diffCell.className = 'num font-medium diff-cell text-[--color-ink-soft]';
-                        return;
-                    }
+                    if (!countInput || !priceInput) return;
 
-                    const cnt = parseFloat(val) || 0;
-                    const diff = cnt - sys;
+                    const cntVal = countInput.value.trim();
+                    const priceVal = parseFloat(priceInput.value) || 0;
+                    
+                    let qty = cntVal === '' ? sys : (parseFloat(cntVal) || 0);
+                    let rowTotal = qty * priceVal;
+                    grandTotal += rowTotal;
 
-                    if (Math.abs(diff) < 0.0005) {
+                    totalCell.textContent = formatMoney(rowTotal);
+
+                    if (cntVal === '') {
                         diffCell.textContent = '0';
                         diffCell.className = 'num font-medium diff-cell text-slate-600';
-                    } else if (diff > 0) {
-                        diffCell.textContent = '+' + (Math.round(diff * 1000) / 1000);
-                        diffCell.className = 'num font-medium diff-cell text-[--color-ok]';
                     } else {
-                        diffCell.textContent = (Math.round(diff * 1000) / 1000).toString();
-                        diffCell.className = 'num font-medium diff-cell text-[--color-danger]';
+                        let diff = qty - sys;
+                        if (Math.abs(diff) < 0.0005) {
+                            diffCell.textContent = '0';
+                            diffCell.className = 'num font-medium diff-cell text-slate-600';
+                        } else if (diff > 0) {
+                            diffCell.textContent = '+' + (Math.round(diff * 1000) / 1000);
+                            diffCell.className = 'num font-medium diff-cell text-[--color-ok]';
+                        } else {
+                            diffCell.textContent = (Math.round(diff * 1000) / 1000).toString();
+                            diffCell.className = 'num font-medium diff-cell text-[--color-danger]';
+                        }
                     }
                 });
+
+                const grandTotalDisplay = document.getElementById('grand-total-display');
+                if (grandTotalDisplay) {
+                    grandTotalDisplay.textContent = formatMoney(grandTotal);
+                }
+            }
+
+            document.querySelectorAll('.counted-input, .price-input').forEach(function(input) {
+                input.addEventListener('input', recalculateTotals);
             });
         </script>
     @endif

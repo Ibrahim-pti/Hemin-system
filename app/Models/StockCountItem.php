@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StockCountItem extends Model
 {
     protected $fillable = [
-        'stock_count_id', 'item_id', 'system_qty', 'counted_qty', 'difference', 'note',
+        'stock_count_id', 'item_id', 'system_qty', 'counted_qty', 'difference', 'unit_price', 'note',
     ];
 
     protected function casts(): array
@@ -17,6 +17,7 @@ class StockCountItem extends Model
             'system_qty' => 'decimal:3',
             'counted_qty' => 'decimal:3',
             'difference' => 'decimal:3',
+            'unit_price' => 'decimal:2',
         ];
     }
 

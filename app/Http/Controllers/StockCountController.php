@@ -48,12 +48,15 @@ class StockCountController extends Controller
             $items = Item::active()->orderBy('name')->get();
 
             foreach ($items as $item) {
+                $unitPrice = $item->last_cost > 0 ? $item->last_cost : ($item->sale_price ?? 0);
+
                 StockCountItem::create([
                     'stock_count_id' => $count->id,
                     'item_id' => $item->id,
                     'system_qty' => $item->stockQty((int) $data['warehouse_id']),
                     'counted_qty' => null,
                     'difference' => 0,
+                    'unit_price' => $unitPrice,
                 ]);
             }
 
@@ -70,7 +73,7 @@ class StockCountController extends Controller
         return view('counts.show', ['count' => $count]);
     }
 
-    /** پاشەکەوتکردنی ژمارە ژمێردراوەکان — بێ ئەوەی مەخزەن بگۆڕێت. */
+    /** پاشەکەوتکردنی ژمارە و نرخەکان — بێ ئەوەی مەخزەن بگۆڕێت. */
     public function update(Request $request, StockCount $count)
     {
         if ($count->status === 'posted') {
@@ -78,21 +81,24 @@ class StockCountController extends Controller
         }
 
         $counted = $request->input('counted', []);
+        $prices = $request->input('unit_price', []);
 
-        DB::transaction(function () use ($count, $counted) {
+        DB::transaction(function () use ($count, $counted, $prices) {
             foreach ($count->items as $line) {
-                $value = $counted[$line->id] ?? null;
+                $val = $counted[$line->id] ?? null;
+                $price = $prices[$line->id] ?? null;
 
                 $line->update([
-                    'counted_qty' => $value === '' || $value === null ? null : (float) $value,
-                    'difference' => $value === '' || $value === null
+                    'counted_qty' => $val === '' || $val === null ? null : (float) $val,
+                    'difference' => $val === '' || $val === null
                         ? 0
-                        : (float) $value - (float) $line->system_qty,
+                        : (float) $val - (float) $line->system_qty,
+                    'unit_price' => $price === '' || $price === null ? (float) $line->unit_price : (float) $price,
                 ]);
             }
         });
 
-        return back()->with('ok', 'ژمارەکان پاشەکەوتکران.');
+        return back()->with('ok', 'ژمارە و نرخەکان پاشەکەوتکران.');
     }
 
     /** پەسەندکردن — جیاوازییەکان دەبنە جوڵەی ڕاستکردنەوە لە مەخزەندا. */
