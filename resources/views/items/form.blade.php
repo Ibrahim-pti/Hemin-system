@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $item->exists ? 'دەستکاری کاڵا' : 'کاڵای نوێ')
+@section('title', $item->exists ? 'دەستکاری بابەت' : 'بابەتی نوێ')
 
 @section('content')
 
@@ -10,11 +10,11 @@
     @if ($item->exists) @method('PUT') @endif
 
     <div class="card">
-        <div class="card-head">زانیاری کاڵا</div>
+        <div class="card-head">زانیاری بابەت</div>
         <div class="card-body grid gap-4 sm:grid-cols-2">
 
             <div>
-                <label class="label" for="name">ناوی کاڵا <span class="text-[--color-danger]">*</span></label>
+                <label class="label" for="name">ناوی بابەت <span class="text-[--color-danger]">*</span></label>
                 <input id="name" name="name" class="field" required
                        value="{{ old('name', $item->name) }}" placeholder="بۆ نموونە: لوولەی ٤٠×٤٠">
                 @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
@@ -93,7 +93,7 @@
         {{-- سڕینەوە فۆرمێکی جیایە (لە دەرەوەی ئەمە) — دوگمەکەی لێرەوە بانگ دەکرێت. --}}
         @if ($item->exists)
             <button type="submit" form="delete-item" class="btn btn-ghost mr-auto !text-[--color-danger]"
-                    onclick="return confirm('دڵنیایت لە سڕینەوەی ئەم کاڵایە؟')">
+                    onclick="return confirm('دڵنیایت لە سڕینەوەی ئەم بابەتە؟')">
                 سڕینەوە
             </button>
         @endif

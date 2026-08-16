@@ -13,7 +13,7 @@
 
     {{-- زانیاری --}}
     <div class="card lg:col-span-1">
-        <div class="card-head">زانیاری کاڵا</div>
+        <div class="card-head">زانیاری بابەت</div>
         <div class="card-body space-y-3 text-sm">
             @foreach ([
                 'کۆد' => $item->code,

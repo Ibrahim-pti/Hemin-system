@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'کاڵاکان')
+@section('title', 'بابەتەکان')
 
 @section('actions')
     @can('manage_items')
@@ -10,7 +10,7 @@
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                کاڵای نوێ
+                زیادکردنی بابەت
             </span>
         </a>
     @endcan
@@ -31,7 +31,7 @@
     
     <div class="p-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-12 items-end">
         <div class="lg:col-span-4 relative group">
-            <label class="label text-[11px] font-bold text-[--color-ink-soft] uppercase tracking-wider mb-2">ناوی کاڵا یان کۆد</label>
+            <label class="label text-[11px] font-bold text-[--color-ink-soft] uppercase tracking-wider mb-2">ناوی بابەت یان کۆد</label>
             <div class="relative">
                 <input type="search" name="q" value="{{ request('q') }}" 
                        class="field pl-3 pr-10 py-2.5 rounded-lg border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm group-hover:border-gray-300" 
@@ -96,7 +96,7 @@
         <table class="table w-full text-sm text-right border-collapse">
             <thead class="bg-[--color-surface-soft]/80 text-[--color-ink-soft] text-[13px] border-b border-[--color-line]">
                 <tr>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold">زانیاری کاڵا</th>
+                    <th class="px-5 py-4 whitespace-nowrap font-semibold">زانیاری بابەت</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold">کۆد</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold">جۆر</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold num">باڵانس</th>
@@ -182,11 +182,11 @@
                                         <line x1="12" y1="22.08" x2="12" y2="12"></line>
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-bold text-gray-700 mb-2">هیچ کاڵایەک نەدۆزرایەوە</h3>
-                                <p class="text-[13px] text-gray-500 leading-relaxed mb-6">داتایەک بۆ پیشاندان نییە. گەڕانەکەت بگۆڕە یان کلیک لە دوگمەی خوارەوە بکە بۆ زیادکردنی کاڵای نوێ.</p>
+                                <h3 class="text-lg font-bold text-gray-700 mb-2">هیچ بابەتێک نەدۆزرایەوە</h3>
+                                <p class="text-[13px] text-gray-500 leading-relaxed mb-6">داتایەک بۆ پیشاندان نییە. گەڕانەکەت بگۆڕە یان کلیک لە دوگمەی خوارەوە بکە بۆ زیادکردنی بابەت.</p>
                                 @can('manage_items')
                                     <a href="{{ route('items.create') }}" class="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all rounded-lg text-sm px-5 py-2.5">
-                                        زیادکردنی کاڵای نوێ
+                                        زیادکردنی بابەت
                                     </a>
                                 @endcan
                             </div>

@@ -168,13 +168,13 @@
                     <div class="flex items-center gap-2">
                         @if ($lowStock->isNotEmpty())
                             <span class="size-2 animate-pulse rounded-full bg-[--color-warn]"></span>
-                            <span class="text-sm font-semibold text-[--color-warn]">ئاگاداری کەمی کاڵا</span>
+                            <span class="text-sm font-semibold text-[--color-warn]">ئاگاداری کەمی بابەت</span>
                         @else
                             <span class="size-2 rounded-full bg-[--color-ok]"></span>
                             <span class="text-sm font-semibold">دۆخی مەخزەن</span>
                         @endif
                     </div>
-                    <a href="{{ route('items.index') }}" class="text-xs text-[--color-ink-soft] hover:underline">کۆگا &larr;</a>
+                    <a href="{{ route('items.index') }}" class="text-xs text-[--color-ink-soft] hover:underline">بابەتەکان &larr;</a>
                 </div>
 
                 <div class="card-body">
@@ -193,7 +193,7 @@
                             @if ($lowStock->count() > 4)
                                 <div class="pt-1 text-center">
                                     <a href="{{ route('items.index', ['low' => 1]) }}" class="text-xs font-semibold text-[--color-brand-700]">
-                                        + {{ $lowStock->count() - 4 }} کاڵای تریش لە سنووری کەمترینە
+                                        + {{ $lowStock->count() - 4 }} بابەتی تریش لە سنووری کەمترینە
                                     </a>
                                 </div>
                             @endif
@@ -203,7 +203,7 @@
                             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>
                             </svg>
-                            <span>هەموو کاڵاکان لە ئاستی پێویستدان و کەمی نییە.</span>
+                            <span>هەموو بابەتەکان لە ئاستی پێویستدان و کەمی نییە.</span>
                         </div>
                     @endif
                 </div>
