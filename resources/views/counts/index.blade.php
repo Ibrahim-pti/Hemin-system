@@ -48,7 +48,7 @@
                     <th class="text-right">تێبینی</th>
                     <th class="text-right">دۆخ</th>
                     <th class="text-right">بەکارهێنەر</th>
-                    <th class="text-left w-24"></th>
+                    <th class="text-center w-28">کردار</th>
                 </tr>
             </thead>
             <tbody>
@@ -63,8 +63,36 @@
                             </span>
                         </td>
                         <td class="text-right text-[--color-ink-soft]">{{ $count->user?->name ?? '—' }}</td>
-                        <td class="text-left">
-                            <a href="{{ route('counts.show', $count) }}" class="text-sm font-medium text-[--color-brand-700] hover:underline">کردنەوە</a>
+                        <td class="text-center">
+                            <div class="inline-flex items-center justify-center gap-1.5">
+                                {{-- دوگمەی کردنەوە بە ئایکۆن --}}
+                                <a href="{{ route('counts.show', $count) }}"
+                                   class="inline-flex items-center justify-center size-8 rounded-lg text-blue-600 hover:bg-blue-50 border border-slate-200 transition-colors"
+                                   title="کردنەوەی جەرد">
+                                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+
+                                {{-- دوگمەی سڕینەوە بە ئایکۆن --}}
+                                @if ($count->status !== 'posted')
+                                    <form method="POST" action="{{ route('counts.destroy', $count) }}"
+                                          onsubmit="return confirm('دڵنیایت لە سڕینەوەی ئەم جەردە؟')"
+                                          class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="inline-flex items-center justify-center size-8 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 border border-slate-200 transition-colors"
+                                                title="سڕینەوە">
+                                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
@@ -77,6 +105,7 @@
     </div>
 </div>
 
+{{-- پەیجینەیشن --}}
 <div class="mt-4">{{ $counts->links() }}</div>
 
 @endsection
