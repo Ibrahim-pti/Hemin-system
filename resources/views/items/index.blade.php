@@ -158,6 +158,13 @@
     </div>
 </div>
 
-<div class="mt-6">{{ $items->links() }}</div>
+<div class="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+    <div class="font-medium">
+        پیشاندانی <span class="font-bold text-gray-800 num">{{ $items->firstItem() ?? 0 }}</span> تا <span class="font-bold text-gray-800 num">{{ $items->lastItem() ?? 0 }}</span> لە کۆی <span class="font-bold text-gray-800 num">{{ $items->total() }}</span> مەواد
+    </div>
+    <div>
+        {{ $items->links() }}
+    </div>
+</div>
 
 @endsection
