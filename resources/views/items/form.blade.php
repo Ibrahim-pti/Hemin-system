@@ -84,7 +84,7 @@
                 </div>
 
                 <div>
-                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="min_qty">نرخی بڕ</label>
+                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="min_qty">بڕ</label>
                     <div class="relative">
                         <input id="min_qty" name="min_qty" type="number" step="any" min="0" 
                                class="field num py-2.5 text-sm pl-20"

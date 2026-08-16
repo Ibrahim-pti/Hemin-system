@@ -84,19 +84,19 @@
         <table class="table w-full text-sm text-right border-collapse">
             <thead class="bg-[--color-surface-soft]/80 text-[--color-ink-soft] text-[13px] border-b border-[--color-line]">
                 <tr>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold">ناوی مەواد</th>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold num">باڵانس</th>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold num">نرخی بڕ</th>
+                    <th class="px-5 py-4 whitespace-nowrap font-semibold text-right">ناوی مەواد</th>
+                    <th class="px-5 py-4 whitespace-nowrap font-semibold text-right">بڕ</th>
                     @can('view_reports')
-                        <th class="px-5 py-4 whitespace-nowrap font-semibold num">تێچووی کڕین</th>
+                        <th class="px-5 py-4 whitespace-nowrap font-semibold text-right">تێچووی کڕین</th>
                     @endcan
+                    <th class="px-5 py-4 whitespace-nowrap font-semibold text-right">بەرواری کڕین</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold text-center">کردار</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[--color-line]/60">
                 @forelse ($items as $item)
                     <tr class="hover:bg-blue-50/30 transition-colors duration-150 group">
-                        <td class="px-5 py-3.5 align-middle">
+                        <td class="px-5 py-3.5 align-middle text-right">
                             <div class="flex items-center gap-3.5">
                                 <div class="size-10 rounded-[10px] bg-gradient-to-br from-[--color-brand-50] to-blue-100/50 text-[--color-brand-600] flex items-center justify-center border border-[--color-brand-100] shrink-0 group-hover:scale-105 group-hover:shadow-sm transition-all duration-300">
                                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -117,27 +117,31 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5 align-middle num">
+                        <td class="px-5 py-3.5 align-middle text-right">
                             <div class="flex flex-col items-start">
-                                <span class="font-bold text-[15px] leading-none mb-1 {{ $item->is_low ? 'text-orange-600' : 'text-[--color-ink]' }}">
-                                    {{ fmt_qty($item->stock_qty) }}
-                                </span>
-                                <span class="text-[11px] text-[--color-ink-soft] font-medium">{{ $item->unit?->name }}</span>
-                            </div>
-                        </td>
-                        <td class="px-5 py-3.5 align-middle num">
-                            <div class="flex flex-col items-start">
-                                <span class="font-bold text-[14px] text-gray-700">
+                                <span class="font-bold text-[15px] text-gray-800 num">
                                     {{ fmt_qty($item->min_qty) }}
                                 </span>
                                 <span class="text-[11px] text-[--color-ink-soft] font-medium">{{ $item->unit?->name }}</span>
                             </div>
                         </td>
                         @can('view_reports')
-                            <td class="px-5 py-3.5 align-middle num font-medium text-gray-600 text-[13px]">
-                                {{ $item->last_cost ? fmt_money($item->last_cost, $item->cost_currency) : '—' }}
+                            <td class="px-5 py-3.5 align-middle text-right font-medium text-gray-600 text-[13px]">
+                                <span class="num font-bold text-[14px] text-gray-800">{{ $item->last_cost ? number_format((float)$item->last_cost, 0, '.', ',') : '—' }}</span>
+                                @if($item->last_cost)
+                                    <span class="text-xs text-gray-400 font-normal">د.ع</span>
+                                @endif
                             </td>
                         @endcan
+                        <td class="px-5 py-3.5 align-middle text-right text-[13px] text-gray-600 font-medium">
+                            @if ($item->purchase_date)
+                                <span class="num bg-gray-50 border border-gray-200/80 px-2 py-1 rounded-md text-xs text-gray-700 font-medium">
+                                    {{ $item->purchase_date->format('Y/m/d') }}
+                                </span>
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
                         <td class="px-5 py-3.5 align-middle text-center">
                             @can('manage_items')
                                 <a href="{{ route('items.edit', $item) }}" 
