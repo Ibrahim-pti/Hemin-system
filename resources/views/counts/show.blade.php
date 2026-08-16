@@ -16,11 +16,6 @@
                 <div class="text-slate-500 text-xs num">
                     {{ fmt_date($count->count_date) }}
                 </div>
-                <div>
-                    <span class="badge {{ $count->status === 'posted' ? 'badge-ok' : 'badge-warn' }} text-xs">
-                        {{ $count->status_label }}
-                    </span>
-                </div>
                 @if($count->note)
                     <div class="text-xs text-slate-500 max-w-xs truncate">
                         {{ $count->note }}

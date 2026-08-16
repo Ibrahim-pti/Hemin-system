@@ -48,7 +48,6 @@
                         <th class="text-right">بەروار</th>
                         <th class="text-right">کۆگا</th>
                         <th class="text-right">تێبینی</th>
-                        <th class="text-right">دۆخ</th>
                         <th class="text-right">بەکارهێنەر</th>
                         <th class="text-center w-28">کردار</th>
                     </tr>
@@ -59,11 +58,6 @@
                             <td class="text-right num font-medium">{{ fmt_date($count->count_date) }}</td>
                             <td class="text-right">{{ $count->warehouse?->name }}</td>
                             <td class="text-right text-[--color-ink-soft] text-xs">{{ $count->note ?? '—' }}</td>
-                            <td class="text-right">
-                                <span class="badge {{ $count->status === 'posted' ? 'badge-ok' : 'badge-warn' }}">
-                                    {{ $count->status_label }}
-                                </span>
-                            </td>
                             <td class="text-right text-[--color-ink-soft]">{{ $count->user?->name ?? '—' }}</td>
                             <td class="text-center">
                                 <div class="inline-flex items-center justify-center gap-1.5">
