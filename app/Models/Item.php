@@ -17,7 +17,7 @@ class Item extends Model
 
     protected $fillable = [
         'code', 'name', 'item_category_id', 'unit_id', 'min_qty',
-        'last_cost', 'cost_currency', 'sale_price', 'is_active', 'note',
+        'last_cost', 'cost_currency', 'sale_price', 'is_for_sale', 'is_active', 'note',
     ];
 
     protected function casts(): array
@@ -26,6 +26,7 @@ class Item extends Model
             'min_qty' => 'decimal:3',
             'last_cost' => 'decimal:2',
             'sale_price' => 'decimal:2',
+            'is_for_sale' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
@@ -97,6 +98,16 @@ class Item extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeForSale(Builder $query): Builder
+    {
+        return $query->where('is_for_sale', true);
+    }
+
+    public function scopeRawMaterials(Builder $query): Builder
+    {
+        return $query->where('is_for_sale', false);
     }
 
     /** گەڕان بە ناو یان کۆد. */

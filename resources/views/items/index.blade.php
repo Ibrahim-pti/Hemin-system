@@ -18,8 +18,32 @@
 
 @section('content')
 
+{{-- تابی جیاکردنەوەی مەوادی کارگە و بابەتی فرۆشتن --}}
+<div class="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
+    <a href="{{ route('items.index', array_merge(request()->except('type', 'page'))) }}" 
+       class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border {{ empty($currentType) ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300' }}">
+        <span>هەموو بابەتەکان</span>
+        <span class="num text-[11px] px-1.5 py-0.5 rounded-full {{ empty($currentType) ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700' }}">{{ fmt_num($allCount) }}</span>
+    </a>
+
+    <a href="{{ route('items.index', array_merge(request()->except('page'), ['type' => 'raw'])) }}" 
+       class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border {{ $currentType === 'raw' ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300' }}">
+        <span>📦 مەوادی کارگە و کۆگا (مەسرەف)</span>
+        <span class="num text-[11px] px-1.5 py-0.5 rounded-full {{ $currentType === 'raw' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700' }}">{{ fmt_num($rawCount) }}</span>
+    </a>
+
+    <a href="{{ route('items.index', array_merge(request()->except('page'), ['type' => 'sale'])) }}" 
+       class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border {{ $currentType === 'sale' ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300' }}">
+        <span>🛒 بابەتەکانی فرۆشتن (بەرهەم)</span>
+        <span class="num text-[11px] px-1.5 py-0.5 rounded-full {{ $currentType === 'sale' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700' }}">{{ fmt_num($saleCount) }}</span>
+    </a>
+</div>
+
 {{-- پاڵاوتن --}}
 <form method="GET" class="card mb-6 border-0 ring-1 ring-[--color-line] shadow-sm bg-white overflow-hidden rounded-[14px]">
+    @if(request('type'))
+        <input type="hidden" name="type" value="{{ request('type') }}">
+    @endif
     <div class="bg-[--color-surface-soft]/50 px-4 py-3 border-b border-[--color-line] flex items-center gap-2.5">
         <div class="icon-chip bg-[--color-brand-soft] text-[--color-brand-700] size-7 rounded-md">
             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -110,11 +134,22 @@
                                     <a href="{{ route('items.show', $item) }}" class="font-bold text-[--color-ink] hover:text-[--color-brand-600] transition-colors text-[15px] leading-snug">
                                         {{ $item->name }}
                                     </a>
-                                    @unless ($item->is_active)
-                                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded text-red-700 bg-red-50 border border-red-100 mt-1 w-max">
-                                            <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span> ناچالاک
-                                        </span>
-                                    @endunless
+                                    <div class="flex items-center gap-1.5 mt-1">
+                                        @if ($item->is_for_sale)
+                                            <span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                                🛒 بۆ فرۆشتن
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">
+                                                📦 مەوادی کارگە
+                                            </span>
+                                        @endif
+                                        @unless ($item->is_active)
+                                            <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded text-red-700 bg-red-50 border border-red-100">
+                                                <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span> ناچالاک
+                                            </span>
+                                        @endunless
+                                    </div>
                                 </div>
                             </div>
                         </td>

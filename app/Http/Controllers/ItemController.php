@@ -14,12 +14,14 @@ class ItemController extends Controller
     public function index(Request $request): View
     {
         $warehouseId = $request->integer('warehouse') ?: null;
+        $type = $request->string('type')->toString();
 
         $items = Item::query()
             ->withStock($warehouseId)
-            ->with(['unit', 'category'])
+            ->with(['unit'])
             ->search($request->string('q')->toString())
-            ->when($request->integer('category'), fn ($q, $id) => $q->where('item_category_id', $id))
+            ->when($type === 'sale', fn ($q) => $q->forSale())
+            ->when($type === 'raw', fn ($q) => $q->rawMaterials())
             ->when($request->boolean('low'), fn ($q) => $q->where('min_qty', '>', 0))
             ->orderBy('name')
             ->paginate(30)
@@ -34,17 +36,23 @@ class ItemController extends Controller
 
         return view('items.index', [
             'items' => $items,
-            'categories' => ItemCategory::orderBy('name')->get(),
+            'currentType' => $type,
+            'allCount' => Item::active()->count(),
+            'rawCount' => Item::active()->rawMaterials()->count(),
+            'saleCount' => Item::active()->forSale()->count(),
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $isForSale = $request->string('type')->toString() === 'sale';
+
         return view('items.form', [
-            'item' => new Item(['cost_currency' => 'IQD', 'is_active' => true]),
+            'item' => new Item(['cost_currency' => 'IQD', 'is_for_sale' => $isForSale, 'is_active' => true]),
             'categories' => ItemCategory::orderBy('name')->get(),
             'units' => Unit::where('is_active', true)->orderBy('name')->get(),
+            'targetType' => $request->string('type')->toString(),
         ]);
     }
 
@@ -52,7 +60,9 @@ class ItemController extends Controller
     {
         $item = Item::create($this->validated($request));
 
-        return redirect()->route('items.index')->with('ok', "بابەتی «{$item->name}» زیادکرا.");
+        $redirectType = $item->is_for_sale ? 'sale' : 'raw';
+
+        return redirect()->route('items.index', ['type' => $redirectType])->with('ok', "بابەتی «{$item->name}» زیادکرا.");
     }
 
     public function show(Item $item): View
@@ -111,6 +121,7 @@ class ItemController extends Controller
             'last_cost' => ['nullable', 'numeric', 'min:0'],
             'cost_currency' => ['nullable', 'in:IQD,USD'],
             'sale_price' => ['nullable', 'numeric', 'min:0'],
+            'is_for_sale' => ['nullable', 'boolean'],
             'note' => ['nullable', 'string'],
         ], [], [
             'code' => 'کۆد',
@@ -118,8 +129,14 @@ class ItemController extends Controller
             'unit_id' => 'یەکە',
         ]);
 
-        $data['is_active'] = $request->boolean('is_active');
+        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_for_sale'] = $request->boolean('is_for_sale');
         $data['min_qty'] = $data['min_qty'] ?? 0;
+
+        // ئەگەر بۆ فرۆشتن نەبوو، نرخی فرۆشتن لادەبرێت
+        if (! $data['is_for_sale']) {
+            $data['sale_price'] = null;
+        }
 
         // بەرپرسی کۆگا بۆی نییە نرخ بگۆڕێت.
         if (! auth()->user()->canSeeMoney()) {

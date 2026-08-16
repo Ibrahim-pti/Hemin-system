@@ -5,6 +5,18 @@
 
 <form method="POST"
       action="{{ $item->exists ? route('items.update', $item) : route('items.store') }}"
+      x-data="{
+          isForSale: {{ old('is_for_sale', $item->is_for_sale ? '1' : '0') }},
+          selectedUnit: '{{ old('unit_id', $item->unit_id) }}',
+          unitNames: {
+              @foreach ($units as $unit)
+                  '{{ $unit->id }}': '{{ $unit->name }}',
+              @endforeach
+          },
+          get unitText() {
+              return this.unitNames[this.selectedUnit] || '';
+          }
+      }"
       class="mx-auto max-w-2xl">
     @csrf
     @if ($item->exists) @method('PUT') @endif
@@ -23,7 +35,7 @@
                     <h2 class="font-bold text-[15px] text-[--color-ink]">
                         {{ $item->exists ? 'دەستکاریکردنی زانیارییەکانی بابەت' : 'تۆمارکردنی بابەتی نوێ' }}
                     </h2>
-                    <p class="text-xs text-[--color-ink-soft]">ناو، کۆد، یەکە و نرخ لەم فۆرمە دیاری بکە</p>
+                    <p class="text-xs text-[--color-ink-soft]">ناو، کۆد، جۆری بەکارهێنان و تێچوو لەم فۆرمە دیاری بکە</p>
                 </div>
             </div>
             
@@ -34,6 +46,26 @@
 
         <div class="p-6 space-y-4">
 
+            {{-- هەڵبژاردنی جۆری بابەت: مەوادی کارگە یان بۆ فرۆشتن --}}
+            <div class="p-3 bg-gray-50 rounded-xl border border-gray-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <span class="text-xs font-bold text-[--color-ink] block">ئەم بابەتە بۆ چی بەکاردێت؟</span>
+                    <span class="text-[11px] text-[--color-ink-soft]">دیاری بکە ئایا مەوادی خاوی کارگەیە یان کاڵای فرۆشتنە</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all select-none"
+                           :class="!Boolean(Number(isForSale)) ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'">
+                        <input type="radio" name="is_for_sale" value="0" x-model="isForSale" class="sr-only">
+                        <span>📦 مەوادی کارگە (مەخزەن)</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all select-none"
+                           :class="Boolean(Number(isForSale)) ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'">
+                        <input type="radio" name="is_for_sale" value="1" x-model="isForSale" class="sr-only">
+                        <span>🛒 کاڵا بۆ فرۆشتن</span>
+                    </label>
+                </div>
+            </div>
+
             {{-- ناو و کۆد --}}
             <div class="grid gap-4 sm:grid-cols-3">
                 <div class="sm:col-span-2">
@@ -41,7 +73,7 @@
                         ناوی بابەت <span class="text-[--color-danger]">*</span>
                     </label>
                     <input id="name" name="name" class="field py-2.5 text-sm" required
-                           value="{{ old('name', $item->name) }}" placeholder="بۆ نموونە: لوولەی ٤٠×٤٠، قوفڵی دەرگا...">
+                           value="{{ old('name', $item->name) }}" placeholder="بۆ نموونە: لوولەی ٤٠×٤٠، وایەری لەحیم، قوفڵ...">
                     @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
                 </div>
 
@@ -56,17 +88,7 @@
             </div>
 
             {{-- یەکە و حەدەد --}}
-            <div class="grid gap-4 sm:grid-cols-2" x-data="{
-                selectedUnit: '{{ old('unit_id', $item->unit_id) }}',
-                unitNames: {
-                    @foreach ($units as $unit)
-                        '{{ $unit->id }}': '{{ $unit->name }}',
-                    @endforeach
-                },
-                get unitText() {
-                    return this.unitNames[this.selectedUnit] || '';
-                }
-            }">
+            <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="unit_id">
                         یەکە <span class="text-[--color-danger]">*</span>
@@ -112,10 +134,15 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div x-show="Boolean(Number(isForSale))" x-transition>
                         <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="sale_price">نرخی فرۆشتن</label>
                         <input id="sale_price" name="sale_price" type="number" step="0.01" min="0" class="field num py-2.5 text-sm"
                                value="{{ old('sale_price', $item->sale_price) }}" placeholder="0">
+                    </div>
+
+                    <div x-show="!Boolean(Number(isForSale))" class="flex flex-col justify-center text-xs text-[--color-ink-soft] bg-gray-50/70 p-2.5 rounded-lg border border-dashed border-gray-200">
+                        <span class="font-medium text-gray-500">🔒 تەنها مەوادی کارگەیە</span>
+                        <span class="text-[11px] text-gray-400">نرخی فرۆشتنی پێویست نییە</span>
                     </div>
                 </div>
             @endcan
