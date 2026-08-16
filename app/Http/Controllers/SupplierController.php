@@ -15,10 +15,15 @@ class SupplierController extends Controller
             ->search($request->string('q')->toString())
             ->withCount('purchases')
             ->orderBy('name')
-            ->paginate(30)
+            ->paginate(20)
             ->withQueryString();
 
-        return view('suppliers.index', compact('suppliers'));
+        $allSuppliers = Supplier::all();
+        $totalPurchases = $allSuppliers->sum(fn($s) => $s->totalPurchases());
+        $totalPaid = $allSuppliers->sum(fn($s) => $s->totalPaid());
+        $totalDebt = $allSuppliers->sum(fn($s) => $s->balance());
+
+        return view('suppliers.index', compact('suppliers', 'totalPurchases', 'totalPaid', 'totalDebt'));
     }
 
     public function create(): View
