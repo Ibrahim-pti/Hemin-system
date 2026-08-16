@@ -72,9 +72,28 @@
                         </svg>
                     </button>
 
-                    <div class="hidden sm:block">
-                        <div class="clock-time font-bold text-sm text-slate-800" dir="ltr" style="text-align: right" x-text="clock.time"></div>
-                        <div class="clock-date text-[11px] text-slate-500" x-text="clock.date"></div>
+                    <div x-data="{
+                        time: '',
+                        date: '',
+                        init() {
+                            const tick = () => {
+                                const now = new Date();
+                                const days = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
+                                const pad = (n) => String(n).padStart(2, '0');
+                                let h = now.getHours();
+                                const m = pad(now.getMinutes());
+                                const s = pad(now.getSeconds());
+                                const ampm = h >= 12 ? 'PM' : 'AM';
+                                h = h % 12 || 12;
+                                this.time = `${pad(h)}:${m}:${s} ${ampm}`;
+                                this.date = `${days[now.getDay()]} · ${now.getFullYear()}/${pad(now.getMonth() + 1)}/${pad(now.getDate())}`;
+                            };
+                            tick();
+                            setInterval(tick, 1000);
+                        }
+                    }" class="hidden sm:block">
+                        <div class="clock-time font-bold text-sm text-slate-800" dir="ltr" style="text-align: right" x-text="time"></div>
+                        <div class="clock-date text-[11px] text-slate-500" x-text="date"></div>
                     </div>
                 </div>
 
