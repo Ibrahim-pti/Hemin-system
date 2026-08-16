@@ -150,7 +150,7 @@
                             <thead>
                                 <tr class="bg-slate-50/80 border-b border-[--color-line] text-xs text-slate-600 font-bold">
                                     <th style="width: 44px; text-align: center; padding: 10px 6px;">#</th>
-                                    <th style="text-align: right; padding: 10px 8px;">ناوی مەواد <span class="font-normal text-[--color-ink-soft]">(بە دەست بنووسە)</span></th>
+                                    <th style="text-align: right; padding: 10px 8px;">ناوی مەواد</th>
                                     <th style="width: 140px; text-align: right; padding: 10px 8px;">یەکە</th>
                                     <th style="width: 130px; text-align: center; padding: 10px 8px;">بڕ</th>
                                     <th style="width: 160px; text-align: center; padding: 10px 8px;">نرخی تاک (د.ع)</th>
@@ -160,7 +160,7 @@
                             </thead>
                             <tbody class="divide-y divide-slate-100 text-sm">
                                 <template x-for="(line, index) in lines" :key="index">
-                                    <tr class="hover:bg-slate-50/40 transition-colors">
+                                    <tr>
                                         {{-- # --}}
                                         <td style="text-align: center; padding: 6px;" class="text-xs text-slate-400 font-bold" x-text="index + 1"></td>
 
