@@ -2,171 +2,133 @@
 @section('title', 'فرۆشیارەکان')
 
 @section('actions')
-    <a href="{{ route('suppliers.create') }}" class="btn btn-primary gap-1.5 shadow-sm">
-        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>فرۆشیاری نوێ</span>
-    </a>
+    <a href="{{ route('suppliers.create') }}" class="btn btn-primary">فرۆشیاری نوێ</a>
 @endsection
 
 @section('content')
 
 <div x-data="{ showDeleteModal: false, deleteUrl: '' }">
 
-    {{-- ١. کارتەکانی پوختەی ئامار --}}
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+    {{-- ١. کارتەکانی کورتە-ئامار بە ئایکۆنە فەرمییەکانی سیستم --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 mb-5">
         {{-- فرۆشیارەکان --}}
-        <div class="card p-3.5 bg-white border border-slate-200/80 shadow-sm flex items-center justify-between">
-            <div>
-                <span class="text-[11px] font-medium text-slate-500 block">کۆی فرۆشیارەکان</span>
-                <span class="text-lg font-bold text-slate-900 num block mt-0.5">{{ fmt_num($suppliers->total()) }}</span>
-            </div>
-            <div class="size-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
+        <div class="card flex items-center gap-3.5 px-4 py-3.5">
+            <span class="icon-chip bg-blue-50 text-blue-600 shrink-0">
+                @include('partials.icon', ['name' => 'suppliers', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-slate-500">کۆی فرۆشیارەکان</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-slate-800">{{ fmt_num($suppliers->total()) }}</div>
             </div>
         </div>
 
         {{-- کۆی کڕینەکان --}}
-        <div class="card p-3.5 bg-white border border-slate-200/80 shadow-sm flex items-center justify-between">
-            <div>
-                <span class="text-[11px] font-medium text-slate-500 block">کۆی کڕینەکان</span>
-                <span class="text-lg font-bold text-slate-900 num block mt-0.5">{{ fmt_money($totalPurchases) }}</span>
-            </div>
-            <div class="size-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
-                    <path d="M3 6h18"></path>
-                    <path d="M16 10a4 4 0 0 1-8 0"></path>
-                </svg>
+        <div class="card flex items-center gap-3.5 px-4 py-3.5">
+            <span class="icon-chip bg-indigo-50 text-indigo-600 shrink-0">
+                @include('partials.icon', ['name' => 'purchases', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-slate-500">کۆی گشتی کڕینەکان</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-slate-800">{{ fmt_money($totalPurchases) }}</div>
             </div>
         </div>
 
-        {{-- کۆی دراو --}}
-        <div class="card p-3.5 bg-white border border-slate-200/80 shadow-sm flex items-center justify-between">
-            <div>
-                <span class="text-[11px] font-medium text-slate-500 block">کۆی پارەی دراو</span>
-                <span class="text-lg font-bold text-emerald-700 num block mt-0.5">{{ fmt_money($totalPaid) }}</span>
-            </div>
-            <div class="size-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="20" height="14" x="2" y="5" rx="2"></rect>
-                    <line x1="2" x2="22" y1="10" y2="10"></line>
-                </svg>
+        {{-- کۆی پارەی دراو --}}
+        <div class="card flex items-center gap-3.5 px-4 py-3.5">
+            <span class="icon-chip icon-chip-ok shrink-0">
+                @include('partials.icon', ['name' => 'payments', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-slate-500">کۆی پارەی دراو</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-emerald-600">{{ fmt_money($totalPaid) }}</div>
             </div>
         </div>
 
-        {{-- قەرزی ماوە --}}
-        <div class="card p-3.5 bg-white border border-slate-200/80 shadow-sm flex items-center justify-between {{ $totalDebt > 0 ? 'bg-rose-50/25 border-rose-200' : '' }}">
-            <div>
-                <span class="text-[11px] font-medium text-slate-500 block">کۆی قەرزی سەر کارگە</span>
-                <span class="text-lg font-bold num block mt-0.5 {{ $totalDebt > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
+        {{-- قەرزی ماوەی سەر کارگە --}}
+        <div class="card flex items-center gap-3.5 px-4 py-3.5 {{ $totalDebt > 0 ? 'border-rose-200 bg-rose-50/20' : '' }}">
+            <span class="icon-chip {{ $totalDebt > 0 ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600' }} shrink-0">
+                @include('partials.icon', ['name' => 'debts', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-slate-500">کۆی قەرزی سەر کارگە</div>
+                <div class="num mt-0.5 truncate text-lg font-bold {{ $totalDebt > 0 ? 'text-[--color-danger]' : 'text-slate-800' }}">
                     {{ fmt_money($totalDebt) }}
-                </span>
-            </div>
-            <div class="size-9 rounded-lg {{ $totalDebt > 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600' }} flex items-center justify-center">
-                <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    {{-- ٢. فلتەر و گەڕان --}}
-    <div class="card mb-4">
-        <form method="GET" class="card-body p-2.5 flex items-center gap-2">
-            <div class="relative flex-1">
-                <input type="search" name="q" value="{{ request('q') }}"
-                       class="field w-full pr-9 pl-3 !py-2 text-sm bg-slate-50/50 border-slate-200 focus:bg-white transition-colors"
-                       placeholder="گەڕان بەپێی ناوی فرۆشیار یان مۆبایل...">
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
                 </div>
             </div>
-            <button class="btn btn-primary !py-2 px-4 text-xs font-semibold shrink-0">گەڕان</button>
-            @if(request('q'))
-                <a href="{{ route('suppliers.index') }}" class="btn btn-ghost !py-2 px-3 text-xs text-slate-500 shrink-0">پاککردنەوە</a>
-            @endif
-        </form>
+        </div>
     </div>
 
+    {{-- ٢. فۆرمی گەڕان بە دیزاینی ستاندارد --}}
+    <form method="GET" class="card mb-4">
+        <div class="card-body flex gap-3">
+            <input type="search" name="q" value="{{ request('q') }}" class="field" placeholder="ناو، مۆبایل یان شوێن...">
+            <button class="btn btn-primary">گەڕان</button>
+            @if(request('q'))
+                <a href="{{ route('suppliers.index') }}" class="btn btn-ghost">پاککردنەوە</a>
+            @endif
+        </div>
+    </form>
+
     {{-- ٣. خشتەی فرۆشیارەکان --}}
-    <div class="card overflow-hidden border border-slate-200/80 shadow-sm">
+    <div class="card">
         <div class="overflow-x-auto">
-            <table class="table w-full" style="direction: rtl;">
+            <table class="table">
                 <thead>
-                    <tr class="bg-slate-50/80 border-b border-[--color-line] text-slate-700 text-xs">
-                        <th style="width: 48px; text-align: center; padding: 12px 10px;">#</th>
-                        <th style="text-align: right; padding: 12px 16px;">ناوی فرۆشیار</th>
-                        <th style="width: 140px; text-align: right; padding: 12px 16px;">مۆبایل</th>
-                        <th style="width: 140px; text-align: right; padding: 12px 16px;">شوێن</th>
-                        <th style="width: 160px; text-align: right; padding: 12px 16px;">کۆی کڕینەکان</th>
-                        <th style="width: 160px; text-align: right; padding: 12px 16px;">کۆی پارەی دراو</th>
-                        <th style="width: 160px; text-align: right; padding: 12px 16px;">قەرزی ماوە</th>
-                        <th style="width: 130px; text-align: center; padding: 12px 16px;">کردار</th>
+                    <tr>
+                        <th style="width: 40px;" class="text-center">#</th>
+                        <th>ناوی فرۆشیار</th>
+                        <th>مۆبایل</th>
+                        <th>شوێن</th>
+                        <th class="num">کۆی کڕین</th>
+                        <th class="num">کۆی دراو</th>
+                        <th class="num">قەرزی ماوە</th>
+                        <th style="width: 120px;" class="text-center">کردار</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-sm">
+                <tbody>
                     @forelse ($suppliers as $idx => $supplier)
                         @php
                             $purchasesTotal = $supplier->totalPurchases();
                             $paidTotal = $supplier->totalPaid();
                             $balance = $supplier->balance();
                         @endphp
-                        <tr class="hover:bg-slate-50/60 transition-colors">
+                        <tr>
                             {{-- # --}}
-                            <td style="text-align: center; padding: 12px 10px; color: var(--color-ink-soft); font-size: 12px;">
+                            <td class="text-center text-xs text-[--color-ink-soft]">
                                 {{ $suppliers->firstItem() + $idx }}
                             </td>
 
                             {{-- ناوی فرۆشیار --}}
-                            <td style="text-align: right; padding: 12px 16px;">
-                                <a href="{{ route('suppliers.show', $supplier) }}" class="font-bold text-slate-900 hover:text-[--color-brand-700] hover:underline">
+                            <td>
+                                <a href="{{ route('suppliers.show', $supplier) }}" class="font-medium text-[--color-brand-700] hover:underline">
                                     {{ $supplier->name }}
                                 </a>
                             </td>
 
                             {{-- مۆبایل --}}
-                            <td style="text-align: right; padding: 12px 16px;" class="num text-slate-600 text-xs" dir="ltr">
-                                {{ $supplier->phone ?? '—' }}
-                            </td>
+                            <td class="num" dir="ltr">{{ $supplier->phone ?? '—' }}</td>
 
                             {{-- شوێن --}}
-                            <td style="text-align: right; padding: 12px 16px;" class="text-[--color-ink-soft] text-xs">
-                                {{ $supplier->address ?? '—' }}
-                            </td>
+                            <td class="text-[--color-ink-soft]">{{ $supplier->address ?? '—' }}</td>
 
                             {{-- کۆی کڕینەکان --}}
-                            <td style="text-align: right; padding: 12px 16px;" class="num font-semibold text-slate-900">
-                                {{ fmt_money($purchasesTotal) }}
-                            </td>
+                            <td class="num font-medium">{{ fmt_money($purchasesTotal) }}</td>
 
                             {{-- کۆی پارەی دراو --}}
-                            <td style="text-align: right; padding: 12px 16px;" class="num font-semibold text-emerald-700">
-                                {{ fmt_money($paidTotal) }}
-                            </td>
+                            <td class="num font-medium">{{ fmt_money($paidTotal) }}</td>
 
                             {{-- قەرزی ماوە --}}
-                            <td style="text-align: right; padding: 12px 16px;" class="num font-bold {{ $balance > 0 ? 'text-[--color-danger]' : ($balance < 0 ? 'text-[--color-brand-700]' : 'text-[--color-ok]') }}">
+                            <td class="num font-bold {{ $balance > 0 ? 'text-[--color-danger]' : '' }}">
                                 {{ fmt_money($balance) }}
                             </td>
 
-                            {{-- کردارەکان بە ئایکۆن --}}
-                            <td style="text-align: center; padding: 12px 16px;">
+                            {{-- کردارەکان --}}
+                            <td class="text-center">
                                 <div class="inline-flex items-center justify-center gap-1.5">
                                     {{-- بینینی کەشف حیساب --}}
                                     <a href="{{ route('suppliers.show', $supplier) }}"
                                        class="inline-flex items-center justify-center size-8 rounded-lg text-blue-600 hover:bg-blue-50 border border-slate-200 transition-colors"
-                                       title="کەشف حیساب و وردەکاری">
+                                       title="کەشف حیساب">
                                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                             <circle cx="12" cy="12" r="3"></circle>
@@ -183,7 +145,7 @@
                                         </svg>
                                     </a>
 
-                                    {{-- سڕینەوە بە مۆداڵی سادە --}}
+                                    {{-- سڕینەوە --}}
                                     <button type="button"
                                             @click="deleteUrl = '{{ route('suppliers.destroy', $supplier) }}'; showDeleteModal = true"
                                             class="inline-flex items-center justify-center size-8 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 border border-slate-200 transition-colors"
@@ -198,7 +160,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ فرۆشیارێک نەدۆزرایەوە.</td>
+                            <td colspan="8" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ فرۆشیارێک نییە.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -206,11 +168,8 @@
         </div>
     </div>
 
-    {{-- پەیجینەیشن (تەنها کاتێک زیاتر لە ١ پەڕە هەبێت دەردەکەوێت) --}}
     @if ($suppliers->hasPages())
-        <div class="mt-4 flex justify-center">
-            {{ $suppliers->links() }}
-        </div>
+        <div class="mt-4">{{ $suppliers->links() }}</div>
     @endif
 
     {{-- مۆداڵی سڕینەوە لە تەواوی ناوەڕاست --}}
