@@ -40,38 +40,36 @@
 <div class="card">
     <div class="card-head">جەردەکانی پێشوو</div>
     <div class="overflow-x-auto">
-        <table class="table">
+        <table class="table w-full">
             <thead>
                 <tr>
-                    <th>ژمارە</th>
-                    <th>بەروار</th>
-                    <th>کۆگا</th>
-                    <th class="num">کاڵا</th>
-                    <th>دۆخ</th>
-                    <th>بەکارهێنەر</th>
-                    <th></th>
+                    <th class="text-right">بەروار</th>
+                    <th class="text-right">کۆگا</th>
+                    <th class="text-right">تێبینی</th>
+                    <th class="text-right">دۆخ</th>
+                    <th class="text-right">بەکارهێنەر</th>
+                    <th class="text-left w-24"></th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($counts as $count)
                     <tr>
-                        <td class="num font-medium">{{ $count->count_no }}</td>
-                        <td class="num">{{ fmt_date($count->count_date) }}</td>
-                        <td>{{ $count->warehouse?->name }}</td>
-                        <td class="num">{{ fmt_num($count->items_count) }}</td>
-                        <td>
+                        <td class="text-right num font-medium">{{ fmt_date($count->count_date) }}</td>
+                        <td class="text-right">{{ $count->warehouse?->name }}</td>
+                        <td class="text-right text-[--color-ink-soft] text-xs">{{ $count->note ?? '—' }}</td>
+                        <td class="text-right">
                             <span class="badge {{ $count->status === 'posted' ? 'badge-ok' : 'badge-warn' }}">
                                 {{ $count->status_label }}
                             </span>
                         </td>
-                        <td class="text-[--color-ink-soft]">{{ $count->user?->name ?? '—' }}</td>
+                        <td class="text-right text-[--color-ink-soft]">{{ $count->user?->name ?? '—' }}</td>
                         <td class="text-left">
-                            <a href="{{ route('counts.show', $count) }}" class="text-sm text-[--color-brand-700]">کردنەوە</a>
+                            <a href="{{ route('counts.show', $count) }}" class="text-sm font-medium text-[--color-brand-700] hover:underline">کردنەوە</a>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="py-8 text-center text-sm text-[--color-ink-soft]">هێشتا هیچ جەردێک نییە.</td>
+                        <td colspan="6" class="py-8 text-center text-sm text-[--color-ink-soft]">هێشتا هیچ جەردێک نییە.</td>
                     </tr>
                 @endforelse
             </tbody>
