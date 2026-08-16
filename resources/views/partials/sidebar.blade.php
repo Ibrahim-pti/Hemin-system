@@ -1,274 +1,140 @@
-{{-- ── مێنیوی سەرەکی سیستەم (Executive Dark Navy Sidebar) ── --}}
-<aside :class="{
-           'translate-x-0': mobileOpen,
-           'translate-x-full sm:translate-x-0': !mobileOpen,
-           'w-64 min-w-[16rem]': sidebarOpen,
-           'w-20 min-w-[5rem]': !sidebarOpen
-       }"
-       class="fixed inset-y-0 right-0 z-50 flex h-full flex-col bg-[#0f172a] border-l border-slate-800/80 text-slate-200 shadow-xl transition-all duration-200 sm:static sm:z-auto shrink-0 select-none">
+{{-- ── مێنیوی سەرەکی سیستەم (Dark Navy Sidebar) ── --}}
+{{-- NOTE: Using inline styles for critical layout to avoid Vite rebuild dependency --}}
+<aside
+    :style="{
+        width: sidebarOpen ? '16rem' : '5rem',
+        minWidth: sidebarOpen ? '16rem' : '5rem',
+        transform: (window.innerWidth < 640 && !mobileOpen) ? 'translateX(100%)' : 'translateX(0)',
+    }"
+    style="position: sticky; top: 0; height: 100vh; background: #0f172a; border-left: 1px solid rgba(51,65,85,0.5); z-index: 50; flex-shrink: 0; transition: all 0.2s ease; display: flex; flex-direction: column; user-select: none;"
+    class="sidebar-nav"
+    x-cloak>
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}
-    <div class="flex h-16 shrink-0 items-center justify-between border-b border-slate-800/80 px-4">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 overflow-hidden group">
-            <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-base shadow-md shadow-blue-600/40 group-hover:scale-105 transition-transform">
+    <div style="height: 4rem; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; border-bottom: 1px solid rgba(51,65,85,0.5); flex-shrink: 0;">
+        <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden; text-decoration: none;">
+            <span style="display: flex; width: 2.25rem; height: 2.25rem; align-items: center; justify-content: center; border-radius: 0.75rem; background: #2563eb; color: white; font-weight: bold; font-size: 1rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(37,99,235,0.4);">
                 هـ
             </span>
-            <div x-show="sidebarOpen" x-transition.opacity class="min-w-0">
-                <div class="truncate text-sm font-bold text-white tracking-tight">
+            <div x-show="sidebarOpen" x-transition.opacity style="min-width: 0;">
+                <div style="font-size: 0.875rem; font-weight: 700; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em;">
                     {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}
                 </div>
-                <div class="truncate text-[11px] text-slate-400 font-medium">سیستەمی بەڕێوەبردن</div>
+                <div style="font-size: 0.69rem; color: #94a3b8; font-weight: 500;">سیستەمی بەڕێوەبردن</div>
             </div>
         </a>
 
         {{-- داخستنی مۆبایل --}}
-        <button @click="mobileOpen = false" class="text-slate-400 hover:text-white sm:hidden p-1">
-            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button @click="mobileOpen = false" style="color: #94a3b8; padding: 0.25rem; display: none;" class="sm-hidden-toggle">
+            <svg style="width: 1.25rem; height: 1.25rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
         </button>
     </div>
 
     {{-- بەشی بەستەرەکانی مێنیو --}}
-    <div class="flex-1 overflow-y-auto px-3 py-4 space-y-5 scrollbar-thin">
+    <div style="flex: 1; overflow-y: auto; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 1.25rem;">
 
         {{-- سەرەکی / داشبۆرد --}}
         <div>
             <a href="{{ route('dashboard') }}"
-               class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
+               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ request()->routeIs('dashboard') ? 'background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3);' : 'color: #cbd5e1;' }}"
+               onmouseover="if(!this.classList.contains('active-link'))this.style.background='rgba(30,41,59,0.7)';this.style.color='white';"
+               onmouseout="if(!this.classList.contains('active-link')){this.style.background='';this.style.color='#cbd5e1';}"
+               class="{{ request()->routeIs('dashboard') ? 'active-link' : '' }}"
                title="داشبۆرد">
-                <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('dashboard') ? 'bg-white/20 text-white' : 'bg-slate-800 text-blue-400' }}">
+                <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ request()->routeIs('dashboard') ? 'background: rgba(255,255,255,0.2); color: white;' : 'background: rgba(30,41,59,1); color: #60a5fa;' }}">
                     @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-4.5'])
                 </span>
-                <span x-show="sidebarOpen" class="truncate">داشبۆردی سەرەکی</span>
+                <span x-show="sidebarOpen" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">داشبۆردی سەرەکی</span>
             </a>
         </div>
 
-        {{-- ١. کۆگا و لایەنەکان --}}
-        <div>
-            <div x-show="sidebarOpen" class="px-2.5 mb-1.5 text-[11px] font-bold text-slate-400 tracking-wider">
-                کۆگا و لایەنەکان
+        @php
+            $sections = [
+                [
+                    'title' => 'کۆگا و لایەنەکان',
+                    'color' => '#3b82f6',
+                    'colorLight' => 'rgba(59,130,246,0.1)',
+                    'colorText' => '#60a5fa',
+                    'items' => [
+                        ['route' => 'items.*', 'href' => route('items.index'), 'label' => 'دۆخی کۆگا', 'icon' => 'items', 'can' => 'view_stock'],
+                        ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_stock_counts'],
+                        ['route' => 'warehouses.*', 'href' => route('warehouses.index'), 'label' => 'کۆگاکان', 'icon' => 'warehouses', 'can' => 'manage_items'],
+                        ['route' => 'customers.*', 'href' => route('customers.index'), 'label' => 'کڕیارەکان', 'icon' => 'customers', 'can' => 'manage_customers'],
+                        ['route' => 'suppliers.*', 'href' => route('suppliers.index'), 'label' => 'فرۆشیارەکان', 'icon' => 'suppliers', 'can' => 'manage_suppliers'],
+                        ['route' => 'employees.*', 'href' => route('employees.index'), 'label' => 'کارمەندان', 'icon' => 'employees', 'can' => 'manage_employees'],
+                    ],
+                ],
+                [
+                    'title' => 'فرۆشتن و دارایی',
+                    'color' => '#0891b2',
+                    'colorLight' => 'rgba(8,145,178,0.1)',
+                    'colorText' => '#22d3ee',
+                    'items' => [
+                        ['route' => 'orders.*', 'href' => route('orders.index'), 'label' => 'وەسڵ و داواکاری', 'icon' => 'orders', 'can' => 'manage_orders'],
+                        ['route' => 'purchases.*', 'href' => route('purchases.index'), 'label' => 'پسوولەی کڕین', 'icon' => 'purchases', 'can' => 'manage_purchases'],
+                        ['route' => 'external-jobs.*', 'href' => route('external-jobs.index'), 'label' => 'ئیشی خاریجی', 'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
+                        ['route' => 'cash.*', 'href' => route('cash.index'), 'label' => 'قاسە', 'icon' => 'cash', 'can' => 'manage_cash'],
+                        ['route' => 'payments.*', 'href' => route('payments.index'), 'label' => 'حەقدی و پارەدان', 'icon' => 'payments', 'can' => 'manage_payments'],
+                        ['route' => 'debts.*', 'href' => route('debts.index'), 'label' => 'قەرزەکان', 'icon' => 'debts', 'can' => 'manage_payments'],
+                    ],
+                ],
+                [
+                    'title' => 'ڕاپۆرت و سیستەم',
+                    'color' => '#7c3aed',
+                    'colorLight' => 'rgba(124,58,237,0.1)',
+                    'colorText' => '#a78bfa',
+                    'items' => [
+                        ['route' => 'attendance.index', 'href' => route('attendance.index'), 'label' => 'هاتن و چوون', 'icon' => 'attendance', 'can' => 'manage_employees'],
+                        ['route' => 'attendance.wages', 'href' => route('attendance.wages'), 'label' => 'حەقدەستەکان', 'icon' => 'employees', 'can' => 'manage_employees'],
+                        ['route' => 'reports.*', 'href' => route('reports.index'), 'label' => 'ڕاپۆرتەکان', 'icon' => 'reports', 'can' => 'view_reports'],
+                        ['route' => 'activity.*', 'href' => route('activity.index'), 'label' => 'مێژووی کردارەکان', 'icon' => 'activity', 'can' => 'manage_settings'],
+                        ['route' => 'settings.*', 'href' => route('settings.index'), 'label' => 'ڕێکخستن و باکەپ', 'icon' => 'settings', 'can' => 'manage_settings'],
+                    ],
+                ],
+            ];
+        @endphp
+
+        @foreach ($sections as $section)
+            <div>
+                <div x-show="sidebarOpen" style="padding: 0 0.625rem; margin-bottom: 0.375rem; font-size: 0.69rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">
+                    {{ $section['title'] }}
+                </div>
+                <nav style="display: flex; flex-direction: column; gap: 0.125rem;">
+                    @foreach ($section['items'] as $item)
+                        @if (auth()->user()->can($item['can']))
+                            @php
+                                $isActive = request()->routeIs($item['route']);
+                            @endphp
+                            <a href="{{ $item['href'] }}"
+                               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ $isActive ? 'background: ' . $section['color'] . '; color: white; box-shadow: 0 4px 12px ' . $section['color'] . '4d;' : 'color: #cbd5e1;' }}"
+                               onmouseover="if(!this.classList.contains('active-link'))this.style.background='rgba(30,41,59,0.7)';this.style.color='white';"
+                               onmouseout="if(!this.classList.contains('active-link')){this.style.background='';this.style.color='#cbd5e1';}"
+                               class="{{ $isActive ? 'active-link' : '' }}"
+                               title="{{ $item['label'] }}">
+                                <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isActive ? 'background: rgba(255,255,255,0.2); color: white;' : 'background: ' . $section['colorLight'] . '; color: ' . $section['colorText'] . ';' }}">
+                                    @include('partials.icon', ['name' => $item['icon'], 'class' => 'size-4.5'])
+                                </span>
+                                <span x-show="sidebarOpen" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item['label'] }}</span>
+                            </a>
+                        @endif
+                    @endforeach
+                </nav>
             </div>
-            <nav class="space-y-1">
-                @if (auth()->user()->can('view_stock'))
-                    <a href="{{ route('items.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('items.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="دۆخی کۆگا">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('items.*') ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-400' }}">
-                            @include('partials.icon', ['name' => 'items', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">دۆخی کۆگا</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_stock_counts'))
-                    <a href="{{ route('counts.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('counts.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="جەردی کۆگا">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('counts.*') ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-400' }}">
-                            @include('partials.icon', ['name' => 'counts', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">جەردی کۆگا</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_items'))
-                    <a href="{{ route('warehouses.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('warehouses.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="کۆگاکان">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('warehouses.*') ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-400' }}">
-                            @include('partials.icon', ['name' => 'warehouses', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">کۆگاکان</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_customers'))
-                    <a href="{{ route('customers.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('customers.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="کڕیارەکان">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('customers.*') ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-400' }}">
-                            @include('partials.icon', ['name' => 'customers', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">کڕیارەکان</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_suppliers'))
-                    <a href="{{ route('suppliers.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('suppliers.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="فرۆشیارەکان">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('suppliers.*') ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-400' }}">
-                            @include('partials.icon', ['name' => 'suppliers', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">فرۆشیارەکان</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_employees'))
-                    <a href="{{ route('employees.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('employees.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="کارمەندان">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('employees.*') ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-400' }}">
-                            @include('partials.icon', ['name' => 'employees', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">کارمەندان</span>
-                    </a>
-                @endif
-            </nav>
-        </div>
-
-        {{-- ٢. فرۆشتن، کڕین و دارایی --}}
-        <div>
-            <div x-show="sidebarOpen" class="px-2.5 mb-1.5 text-[11px] font-bold text-slate-400 tracking-wider">
-                فرۆشتن و دارایی
-            </div>
-            <nav class="space-y-1">
-                @if (auth()->user()->can('manage_orders'))
-                    <a href="{{ route('orders.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('orders.*') ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="وەسڵ و داواکاری">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('orders.*') ? 'bg-white/20 text-white' : 'bg-cyan-500/10 text-cyan-400' }}">
-                            @include('partials.icon', ['name' => 'orders', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">وەسڵ و داواکاری</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_purchases'))
-                    <a href="{{ route('purchases.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('purchases.*') ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="پسوولەی کڕین">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('purchases.*') ? 'bg-white/20 text-white' : 'bg-cyan-500/10 text-cyan-400' }}">
-                            @include('partials.icon', ['name' => 'purchases', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">پسوولەی کڕین</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_external_jobs'))
-                    <a href="{{ route('external-jobs.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('external-jobs.*') ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="ئیشی خاریجی">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('external-jobs.*') ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-400' }}">
-                            @include('partials.icon', ['name' => 'external-jobs', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">ئیشی خاریجی</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_cash'))
-                    <a href="{{ route('cash.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('cash.*') ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="قاسە">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('cash.*') ? 'bg-white/20 text-white' : 'bg-rose-500/10 text-rose-400' }}">
-                            @include('partials.icon', ['name' => 'cash', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">قاسە</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_payments'))
-                    <a href="{{ route('payments.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('payments.*') ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="حەقدی و پارەدان">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('payments.*') ? 'bg-white/20 text-white' : 'bg-rose-500/10 text-rose-400' }}">
-                            @include('partials.icon', ['name' => 'payments', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">حەقدی و پارەدان</span>
-                    </a>
-
-                    <a href="{{ route('debts.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('debts.*') ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="قەرزەکان">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('debts.*') ? 'bg-white/20 text-white' : 'bg-rose-500/10 text-rose-400' }}">
-                            @include('partials.icon', ['name' => 'debts', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">قەرزەکان</span>
-                    </a>
-                @endif
-            </nav>
-        </div>
-
-        {{-- ٣. کارمەندان و ڕاپۆرت --}}
-        <div>
-            <div x-show="sidebarOpen" class="px-2.5 mb-1.5 text-[11px] font-bold text-slate-400 tracking-wider">
-                ڕاپۆرت و سیستەم
-            </div>
-            <nav class="space-y-1">
-                @if (auth()->user()->can('manage_employees'))
-                    <a href="{{ route('attendance.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('attendance.index') ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="هاتن و چوون">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('attendance.index') ? 'bg-white/20 text-white' : 'bg-emerald-500/10 text-emerald-400' }}">
-                            @include('partials.icon', ['name' => 'attendance', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">هاتن و چوون</span>
-                    </a>
-
-                    <a href="{{ route('attendance.wages') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('attendance.wages') ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="حەقدەستەکان">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('attendance.wages') ? 'bg-white/20 text-white' : 'bg-emerald-500/10 text-emerald-400' }}">
-                            @include('partials.icon', ['name' => 'employees', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">حەقدەستەکان</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('view_reports'))
-                    <a href="{{ route('reports.show', 'profit') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->is('*reports/profit*') ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="راپۆرتی قازانج">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->is('*reports/profit*') ? 'bg-white/20 text-white' : 'bg-purple-500/10 text-purple-400' }}">
-                            @include('partials.icon', ['name' => 'reports', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">راپۆرتی قازانج</span>
-                    </a>
-
-                    <a href="{{ route('reports.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('reports.index') ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="هەموو راپۆرت">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('reports.index') ? 'bg-white/20 text-white' : 'bg-purple-500/10 text-purple-400' }}">
-                            @include('partials.icon', ['name' => 'reports', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">هەموو راپۆرت</span>
-                    </a>
-                @endif
-
-                @if (auth()->user()->can('manage_settings'))
-                    <a href="{{ route('activity.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('activity.*') ? 'bg-slate-700 text-white shadow-md font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="مێژووی کردارەکان">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('activity.*') ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300' }}">
-                            @include('partials.icon', ['name' => 'activity', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">مێژووی کردارەکان</span>
-                    </a>
-
-                    <a href="{{ route('settings.index') }}"
-                       class="flex items-center gap-3 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all {{ request()->routeIs('settings.*') ? 'bg-slate-700 text-white shadow-md font-bold' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white' }}"
-                       title="ڕێکخستن و باکەپ">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg {{ request()->routeIs('settings.*') ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300' }}">
-                            @include('partials.icon', ['name' => 'settings', 'class' => 'size-4.5'])
-                        </span>
-                        <span x-show="sidebarOpen" class="truncate">ڕێکخستن و باکەپ</span>
-                    </a>
-                @endif
-            </nav>
-        </div>
+        @endforeach
 
     </div>
 
     {{-- بەشی خوارەوە: بەکارهێنەر --}}
-    <div class="border-t border-slate-800/80 p-3 shrink-0 bg-slate-950/40">
-        <div class="flex items-center gap-3">
-            <div class="flex size-8 items-center justify-center rounded-full bg-blue-600/30 text-blue-400 font-bold text-xs shrink-0 border border-blue-500/30">
+    <div style="border-top: 1px solid rgba(51,65,85,0.5); padding: 0.75rem; flex-shrink: 0; background: rgba(2,6,23,0.4);">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="display: flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 50%; background: rgba(37,99,235,0.3); color: #60a5fa; font-weight: bold; font-size: 0.75rem; flex-shrink: 0; border: 1px solid rgba(59,130,246,0.3);">
                 {{ mb_substr(auth()->user()->name, 0, 1) }}
             </div>
-            <div x-show="sidebarOpen" x-transition.opacity class="min-w-0 flex-1">
-                <div class="truncate text-xs font-bold text-white">{{ auth()->user()->name }}</div>
-                <div class="truncate text-[11px] text-slate-400">
+            <div x-show="sidebarOpen" x-transition.opacity style="min-width: 0; flex: 1;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ auth()->user()->name }}</div>
+                <div style="font-size: 0.69rem; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                     {{ auth()->user()->isAdmin() ? 'بەڕێوەبەر' : 'بەرپرسی کۆگا' }}
                 </div>
             </div>

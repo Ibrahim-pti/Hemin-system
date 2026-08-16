@@ -19,7 +19,7 @@
           clock: clock()
       }">
 
-    <div class="flex h-screen w-full overflow-hidden">
+    <div style="display: flex; height: 100vh; width: 100%; overflow: hidden;">
 
         {{-- ── باکدراپی مۆبایل ── --}}
         <div x-show="mobileOpen"
@@ -31,15 +31,13 @@
              x-transition:leave="transition-opacity ease-linear duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="no-print fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs sm:hidden"></div>
+             style="position: fixed; inset: 0; z-index: 40; background: rgba(15,23,42,0.6); backdrop-filter: blur(2px);"></div>
 
         {{-- ── مێنیوی تەنیشت (Sidebar) ── --}}
-        <div class="no-print flex h-full shrink-0">
-            @include('partials.sidebar')
-        </div>
+        @include('partials.sidebar')
 
         {{-- ── بەشی سەرەکی و ناوەڕۆک (Main Content Area) ── --}}
-        <div class="flex flex-1 flex-col overflow-hidden min-w-0 bg-slate-100/70">
+        <div style="display: flex; flex: 1; flex-direction: column; overflow: hidden; min-width: 0; background: #f1f5f9;">
 
             {{-- هێڵی سەرەوە (Top Header Bar) --}}
             <header class="no-print flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white px-4 md:px-6 shadow-2xs">
