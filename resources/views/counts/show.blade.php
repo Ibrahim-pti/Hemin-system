@@ -117,19 +117,10 @@
                  style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px);"
                  @keydown.escape.window="showDeleteModal = false">
                 
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 max-w-xs w-full text-center space-y-4 shadow-xl"
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 max-w-xs w-full text-center space-y-4 shadow-xl"
                      @click.away="showDeleteModal = false">
                     
-                    <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-rose-50 text-rose-600">
-                        <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                    </div>
-
-                    <div>
-                        <h3 class="text-base font-bold text-slate-800">دڵنیایت لە سڕینەوە؟</h3>
-                    </div>
+                    <h3 class="text-sm font-bold text-slate-800 pt-1">ئایا دڵنیایت لە سڕینەوە؟</h3>
 
                     <div class="grid grid-cols-2 gap-2 pt-1">
                         <button type="button" @click="showDeleteModal = false" class="btn btn-ghost !py-2 text-xs font-medium">
