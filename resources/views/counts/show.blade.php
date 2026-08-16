@@ -36,14 +36,6 @@
                     </svg>
                     <span>گەڕانەوە</span>
                 </a>
-
-                @if ($count->status !== 'posted')
-                    <form method="POST" action="{{ route('counts.post', $count) }}"
-                          onsubmit="return confirm('دوای پەسەندکردن، جیاوازییەکان وەک جوڵەی مەخزەن تۆمار دەکرێن و ناگۆڕدرێنەوە. دڵنیایت؟')">
-                        @csrf
-                        <button class="btn btn-primary !py-1.5 !px-3.5 text-xs font-semibold">پەسەندکردن و ڕاستکردنەوەی مەخزەن</button>
-                    </form>
-                @endif
             </div>
         </div>
     </div>
