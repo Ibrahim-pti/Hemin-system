@@ -146,39 +146,39 @@
 
                     {{-- خشتەی مەوادەکان بە دیزاینی خاوێن --}}
                     <div class="overflow-x-auto rounded-lg border border-[--color-line]">
-                        <table class="table w-full" style="direction: rtl;">
+                        <table class="table w-full whitespace-nowrap" style="direction: rtl;">
                             <thead>
-                                <tr class="bg-slate-50 border-b border-[--color-line] text-xs text-slate-700">
-                                    <th style="width: 44px; text-align: center; padding: 10px 8px;">#</th>
-                                    <th style="text-align: right; padding: 10px 12px;">ناوی مەواد</th>
-                                    <th style="width: 140px; text-align: right; padding: 10px 12px;">یەکە</th>
-                                    <th style="width: 140px; text-align: right; padding: 10px 12px;">بڕ</th>
-                                    <th style="width: 180px; text-align: right; padding: 10px 12px;">نرخی تاک (تێچوو)</th>
-                                    <th style="width: 160px; text-align: right; padding: 10px 12px;">کۆی گشتی</th>
-                                    <th style="width: 44px; text-align: center; padding: 10px 8px;"></th>
+                                <tr class="bg-slate-50/80 border-b border-[--color-line] text-xs text-slate-600 font-bold">
+                                    <th style="width: 44px; text-align: center; padding: 10px 6px;">#</th>
+                                    <th style="text-align: right; padding: 10px 8px;">ناوی مەواد <span class="font-normal text-[--color-ink-soft]">(بە دەست بنووسە)</span></th>
+                                    <th style="width: 140px; text-align: right; padding: 10px 8px;">یەکە</th>
+                                    <th style="width: 130px; text-align: center; padding: 10px 8px;">بڕ</th>
+                                    <th style="width: 160px; text-align: center; padding: 10px 8px;">نرخی تاک (د.ع)</th>
+                                    <th style="width: 150px; text-align: left; padding: 10px 12px;">کۆی گشتی</th>
+                                    <th style="width: 44px; text-align: center; padding: 10px 6px;"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 text-sm">
                                 <template x-for="(line, index) in lines" :key="index">
-                                    <tr>
+                                    <tr class="hover:bg-slate-50/40 transition-colors">
                                         {{-- # --}}
-                                        <td style="text-align: center; padding: 8px;" class="text-xs text-slate-400 font-bold" x-text="index + 1"></td>
+                                        <td style="text-align: center; padding: 6px;" class="text-xs text-slate-400 font-bold" x-text="index + 1"></td>
 
                                         {{-- ناوی مەواد --}}
-                                        <td style="padding: 8px 12px;">
+                                        <td style="padding: 6px 8px;">
                                             <input type="text"
                                                    :name="'purchase_lines[' + index + '][name]'"
                                                    x-model="line.name"
                                                    list="existing-items"
-                                                   class="field w-full !py-1.5 text-sm"
-                                                   placeholder="ناوی مەواد بنووسە...">
+                                                   class="field w-full !py-1.5 !px-3 text-sm bg-white"
+                                                   placeholder="ناوی مەواد...">
                                         </td>
 
                                         {{-- یەکە --}}
-                                        <td style="padding: 8px 12px;">
+                                        <td style="padding: 6px 8px;">
                                             <select :name="'purchase_lines[' + index + '][unit_id]'"
                                                     x-model="line.unit_id"
-                                                    class="field w-full !py-1.5 text-sm">
+                                                    class="field w-full !py-1.5 !px-3 text-sm bg-white cursor-pointer">
                                                 @foreach ($units as $unit)
                                                     <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                                 @endforeach
@@ -186,40 +186,40 @@
                                         </td>
 
                                         {{-- بڕ --}}
-                                        <td style="padding: 8px 12px;">
+                                        <td style="padding: 6px 8px;">
                                             <input type="number" step="any" min="0"
                                                    :name="'purchase_lines[' + index + '][qty]'"
                                                    x-model="line.qty"
-                                                   class="field num w-full !py-1.5 text-sm text-right font-medium"
+                                                   class="field num w-full !py-1.5 !px-3 text-sm text-center font-medium bg-white"
+                                                   dir="ltr"
                                                    placeholder="0">
                                         </td>
 
                                         {{-- نرخی تاک --}}
-                                        <td style="padding: 8px 12px;">
-                                            <div class="relative">
-                                                <input type="text" inputmode="numeric"
-                                                       :name="'purchase_lines[' + index + '][unit_price]'"
-                                                       x-model="line.unit_price"
-                                                       @input="formatInput($event)"
-                                                       class="field num w-full !py-1.5 text-sm pl-12 font-semibold text-right"
-                                                       placeholder="0">
-                                                <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 text-xs font-bold text-slate-400 pointer-events-none">
-                                                    د.ع
-                                                </span>
-                                            </div>
+                                        <td style="padding: 6px 8px;">
+                                            <input type="text" inputmode="numeric"
+                                                   :name="'purchase_lines[' + index + '][unit_price]'"
+                                                   x-model="line.unit_price"
+                                                   @input="formatInput($event)"
+                                                   class="field num w-full !py-1.5 !px-3 text-sm font-bold text-center bg-white"
+                                                   dir="ltr"
+                                                   placeholder="0">
                                         </td>
 
                                         {{-- کۆی گشتی دێڕ --}}
-                                        <td class="num font-bold text-slate-900" style="padding: 8px 12px; text-align: right;">
-                                            <span x-text="lineTotal(line).toLocaleString('en-US') + ' د.ع'">0 د.ع</span>
+                                        <td style="padding: 6px 12px; text-align: left;">
+                                            <div class="inline-flex items-baseline gap-1 font-bold text-slate-900">
+                                                <span class="num text-[15px]" x-text="lineTotal(line).toLocaleString('en-US')">0</span>
+                                                <span class="text-xs text-[--color-ink-soft]">د.ع</span>
+                                            </div>
                                         </td>
 
                                         {{-- سڕینەوە --}}
-                                        <td style="text-align: center; padding: 8px;">
+                                        <td style="text-align: center; padding: 6px;">
                                             <button type="button" @click="removeLine(index)"
-                                                    class="inline-flex items-center justify-center size-8 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+                                                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors focus:ring-2 ring-rose-200 outline-none"
                                                     title="سڕینەوە">
-                                                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
                                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                                 </svg>
