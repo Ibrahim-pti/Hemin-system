@@ -64,15 +64,37 @@ class ItemController extends Controller
     {
         $item = Item::create($this->validated($request));
 
+        // تۆمارکردنی باڵانسی سەرەتایی ئەگەر بڕ نووسرابوو
+        $initialQty = (float) $request->input('min_qty', 0);
+        if ($initialQty > 0) {
+            $defaultWarehouse = Warehouse::where('is_default', true)->first() ?? Warehouse::first();
+            if ($defaultWarehouse) {
+                app(\App\Services\StockService::class)->record(
+                    itemId: $item->id,
+                    warehouseId: $defaultWarehouse->id,
+                    direction: 'in',
+                    qty: $initialQty,
+                    reason: 'opening',
+                    extra: [
+                        'unit_cost' => $item->last_cost ?? 0,
+                        'currency' => $item->cost_currency ?? 'IQD',
+                        'moved_at' => $item->purchase_date?->toDateString() ?? now()->toDateString(),
+                        'note' => 'باڵانسی سەرەتایی مەواد',
+                    ]
+                );
+            }
+        }
+
         // زیادکردن بۆ جەردە کراوەکان (Draft)
         $draftCounts = \App\Models\StockCount::where('status', 'draft')->get();
         foreach ($draftCounts as $draftCount) {
-            \App\Models\StockCountItem::firstOrCreate([
+            $currentStock = $item->stockQty($draftCount->warehouse_id);
+            \App\Models\StockCountItem::updateOrCreate([
                 'stock_count_id' => $draftCount->id,
                 'item_id' => $item->id,
             ], [
-                'system_qty' => 0,
-                'counted_qty' => null,
+                'system_qty' => $currentStock,
+                'counted_qty' => $currentStock > 0 ? $currentStock : null,
                 'difference' => 0,
                 'unit_price' => $item->last_cost > 0 ? $item->last_cost : ($item->sale_price ?? 0),
             ]);
