@@ -104,6 +104,9 @@ class ItemController extends Controller
             return back()->with('err', 'ناتوانرێت بسڕدرێتەوە — ئەم بابەتە جوڵەی مەخزەنی هەیە. لەبری ئەوە ناچالاکی بکە.');
         }
 
+        // سڕینەوە لە جەردە کراوەکاندا
+        \App\Models\StockCountItem::where('item_id', $item->id)->delete();
+
         $item->delete();
 
         return redirect()->route('items.index')->with('ok', 'بابەتەکە سڕدرایەوە.');

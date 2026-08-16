@@ -68,7 +68,10 @@ class StockCountController extends Controller
 
     public function show(StockCount $count): View
     {
-        $count->load(['warehouse', 'items.item.unit']);
+        $count->load([
+            'warehouse',
+            'items' => fn ($q) => $q->whereHas('item')->with('item.unit'),
+        ]);
 
         return view('counts.show', ['count' => $count]);
     }

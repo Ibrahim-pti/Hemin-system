@@ -12,7 +12,7 @@
             <div class="flex flex-wrap items-center gap-4 sm:gap-6">
                 <div>
                     <span class="text-[--color-ink-soft] text-xs block mb-0.5">ژمارەی جەرد:</span>
-                    <span class="font-bold text-slate-900 num text-base">{{ $count->count_no }}</span>
+                    <span class="font-bold text-slate-900 text-base" style="direction: ltr; display: inline-block;">{{ $count->count_no }}</span>
                 </div>
                 <div>
                     <span class="text-[--color-ink-soft] text-xs block mb-0.5">کۆگا:</span>
@@ -20,7 +20,7 @@
                 </div>
                 <div>
                     <span class="text-[--color-ink-soft] text-xs block mb-0.5">بەروار:</span>
-                    <span class="num font-semibold text-slate-800">{{ fmt_date($count->count_date) }}</span>
+                    <span class="font-semibold text-slate-800" style="direction: ltr; display: inline-block;">{{ fmt_date($count->count_date) }}</span>
                 </div>
                 <div>
                     <span class="text-[--color-ink-soft] text-xs block mb-0.5">دۆخ:</span>
@@ -66,22 +66,21 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="table w-full" id="count-table">
+                <table class="table w-full" id="count-table" style="direction: rtl;">
                     <thead>
                         <tr class="bg-slate-50/80 border-b border-[--color-line] text-slate-700 text-xs">
-                            <th class="w-12 !text-center py-3 px-3">#</th>
-                            <th class="!text-right py-3 px-3">جۆری سەروەت / کاڵا</th>
-                            <th class="!text-right py-3 px-3 w-36">ژمارە (ژمێردراو)</th>
-                            <th class="!text-right py-3 px-3 w-44">نرخی خەمڵاندراو (تاک)</th>
-                            <th class="!text-right py-3 px-3 w-44">کۆی گشتی</th>
-                            <th class="!text-right py-3 px-3 w-28">جیاوازی</th>
+                            <th style="width: 48px; text-align: center; padding: 12px 10px;">#</th>
+                            <th style="text-align: right; padding: 12px 16px;">جۆری سەروەت / کاڵا</th>
+                            <th style="width: 150px; text-align: right; padding: 12px 16px;">ژمارە (ژمێردراو)</th>
+                            <th style="width: 200px; text-align: right; padding: 12px 16px;">نرخی خەمڵاندراو (تاک)</th>
+                            <th style="width: 200px; text-align: right; padding: 12px 16px;">کۆی گشتی</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @php $grandTotal = 0; @endphp
                         @foreach ($count->items as $idx => $line)
+                            @if (!$line->item) @continue @endif
                             @php
-                                $diff = (float) $line->counted_qty - (float) $line->system_qty;
                                 $qtyForVal = $line->counted_qty !== null ? (float) $line->counted_qty : (float) $line->system_qty;
                                 $price = (float) ($line->unit_price ?? 0);
                                 $total = $qtyForVal * $price;
@@ -89,34 +88,38 @@
                             @endphp
                             <tr data-sys="{{ (float) $line->system_qty }}" class="hover:bg-slate-50/60 transition-colors text-sm">
                                 {{-- # --}}
-                                <td class="!text-center text-xs text-[--color-ink-soft] num py-3 px-3">{{ $idx + 1 }}</td>
+                                <td style="text-align: center; padding: 12px 10px; color: var(--color-ink-soft); font-size: 12px;">
+                                    {{ $idx + 1 }}
+                                </td>
                                 
                                 {{-- جۆری سەروەت --}}
-                                <td class="!text-right font-medium text-slate-800 py-3 px-3">
+                                <td style="text-align: right; padding: 12px 16px; font-weight: 500; color: #1e293b;">
                                     {{ $line->item?->name }}
                                 </td>
 
                                 {{-- ژمارە --}}
-                                <td class="!text-right py-3 px-3">
+                                <td style="text-align: right; padding: 12px 16px;">
                                     @if ($count->status === 'posted')
-                                        <span class="font-bold text-slate-900 num">{{ fmt_qty($line->counted_qty) }}</span>
+                                        <span style="font-weight: 700; color: #0f172a; display: inline-block;">{{ fmt_qty($line->counted_qty) }}</span>
                                     @else
                                         <input type="number" step="any" name="counted[{{ $line->id }}]"
                                                value="{{ $line->counted_qty !== null ? $line->counted_qty : $line->system_qty }}"
-                                               class="field num w-28 !py-1 text-right counted-input font-semibold"
+                                               class="field w-28 !py-1 text-right counted-input font-semibold"
+                                               style="text-align: right; display: inline-block;"
                                                placeholder="{{ fmt_qty($line->system_qty) }}">
                                     @endif
                                 </td>
 
                                 {{-- نرخی خەمڵاندراو (تاک) --}}
-                                <td class="!text-right py-3 px-3">
+                                <td style="text-align: right; padding: 12px 16px;">
                                     @if ($count->status === 'posted')
-                                        <span class="font-medium text-slate-800 num">{{ fmt_money($line->unit_price ?? 0) }}</span>
+                                        <span style="font-weight: 600; color: #334155; display: inline-block;">{{ fmt_money($line->unit_price ?? 0) }}</span>
                                     @else
-                                        <div class="flex items-center gap-1.5">
+                                        <div class="flex items-center gap-1.5" style="display: flex; align-items: center;">
                                             <input type="number" step="any" name="unit_price[{{ $line->id }}]"
                                                    value="{{ (float) ($line->unit_price ?? 0) }}"
-                                                   class="field num w-32 !py-1 text-right price-input font-medium"
+                                                   class="field w-32 !py-1 text-right price-input font-medium"
+                                                   style="text-align: right; display: inline-block;"
                                                    placeholder="0">
                                             <span class="text-xs text-[--color-ink-soft]">د.ع</span>
                                         </div>
@@ -124,32 +127,20 @@
                                 </td>
 
                                 {{-- کۆی گشتی نرخ --}}
-                                <td class="!text-right font-bold text-slate-900 py-3 px-3 row-total num" data-value="{{ $total }}">
+                                <td style="text-align: right; padding: 12px 16px; font-weight: 700; color: #0f172a;" class="row-total" data-value="{{ $total }}">
                                     {{ fmt_money($total) }}
-                                </td>
-
-                                {{-- جیاوازی --}}
-                                <td class="!text-right font-medium py-3 px-3 diff-cell num
-                                    {{ $line->counted_qty === null ? 'text-[--color-ink-soft]'
-                                       : (abs($diff) < 0.0005 ? 'text-slate-600' : ($diff > 0 ? 'text-[--color-ok]' : 'text-[--color-danger]')) }}">
-                                    @if ($line->counted_qty === null)
-                                        0
-                                    @else
-                                        {{ $diff > 0 ? '+' : '' }}{{ fmt_qty($diff) }}
-                                    @endif
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr class="bg-slate-100 font-bold border-t-2 border-slate-300">
-                            <td colspan="4" class="!text-right py-3.5 px-4 text-slate-900 text-sm font-bold">
+                            <td colspan="4" style="text-align: right; padding: 14px 16px; font-weight: 700; color: #0f172a; font-size: 14px;">
                                 کۆی گشتی سەروەت
                             </td>
-                            <td class="!text-right py-3.5 px-4 text-emerald-700 text-base font-bold num" id="grand-total-display">
+                            <td style="text-align: right; padding: 14px 16px; font-weight: 700; color: #047857; font-size: 16px;" id="grand-total-display">
                                 {{ fmt_money($grandTotal) }}
                             </td>
-                            <td></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -209,7 +200,6 @@
                     const sys = parseFloat(tr.dataset.sys) || 0;
                     const countInput = tr.querySelector('.counted-input');
                     const priceInput = tr.querySelector('.price-input');
-                    const diffCell = tr.querySelector('.diff-cell');
                     const totalCell = tr.querySelector('.row-total');
 
                     if (!countInput || !priceInput) return;
@@ -222,23 +212,6 @@
                     grandTotal += rowTotal;
 
                     totalCell.textContent = formatMoney(rowTotal);
-
-                    if (cntVal === '') {
-                        diffCell.textContent = '0';
-                        diffCell.className = '!text-right font-medium py-3 px-3 diff-cell num text-slate-600';
-                    } else {
-                        let diff = qty - sys;
-                        if (Math.abs(diff) < 0.0005) {
-                            diffCell.textContent = '0';
-                            diffCell.className = '!text-right font-medium py-3 px-3 diff-cell num text-slate-600';
-                        } else if (diff > 0) {
-                            diffCell.textContent = '+' + (Math.round(diff * 1000) / 1000);
-                            diffCell.className = '!text-right font-medium py-3 px-3 diff-cell num text-[--color-ok]';
-                        } else {
-                            diffCell.textContent = (Math.round(diff * 1000) / 1000).toString();
-                            diffCell.className = '!text-right font-medium py-3 px-3 diff-cell num text-[--color-danger]';
-                        }
-                    }
                 });
 
                 const grandTotalDisplay = document.getElementById('grand-total-display');
