@@ -131,7 +131,14 @@
                                 <span class="text-[11px] text-[--color-ink-soft] font-medium">{{ $item->unit?->name }}</span>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5 align-middle num text-gray-400 font-medium text-[13px]">{{ fmt_qty($item->min_qty) }}</td>
+                        <td class="px-5 py-3.5 align-middle num">
+                            <div class="flex flex-col items-start">
+                                <span class="font-bold text-[14px] text-gray-700">
+                                    {{ fmt_qty($item->min_qty) }}
+                                </span>
+                                <span class="text-[11px] text-[--color-ink-soft] font-medium">{{ $item->unit?->name }}</span>
+                            </div>
+                        </td>
                         @can('view_reports')
                             <td class="px-5 py-3.5 align-middle num font-medium text-gray-600 text-[13px]">
                                 {{ $item->last_cost ? fmt_money($item->last_cost, $item->cost_currency) : '—' }}

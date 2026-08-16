@@ -90,13 +90,16 @@ class DatabaseSeeder extends Seeder
         // یەکەکانی باو لە کارگەی ئاسنگەری.
         $units = [
             ['name' => 'دانە', 'code' => 'pc', 'type' => 'count'],
+            ['name' => 'پارچە', 'code' => 'piece', 'type' => 'count'],
+            ['name' => 'کارتۆن', 'code' => 'carton', 'type' => 'count'],
+            ['name' => 'دەستە', 'code' => 'set', 'type' => 'count'],
+            ['name' => 'لوولە', 'code' => 'pipe', 'type' => 'count'],
+            ['name' => 'سەفیحە', 'code' => 'sheet', 'type' => 'count'],
+            ['name' => 'قوتوو', 'code' => 'box', 'type' => 'count'],
             ['name' => 'مەتر', 'code' => 'm', 'type' => 'length'],
             ['name' => 'مەتر دووجا', 'code' => 'm2', 'type' => 'area'],
             ['name' => 'کیلۆگرام', 'code' => 'kg', 'type' => 'weight'],
             ['name' => 'تەن', 'code' => 't', 'type' => 'weight'],
-            ['name' => 'لوولە', 'code' => 'pipe', 'type' => 'count'],
-            ['name' => 'سەفیحە', 'code' => 'sheet', 'type' => 'count'],
-            ['name' => 'قوتوو', 'code' => 'box', 'type' => 'count'],
         ];
 
         foreach ($units as $unit) {

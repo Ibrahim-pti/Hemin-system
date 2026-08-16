@@ -56,13 +56,23 @@
             </div>
 
             {{-- یەکە و حەدەد --}}
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-4 sm:grid-cols-2" x-data="{
+                selectedUnit: '{{ old('unit_id', $item->unit_id) }}',
+                unitNames: {
+                    @foreach ($units as $unit)
+                        '{{ $unit->id }}': '{{ $unit->name }}',
+                    @endforeach
+                },
+                get unitText() {
+                    return this.unitNames[this.selectedUnit] || '';
+                }
+            }">
                 <div>
                     <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="unit_id">
                         یەکە <span class="text-[--color-danger]">*</span>
                     </label>
-                    <select id="unit_id" name="unit_id" class="field py-2.5 text-sm" required>
-                        <option value="">— هەڵبژێرە —</option>
+                    <select id="unit_id" name="unit_id" x-model="selectedUnit" class="field py-2.5 text-sm" required>
+                        <option value="">— هەڵبژێرە (دانە، پارچە، کارتۆن...) —</option>
                         @foreach ($units as $unit)
                             <option value="{{ $unit->id }}" @selected(old('unit_id', $item->unit_id) == $unit->id)>
                                 {{ $unit->name }}
@@ -74,10 +84,14 @@
 
                 <div>
                     <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="min_qty">
-                        حەدەد
+                        حەدەد (کەمترین بڕ)
                     </label>
-                    <input id="min_qty" name="min_qty" type="number" step="any" min="0" class="field num py-2.5 text-sm"
-                           value="{{ old('min_qty', $item->min_qty ?: 0) }}" placeholder="0">
+                    <div class="relative">
+                        <input id="min_qty" name="min_qty" type="number" step="any" min="0" class="field num py-2.5 text-sm pl-16"
+                               value="{{ old('min_qty', $item->min_qty ?: 0) }}" placeholder="0">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-[--color-brand-700] pointer-events-none"
+                              x-text="unitText"></span>
+                    </div>
                 </div>
             </div>
 
