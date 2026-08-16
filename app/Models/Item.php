@@ -17,7 +17,7 @@ class Item extends Model
 
     protected $fillable = [
         'code', 'name', 'item_category_id', 'unit_id', 'min_qty',
-        'last_cost', 'cost_currency', 'sale_price', 'is_for_sale', 'is_active', 'note',
+        'last_cost', 'cost_currency', 'purchase_date', 'sale_price', 'is_for_sale', 'is_active', 'note',
     ];
 
     protected function casts(): array
@@ -25,6 +25,7 @@ class Item extends Model
         return [
             'min_qty' => 'decimal:3',
             'last_cost' => 'decimal:2',
+            'purchase_date' => 'date',
             'sale_price' => 'decimal:2',
             'is_for_sale' => 'boolean',
             'is_active' => 'boolean',

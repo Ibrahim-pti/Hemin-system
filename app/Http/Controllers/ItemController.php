@@ -40,7 +40,11 @@ class ItemController extends Controller
     public function create(): View
     {
         return view('items.form', [
-            'item' => new Item(['cost_currency' => 'IQD', 'is_active' => true]),
+            'item' => new Item([
+                'cost_currency' => 'IQD', 
+                'purchase_date' => now()->toDateString(),
+                'is_active' => true,
+            ]),
             'categories' => ItemCategory::orderBy('name')->get(),
             'units' => Unit::where('is_active', true)->orderBy('name')->get(),
         ]);
@@ -98,6 +102,16 @@ class ItemController extends Controller
 
     private function validated(Request $request, ?Item $item = null): array
     {
+        // لابردنی فاریزە لە نرخ و بڕ پێش پشکنین
+        if ($request->has('last_cost')) {
+            $rawCost = str_replace(',', '', (string) $request->input('last_cost'));
+            $request->merge(['last_cost' => $rawCost !== '' ? $rawCost : null]);
+        }
+        if ($request->has('min_qty')) {
+            $rawMinQty = str_replace(',', '', (string) $request->input('min_qty'));
+            $request->merge(['min_qty' => $rawMinQty !== '' ? $rawMinQty : 0]);
+        }
+
         $unique = 'unique:items,code'.($item ? ",{$item->id}" : '');
 
         $data = $request->validate([
@@ -108,6 +122,7 @@ class ItemController extends Controller
             'min_qty' => ['nullable', 'numeric', 'min:0'],
             'last_cost' => ['nullable', 'numeric', 'min:0'],
             'cost_currency' => ['nullable', 'in:IQD,USD'],
+            'purchase_date' => ['nullable', 'date'],
             'sale_price' => ['nullable', 'numeric', 'min:0'],
             'is_for_sale' => ['nullable', 'boolean'],
             'note' => ['nullable', 'string'],
@@ -115,6 +130,9 @@ class ItemController extends Controller
             'code' => 'کۆد',
             'name' => 'ناو',
             'unit_id' => 'یەکە',
+            'min_qty' => 'نرخی بڕ',
+            'last_cost' => 'تێچووی کڕین',
+            'purchase_date' => 'بەرواری کڕین',
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);

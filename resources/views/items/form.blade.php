@@ -45,6 +45,17 @@
 
         <div class="p-6 md:p-8 space-y-5">
 
+            @if ($errors->any())
+                <div class="p-4 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs">
+                    <div class="font-bold text-sm mb-1">تکایە ئەم کێشانە چاک بکە:</div>
+                    <ul class="list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             {{-- ڕیزی ١: ناو و کۆد --}}
             <div class="grid gap-5 md:grid-cols-3">
                 <div class="md:col-span-2">
@@ -66,8 +77,8 @@
                 </div>
             </div>
 
-            {{-- ڕیزی ٢: یەکە، نرخی بڕ، و تێچووی کڕین --}}
-            <div class="grid gap-5 md:grid-cols-3">
+            {{-- ڕیزی ٢: یەکە، نرخی بڕ، تێچووی کڕین و بەرواری کڕین --}}
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="unit_id">
                         یەکە <span class="text-[--color-danger]">*</span>
@@ -92,44 +103,46 @@
                         <div class="absolute inset-y-1 left-1 flex items-center bg-gray-100/90 text-gray-700 px-2.5 rounded-md text-xs font-bold pointer-events-none border border-gray-200/60"
                              x-show="unitText" x-text="unitText"></div>
                     </div>
+                    @error('min_qty') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- تێچووی کڕین (بە دینار) --}}
                 @can('view_reports')
                     <div x-data="{
-                        rawCost: '{{ old('last_cost', $item->last_cost ? (float)$item->last_cost : '') }}',
-                        displayCost: '{{ old('last_cost', $item->last_cost ? number_format((float)$item->last_cost, 0, '.', ',') : '') }}',
-                        formatInput(val) {
-                            let clean = val.replace(/[^0-9.]/g, '');
+                        formatInput(e) {
+                            let clean = e.target.value.replace(/[^0-9.]/g, '');
                             let parts = clean.split('.');
                             if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
-                            
-                            let integerPart = parts[0];
-                            let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
-                            
-                            if (integerPart) {
-                                integerPart = parseInt(integerPart, 10).toLocaleString('en-US');
-                            }
-                            
-                            this.rawCost = clean;
-                            this.displayCost = integerPart ? integerPart + decimalPart : '';
+                            let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+                            let dec = parts.length > 1 ? '.' + parts[1] : '';
+                            e.target.value = int ? int + dec : '';
                         }
                     }">
-                        <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="display_cost">تێچووی کڕین</label>
+                        <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="last_cost">تێچووی کڕین</label>
                         <div class="relative">
-                            <input id="display_cost" type="text" inputmode="numeric"
-                                   x-model="displayCost"
-                                   @input="formatInput($event.target.value)"
+                            <input id="last_cost" name="last_cost" type="text" inputmode="numeric"
+                                   value="{{ old('last_cost', $item->last_cost ? number_format((float)$item->last_cost, 0, '.', ',') : '') }}"
+                                   @input="formatInput($event)"
                                    class="field num py-2.5 text-sm pl-14 font-semibold"
                                    placeholder="0">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-xs font-bold text-gray-400 pointer-events-none">
                                 د.ع
                             </span>
-                            <input type="hidden" name="last_cost" :value="rawCost">
                         </div>
+                        @error('last_cost') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
                         <input type="hidden" name="cost_currency" value="IQD">
                     </div>
                 @endcan
+
+                {{-- بەرواری کڕین --}}
+                <div>
+                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="purchase_date">
+                        بەرواری کڕین <span class="text-[11px] font-normal text-gray-400">(ئارەزوومەندانە)</span>
+                    </label>
+                    <input id="purchase_date" name="purchase_date" type="date" class="field num py-2.5 text-sm"
+                           value="{{ old('purchase_date', $item->purchase_date ? $item->purchase_date->format('Y-m-d') : date('Y-m-d')) }}">
+                    @error('purchase_date') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             {{-- ڕیزی ٣: تێبینی --}}
