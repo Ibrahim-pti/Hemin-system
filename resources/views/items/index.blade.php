@@ -27,12 +27,6 @@
             </svg>
             فلتەرکردنی مەوادەکان
         </h2>
-        @if(request()->hasAny(['q', 'qty_filter', 'sort']))
-            <a href="{{ route('items.index') }}" class="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
-                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                سڕینەوەی فلتەر
-            </a>
-        @endif
     </div>
 
     <form method="GET" action="{{ route('items.index') }}">
@@ -56,15 +50,24 @@
                 </select>
             </div>
 
-            {{-- دوگمەی فلتەرکردن --}}
-            <div>
+            {{-- دوگمەی فلتەرکردن و پاککردنەوە --}}
+            <div class="flex items-center gap-2">
                 <button type="submit" 
-                        class="btn btn-primary w-full py-2 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all">
+                        class="btn btn-primary flex-1 py-2 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all">
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                     </svg>
                     فلتەرکردن
                 </button>
+
+                @if(request()->hasAny(['q', 'qty_filter', 'sort']))
+                    <a href="{{ route('items.index') }}" 
+                       class="btn bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200/80 py-2 px-3.5 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 transition-all"
+                       title="پاککردنەوەی فلتەر">
+                        <svg class="size-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        پاککردنەوە
+                    </a>
+                @endif
             </div>
         </div>
     </form>
