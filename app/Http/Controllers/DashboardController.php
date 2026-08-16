@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\CashBox;
 use App\Models\Customer;
+use App\Models\Employee;
+use App\Models\ExternalJob;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Payment;
@@ -19,6 +21,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $today = now()->toDateString();
+        $startOfMonth = now()->startOfMonth()->toDateString();
 
         // ئەو کاڵایانەی لە سنووری ئاگاداری کەمتر بوونەتەوە.
         $lowStock = Item::query()
@@ -37,7 +40,7 @@ class DashboardController extends Controller
             'todayMovements' => StockMovement::whereDate('moved_at', $today)->count(),
         ];
 
-        // زانیاری پارە تەنها بۆ بەڕێوەبەر.
+        // زانیاری تەواو و دارایی بۆ بەڕێوەبەر.
         if ($user->canSeeMoney()) {
             $data += [
                 'todayOrders' => Order::whereDate('order_date', $today)
@@ -46,15 +49,26 @@ class DashboardController extends Controller
                 'todaySales' => (float) Order::whereDate('order_date', $today)
                     ->whereNotIn('status', ['draft', 'cancelled'])
                     ->sum(Order::totalIqdExpression()),
+                'monthSales' => (float) Order::whereDate('order_date', '>=', $startOfMonth)
+                    ->whereNotIn('status', ['draft', 'cancelled'])
+                    ->sum(Order::totalIqdExpression()),
                 'todayIn' => (float) Payment::where('direction', 'in')->whereDate('paid_at', $today)->sum('amount_iqd'),
                 'todayOut' => (float) Payment::where('direction', 'out')->whereDate('paid_at', $today)->sum('amount_iqd'),
+                'monthIn' => (float) Payment::where('direction', 'in')->whereDate('paid_at', '>=', $startOfMonth)->sum('amount_iqd'),
                 'cashBoxes' => CashBox::where('is_active', true)->get(),
                 'receivables' => $this->receivables(),
                 'payables' => $this->payables(),
                 'openOrders' => Order::whereIn('status', ['confirmed', 'in_production', 'ready'])->count(),
-                'recentOrders' => Order::with('customer')->latest('id')->limit(5)->get(),
+                'inProductionCount' => Order::where('status', 'in_production')->count(),
+                'readyOrdersCount' => Order::where('status', 'ready')->count(),
+                'recentOrders' => Order::with('customer')->latest('id')->limit(6)->get(),
+                'recentPayments' => Payment::with('cashBox')->latest('paid_at')->latest('id')->limit(5)->get(),
+                'activeJobs' => ExternalJob::where('status', 'open')->latest('id')->limit(5)->get(),
+                'activeJobsCount' => ExternalJob::where('status', 'open')->count(),
                 'presentToday' => Attendance::whereDate('work_date', $today)->where('status', 'present')->count(),
-                'totalEmployees' => \App\Models\Employee::active()->count(),
+                'absentToday' => Attendance::whereDate('work_date', $today)->where('status', 'absent')->count(),
+                'totalEmployees' => Employee::active()->count(),
+                'todayPurchases' => (float) Purchase::where('status', 'confirmed')->whereDate('purchase_date', $today)->sum(Purchase::totalIqdExpression()),
             ];
         }
 
