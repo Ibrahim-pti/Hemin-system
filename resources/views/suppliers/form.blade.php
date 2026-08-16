@@ -49,27 +49,28 @@
         @endforeach
     </datalist>
 
-    <div class="space-y-4">
-        {{-- ١. کارتی زانیاری فرۆشیار --}}
-        <div class="card">
-            <div class="card-head flex items-center justify-between">
-                <span>{{ $supplier->exists ? 'دەستکاریکردنی زانیارییەکانی فرۆشیار' : 'تۆمارکردنی فرۆشیاری نوێ' }}</span>
-                <a href="{{ route('suppliers.index') }}" class="btn btn-ghost !py-1 text-xs">گەڕانەوە &larr;</a>
-            </div>
+    <div class="card">
+        {{-- سەردێڕی فۆرم --}}
+        <div class="card-head flex items-center justify-between">
+            <span>{{ $supplier->exists ? 'دەستکاریکردنی زانیارییەکانی فرۆشیار' : 'تۆمارکردنی فرۆشیاری نوێ' }}</span>
+            <a href="{{ route('suppliers.index') }}" class="btn btn-ghost !py-1 text-xs">گەڕانەوە &larr;</a>
+        </div>
 
-            <div class="card-body grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="card-body space-y-5">
 
-                @if ($errors->any())
-                    <div class="sm:col-span-2 lg:col-span-3 p-4 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs">
-                        <div class="font-bold text-sm mb-1">تکایە ئەم کێشانە چاک بکە:</div>
-                        <ul class="list-disc list-inside space-y-1">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+            @if ($errors->any())
+                <div class="p-4 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs">
+                    <div class="font-bold text-sm mb-1">تکایە ئەم کێشانە چاک بکە:</div>
+                    <ul class="list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
+            {{-- بەشی زانیاری فرۆشیار --}}
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {{-- ناوی فرۆشیار --}}
                 <div class="sm:col-span-2 lg:col-span-1">
                     <label class="label" for="name">
@@ -102,25 +103,23 @@
                     <input id="note" name="note" class="field"
                            value="{{ old('note', $supplier->note) }}" placeholder="تێبینی تایبەت لەسەر فرۆشیار...">
                 </div>
-
-                <input type="hidden" name="opening_currency" value="IQD">
-                <input type="hidden" name="is_active" value="1">
             </div>
-        </div>
 
-        {{-- ٢. کارتی هێنانی مەواد (کڕین) بە دەست بۆ چەندین مەواد --}}
-        @if (!$supplier->exists)
-            <div class="card">
-                <div class="card-head flex items-center justify-between">
-                    <span>هێنانی مەواد / کڕین</span>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-[--color-ink-soft]" for="purchase_date">بەرواری هێنان:</label>
-                        <input id="purchase_date" name="purchase_date" type="date" class="field num !py-1 text-xs w-36"
-                               value="{{ old('purchase_date', now()->toDateString()) }}">
+            <input type="hidden" name="opening_currency" value="IQD">
+            <input type="hidden" name="is_active" value="1">
+
+            {{-- بەشی هێنانی مەواد لەناو هەمان فۆرم --}}
+            @if (!$supplier->exists)
+                <div class="pt-5 border-t border-[--color-line] space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-sm text-slate-900">هێنانی مەواد / کڕین</span>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-[--color-ink-soft]" for="purchase_date">بەرواری هێنان:</label>
+                            <input id="purchase_date" name="purchase_date" type="date" class="field num !py-1 text-xs w-36"
+                                   value="{{ old('purchase_date', now()->toDateString()) }}">
+                        </div>
                     </div>
-                </div>
 
-                <div class="card-body space-y-4">
                     {{-- خشتەی مەوادەکان --}}
                     <div class="overflow-x-auto">
                         <table class="table w-full" style="direction: rtl;">
@@ -208,7 +207,7 @@
                         </table>
                     </div>
 
-                    {{-- دوگمەی زیادکردنی مەوادی تر --}}
+                    {{-- دوگمەی زیادکردنی مەوادی تر و کۆی گشتی --}}
                     <div class="flex items-center justify-between pt-1">
                         <button type="button" @click="addLine()" class="btn btn-ghost !py-1.5 !px-3 text-xs font-semibold text-[--color-brand-700] hover:bg-blue-50 border border-dashed border-blue-300">
                             + زیادکردنی مەوادی تر
@@ -246,8 +245,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        @endif
+            @endif
+
+        </div>
     </div>
 
     {{-- دوگمەکانی خوارەوە --}}
