@@ -52,8 +52,9 @@ class DashboardController extends Controller
                 'receivables' => $this->receivables(),
                 'payables' => $this->payables(),
                 'openOrders' => Order::whereIn('status', ['confirmed', 'in_production', 'ready'])->count(),
-                'recentOrders' => Order::with('customer')->latest('id')->limit(6)->get(),
+                'recentOrders' => Order::with('customer')->latest('id')->limit(5)->get(),
                 'presentToday' => Attendance::whereDate('work_date', $today)->where('status', 'present')->count(),
+                'totalEmployees' => \App\Models\Employee::active()->count(),
             ];
         }
 
