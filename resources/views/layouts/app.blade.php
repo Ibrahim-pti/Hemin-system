@@ -20,6 +20,9 @@
         html.sidebar-collapsed aside.sidebar-nav [x-show="sidebarOpen"] {
             display: none !important;
         }
+        .sidebar-no-transition, .sidebar-no-transition * {
+            transition: none !important;
+        }
     </style>
 </head>
 <body class="h-full bg-slate-100 text-slate-800 antialiased font-sans"
@@ -146,6 +149,25 @@
             },
         }
     }
+
+    // Global SPA navigation interceptor for smooth transitions
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('tel:') || href.startsWith('mailto:')) return;
+        if (link.hasAttribute('target') || link.hasAttribute('download') || link.classList.contains('no-navigate')) return;
+
+        try {
+            const url = new URL(href, window.location.origin);
+            if (url.origin === window.location.origin) {
+                if (window.Livewire && typeof window.Livewire.navigate === 'function') {
+                    e.preventDefault();
+                    window.Livewire.navigate(url.pathname + url.search + url.hash);
+                }
+            }
+        } catch (err) {}
+    });
     </script>
 
     @stack('scripts')

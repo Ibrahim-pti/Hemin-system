@@ -1,13 +1,15 @@
 {{-- ── مێنیوی سەرەکی سیستەم (Dark Navy Sidebar) ── --}}
 {{-- NOTE: Using inline styles for critical layout to avoid Vite rebuild dependency --}}
 <aside
+    id="main-sidebar"
     :style="{
         width: sidebarOpen ? '16rem' : '5rem',
         minWidth: sidebarOpen ? '16rem' : '5rem',
         transform: (window.innerWidth < 640 && !mobileOpen) ? 'translateX(100%)' : 'translateX(0)',
     }"
     style="position: sticky; top: 0; height: 100vh; background: #0f172a; border-left: 1px solid rgba(51,65,85,0.5); z-index: 50; flex-shrink: 0; transition: width 0.2s ease, min-width 0.2s ease, transform 0.2s ease; display: flex; flex-direction: column; user-select: none;"
-    class="sidebar-nav"
+    class="sidebar-nav sidebar-no-transition"
+    x-init="$nextTick(() => { $el.classList.remove('sidebar-no-transition'); })"
     x-cloak>
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}
