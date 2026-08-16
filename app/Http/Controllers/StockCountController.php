@@ -88,15 +88,16 @@ class StockCountController extends Controller
 
         DB::transaction(function () use ($count, $counted, $prices) {
             foreach ($count->items as $line) {
-                $val = $counted[$line->id] ?? null;
-                $price = $prices[$line->id] ?? null;
+                $rawVal = isset($counted[$line->id]) ? str_replace(',', '', (string) $counted[$line->id]) : null;
+                $rawPrice = isset($prices[$line->id]) ? str_replace(',', '', (string) $prices[$line->id]) : null;
+
+                $val = ($rawVal === '' || $rawVal === null) ? null : (float) $rawVal;
+                $price = ($rawPrice === '' || $rawPrice === null) ? (float) $line->unit_price : (float) $rawPrice;
 
                 $line->update([
-                    'counted_qty' => $val === '' || $val === null ? null : (float) $val,
-                    'difference' => $val === '' || $val === null
-                        ? 0
-                        : (float) $val - (float) $line->system_qty,
-                    'unit_price' => $price === '' || $price === null ? (float) $line->unit_price : (float) $price,
+                    'counted_qty' => $val,
+                    'difference' => $val === null ? 0 : $val - (float) $line->system_qty,
+                    'unit_price' => $price,
                 ]);
             }
         });

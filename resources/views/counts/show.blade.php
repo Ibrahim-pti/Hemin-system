@@ -71,8 +71,8 @@
                         <tr class="bg-slate-50/80 border-b border-[--color-line] text-slate-700 text-xs">
                             <th style="width: 48px; text-align: center; padding: 12px 10px;">#</th>
                             <th style="text-align: right; padding: 12px 16px;">جۆری سەروەت / کاڵا</th>
-                            <th style="width: 150px; text-align: right; padding: 12px 16px;">ژمارە (ژمێردراو)</th>
-                            <th style="width: 200px; text-align: right; padding: 12px 16px;">نرخی خەمڵاندراو (تاک)</th>
+                            <th style="width: 160px; text-align: right; padding: 12px 16px;">ژمارە (ژمێردراو)</th>
+                            <th style="width: 220px; text-align: right; padding: 12px 16px;">نرخی خەمڵاندراو (تاک)</th>
                             <th style="width: 200px; text-align: right; padding: 12px 16px;">کۆی گشتی</th>
                         </tr>
                     </thead>
@@ -100,13 +100,13 @@
                                 {{-- ژمارە --}}
                                 <td style="text-align: right; padding: 12px 16px;">
                                     @if ($count->status === 'posted')
-                                        <span style="font-weight: 700; color: #0f172a; display: inline-block;">{{ fmt_qty($line->counted_qty) }}</span>
+                                        <span style="font-weight: 700; color: #0f172a; display: inline-block;">{{ (float) $line->counted_qty }}</span>
                                     @else
                                         <input type="number" step="any" name="counted[{{ $line->id }}]"
-                                               value="{{ $line->counted_qty !== null ? $line->counted_qty : $line->system_qty }}"
+                                               value="{{ $line->counted_qty !== null ? (float) $line->counted_qty : ((float) $line->system_qty > 0 ? (float) $line->system_qty : '') }}"
                                                class="field w-28 !py-1 text-right counted-input font-semibold"
                                                style="text-align: right; display: inline-block;"
-                                               placeholder="{{ fmt_qty($line->system_qty) }}">
+                                               placeholder="{{ (float) $line->system_qty }}">
                                     @endif
                                 </td>
 
@@ -116,8 +116,8 @@
                                         <span style="font-weight: 600; color: #334155; display: inline-block;">{{ fmt_money($line->unit_price ?? 0) }}</span>
                                     @else
                                         <div class="flex items-center gap-1.5" style="display: flex; align-items: center;">
-                                            <input type="number" step="any" name="unit_price[{{ $line->id }}]"
-                                                   value="{{ (float) ($line->unit_price ?? 0) }}"
+                                            <input type="text" inputmode="numeric" name="unit_price[{{ $line->id }}]"
+                                                   value="{{ (float) ($line->unit_price ?? 0) > 0 ? number_format((float) ($line->unit_price ?? 0), 0, '.', ',') : '' }}"
                                                    class="field w-32 !py-1 text-right price-input font-medium"
                                                    style="text-align: right; display: inline-block;"
                                                    placeholder="0">
@@ -194,6 +194,15 @@
                 return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' د.ع';
             }
 
+            function formatPriceInput(e) {
+                let clean = e.target.value.replace(/[^0-9.]/g, '');
+                let parts = clean.split('.');
+                if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+                let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+                let dec = parts.length > 1 ? '.' + parts[1] : '';
+                e.target.value = int ? int + dec : '';
+            }
+
             function recalculateTotals() {
                 let grandTotal = 0;
                 document.querySelectorAll('#count-table tbody tr').forEach(function(tr) {
@@ -204,10 +213,12 @@
 
                     if (!countInput || !priceInput) return;
 
-                    const cntVal = countInput.value.trim();
-                    const priceVal = parseFloat(priceInput.value) || 0;
+                    const cntRaw = countInput.value.trim().replace(/,/g, '');
+                    const priceRaw = priceInput.value.trim().replace(/,/g, '');
                     
-                    let qty = cntVal === '' ? sys : (parseFloat(cntVal) || 0);
+                    const priceVal = parseFloat(priceRaw) || 0;
+                    let qty = cntRaw === '' ? sys : (parseFloat(cntRaw) || 0);
+                    
                     let rowTotal = qty * priceVal;
                     grandTotal += rowTotal;
 
@@ -220,7 +231,14 @@
                 }
             }
 
-            document.querySelectorAll('.counted-input, .price-input').forEach(function(input) {
+            document.querySelectorAll('.price-input').forEach(function(input) {
+                input.addEventListener('input', function(e) {
+                    formatPriceInput(e);
+                    recalculateTotals();
+                });
+            });
+
+            document.querySelectorAll('.counted-input').forEach(function(input) {
                 input.addEventListener('input', recalculateTotals);
             });
         </script>
