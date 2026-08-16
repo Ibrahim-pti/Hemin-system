@@ -14,20 +14,17 @@ class ItemController extends Controller
     public function index(Request $request): View
     {
         $warehouseId = $request->integer('warehouse') ?: null;
-        $type = $request->string('type')->toString();
 
         $items = Item::query()
             ->withStock($warehouseId)
             ->with(['unit'])
             ->search($request->string('q')->toString())
-            ->when($type === 'sale', fn ($q) => $q->forSale())
-            ->when($type === 'raw', fn ($q) => $q->rawMaterials())
             ->when($request->boolean('low'), fn ($q) => $q->where('min_qty', '>', 0))
             ->orderBy('name')
             ->paginate(30)
             ->withQueryString();
 
-        // پاڵاوتنی «تەنها کاڵای کەم» دوای حیسابی باڵانس دەکرێت.
+        // پاڵاوتنی «تەنها مەوادی کەم» دوای حیسابی باڵانس دەکرێت.
         if ($request->boolean('low')) {
             $items->setCollection(
                 $items->getCollection()->filter(fn (Item $i) => $i->stock_qty <= (float) $i->min_qty)->values()
@@ -36,23 +33,16 @@ class ItemController extends Controller
 
         return view('items.index', [
             'items' => $items,
-            'currentType' => $type,
-            'allCount' => Item::active()->count(),
-            'rawCount' => Item::active()->rawMaterials()->count(),
-            'saleCount' => Item::active()->forSale()->count(),
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
-    public function create(Request $request): View
+    public function create(): View
     {
-        $isForSale = $request->string('type')->toString() === 'sale';
-
         return view('items.form', [
-            'item' => new Item(['cost_currency' => 'IQD', 'is_for_sale' => $isForSale, 'is_active' => true]),
+            'item' => new Item(['cost_currency' => 'IQD', 'is_active' => true]),
             'categories' => ItemCategory::orderBy('name')->get(),
             'units' => Unit::where('is_active', true)->orderBy('name')->get(),
-            'targetType' => $request->string('type')->toString(),
         ]);
     }
 
@@ -60,9 +50,7 @@ class ItemController extends Controller
     {
         $item = Item::create($this->validated($request));
 
-        $redirectType = $item->is_for_sale ? 'sale' : 'raw';
-
-        return redirect()->route('items.index', ['type' => $redirectType])->with('ok', "بابەتی «{$item->name}» زیادکرا.");
+        return redirect()->route('items.index')->with('ok', "مەوادی «{$item->name}» زیادکرا.");
     }
 
     public function show(Item $item): View

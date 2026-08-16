@@ -54,27 +54,27 @@
 {{-- ── ٢. خانەکانی مێنیوی خێرا (Launchpad) ── --}}
 @php
     $tiles = [
-        // ڕیزی ١: کۆگا و ماددە و فرۆشتن
-        ['c' => 'tile-blue',    'route' => 'items.index', 'params' => ['type' => 'raw'],  'label' => 'مەوادی کۆگا',       'icon' => 'items',         'can' => 'view_stock'],
-        ['c' => 'tile-blue',    'route' => 'items.index', 'params' => ['type' => 'sale'], 'label' => 'بابەتی فرۆشتن',     'icon' => 'orders',        'can' => 'view_stock'],
+        // ڕیزی ١: کۆگا و لایەنەکان
+        ['c' => 'tile-blue',    'route' => 'items.index',                                 'label' => 'دۆخی کۆگا',       'icon' => 'items',         'can' => 'view_stock'],
         ['c' => 'tile-blue',    'route' => 'counts.index',                                'label' => 'جەردی کۆگا',        'icon' => 'counts',        'can' => 'manage_stock_counts'],
         ['c' => 'tile-blue',    'route' => 'warehouses.index',                            'label' => 'کۆگاکان',           'icon' => 'warehouses',    'can' => 'manage_items'],
         ['c' => 'tile-blue',    'route' => 'customers.index',                             'label' => 'کڕیارەکان',         'icon' => 'customers',     'can' => 'manage_customers'],
         ['c' => 'tile-blue',    'route' => 'suppliers.index',                             'label' => 'فرۆشیارەکان',       'icon' => 'suppliers',     'can' => 'manage_suppliers'],
+        ['c' => 'tile-blue',    'route' => 'employees.index',                             'label' => 'کارمەندان',         'icon' => 'employees',     'can' => 'manage_employees'],
 
-        // ڕیزی ٢: کڕین، فرۆشتن، کارمەندان و دارایی
-        ['c' => 'tile-orange',  'route' => 'employees.index',                             'label' => 'کارمەندان',         'icon' => 'employees',     'can' => 'manage_employees'],
+        // ڕیزی ٢: کڕین، فرۆشتن و دارایی
         ['c' => 'tile-orange',  'route' => 'orders.index',                                'label' => 'وەسڵ و داواکاری',   'icon' => 'orders',        'can' => 'manage_orders'],
         ['c' => 'tile-orange',  'route' => 'purchases.index',                             'label' => 'پسوولەی کڕین',      'icon' => 'purchases',     'can' => 'manage_purchases'],
         ['c' => 'tile-orange',  'route' => 'external-jobs.index',                         'label' => 'ئیشی خاریجی',       'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
         ['c' => 'tile-red',     'route' => 'cash.index',                                  'label' => 'قاسە',              'icon' => 'cash',          'can' => 'manage_cash'],
         ['c' => 'tile-red',     'route' => 'payments.index',                              'label' => 'حەقدی و پارەدان',   'icon' => 'payments',      'can' => 'manage_payments'],
+        ['c' => 'tile-red',     'route' => 'debts.index',                                 'label' => 'قەرزەکان',          'icon' => 'debts',         'can' => 'manage_payments'],
 
         // ڕیزی ٣: کار، ڕاپۆرت و سیستەم
-        ['c' => 'tile-emerald', 'route' => 'debts.index',                                 'label' => 'قەرزەکان',          'icon' => 'debts',         'can' => 'manage_payments'],
         ['c' => 'tile-emerald', 'route' => 'attendance.index',                            'label' => 'هاتن و چوون',       'icon' => 'attendance',    'can' => 'manage_employees'],
         ['c' => 'tile-emerald', 'route' => 'attendance.wages',                            'label' => 'حەقدەستەکان',       'icon' => 'employees',     'can' => 'manage_employees'],
         ['c' => 'tile-maroon',  'route' => 'reports.show', 'params' => 'profit',          'label' => 'راپۆرتی قازانج',   'icon' => 'reports',       'can' => 'view_reports'],
+        ['c' => 'tile-maroon',  'route' => 'reports.index',                               'label' => 'هەموو راپۆرت',    'icon' => 'reports',       'can' => 'view_reports'],
         ['c' => 'tile-brown',   'route' => 'activity.index',                              'label' => 'مێژووی کردارەکان',   'icon' => 'activity',      'can' => 'manage_settings'],
         ['c' => 'tile-brown',   'route' => 'settings.index',                              'label' => 'ڕێکخستن و باکەپ',   'icon' => 'settings',      'can' => 'manage_settings'],
     ];

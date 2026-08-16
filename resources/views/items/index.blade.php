@@ -1,16 +1,16 @@
 @extends('layouts.app')
-@section('title', $currentType === 'sale' ? 'بابەتەکانی فرۆشتن' : ($currentType === 'raw' ? 'مەوادی کۆگا' : 'بابەتەکان'))
+@section('title', 'دۆخی کۆگا')
 
 @section('actions')
     @can('manage_items')
-        <a href="{{ route('items.create', ['type' => $currentType]) }}" class="btn btn-primary shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
+        <a href="{{ route('items.create') }}" class="btn btn-primary shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
             <span class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
             <span class="relative flex items-center gap-1.5">
                 <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                {{ $currentType === 'sale' ? 'زیادکردنی بابەتی فرۆشتن' : ($currentType === 'raw' ? 'زیادکردنی مەوادی کۆگا' : 'زیادکردنی بابەت') }}
+                زیادکردنی مەواد
             </span>
         </a>
     @endcan
@@ -18,32 +18,8 @@
 
 @section('content')
 
-{{-- تابی جیاکردنەوەی مەوادی کارگە و بابەتی فرۆشتن --}}
-<div class="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
-    <a href="{{ route('items.index', array_merge(request()->except('type', 'page'))) }}" 
-       class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border {{ empty($currentType) ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300' }}">
-        <span>هەموو بابەتەکان</span>
-        <span class="num text-[11px] px-1.5 py-0.5 rounded-full {{ empty($currentType) ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700' }}">{{ fmt_num($allCount) }}</span>
-    </a>
-
-    <a href="{{ route('items.index', array_merge(request()->except('page'), ['type' => 'raw'])) }}" 
-       class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border {{ $currentType === 'raw' ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300' }}">
-        <span>📦 مەوادی کارگە و کۆگا (مەسرەف)</span>
-        <span class="num text-[11px] px-1.5 py-0.5 rounded-full {{ $currentType === 'raw' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700' }}">{{ fmt_num($rawCount) }}</span>
-    </a>
-
-    <a href="{{ route('items.index', array_merge(request()->except('page'), ['type' => 'sale'])) }}" 
-       class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border {{ $currentType === 'sale' ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300' }}">
-        <span>🛒 بابەتەکانی فرۆشتن (بەرهەم)</span>
-        <span class="num text-[11px] px-1.5 py-0.5 rounded-full {{ $currentType === 'sale' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700' }}">{{ fmt_num($saleCount) }}</span>
-    </a>
-</div>
-
 {{-- پاڵاوتن --}}
 <form method="GET" class="card mb-6 border-0 ring-1 ring-[--color-line] shadow-sm bg-white overflow-hidden rounded-[14px]">
-    @if(request('type'))
-        <input type="hidden" name="type" value="{{ request('type') }}">
-    @endif
     <div class="bg-[--color-surface-soft]/50 px-4 py-3 border-b border-[--color-line] flex items-center gap-2.5">
         <div class="icon-chip bg-[--color-brand-soft] text-[--color-brand-700] size-7 rounded-md">
             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -55,7 +31,7 @@
     
     <div class="p-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-12 items-end">
         <div class="lg:col-span-6 relative group">
-            <label class="label text-[11px] font-bold text-[--color-ink-soft] uppercase tracking-wider mb-2">ناوی بابەت یان کۆد</label>
+            <label class="label text-[11px] font-bold text-[--color-ink-soft] uppercase tracking-wider mb-2">ناوی مەواد یان کۆد</label>
             <div class="relative">
                 <input type="search" name="q" value="{{ request('q') }}" 
                        class="field pl-3 pr-10 py-2.5 rounded-lg border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm group-hover:border-gray-300" 
@@ -108,12 +84,12 @@
         <table class="table w-full text-sm text-right border-collapse">
             <thead class="bg-[--color-surface-soft]/80 text-[--color-ink-soft] text-[13px] border-b border-[--color-line]">
                 <tr>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold">زانیاری بابەت</th>
+                    <th class="px-5 py-4 whitespace-nowrap font-semibold">ناوی مەواد</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold">کۆد</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold num">باڵانس</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold num">حەدەد</th>
                     @can('view_reports')
-                        <th class="px-5 py-4 whitespace-nowrap font-semibold num">نرخی کڕین</th>
+                        <th class="px-5 py-4 whitespace-nowrap font-semibold num">تێچووی کڕین</th>
                     @endcan
                     <th class="px-5 py-4 whitespace-nowrap font-semibold text-center">کردار</th>
                 </tr>
@@ -134,22 +110,11 @@
                                     <a href="{{ route('items.show', $item) }}" class="font-bold text-[--color-ink] hover:text-[--color-brand-600] transition-colors text-[15px] leading-snug">
                                         {{ $item->name }}
                                     </a>
-                                    <div class="flex items-center gap-1.5 mt-1">
-                                        @if ($item->is_for_sale)
-                                            <span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                                🛒 بۆ فرۆشتن
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">
-                                                📦 مەوادی کارگە
-                                            </span>
-                                        @endif
-                                        @unless ($item->is_active)
-                                            <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded text-red-700 bg-red-50 border border-red-100">
-                                                <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span> ناچالاک
-                                            </span>
-                                        @endunless
-                                    </div>
+                                    @unless ($item->is_active)
+                                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded text-red-700 bg-red-50 border border-red-100 mt-1 w-max">
+                                            <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span> ناچالاک
+                                        </span>
+                                    @endunless
                                 </div>
                             </div>
                         </td>

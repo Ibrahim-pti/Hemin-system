@@ -1,12 +1,11 @@
 @extends('layouts.app')
-@section('title', $item->exists ? 'دەستکاری بابەت' : 'بابەتی نوێ')
+@section('title', $item->exists ? 'دەستکاری مەواد' : 'مەوادی نوێ')
 
 @section('content')
 
 <form method="POST"
       action="{{ $item->exists ? route('items.update', $item) : route('items.store') }}"
       x-data="{
-          isForSale: {{ old('is_for_sale', $item->is_for_sale ? '1' : '0') }},
           selectedUnit: '{{ old('unit_id', $item->unit_id) }}',
           unitNames: {
               @foreach ($units as $unit)
@@ -33,9 +32,9 @@
                 </span>
                 <div>
                     <h2 class="font-bold text-[15px] text-[--color-ink]">
-                        {{ $item->exists ? 'دەستکاریکردنی زانیارییەکانی بابەت' : 'تۆمارکردنی بابەتی نوێ' }}
+                        {{ $item->exists ? 'دەستکاریکردنی زانیارییەکانی مەواد' : 'تۆمارکردنی مەوادی نوێ لە کۆگا' }}
                     </h2>
-                    <p class="text-xs text-[--color-ink-soft]">ناو، کۆد، جۆری بەکارهێنان و تێچوو لەم فۆرمە دیاری بکە</p>
+                    <p class="text-xs text-[--color-ink-soft]">ناو، کۆد، یەکە و تێچووی کڕین لەم فۆرمە دیاری بکە</p>
                 </div>
             </div>
             
@@ -46,34 +45,14 @@
 
         <div class="p-6 space-y-4">
 
-            {{-- هەڵبژاردنی جۆری بابەت: مەوادی کارگە یان بۆ فرۆشتن --}}
-            <div class="p-3 bg-gray-50 rounded-xl border border-gray-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                    <span class="text-xs font-bold text-[--color-ink] block">ئەم بابەتە بۆ چی بەکاردێت؟</span>
-                    <span class="text-[11px] text-[--color-ink-soft]">دیاری بکە ئایا مەوادی خاوی کارگەیە یان کاڵای فرۆشتنە</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all select-none"
-                           :class="!Boolean(Number(isForSale)) ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'">
-                        <input type="radio" name="is_for_sale" value="0" x-model="isForSale" class="sr-only">
-                        <span>📦 مەوادی کارگە (مەخزەن)</span>
-                    </label>
-                    <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all select-none"
-                           :class="Boolean(Number(isForSale)) ? 'bg-[--color-brand-600] text-white border-[--color-brand-600] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'">
-                        <input type="radio" name="is_for_sale" value="1" x-model="isForSale" class="sr-only">
-                        <span>🛒 کاڵا بۆ فرۆشتن</span>
-                    </label>
-                </div>
-            </div>
-
             {{-- ناو و کۆد --}}
             <div class="grid gap-4 sm:grid-cols-3">
                 <div class="sm:col-span-2">
                     <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="name">
-                        ناوی بابەت <span class="text-[--color-danger]">*</span>
+                        ناوی مەواد <span class="text-[--color-danger]">*</span>
                     </label>
                     <input id="name" name="name" class="field py-2.5 text-sm" required
-                           value="{{ old('name', $item->name) }}" placeholder="بۆ نموونە: لوولەی ٤٠×٤٠، وایەری لەحیم، قوفڵ...">
+                           value="{{ old('name', $item->name) }}" placeholder="بۆ نموونە: لوولەی ٤٠×٤٠، وایەری لەحیم، بۆیاخی ڕەش...">
                     @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
                 </div>
 
@@ -94,7 +73,7 @@
                         یەکە <span class="text-[--color-danger]">*</span>
                     </label>
                     <select id="unit_id" name="unit_id" x-model="selectedUnit" class="field py-2.5 text-sm" required>
-                        <option value="">— هەڵبژێرە (دانە، پارچە، کارتۆن...) —</option>
+                        <option value="">— هەڵبژێرە (دانە، پارچە، کارتۆن، مەتر...) —</option>
                         @foreach ($units as $unit)
                             <option value="{{ $unit->id }}" @selected(old('unit_id', $item->unit_id) == $unit->id)>
                                 {{ $unit->name }}
@@ -106,7 +85,7 @@
 
                 <div>
                     <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="min_qty">
-                        حەدەد (کەمترین بڕ)
+                        حەدەد (کەمترین بڕی پێویست)
                     </label>
                     <div class="relative">
                         <input id="min_qty" name="min_qty" type="number" step="any" min="0" class="field num py-2.5 text-sm pl-16"
@@ -117,58 +96,57 @@
                 </div>
             </div>
 
-            {{-- نرخەکان --}}
+            {{-- تێچووی کڕین (بە دینار) --}}
             @can('view_reports')
-                <div class="grid gap-4 sm:grid-cols-3">
-                    <div>
-                        <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="last_cost">کڕین (تێچووی سەر خۆمان)</label>
-                        <input id="last_cost" name="last_cost" type="number" step="0.01" min="0" class="field num py-2.5 text-sm"
-                               value="{{ old('last_cost', $item->last_cost) }}" placeholder="0">
+                <div x-data="{
+                    cost: '{{ old('last_cost', $item->last_cost ? (float)$item->last_cost : '') }}',
+                    get formattedCost() {
+                        if (!this.cost || isNaN(this.cost) || Number(this.cost) <= 0) return '';
+                        return Number(this.cost).toLocaleString('en-US') + ' د.ع';
+                    }
+                }">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="label !mb-0 text-xs font-bold text-[--color-ink-soft]" for="last_cost">تێچووی کڕین</label>
+                        <span class="text-xs font-bold text-[--color-brand-700] num" x-show="cost > 0" x-text="formattedCost"></span>
                     </div>
-
-                    <div>
-                        <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="cost_currency">دراوی تێچوو</label>
-                        <select id="cost_currency" name="cost_currency" class="field py-2.5 text-sm">
-                            <option value="IQD" @selected(old('cost_currency', $item->cost_currency) === 'IQD')>دینار (IQD)</option>
-                            <option value="USD" @selected(old('cost_currency', $item->cost_currency) === 'USD')>دۆلار ($)</option>
-                        </select>
+                    <div class="relative">
+                        <input id="last_cost" name="last_cost" type="number" step="any" min="0" 
+                               x-model="cost"
+                               class="field num py-2.5 text-sm pl-14"
+                               placeholder="0">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-xs font-bold text-gray-400 pointer-events-none">
+                            د.ع
+                        </span>
                     </div>
-
-                    <div x-show="Boolean(Number(isForSale))" x-transition>
-                        <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="sale_price">نرخی فرۆشتن</label>
-                        <input id="sale_price" name="sale_price" type="number" step="0.01" min="0" class="field num py-2.5 text-sm"
-                               value="{{ old('sale_price', $item->sale_price) }}" placeholder="0">
-                    </div>
-
-                    <div x-show="!Boolean(Number(isForSale))" class="flex flex-col justify-center text-xs text-[--color-ink-soft] bg-gray-50/70 p-2.5 rounded-lg border border-dashed border-gray-200">
-                        <span class="font-medium text-gray-500">🔒 تەنها مەوادی کارگەیە</span>
-                        <span class="text-[11px] text-gray-400">نرخی فرۆشتنی پێویست نییە</span>
-                    </div>
+                    <input type="hidden" name="cost_currency" value="IQD">
                 </div>
             @endcan
 
             {{-- تێبینی --}}
             <div>
-                <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="note">تێبینی</label>
-                <textarea id="note" name="note" rows="2" class="field text-sm" placeholder="ڕوونکردنەوە یان تێبینی تایبەت...">{{ old('note', $item->note) }}</textarea>
+                <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="note">
+                    تێبینی <span class="text-[11px] font-normal text-gray-400">(ئارەزوومەندانە)</span>
+                </label>
+                <textarea id="note" name="note" rows="2" class="field text-sm" placeholder="ڕوونکردنەوە، قیاس، یان تێبینی تایبەت...">{{ old('note', $item->note) }}</textarea>
             </div>
 
             <input type="hidden" name="is_active" value="1">
+            <input type="hidden" name="is_for_sale" value="0">
         </div>
 
         {{-- دوگمەکانی خوارەوە --}}
         <div class="bg-[--color-surface-soft]/60 px-6 py-4 border-t border-[--color-line] flex items-center justify-between">
             <div class="flex items-center gap-2.5">
                 <button class="btn btn-primary shadow-sm hover:shadow-md transition-all px-6 py-2.5 text-sm font-semibold">
-                    {{ $item->exists ? 'نوێکردنەوەی بابەت' : 'زیادکردنی بابەت' }}
+                    {{ $item->exists ? 'نوێکردنەوەی مەواد' : 'زیادکردنی مەواد' }}
                 </button>
                 <a href="{{ route('items.index') }}" class="btn btn-ghost px-4 py-2.5 text-sm">پاشگەزبوونەوە</a>
             </div>
 
             @if ($item->exists)
                 <button type="submit" form="delete-item" class="btn btn-ghost !text-[--color-danger] hover:!bg-red-50 text-xs font-semibold"
-                        onclick="return confirm('دڵنیایت لە سڕینەوەی ئەم بابەتە؟')">
-                    سڕینەوەی بابەت
+                        onclick="return confirm('دڵنیایت لە سڕینەوەی ئەم مەوادە؟')">
+                    سڕینەوەی مەواد
                 </button>
             @endif
         </div>
