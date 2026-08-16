@@ -85,7 +85,6 @@
             <thead class="bg-[--color-surface-soft]/80 text-[--color-ink-soft] text-[13px] border-b border-[--color-line]">
                 <tr>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold">ناوی مەواد</th>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold">کۆد</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold num">باڵانس</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold num">نرخی بڕ</th>
                     @can('view_reports')
@@ -117,11 +116,6 @@
                                     @endunless
                                 </div>
                             </div>
-                        </td>
-                        <td class="px-5 py-3.5 align-middle">
-                            <span class="num inline-block bg-gray-50 text-gray-600 px-2.5 py-1 rounded-[6px] text-xs font-mono font-medium border border-gray-200/80">
-                                {{ $item->code }}
-                            </span>
                         </td>
                         <td class="px-5 py-3.5 align-middle num">
                             <div class="flex flex-col items-start">

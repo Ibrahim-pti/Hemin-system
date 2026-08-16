@@ -56,25 +56,14 @@
                 </div>
             @endif
 
-            {{-- ڕیزی ١: ناو و کۆد --}}
-            <div class="grid gap-5 md:grid-cols-3">
-                <div class="md:col-span-2">
-                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="name">
-                        ناوی مەواد <span class="text-[--color-danger]">*</span>
-                    </label>
-                    <input id="name" name="name" class="field py-2.5 text-sm" required
-                           value="{{ old('name', $item->name) }}" placeholder="بۆ نموونە: لوولەی ٤٠×٤٠، وایەری لەحیم، بۆیاخی ڕەش...">
-                    @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="code">
-                        کۆد <span class="text-[--color-danger]">*</span>
-                    </label>
-                    <input id="code" name="code" class="field num py-2.5 text-sm" required dir="ltr"
-                           value="{{ old('code', $item->code ?: 'K-'.str_pad((string) (\App\Models\Item::max('id') + 1), 4, '0', STR_PAD_LEFT)) }}">
-                    @error('code') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
-                </div>
+            {{-- ڕیزی ١: ناو --}}
+            <div>
+                <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="name">
+                    ناوی مەواد <span class="text-[--color-danger]">*</span>
+                </label>
+                <input id="name" name="name" class="field py-2.5 text-sm" required
+                       value="{{ old('name', $item->name) }}" placeholder="بۆ نموونە: لوولەی ٤٠×٤٠، وایەری لەحیم، بۆیاخی ڕەش...">
+                @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
             </div>
 
             {{-- ڕیزی ٢: یەکە، نرخی بڕ، تێچووی کڕین و بەرواری کڕین --}}
@@ -140,7 +129,7 @@
                         بەرواری کڕین <span class="text-[11px] font-normal text-gray-400">(ئارەزوومەندانە)</span>
                     </label>
                     <input id="purchase_date" name="purchase_date" type="date" class="field num py-2.5 text-sm"
-                           value="{{ old('purchase_date', $item->purchase_date ? $item->purchase_date->format('Y-m-d') : date('Y-m-d')) }}">
+                           value="{{ old('purchase_date', $item->purchase_date ? $item->purchase_date->format('Y-m-d') : '') }}">
                     @error('purchase_date') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
                 </div>
             </div>

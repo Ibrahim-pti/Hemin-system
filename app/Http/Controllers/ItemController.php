@@ -42,7 +42,6 @@ class ItemController extends Controller
         return view('items.form', [
             'item' => new Item([
                 'cost_currency' => 'IQD', 
-                'purchase_date' => now()->toDateString(),
                 'is_active' => true,
             ]),
             'categories' => ItemCategory::orderBy('name')->get(),
@@ -102,6 +101,16 @@ class ItemController extends Controller
 
     private function validated(Request $request, ?Item $item = null): array
     {
+        // دروستکردنی ئۆتۆماتیکی کۆد ئەگەر نەنووسرابوو
+        if (! $request->filled('code')) {
+            if ($item && $item->code) {
+                $request->merge(['code' => $item->code]);
+            } else {
+                $nextId = ((int) Item::max('id')) + 1;
+                $request->merge(['code' => 'M-' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT)]);
+            }
+        }
+
         // لابردنی فاریزە لە نرخ و بڕ پێش پشکنین
         if ($request->has('last_cost')) {
             $rawCost = str_replace(',', '', (string) $request->input('last_cost'));
@@ -115,7 +124,7 @@ class ItemController extends Controller
         $unique = 'unique:items,code'.($item ? ",{$item->id}" : '');
 
         $data = $request->validate([
-            'code' => ['required', 'string', 'max:50', $unique],
+            'code' => ['nullable', 'string', 'max:50', $unique],
             'name' => ['required', 'string', 'max:255'],
             'item_category_id' => ['nullable', 'exists:item_categories,id'],
             'unit_id' => ['required', 'exists:units,id'],
