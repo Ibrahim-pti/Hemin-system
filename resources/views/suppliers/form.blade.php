@@ -42,13 +42,6 @@
     @csrf
     @if ($supplier->exists) @method('PUT') @endif
 
-    {{-- لیستی پێشنیارکراوی کاڵاکان بۆ خۆتەواوکردن لە کاتی نووسیندا --}}
-    <datalist id="existing-items">
-        @foreach ($items as $item)
-            <option value="{{ $item->name }}">
-        @endforeach
-    </datalist>
-
     <div class="card">
         {{-- سەردێڕی فۆرم --}}
         <div class="card-head flex items-center justify-between">
@@ -169,7 +162,6 @@
                                             <input type="text"
                                                    :name="'purchase_lines[' + index + '][name]'"
                                                    x-model="line.name"
-                                                   list="existing-items"
                                                    class="field w-full !py-1.5 !px-3 text-sm bg-white"
                                                    placeholder="ناوی مەواد...">
                                         </td>
