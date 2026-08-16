@@ -27,7 +27,7 @@
             </svg>
             فلتەرکردنی مەوادەکان
         </h2>
-        @if(request()->hasAny(['q', 'qty_filter', 'sort', 'order']))
+        @if(request()->hasAny(['q', 'qty_filter', 'sort']))
             <a href="{{ route('items.index') }}" class="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
                 <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 سڕینەوەی فلتەر
@@ -36,21 +36,13 @@
     </div>
 
     <form method="GET" action="{{ route('items.index') }}">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
             {{-- ناوی مەواد --}}
             <div>
                 <label class="block text-xs font-bold text-gray-700 mb-1.5 text-right">ناوی مەواد</label>
-                <div class="relative">
-                    <input type="search" name="q" value="{{ request('q') }}" 
-                           class="field pl-3 pr-9 py-2 rounded-xl border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm bg-gray-50/60 focus:bg-white" 
-                           placeholder="گەڕان بەپێی ناوی مەواد...">
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </div>
-                </div>
+                <input type="text" name="q" value="{{ request('q') }}" 
+                       class="field px-3.5 py-2 rounded-xl border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm bg-gray-50/60 focus:bg-white" 
+                       placeholder="ناوی مەواد بنووسە...">
             </div>
 
             {{-- فلتەری بڕ --}}
@@ -64,23 +56,8 @@
                 </select>
             </div>
 
-            {{-- ڕیزبەندی --}}
-            <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1.5 text-right">ڕیزبەندی بەپێی</label>
-                <select name="order" 
-                        class="field py-2 px-3 rounded-xl border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm bg-gray-50/60 focus:bg-white text-gray-700 font-medium">
-                    <option value="" @selected(!request('order'))>بەپێی ناو (ئە - ی)</option>
-                    <option value="date_desc" @selected(request('order') === 'date_desc')>نوێترین بەرواری کڕین</option>
-                    @can('view_reports')
-                        <option value="cost_desc" @selected(request('order') === 'cost_desc')>تێچوو: بەرزترین بۆ کەمترین</option>
-                        <option value="cost_asc" @selected(request('order') === 'cost_asc')>تێچوو: کەمترین بۆ بەرزترین</option>
-                    @endcan
-                    <option value="latest" @selected(request('order') === 'latest')>مەوادی تازە تۆمارکراو</option>
-                </select>
-            </div>
-
             {{-- دوگمەی فلتەرکردن --}}
-            <div class="flex items-center gap-2">
+            <div>
                 <button type="submit" 
                         class="btn btn-primary w-full py-2 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all">
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
