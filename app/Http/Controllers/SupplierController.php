@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Item;
 use App\Models\Payment;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
 use App\Models\Supplier;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class SupplierController extends Controller
@@ -28,12 +33,102 @@ class SupplierController extends Controller
 
     public function create(): View
     {
-        return view('suppliers.form', ['supplier' => new Supplier(['opening_currency' => 'IQD', 'is_active' => true])]);
+        return view('suppliers.form', [
+            'supplier' => new Supplier(['opening_currency' => 'IQD', 'is_active' => true]),
+            'items' => Item::active()->with('unit')->orderBy('name')->get(),
+            'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $supplier = Supplier::create($this->validated($request));
+        $data = $this->validated($request);
+
+        $supplier = DB::transaction(function () use ($data, $request) {
+            $supplier = Supplier::create($data);
+
+            // ئەگەر زانیاری کڕینی سەرەتایی مەواد داخڵکرابوو
+            $itemId = $request->input('item_id');
+            $qty = (float) str_replace(',', '', (string) $request->input('purchase_qty', 0));
+            $unitPrice = (float) str_replace(',', '', (string) $request->input('purchase_unit_price', 0));
+            $purchaseDate = $request->input('purchase_date', now()->toDateString());
+            $paymentType = $request->input('payment_type', 'debt'); // 'full', 'debt', 'partial'
+            $paidAmount = 0;
+
+            if ($itemId && $qty > 0) {
+                $totalCost = $qty * $unitPrice;
+
+                if ($paymentType === 'full') {
+                    $paidAmount = $totalCost;
+                } elseif ($paymentType === 'partial') {
+                    $paidAmount = min($totalCost, (float) str_replace(',', '', (string) $request->input('paid_amount', 0)));
+                } else {
+                    $paidAmount = 0;
+                }
+
+                $defaultWarehouse = Warehouse::where('is_default', true)->first() ?? Warehouse::first();
+
+                // دروستکردنی پسوولەی کڕین
+                $purchase = Purchase::create([
+                    'invoice_no' => Purchase::nextInvoiceNo(),
+                    'supplier_id' => $supplier->id,
+                    'warehouse_id' => $defaultWarehouse?->id ?? 1,
+                    'purchase_date' => $purchaseDate,
+                    'currency' => 'IQD',
+                    'subtotal' => $totalCost,
+                    'discount_amount' => 0,
+                    'total' => $totalCost,
+                    'paid_amount' => $paidAmount,
+                    'status' => 'confirmed',
+                    'user_id' => auth()->id(),
+                    'note' => 'کڕینی سەرەتایی لە کاتی تۆمارکردنی فرۆشیار',
+                ]);
+
+                // دانانی کاڵای ناو پسوولە
+                PurchaseItem::create([
+                    'purchase_id' => $purchase->id,
+                    'item_id' => $itemId,
+                    'qty' => $qty,
+                    'unit_price' => $unitPrice,
+                    'line_total' => $totalCost,
+                ]);
+
+                // جوڵەی کۆگا (چوونی کاڵا بۆ ناو کۆگا)
+                if ($defaultWarehouse) {
+                    app(\App\Services\StockService::class)->record(
+                        itemId: $itemId,
+                        warehouseId: $defaultWarehouse->id,
+                        direction: 'in',
+                        qty: $qty,
+                        reason: 'purchase',
+                        extra: [
+                            'unit_cost' => $unitPrice,
+                            'currency' => 'IQD',
+                            'reference_type' => Purchase::class,
+                            'reference_id' => $purchase->id,
+                            'moved_at' => $purchaseDate,
+                            'note' => 'کڕین لە پسوولەی '.$purchase->invoice_no,
+                        ]
+                    );
+                }
+
+                // تۆمارکردنی پارەدان ئەگەر هەبوو
+                if ($paidAmount > 0) {
+                    app(\App\Services\PaymentService::class)->record([
+                        'direction' => 'out',
+                        'amount' => $paidAmount,
+                        'currency' => 'IQD',
+                        'paid_at' => $purchaseDate,
+                        'party' => $supplier,
+                        'purchase_id' => $purchase->id,
+                        'category' => 'supplier_payment',
+                        'note' => 'پارەدان لەگەڵ پسوولەی کڕینی '.$purchase->invoice_no,
+                    ]);
+                }
+            }
+
+            return $supplier;
+        });
 
         return redirect()->route('suppliers.show', $supplier)->with('ok', 'فرۆشیار زیادکرا.');
     }
@@ -141,7 +236,11 @@ class SupplierController extends Controller
 
     public function edit(Supplier $supplier): View
     {
-        return view('suppliers.form', compact('supplier'));
+        return view('suppliers.form', [
+            'supplier' => $supplier,
+            'items' => Item::active()->with('unit')->orderBy('name')->get(),
+            'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
+        ]);
     }
 
     public function update(Request $request, Supplier $supplier)
