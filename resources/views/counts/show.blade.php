@@ -5,38 +5,32 @@
 
 <div x-data="{ showDeleteModal: false }">
 
-    {{-- سەرەوەی جەرد --}}
+    {{-- هێدەری سەرەوەی پەڕە --}}
     <div class="card mb-4">
-        <div class="card-body flex flex-wrap items-center justify-between gap-4 text-sm">
-            {{-- زانیارییەکان --}}
-            <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-                <div>
-                    <span class="text-[--color-ink-soft] text-xs block mb-0.5">ژمارەی جەرد:</span>
-                    <span class="font-bold text-slate-900 text-base" style="direction: ltr; display: inline-block;">{{ $count->count_no }}</span>
+        <div class="card-body flex flex-wrap items-center justify-between gap-3 text-sm py-3 px-4">
+            {{-- زانیارییە سەرەکییەکان بە کورتی --}}
+            <div class="flex flex-wrap items-center gap-3 sm:gap-5">
+                <div class="font-bold text-slate-900 text-sm">
+                    {{ $count->warehouse?->name }}
+                </div>
+                <div class="text-slate-500 text-xs num">
+                    {{ fmt_date($count->count_date) }}
                 </div>
                 <div>
-                    <span class="text-[--color-ink-soft] text-xs block mb-0.5">کۆگا:</span>
-                    <span class="font-semibold text-slate-800">{{ $count->warehouse?->name }}</span>
-                </div>
-                <div>
-                    <span class="text-[--color-ink-soft] text-xs block mb-0.5">بەروار:</span>
-                    <span class="font-semibold text-slate-800" style="direction: ltr; display: inline-block;">{{ fmt_date($count->count_date) }}</span>
-                </div>
-                <div>
-                    <span class="text-[--color-ink-soft] text-xs block mb-0.5">دۆخ:</span>
-                    <span class="badge {{ $count->status === 'posted' ? 'badge-ok' : 'badge-warn' }}">{{ $count->status_label }}</span>
+                    <span class="badge {{ $count->status === 'posted' ? 'badge-ok' : 'badge-warn' }} text-xs">
+                        {{ $count->status_label }}
+                    </span>
                 </div>
                 @if($count->note)
-                    <div>
-                        <span class="text-[--color-ink-soft] text-xs block mb-0.5">تێبینی:</span>
-                        <span class="text-slate-700 text-xs font-medium">{{ $count->note }}</span>
+                    <div class="text-xs text-slate-500 max-w-xs truncate">
+                        {{ $count->note }}
                     </div>
                 @endif
             </div>
 
-            {{-- دوگمەکانی سەرەوە --}}
+            {{-- کردارەکانی سەرەوە --}}
             <div class="flex items-center gap-2">
-                <a href="{{ route('counts.index') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs gap-1.5 text-slate-700 hover:bg-slate-100">
+                <a href="{{ route('counts.index') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs gap-1 text-slate-700 hover:bg-slate-100">
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M19 12H5M12 19l-7-7 7-7"/>
                     </svg>
@@ -54,17 +48,11 @@
         </div>
     </div>
 
+    {{-- خشتەی جەرد و خەمڵاندن --}}
     <form method="POST" action="{{ route('counts.update', $count) }}" id="count-form">
         @csrf @method('PUT')
 
         <div class="card overflow-hidden">
-            <div class="card-head flex items-center justify-between bg-slate-50 border-b border-[--color-line] px-4 py-3">
-                <span class="font-bold text-slate-800 text-sm">جەرد و خەمڵاندنی سەروەت</span>
-                @if ($count->status !== 'posted')
-                    <button type="submit" class="btn btn-primary !py-1 !px-4 text-xs font-semibold">پاشەکەوتکردن</button>
-                @endif
-            </div>
-
             <div class="overflow-x-auto">
                 <table class="table w-full" id="count-table" style="direction: rtl;">
                     <thead>
@@ -147,11 +135,12 @@
             </div>
         </div>
 
+        {{-- دوگمەکانی کردار لە خوارەوە --}}
         @if ($count->status !== 'posted')
             <div class="mt-4 flex items-center gap-2">
-                <button type="submit" class="btn btn-primary">پاشەکەوتکردن</button>
-                <a href="{{ route('counts.index') }}" class="btn btn-ghost">گەڕانەوە</a>
-                <button type="button" @click="showDeleteModal = true" class="btn btn-ghost mr-auto !text-[--color-danger]">
+                <button type="submit" class="btn btn-primary !py-2 !px-6 text-sm font-semibold">پاشەکەوتکردن</button>
+                <a href="{{ route('counts.index') }}" class="btn btn-ghost !py-2 !px-4 text-sm">گەڕانەوە</a>
+                <button type="button" @click="showDeleteModal = true" class="btn btn-ghost mr-auto !text-[--color-danger] text-sm">
                     سڕینەوە
                 </button>
             </div>
