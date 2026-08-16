@@ -52,7 +52,7 @@ class ItemController extends Controller
     {
         $item = Item::create($this->validated($request));
 
-        return redirect()->route('items.index')->with('ok', "کاڵای «{$item->name}» زیادکرا.");
+        return redirect()->route('items.index')->with('ok', "بابەتی «{$item->name}» زیادکرا.");
     }
 
     public function show(Item $item): View
@@ -83,19 +83,19 @@ class ItemController extends Controller
     {
         $item->update($this->validated($request, $item));
 
-        return redirect()->route('items.index')->with('ok', 'کاڵاکە نوێکرایەوە.');
+        return redirect()->route('items.index')->with('ok', 'بابەتەکە نوێکرایەوە.');
     }
 
     public function destroy(Item $item)
     {
-        // کاڵایەک کە جوڵەی هەیە ناسڕدرێتەوە — مێژووەکەی دەشکێت.
+        // بابەتێک کە جوڵەی هەیە ناسڕدرێتەوە — مێژووەکەی دەشکێت.
         if ($item->movements()->exists()) {
-            return back()->with('err', 'ناتوانرێت بسڕدرێتەوە — ئەم کاڵایە جوڵەی مەخزەنی هەیە. لەبری ئەوە ناچالاکی بکە.');
+            return back()->with('err', 'ناتوانرێت بسڕدرێتەوە — ئەم بابەتە جوڵەی مەخزەنی هەیە. لەبری ئەوە ناچالاکی بکە.');
         }
 
         $item->delete();
 
-        return redirect()->route('items.index')->with('ok', 'کاڵاکە سڕدرایەوە.');
+        return redirect()->route('items.index')->with('ok', 'بابەتەکە سڕدرایەوە.');
     }
 
     private function validated(Request $request, ?Item $item = null): array
