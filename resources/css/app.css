@@ -205,9 +205,10 @@
     }
 
     /* ڕەنگی گرووپەکان — شین سەرەکییە، ئەوانی تر لەگەڵی دەگونجێن */
-    .tile-blue { background-color: #2e6be6; }    /* داتا و بنەڕەت */
+    .tile-blue { background-color: #2e6be6; }    /* کۆگا و مەخزەن */
     .tile-orange { background-color: #0e9bb8; }  /* کڕین و فرۆشتن */
-    .tile-red { background-color: #e5544b; }     /* پارە */
+    .tile-red { background-color: #e5544b; }     /* پارە و قاسە */
+    .tile-emerald { background-color: #0d9488; } /* کارمەندان */
     .tile-maroon { background-color: #7a5af0; }  /* راپۆرت */
     .tile-brown { background-color: #5b6b84; }   /* سیستەم */
 

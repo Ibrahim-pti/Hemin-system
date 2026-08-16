@@ -2,65 +2,93 @@
 
 @section('content')
 
-@php
-   
-    $tiles = [
-        ['c' => 'tile-blue',   'route' => 'items.index',      'label' => 'دۆخی کۆگا',     'icon' => 'items',      'can' => 'view_stock'],
-        ['c' => 'tile-blue',   'route' => 'counts.index',     'label' => 'جەردی کۆگا',       'icon' => 'counts',     'can' => 'manage_stock_counts'],
-        ['c' => 'tile-blue',   'route' => 'warehouses.index', 'label' => 'کۆگاکان',          'icon' => 'warehouses', 'can' => 'manage_items'],
-        ['c' => 'tile-blue',   'route' => 'customers.index',  'label' => 'کڕیارەکان',        'icon' => 'customers',  'can' => 'manage_customers'],
-        ['c' => 'tile-blue',   'route' => 'customers.create', 'label' => 'کڕیاری نوێ',       'icon' => 'customers',  'can' => 'manage_customers'],
-        ['c' => 'tile-blue',   'route' => 'suppliers.index',  'label' => 'فرۆشیارەکان',      'icon' => 'suppliers',  'can' => 'manage_suppliers'],
-        ['c' => 'tile-blue',   'route' => 'employees.index',  'label' => 'کارمەندان',        'icon' => 'employees',  'can' => 'manage_employees'],
-
-        ['c' => 'tile-orange', 'route' => 'orders.create',    'label' => 'وەسڵی نوێ',        'icon' => 'orders',        'can' => 'manage_orders'],
-        ['c' => 'tile-orange', 'route' => 'orders.index',     'label' => 'وەسڵ و داواکاری',  'icon' => 'orders',        'can' => 'manage_orders'],
-        ['c' => 'tile-orange', 'route' => 'purchases.create', 'label' => 'کڕینی نوێ',        'icon' => 'purchases',     'can' => 'manage_purchases'],
-        ['c' => 'tile-orange', 'route' => 'purchases.index',  'label' => 'پسوولەی کڕین',     'icon' => 'purchases',     'can' => 'manage_purchases'],
-        ['c' => 'tile-orange', 'route' => 'external-jobs.index', 'label' => 'ئیشی خاریجی',   'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
-
-        ['c' => 'tile-red', 'route' => 'payments.create', 'params' => ['type' => 'in'],  'label' => 'وەرگرتنی پارە', 'icon' => 'payments', 'can' => 'manage_payments'],
-        ['c' => 'tile-red', 'route' => 'payments.create', 'params' => ['type' => 'out'], 'label' => 'دانی پارە',     'icon' => 'cash',     'can' => 'manage_payments'],
-        ['c' => 'tile-red', 'route' => 'payments.index',   'label' => 'حەقدییەکان',       'icon' => 'payments', 'can' => 'manage_payments'],
-        ['c' => 'tile-red', 'route' => 'cash.index',       'label' => 'قاسە',             'icon' => 'cash',     'can' => 'manage_cash'],
-        ['c' => 'tile-red', 'route' => 'debts.index',      'label' => 'قەرزەکان',         'icon' => 'debts',    'can' => 'manage_payments'],
-
-        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'sales',     'label' => 'راپۆرتی فرۆشتن', 'icon' => 'orders',    'can' => 'view_reports'],
-        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'purchases', 'label' => 'راپۆرتی کڕین',   'icon' => 'purchases', 'can' => 'view_reports'],
-        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'profit',    'label' => 'قازانج',         'icon' => 'reports',   'can' => 'view_reports'],
-        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'stock',     'label' => 'راپۆرتی مەخزەن', 'icon' => 'items',     'can' => 'view_reports'],
-        ['c' => 'tile-maroon', 'route' => 'reports.show', 'params' => 'cash',      'label' => 'راپۆرتی قاسە',   'icon' => 'cash',      'can' => 'view_reports'],
-        ['c' => 'tile-maroon', 'route' => 'reports.index',                         'label' => 'هەموو راپۆرت',   'icon' => 'reports',   'can' => 'view_reports'],
-
-        ['c' => 'tile-brown', 'route' => 'attendance.index', 'label' => 'هاتن و چوون',      'icon' => 'attendance', 'can' => 'manage_employees'],
-        ['c' => 'tile-brown', 'route' => 'attendance.wages', 'label' => 'حەقدەستەکان',      'icon' => 'employees',  'can' => 'manage_employees'],
-        ['c' => 'tile-brown', 'route' => 'activity.index',   'label' => 'مێژووی کردارەکان', 'icon' => 'activity',   'can' => 'manage_settings'],
-        ['c' => 'tile-brown', 'route' => 'settings.index',   'label' => 'ڕێکخستن و باکەپ',  'icon' => 'settings',   'can' => 'manage_settings'],
-    ];
-
-    $visible = collect($tiles)->filter(
-        fn ($tile) => ! $tile['can'] || auth()->user()->can($tile['can'])
-    );
-@endphp
-
-{{-- ── خانەکانی مێنیو — یەک خشتەی بەردەوام ── --}}
-<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-    @foreach ($visible as $tile)
-        <a href="{{ isset($tile['params']) ? route($tile['route'], $tile['params']) : route($tile['route']) }}"
-           class="tile {{ $tile['c'] }}">
-            <span class="tile-icon">
-                @include('partials.icon', ['name' => $tile['icon'], 'class' => 'size-6'])
+{{-- ── تابلۆی کورتە-ئامارەکان لە سەرەوە ── --}}
+@if (auth()->user()->canSeeMoney())
+    <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="card flex items-center gap-3.5 px-4 py-3">
+            <span class="icon-chip icon-chip-ok">
+                @include('partials.icon', ['name' => 'orders', 'class' => 'size-5'])
             </span>
-            <span class="tile-label">{{ $tile['label'] }}</span>
-        </a>
-    @endforeach
-</div>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-[--color-ink-soft]">فرۆشی ئەمڕۆ</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-[--color-ok]">{{ fmt_money($todaySales) }}</div>
+            </div>
+        </div>
 
-{{-- ئاگاداری کەمی مەخزەن — تەنها یەک دێڕ، لە خوارەوەی کارتەکان.
-     نابێت بەتەواوی لابدرێت، چونکە داواکراوە سیستەم ئاگادار بکاتەوە. --}}
+        <div class="card flex items-center gap-3.5 px-4 py-3">
+            <span class="icon-chip">
+                @include('partials.icon', ['name' => 'orders', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-[--color-ink-soft]">وەسڵەکانی ئەمڕۆ / کراوە</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-[--color-ink]">
+                    {{ fmt_num($todayOrders) }} <span class="text-xs font-normal text-[--color-ink-soft]">({{ fmt_num($openOrders) }} لە کاردا)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card flex items-center gap-3.5 px-4 py-3">
+            <span class="icon-chip">
+                @include('partials.icon', ['name' => 'cash', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-[--color-ink-soft]">پارەی هاتووی ئەمڕۆ</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-[--color-brand-700]">{{ fmt_money($todayIn) }}</div>
+            </div>
+        </div>
+
+        <div class="card flex items-center gap-3.5 px-4 py-3">
+            <span class="icon-chip {{ $receivables > 0 ? 'icon-chip-warn' : '' }}">
+                @include('partials.icon', ['name' => 'debts', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-[--color-ink-soft]">کۆی قەرزی کڕیاران</div>
+                <div class="num mt-0.5 truncate text-lg font-bold {{ $receivables > 0 ? 'text-[--color-warn]' : 'text-[--color-ink]' }}">
+                    {{ fmt_money($receivables) }}
+                </div>
+            </div>
+        </div>
+    </div>
+@else
+    <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div class="card flex items-center gap-3.5 px-4 py-3">
+            <span class="icon-chip">
+                @include('partials.icon', ['name' => 'items', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-[--color-ink-soft]">هەموو کاڵاکان</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-[--color-ink]">{{ fmt_num($itemsCount) }} کاڵا</div>
+            </div>
+        </div>
+
+        <div class="card flex items-center gap-3.5 px-4 py-3">
+            <span class="icon-chip">
+                @include('partials.icon', ['name' => 'counts', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-[--color-ink-soft]">جووڵەی مەخزەنی ئەمڕۆ</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-[--color-brand-700]">{{ fmt_num($todayMovements) }}</div>
+            </div>
+        </div>
+
+        <div class="card flex items-center gap-3.5 px-4 py-3">
+            <span class="icon-chip {{ $lowStock->isNotEmpty() ? 'icon-chip-warn' : 'icon-chip-ok' }}">
+                @include('partials.icon', ['name' => 'items', 'class' => 'size-5'])
+            </span>
+            <div class="min-w-0">
+                <div class="truncate text-xs font-medium text-[--color-ink-soft]">کاڵا کەمبووەوەکان</div>
+                <div class="num mt-0.5 truncate text-lg font-bold {{ $lowStock->isNotEmpty() ? 'text-[--color-warn]' : 'text-[--color-ok]' }}">
+                    {{ fmt_num($lowStock->count()) }}
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+{{-- ئاگاداری کەمی مەخزەن --}}
 @if ($lowStock->isNotEmpty())
     <a href="{{ route('items.index', ['low' => 1]) }}"
-       class="mt-3 flex items-center gap-2.5 rounded-[--radius-card] border border-[--color-warn]/30 bg-[--color-warn-soft] px-4 py-3 text-sm">
+       class="mb-4 flex items-center gap-2.5 rounded-[--radius-card] border border-[--color-warn]/30 bg-[--color-warn-soft] px-4 py-3 text-sm transition hover:bg-[--color-warn-soft]/80">
         <svg class="size-5 shrink-0 text-[--color-warn]" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10.3 4l-8 13.5A1 1 0 003.2 19h17.6a1 1 0 00.9-1.5l-8-13.5a1 1 0 00-1.7 0z"/>
@@ -70,11 +98,91 @@
             <span class="num font-semibold text-[--color-warn]">{{ fmt_num($lowStock->count()) }}</span>
             کاڵا لە سنووری کەمترین کەمتر بوونەتەوە —
             <span class="text-[--color-ink-soft]">
-                {{ $lowStock->take(3)->pluck('name')->implode('، ') }}{{ $lowStock->count() > 3 ? '...' : '' }}
+                {{ $lowStock->take(4)->pluck('name')->implode('، ') }}{{ $lowStock->count() > 4 ? '...' : '' }}
             </span>
         </span>
-        <span class="mr-auto text-sm font-medium text-[--color-brand-700]">بینین</span>
+        <span class="mr-auto font-medium text-[--color-brand-700]">بینینی هەمووی &larr;</span>
     </a>
 @endif
+
+@php
+    $sections = [
+        [
+            'title' => 'مەخزەن و کۆگا',
+            'tiles' => [
+                ['c' => 'tile-blue',   'route' => 'items.index',      'label' => 'دۆخی کۆگا',     'icon' => 'items',      'can' => 'view_stock'],
+                ['c' => 'tile-blue',   'route' => 'counts.index',     'label' => 'جەردی کۆگا',       'icon' => 'counts',     'can' => 'manage_stock_counts'],
+                ['c' => 'tile-blue',   'route' => 'warehouses.index', 'label' => 'کۆگاکان',          'icon' => 'warehouses', 'can' => 'manage_items'],
+            ]
+        ],
+        [
+            'title' => 'کڕین و فرۆشتن',
+            'tiles' => [
+                ['c' => 'tile-orange', 'route' => 'orders.index',     'label' => 'وەسڵ و داواکاری',  'icon' => 'orders',        'can' => 'manage_orders'],
+                ['c' => 'tile-orange', 'route' => 'purchases.index',  'label' => 'پسوولەی کڕین',     'icon' => 'purchases',     'can' => 'manage_purchases'],
+                ['c' => 'tile-orange', 'route' => 'external-jobs.index', 'label' => 'ئیشی خاریجی',   'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
+                ['c' => 'tile-orange', 'route' => 'customers.index',  'label' => 'کڕیارەکان',        'icon' => 'customers',  'can' => 'manage_customers'],
+                ['c' => 'tile-orange', 'route' => 'suppliers.index',  'label' => 'فرۆشیارەکان',      'icon' => 'suppliers',  'can' => 'manage_suppliers'],
+            ]
+        ],
+        [
+            'title' => 'دارایی و قاسە',
+            'tiles' => [
+                ['c' => 'tile-red', 'route' => 'cash.index',       'label' => 'قاسە',             'icon' => 'cash',     'can' => 'manage_cash'],
+                ['c' => 'tile-red', 'route' => 'payments.index',   'label' => 'حەقدی و پارەدان',  'icon' => 'payments', 'can' => 'manage_payments'],
+                ['c' => 'tile-red', 'route' => 'debts.index',      'label' => 'قەرزەکان',         'icon' => 'debts',    'can' => 'manage_payments'],
+            ]
+        ],
+        [
+            'title' => 'کارمەندان',
+            'tiles' => [
+                ['c' => 'tile-emerald', 'route' => 'employees.index',  'label' => 'کارمەندان',        'icon' => 'employees',  'can' => 'manage_employees'],
+                ['c' => 'tile-emerald', 'route' => 'attendance.index', 'label' => 'هاتن و چوون',      'icon' => 'attendance', 'can' => 'manage_employees'],
+                ['c' => 'tile-emerald', 'route' => 'attendance.wages', 'label' => 'حەقدەستەکان',      'icon' => 'employees',  'can' => 'manage_employees'],
+            ]
+        ],
+        [
+            'title' => 'ڕاپۆرت و بەڕێوەبردن',
+            'tiles' => [
+                ['c' => 'tile-maroon', 'route' => 'reports.index',   'label' => 'راپۆرتەکان',       'icon' => 'reports',    'can' => 'view_reports'],
+                ['c' => 'tile-brown',  'route' => 'activity.index',  'label' => 'مێژووی کردارەکان', 'icon' => 'activity',   'can' => 'manage_settings'],
+                ['c' => 'tile-brown',  'route' => 'settings.index',  'label' => 'ڕێکخستن و باکەپ',  'icon' => 'settings',   'can' => 'manage_settings'],
+            ]
+        ],
+    ];
+@endphp
+
+<div class="space-y-5">
+    @foreach ($sections as $section)
+        @php
+            $visibleTiles = collect($section['tiles'])->filter(
+                fn ($tile) => ! $tile['can'] || auth()->user()->can($tile['can'])
+            );
+        @endphp
+
+        @if ($visibleTiles->isNotEmpty())
+            <div>
+                <div class="mb-2 flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-[--color-ink-soft]">
+                        {{ $section['title'] }}
+                    </span>
+                    <span class="h-px flex-1 bg-[--color-line]"></span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                    @foreach ($visibleTiles as $tile)
+                        <a href="{{ isset($tile['params']) ? route($tile['route'], $tile['params']) : route($tile['route']) }}"
+                           class="tile {{ $tile['c'] }}">
+                            <span class="tile-icon">
+                                @include('partials.icon', ['name' => $tile['icon'], 'class' => 'size-6'])
+                            </span>
+                            <span class="tile-label">{{ $tile['label'] }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+    @endforeach
+</div>
 
 @endsection
