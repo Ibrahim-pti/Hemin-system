@@ -19,11 +19,14 @@
 @section('content')
 
 {{-- گەڕان و فلتەر --}}
-<form method="GET" class="card mb-6 border-0 ring-1 ring-[--color-line] shadow-sm bg-white overflow-hidden rounded-[14px]">
-    <div class="p-3.5 flex flex-col sm:flex-row items-center gap-3">
+<form id="filterForm" method="GET" action="{{ route('items.index') }}" class="card mb-6 border-0 ring-1 ring-[--color-line] shadow-sm bg-white rounded-[14px]">
+    <input type="hidden" name="sort" id="sortInput" value="{{ request('sort') }}">
+    
+    <div class="p-3 flex flex-col sm:flex-row items-center gap-3">
+        {{-- سێرچ --}}
         <div class="relative flex-1 w-full">
             <input type="search" name="q" value="{{ request('q') }}" 
-                   class="field pl-3 pr-10 py-2.5 rounded-lg border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm" 
+                   class="field pl-3 pr-10 py-2.5 rounded-xl border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm bg-gray-50/50 focus:bg-white" 
                    placeholder="گەڕان بەپێی ناوی مەواد...">
             <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-gray-400">
                 <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -33,24 +36,117 @@
             </div>
         </div>
 
-        {{-- فلتەری بڕ و ڕیزبەندی --}}
-        <div class="w-full sm:w-60 shrink-0">
-            <select name="sort" onchange="this.form.submit()" 
-                    class="field py-2.5 px-3 rounded-lg border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm bg-white text-gray-700 font-medium cursor-pointer">
-                <option value="" @selected(!request('sort'))>ڕیزبەندی: بەپێی ناو (ئە - ی)</option>
-                <option value="qty_desc" @selected(request('sort') === 'qty_desc')>بڕ: زۆرترین بۆ کەمترین ⬇</option>
-                <option value="qty_asc" @selected(request('sort') === 'qty_asc')>بڕ: کەمترین بۆ زۆرترین ⬆</option>
-                @can('view_reports')
-                    <option value="cost_desc" @selected(request('sort') === 'cost_desc')>تێچوو: بەرزترین بۆ کەمترین</option>
-                    <option value="cost_asc" @selected(request('sort') === 'cost_asc')>تێچوو: کەمترین بۆ بەرزترین</option>
-                @endcan
-                <option value="date_desc" @selected(request('sort') === 'date_desc')>بەرواری کڕین: نوێترین</option>
-                <option value="latest" @selected(request('sort') === 'latest')>مەوادی تازە زیادکراو</option>
-            </select>
+        {{-- درۆپ داونی فلتەری جوان --}}
+        <div class="relative shrink-0 w-full sm:w-auto" x-data="{ open: false }" @click.outside="open = false">
+            <button type="button" @click="open = !open" 
+                    class="w-full sm:w-auto inline-flex items-center justify-between gap-2.5 px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[--color-brand-500]/20 {{ request('sort') ? 'border-[--color-brand-500] bg-[--color-brand-50]/30 text-[--color-brand-600]' : '' }}">
+                <span class="flex items-center gap-2">
+                    <svg class="size-4 text-gray-500 {{ request('sort') ? 'text-[--color-brand-600]' : '' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <span>
+                        @if(request('sort') === 'qty_desc')
+                            مەوادی زۆر (زۆرترین بڕ)
+                        @elseif(request('sort') === 'qty_asc')
+                            مەوادی کەم (کەمترین بڕ)
+                        @elseif(request('sort') === 'cost_desc')
+                            تێچووی کڕین (بەرزترین)
+                        @elseif(request('sort') === 'date_desc')
+                            بەرواری کڕین (نوێترین)
+                        @else
+                            فلتەری مەواد
+                        @endif
+                    </span>
+                </span>
+                
+                <svg class="size-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+
+            {{-- لیستی هەڵبژاردنەکان --}}
+            <div x-show="open" 
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                 style="display: none;"
+                 class="absolute left-0 mt-2 w-56 rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-black/10 z-50 divide-y divide-gray-100">
+                
+                <div class="py-1">
+                    <button type="button" @click="document.getElementById('sortInput').value = ''; document.getElementById('filterForm').submit();"
+                            class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-colors {{ !request('sort') ? 'bg-[--color-brand-50] text-[--color-brand-600] font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="flex items-center gap-2">
+                            <span class="size-2 rounded-full {{ !request('sort') ? 'bg-[--color-brand-500]' : 'bg-gray-300' }}"></span>
+                            هەموو مەوادەکان
+                        </span>
+                        @if(!request('sort'))
+                            <svg class="size-4 text-[--color-brand-600]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </button>
+                </div>
+
+                <div class="py-1 space-y-0.5">
+                    <div class="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">فلتەری بڕی کۆگا</div>
+                    <button type="button" @click="document.getElementById('sortInput').value = 'qty_desc'; document.getElementById('filterForm').submit();"
+                            class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-colors {{ request('sort') === 'qty_desc' ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="flex items-center gap-2">
+                            <svg class="size-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                            مەوادی زۆر (زۆرترین بڕ)
+                        </span>
+                        @if(request('sort') === 'qty_desc')
+                            <svg class="size-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </button>
+
+                    <button type="button" @click="document.getElementById('sortInput').value = 'qty_asc'; document.getElementById('filterForm').submit();"
+                            class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-colors {{ request('sort') === 'qty_asc' ? 'bg-amber-50 text-amber-700 font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="flex items-center gap-2">
+                            <svg class="size-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                            مەوادی کەم (کەمترین بڕ)
+                        </span>
+                        @if(request('sort') === 'qty_asc')
+                            <svg class="size-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </button>
+                </div>
+
+                <div class="py-1 space-y-0.5">
+                    <div class="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">هەڵبژاردەی تر</div>
+                    @can('view_reports')
+                        <button type="button" @click="document.getElementById('sortInput').value = 'cost_desc'; document.getElementById('filterForm').submit();"
+                                class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-colors {{ request('sort') === 'cost_desc' ? 'bg-blue-50 text-blue-700 font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                            <span class="flex items-center gap-2">
+                                <svg class="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                بەرزترین تێچوو
+                            </span>
+                            @if(request('sort') === 'cost_desc')
+                                <svg class="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            @endif
+                        </button>
+                    @endcan
+
+                    <button type="button" @click="document.getElementById('sortInput').value = 'date_desc'; document.getElementById('filterForm').submit();"
+                            class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-colors {{ request('sort') === 'date_desc' ? 'bg-purple-50 text-purple-700 font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="flex items-center gap-2">
+                            <svg class="size-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            نوێترین بەرواری کڕین
+                        </span>
+                        @if(request('sort') === 'date_desc')
+                            <svg class="size-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </button>
+                </div>
+            </div>
         </div>
 
         @if(request('q') || request('sort'))
-            <a href="{{ route('items.index') }}" class="btn btn-ghost text-xs text-gray-500 !py-2 shrink-0">پاککردنەوەی فلتەر</a>
+            <a href="{{ route('items.index') }}" class="btn btn-ghost text-xs text-gray-500 !py-2 shrink-0 flex items-center gap-1.5">
+                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                پاککردنەوە
+            </a>
         @endif
     </div>
 </form>
