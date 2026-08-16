@@ -164,18 +164,26 @@ class SupplierController extends Controller
 
     private function validated(Request $request): array
     {
+        if ($request->has('opening_balance')) {
+            $request->merge([
+                'opening_balance' => str_replace(',', '', (string) $request->input('opening_balance')),
+            ]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'phone2' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:255'],
             'opening_balance' => ['nullable', 'numeric'],
             'opening_currency' => ['required', 'in:IQD,USD'],
             'note' => ['nullable', 'string'],
-        ], [], ['name' => 'ناو']);
+        ], [], [
+            'name' => 'ناوی فرۆشیار',
+            'opening_balance' => 'قەرزی پێشوو',
+        ]);
 
         $data['opening_balance'] = $data['opening_balance'] ?? 0;
-        $data['is_active'] = $request->boolean('is_active');
+        $data['is_active'] = $request->boolean('is_active', true);
 
         return $data;
     }
