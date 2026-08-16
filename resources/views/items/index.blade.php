@@ -3,19 +3,16 @@
 
 @section('actions')
     @can('manage_items')
-        <div class="flex items-center gap-2">
-            <a href="{{ route('categories.index') }}" class="btn btn-ghost">جۆرەکانی بابەت</a>
-            <a href="{{ route('items.create') }}" class="btn btn-primary shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
-                <span class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
-                <span class="relative flex items-center gap-1.5">
-                    <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    زیادکردنی بابەت
-                </span>
-            </a>
-        </div>
+        <a href="{{ route('items.create') }}" class="btn btn-primary shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
+            <span class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
+            <span class="relative flex items-center gap-1.5">
+                <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                زیادکردنی بابەت
+            </span>
+        </a>
     @endcan
 @endsection
 
@@ -33,7 +30,7 @@
     </div>
     
     <div class="p-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-12 items-end">
-        <div class="lg:col-span-4 relative group">
+        <div class="lg:col-span-6 relative group">
             <label class="label text-[11px] font-bold text-[--color-ink-soft] uppercase tracking-wider mb-2">ناوی بابەت یان کۆد</label>
             <div class="relative">
                 <input type="search" name="q" value="{{ request('q') }}" 
@@ -49,18 +46,6 @@
         </div>
 
         <div class="lg:col-span-3 group">
-            <label class="label text-[11px] font-bold text-[--color-ink-soft] uppercase tracking-wider mb-2">جۆر</label>
-            <select name="category" class="field py-2.5 rounded-lg border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all text-sm group-hover:border-gray-300 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:left_0.75rem_center] pl-10 pr-3">
-                <option value="">هەموو جۆرەکان</option>
-                @foreach ($categories as $category)
-                    <option value="{{ $category->id }}" @selected(request('category') == $category->id)>
-                        {{ $category->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="lg:col-span-3 group">
             <label class="label text-[11px] font-bold text-[--color-ink-soft] uppercase tracking-wider mb-2">کۆگا</label>
             <select name="warehouse" class="field py-2.5 rounded-lg border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all text-sm group-hover:border-gray-300 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:left_0.75rem_center] pl-10 pr-3">
                 <option value="">هەموو کۆگاکان</option>
@@ -72,7 +57,7 @@
             </select>
         </div>
 
-        <div class="lg:col-span-2 flex items-center gap-4 justify-end h-[42px]">
+        <div class="lg:col-span-3 flex items-center gap-4 justify-end h-[42px]">
             <label class="flex items-center gap-2.5 text-sm font-medium cursor-pointer group select-none">
                 <div class="relative flex items-center">
                     <input type="checkbox" name="low" value="1" @checked(request('low'))
@@ -101,9 +86,8 @@
                 <tr>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold">زانیاری بابەت</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold">کۆد</th>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold">جۆر</th>
                     <th class="px-5 py-4 whitespace-nowrap font-semibold num">باڵانس</th>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold num">کەمترین</th>
+                    <th class="px-5 py-4 whitespace-nowrap font-semibold num">حەدەد</th>
                     @can('view_reports')
                         <th class="px-5 py-4 whitespace-nowrap font-semibold num">نرخی کڕین</th>
                     @endcan
@@ -138,15 +122,6 @@
                             <span class="num inline-block bg-gray-50 text-gray-600 px-2.5 py-1 rounded-[6px] text-xs font-mono font-medium border border-gray-200/80">
                                 {{ $item->code }}
                             </span>
-                        </td>
-                        <td class="px-5 py-3.5 align-middle text-gray-600 font-medium text-[13px]">
-                            @if($item->category)
-                                <span class="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md border border-indigo-100/50">
-                                    <span class="size-1.5 rounded-full bg-indigo-400"></span> {{ $item->category->name }}
-                                </span>
-                            @else
-                                <span class="text-gray-300 text-sm">—</span>
-                            @endif
                         </td>
                         <td class="px-5 py-3.5 align-middle num">
                             <div class="flex flex-col items-start">
