@@ -22,7 +22,7 @@
             <input type="date" name="count_date" class="field num" required value="{{ now()->toDateString() }}">
         </div>
 
-        <div class="lg:col-span-1">
+        <div>
             <label class="label">تێبینی</label>
             <input name="note" class="field" placeholder="ئارەزوومەندانە">
         </div>
@@ -36,6 +36,7 @@
     </div>
 </form>
 
+{{-- جەردەکانی پێشوو --}}
 <div class="card">
     <div class="card-head">جەردەکانی پێشوو</div>
     <div class="overflow-x-auto">
