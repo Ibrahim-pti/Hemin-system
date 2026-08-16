@@ -18,10 +18,10 @@
 
 @section('content')
 
-{{-- گەڕان --}}
+{{-- گەڕان و فلتەر --}}
 <form method="GET" class="card mb-6 border-0 ring-1 ring-[--color-line] shadow-sm bg-white overflow-hidden rounded-[14px]">
-    <div class="p-3.5 flex items-center gap-3">
-        <div class="relative flex-1">
+    <div class="p-3.5 flex flex-col sm:flex-row items-center gap-3">
+        <div class="relative flex-1 w-full">
             <input type="search" name="q" value="{{ request('q') }}" 
                    class="field pl-3 pr-10 py-2.5 rounded-lg border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm" 
                    placeholder="گەڕان بەپێی ناوی مەواد...">
@@ -32,8 +32,25 @@
                 </svg>
             </div>
         </div>
-        @if(request('q'))
-            <a href="{{ route('items.index') }}" class="btn btn-ghost text-xs text-gray-500 !py-2">پاککردنەوەی گەڕان</a>
+
+        {{-- فلتەری بڕ و ڕیزبەندی --}}
+        <div class="w-full sm:w-60 shrink-0">
+            <select name="sort" onchange="this.form.submit()" 
+                    class="field py-2.5 px-3 rounded-lg border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm bg-white text-gray-700 font-medium cursor-pointer">
+                <option value="" @selected(!request('sort'))>ڕیزبەندی: بەپێی ناو (ئە - ی)</option>
+                <option value="qty_desc" @selected(request('sort') === 'qty_desc')>بڕ: زۆرترین بۆ کەمترین ⬇</option>
+                <option value="qty_asc" @selected(request('sort') === 'qty_asc')>بڕ: کەمترین بۆ زۆرترین ⬆</option>
+                @can('view_reports')
+                    <option value="cost_desc" @selected(request('sort') === 'cost_desc')>تێچوو: بەرزترین بۆ کەمترین</option>
+                    <option value="cost_asc" @selected(request('sort') === 'cost_asc')>تێچوو: کەمترین بۆ بەرزترین</option>
+                @endcan
+                <option value="date_desc" @selected(request('sort') === 'date_desc')>بەرواری کڕین: نوێترین</option>
+                <option value="latest" @selected(request('sort') === 'latest')>مەوادی تازە زیادکراو</option>
+            </select>
+        </div>
+
+        @if(request('q') || request('sort'))
+            <a href="{{ route('items.index') }}" class="btn btn-ghost text-xs text-gray-500 !py-2 shrink-0">پاککردنەوەی فلتەر</a>
         @endif
     </div>
 </form>
@@ -158,13 +175,15 @@
     </div>
 </div>
 
-<div class="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-    <div class="font-medium">
-        پیشاندانی <span class="font-bold text-gray-800 num">{{ $items->firstItem() ?? 0 }}</span> تا <span class="font-bold text-gray-800 num">{{ $items->lastItem() ?? 0 }}</span> لە کۆی <span class="font-bold text-gray-800 num">{{ $items->total() }}</span> مەواد
+@if ($items->hasPages())
+    <div class="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+        <div class="font-medium">
+            پیشاندانی <span class="font-bold text-gray-800 num">{{ $items->firstItem() ?? 0 }}</span> تا <span class="font-bold text-gray-800 num">{{ $items->lastItem() ?? 0 }}</span> لە کۆی <span class="font-bold text-gray-800 num">{{ $items->total() }}</span> مەواد
+        </div>
+        <div>
+            {{ $items->links() }}
+        </div>
     </div>
-    <div>
-        {{ $items->links() }}
-    </div>
-</div>
+@endif
 
 @endsection

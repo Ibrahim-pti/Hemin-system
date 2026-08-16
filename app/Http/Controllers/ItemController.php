@@ -14,22 +14,25 @@ class ItemController extends Controller
     public function index(Request $request): View
     {
         $warehouseId = $request->integer('warehouse') ?: null;
+        $sort = $request->string('sort')->toString();
 
-        $items = Item::query()
+        $query = Item::query()
             ->withStock($warehouseId)
             ->with(['unit'])
-            ->search($request->string('q')->toString())
-            ->when($request->boolean('low'), fn ($q) => $q->where('min_qty', '>', 0))
-            ->orderBy('name')
-            ->paginate(30)
-            ->withQueryString();
+            ->search($request->string('q')->toString());
 
-        // پاڵاوتنی «تەنها مەوادی کەم» دوای حیسابی باڵانس دەکرێت.
-        if ($request->boolean('low')) {
-            $items->setCollection(
-                $items->getCollection()->filter(fn (Item $i) => $i->stock_qty <= (float) $i->min_qty)->values()
-            );
-        }
+        match ($sort) {
+            'qty_desc' => $query->orderByDesc('min_qty'),
+            'qty_asc' => $query->orderBy('min_qty'),
+            'cost_desc' => $query->orderByDesc('last_cost'),
+            'cost_asc' => $query->orderBy('last_cost'),
+            'date_desc' => $query->latest('purchase_date')->latest('id'),
+            'date_asc' => $query->oldest('purchase_date')->oldest('id'),
+            'latest' => $query->latest('id'),
+            default => $query->orderBy('name'),
+        };
+
+        $items = $query->paginate(30)->withQueryString();
 
         return view('items.index', [
             'items' => $items,
