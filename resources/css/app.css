@@ -204,13 +204,41 @@
         text-wrap: balance;
     }
 
-    /* ڕەنگی گرووپەکان — شین سەرەکییە، ئەوانی تر لەگەڵی دەگونجێن */
-    .tile-blue { background-color: #2e6be6; }    /* کۆگا و مەخزەن */
-    .tile-orange { background-color: #0e9bb8; }  /* کڕین و فرۆشتن */
-    .tile-red { background-color: #e5544b; }     /* پارە و قاسە */
-    .tile-emerald { background-color: #0d9488; } /* کارمەندان */
-    .tile-maroon { background-color: #7a5af0; }  /* راپۆرت */
-    .tile-brown { background-color: #5b6b84; }   /* سیستەم */
+    /* ── دیزاینی مێنیوی سەرەکی و تەنیشت (Sidebar Menu) ── */
+    .menu-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0.65rem;
+        border-radius: 0.625rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #334155;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+    .menu-link:hover {
+        background-color: #f1f5f9;
+        color: #1e40af;
+    }
+    .menu-link.active {
+        background-color: #eff6ff;
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+    .menu-link-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.875rem;
+        height: 1.875rem;
+        border-radius: 0.5rem;
+        flex-shrink: 0;
+        transition: transform 0.15s ease;
+    }
+    .menu-link:hover .menu-link-icon {
+        transform: scale(1.05);
+    }
 
     /* کارت — یەکەی بنەڕەتی هەموو لاپەڕەکان */
     .card {

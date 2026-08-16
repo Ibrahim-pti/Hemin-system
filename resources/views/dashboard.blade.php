@@ -51,49 +51,54 @@
     </div>
 @endif
 
-{{-- ── ٢. خانەکانی مێنیوی خێرا (Launchpad) ── --}}
-@php
-    $tiles = [
-        // ڕیزی ١: کۆگا و لایەنەکان
-        ['c' => 'tile-blue',    'route' => 'items.index',                                 'label' => 'دۆخی کۆگا',       'icon' => 'items',         'can' => 'view_stock'],
-        ['c' => 'tile-blue',    'route' => 'counts.index',                                'label' => 'جەردی کۆگا',        'icon' => 'counts',        'can' => 'manage_stock_counts'],
-        ['c' => 'tile-blue',    'route' => 'warehouses.index',                            'label' => 'کۆگاکان',           'icon' => 'warehouses',    'can' => 'manage_items'],
-        ['c' => 'tile-blue',    'route' => 'customers.index',                             'label' => 'کڕیارەکان',         'icon' => 'customers',     'can' => 'manage_customers'],
-        ['c' => 'tile-blue',    'route' => 'suppliers.index',                             'label' => 'فرۆشیارەکان',       'icon' => 'suppliers',     'can' => 'manage_suppliers'],
-        ['c' => 'tile-blue',    'route' => 'employees.index',                             'label' => 'کارمەندان',         'icon' => 'employees',     'can' => 'manage_employees'],
-
-        // ڕیزی ٢: کڕین، فرۆشتن و دارایی
-        ['c' => 'tile-orange',  'route' => 'orders.index',                                'label' => 'وەسڵ و داواکاری',   'icon' => 'orders',        'can' => 'manage_orders'],
-        ['c' => 'tile-orange',  'route' => 'purchases.index',                             'label' => 'پسوولەی کڕین',      'icon' => 'purchases',     'can' => 'manage_purchases'],
-        ['c' => 'tile-orange',  'route' => 'external-jobs.index',                         'label' => 'ئیشی خاریجی',       'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
-        ['c' => 'tile-red',     'route' => 'cash.index',                                  'label' => 'قاسە',              'icon' => 'cash',          'can' => 'manage_cash'],
-        ['c' => 'tile-red',     'route' => 'payments.index',                              'label' => 'حەقدی و پارەدان',   'icon' => 'payments',      'can' => 'manage_payments'],
-        ['c' => 'tile-red',     'route' => 'debts.index',                                 'label' => 'قەرزەکان',          'icon' => 'debts',         'can' => 'manage_payments'],
-
-        // ڕیزی ٣: کار، ڕاپۆرت و سیستەم
-        ['c' => 'tile-emerald', 'route' => 'attendance.index',                            'label' => 'هاتن و چوون',       'icon' => 'attendance',    'can' => 'manage_employees'],
-        ['c' => 'tile-emerald', 'route' => 'attendance.wages',                            'label' => 'حەقدەستەکان',       'icon' => 'employees',     'can' => 'manage_employees'],
-        ['c' => 'tile-maroon',  'route' => 'reports.show', 'params' => 'profit',          'label' => 'راپۆرتی قازانج',   'icon' => 'reports',       'can' => 'view_reports'],
-        ['c' => 'tile-maroon',  'route' => 'reports.index',                               'label' => 'هەموو راپۆرت',    'icon' => 'reports',       'can' => 'view_reports'],
-        ['c' => 'tile-brown',   'route' => 'activity.index',                              'label' => 'مێژووی کردارەکان',   'icon' => 'activity',      'can' => 'manage_settings'],
-        ['c' => 'tile-brown',   'route' => 'settings.index',                              'label' => 'ڕێکخستن و باکەپ',   'icon' => 'settings',      'can' => 'manage_settings'],
-    ];
-
-    $visible = collect($tiles)->filter(
-        fn ($tile) => ! $tile['can'] || auth()->user()->can($tile['can'])
-    );
-@endphp
-
-<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-    @foreach ($visible as $tile)
-        <a href="{{ isset($tile['params']) ? route($tile['route'], $tile['params']) : route($tile['route']) }}"
-           class="tile {{ $tile['c'] }}">
-            <span class="tile-icon">
-                @include('partials.icon', ['name' => $tile['icon'], 'class' => 'size-6'])
-            </span>
-            <span class="tile-label">{{ $tile['label'] }}</span>
+{{-- ── ٢. دوگمە خێراکانی دەستپێکردن (Quick Actions) ── --}}
+<div class="mb-6 flex flex-wrap items-center gap-2.5">
+    @if (auth()->user()->can('manage_orders'))
+        <a href="{{ route('orders.create') }}" class="btn btn-primary !py-2 !px-4 shadow-sm text-xs font-semibold flex items-center gap-2">
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>+ وەسڵی نوێ</span>
         </a>
-    @endforeach
+    @endif
+
+    @if (auth()->user()->can('manage_purchases'))
+        <a href="{{ route('purchases.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
+            <svg class="size-4 text-cyan-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 01-8 0"></path>
+            </svg>
+            <span>+ پسوولەی کڕین</span>
+        </a>
+    @endif
+
+    @if (auth()->user()->can('manage_payments'))
+        <a href="{{ route('payments.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
+            <svg class="size-4 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span>+ تۆماری پارەدان</span>
+        </a>
+    @endif
+
+    @if (auth()->user()->can('manage_external_jobs'))
+        <a href="{{ route('external-jobs.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
+            <svg class="size-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+            </svg>
+            <span>+ ئیشی خاریجی</span>
+        </a>
+    @endif
+
+    @if (auth()->user()->can('view_stock'))
+        <a href="{{ route('items.index') }}" class="btn btn-ghost !py-2 !px-3 text-xs text-slate-500 hover:text-blue-700 font-medium">
+            <span>کۆگا و مەخزەن &larr;</span>
+        </a>
+    @endif
 </div>
 
 {{-- ── ٣. بەشی چالاکییە زیندووەکان (Live Activity & Widgets) ── --}}
