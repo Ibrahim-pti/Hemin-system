@@ -110,14 +110,11 @@
 
             {{-- بەشی هێنانی مەواد لەناو هەمان فۆرم --}}
             @if (!$supplier->exists)
-                <div class="pt-5 border-t border-[--color-line] space-y-4">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-sm text-slate-900">هێنانی مەواد / کڕین</span>
-                        <div class="flex items-center gap-2">
-                            <label class="text-xs text-[--color-ink-soft]" for="purchase_date">بەرواری هێنان:</label>
-                            <input id="purchase_date" name="purchase_date" type="date" class="field num !py-1 text-xs w-36"
-                                   value="{{ old('purchase_date', now()->toDateString()) }}">
-                        </div>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-end gap-2">
+                        <label class="text-xs text-[--color-ink-soft]" for="purchase_date">بەرواری هێنان:</label>
+                        <input id="purchase_date" name="purchase_date" type="date" class="field num !py-1 text-xs w-36"
+                               value="{{ old('purchase_date', now()->toDateString()) }}">
                     </div>
 
                     {{-- خشتەی مەوادەکان --}}
