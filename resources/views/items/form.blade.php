@@ -28,7 +28,10 @@
             </div>
 
             <div>
-                <label class="label" for="item_category_id">جۆر</label>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="label !mb-0" for="item_category_id">جۆر</label>
+                    <a href="{{ route('categories.index') }}" target="_blank" class="text-xs font-semibold text-[--color-brand-700] hover:underline">+ بەڕێوەبردنی جۆرەکان</a>
+                </div>
                 <select id="item_category_id" name="item_category_id" class="field">
                     <option value="">— هیچ —</option>
                     @foreach ($categories as $category)

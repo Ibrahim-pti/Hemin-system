@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/items/{item}', [ItemController::class, 'update'])->name('items.update');
         Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
+        Route::resource('categories', \App\Http\Controllers\CategoryController::class)->except('show');
         Route::resource('warehouses', WarehouseController::class)->except('show');
     });
 
