@@ -4,46 +4,46 @@
 
 {{-- ── ١. تابلۆی کورتە-ئاماری خێرای سەرەوە ── --}}
 @if (auth()->user()->canSeeMoney())
-    <div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div class="card flex items-center gap-3.5 px-4 py-3.5">
-            <span class="icon-chip icon-chip-ok">
+    <div class="mb-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
+        <div class="card flex items-center gap-3.5 px-4 py-3.5 shadow-xs">
+            <span class="icon-chip icon-chip-ok shrink-0">
                 @include('partials.icon', ['name' => 'orders', 'class' => 'size-5'])
             </span>
             <div class="min-w-0">
-                <div class="truncate text-xs font-medium text-[--color-ink-soft]">فرۆشی ئەمڕۆ</div>
-                <div class="num mt-0.5 truncate text-lg font-bold text-[--color-ok]">{{ fmt_money($todaySales) }}</div>
+                <div class="truncate text-xs font-medium text-slate-500">فرۆشی ئەمڕۆ</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-emerald-600">{{ fmt_money($todaySales) }}</div>
             </div>
         </div>
 
-        <div class="card flex items-center gap-3.5 px-4 py-3.5">
-            <span class="icon-chip">
+        <div class="card flex items-center gap-3.5 px-4 py-3.5 shadow-xs">
+            <span class="icon-chip bg-blue-50 text-blue-600 shrink-0">
                 @include('partials.icon', ['name' => 'orders', 'class' => 'size-5'])
             </span>
             <div class="min-w-0">
-                <div class="truncate text-xs font-medium text-[--color-ink-soft]">وەسڵەکانی ئەمڕۆ / کراوە</div>
-                <div class="num mt-0.5 truncate text-lg font-bold text-[--color-ink]">
-                    {{ fmt_num($todayOrders) }} <span class="text-xs font-normal text-[--color-ink-soft]">({{ fmt_num($openOrders) }} لە کاردا)</span>
+                <div class="truncate text-xs font-medium text-slate-500">وەسڵەکانی ئەمڕۆ / کراوە</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-slate-800">
+                    {{ fmt_num($todayOrders) }} <span class="text-xs font-normal text-slate-400">({{ fmt_num($openOrders) }} لە کاردا)</span>
                 </div>
             </div>
         </div>
 
-        <div class="card flex items-center gap-3.5 px-4 py-3.5">
-            <span class="icon-chip">
+        <div class="card flex items-center gap-3.5 px-4 py-3.5 shadow-xs">
+            <span class="icon-chip bg-cyan-50 text-cyan-700 shrink-0">
                 @include('partials.icon', ['name' => 'cash', 'class' => 'size-5'])
             </span>
             <div class="min-w-0">
-                <div class="truncate text-xs font-medium text-[--color-ink-soft]">داهاتی ئەمڕۆی قاسە</div>
-                <div class="num mt-0.5 truncate text-lg font-bold text-[--color-brand-700]">{{ fmt_money($todayIn) }}</div>
+                <div class="truncate text-xs font-medium text-slate-500">داهاتی ئەمڕۆی قاسە</div>
+                <div class="num mt-0.5 truncate text-lg font-bold text-blue-700">{{ fmt_money($todayIn) }}</div>
             </div>
         </div>
 
-        <div class="card flex items-center gap-3.5 px-4 py-3.5">
-            <span class="icon-chip {{ $receivables > 0 ? 'icon-chip-warn' : '' }}">
+        <div class="card flex items-center gap-3.5 px-4 py-3.5 shadow-xs">
+            <span class="icon-chip {{ $receivables > 0 ? 'icon-chip-warn bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-600' }} shrink-0">
                 @include('partials.icon', ['name' => 'debts', 'class' => 'size-5'])
             </span>
             <div class="min-w-0">
-                <div class="truncate text-xs font-medium text-[--color-ink-soft]">کۆی قەرزی کڕیاران</div>
-                <div class="num mt-0.5 truncate text-lg font-bold {{ $receivables > 0 ? 'text-[--color-warn]' : 'text-[--color-ink]' }}">
+                <div class="truncate text-xs font-medium text-slate-500">کۆی قەرزی کڕیاران</div>
+                <div class="num mt-0.5 truncate text-lg font-bold {{ $receivables > 0 ? 'text-amber-600' : 'text-slate-800' }}">
                     {{ fmt_money($receivables) }}
                 </div>
             </div>
