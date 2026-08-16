@@ -8,10 +8,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="h-full bg-slate-50 text-slate-800 antialiased font-sans"
+<body class="h-full bg-slate-100 text-slate-800 antialiased font-sans"
       x-data="{
-          sidebarOpen: true,
+          sidebarOpen: localStorage.getItem('sidebar_open') !== 'false',
           mobileOpen: false,
+          toggleSidebar() {
+              this.sidebarOpen = !this.sidebarOpen;
+              localStorage.setItem('sidebar_open', this.sidebarOpen);
+          },
           clock: clock()
       }">
 
@@ -27,22 +31,22 @@
              x-transition:leave="transition-opacity ease-linear duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-xs md:hidden"></div>
+             class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs sm:hidden"></div>
 
         {{-- ── مێنیوی سەرەکی (Sidebar) ── --}}
         @include('partials.sidebar')
 
         {{-- ── بەشی سەرەکی و ناوەڕۆک (Main Content Area) ── --}}
-        <div class="flex flex-1 flex-col overflow-hidden min-w-0 bg-slate-50">
+        <div class="flex flex-1 flex-col overflow-hidden min-w-0 bg-slate-100/70">
 
             {{-- هێڵی سەرەوە (Top Header Bar) --}}
-            <header class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 md:px-6">
+            <header class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white px-4 md:px-6 shadow-2xs">
                 {{-- دوگمەی تەنیشت و کاتژمێر --}}
                 <div class="flex items-center gap-3">
                     <button type="button"
-                            @click="if (window.innerWidth < 768) { mobileOpen = !mobileOpen } else { sidebarOpen = !sidebarOpen }"
-                            class="flex size-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            title="مێنیو">
+                            @click="if (window.innerWidth < 640) { mobileOpen = !mobileOpen } else { toggleSidebar() }"
+                            class="flex size-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all cursor-pointer active:scale-95"
+                            title="کردنەوە / داخستنی مێنیو">
                         <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="3" y1="12" x2="21" y2="12"></line>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -52,7 +56,7 @@
 
                     <div class="hidden sm:block">
                         <div class="clock-time font-bold text-sm text-slate-800" dir="ltr" style="text-align: right" x-text="clock.time"></div>
-                        <div class="clock-date text-[11px] text-slate-400" x-text="clock.date"></div>
+                        <div class="clock-date text-[11px] text-slate-500" x-text="clock.date"></div>
                     </div>
                 </div>
 
