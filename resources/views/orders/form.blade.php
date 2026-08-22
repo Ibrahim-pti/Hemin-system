@@ -301,6 +301,17 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ?: ($rate ?: 150000)) }}',
         fetchingRate: false,
 
+        init() {
+            if (this.currency === 'USD') {
+                this.fetchLiveRate();
+            }
+            this.$watch('currency', (val) => {
+                if (val === 'USD') {
+                    this.fetchLiveRate();
+                }
+            });
+        },
+
         fetchLiveRate() {
             this.fetchingRate = true;
             fetch('/api/exchange-rate/live')

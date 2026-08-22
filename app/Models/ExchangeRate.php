@@ -22,13 +22,37 @@ class ExchangeRate extends Model
         return $this->belongsTo(User::class);
     }
 
-    /** نرخی ئەم ڕۆژە — یان نزیکترین نرخی پێشوو. */
+    /** نرخی ئەم ڕۆژە — ئەگەر نەبوو خۆکار لە API وەردەگیرێت. */
     public static function current(): float
     {
-        return (float) (static::query()
+        $today = now()->toDateString();
+        $rate = static::query()
+            ->whereDate('effective_date', $today)
+            ->value('usd_to_iqd');
+
+        if (! $rate) {
+            $rate = \Illuminate\Support\Facades\Cache::remember('hemin.auto_live_rate', 1800, function () {
+                try {
+                    $service = app(\App\Services\ExchangeRateService::class);
+                    $live = $service->fetchLiveRate();
+                    if ($live && $live > 0) {
+                        static::updateOrCreate(
+                            ['effective_date' => now()->toDateString()],
+                            ['usd_to_iqd' => $live, 'user_id' => auth()->id()]
+                        );
+                        return $live;
+                    }
+                } catch (\Throwable $e) {
+                    // لە کاتی نەبوونی ئینتەرنێت دوایین نرخ بەکاردێت
+                }
+                return null;
+            });
+        }
+
+        return (float) ($rate ?: (static::query()
             ->whereDate('effective_date', '<=', now())
             ->orderByDesc('effective_date')
-            ->value('usd_to_iqd') ?: 0);
+            ->value('usd_to_iqd') ?: 1450.00));
     }
 
     /** نرخی ڕۆژێکی دیاریکراو — بۆ تۆمارکردنی مامەڵەی کۆن. */
