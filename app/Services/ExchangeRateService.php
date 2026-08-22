@@ -9,41 +9,45 @@ use Illuminate\Support\Facades\Log;
 class ExchangeRateService
 {
     /**
-     * دەرهێنانی نرخی ڕاستەوخۆ لە ڕێگەی API (Live Exchange Rate)
-     * سەرچاوەی سەرەکی: DinarLive API (بۆرسەی عێراق و بەغدا/کوردستان).
+     * دەرهێنانی نرخی ڕاستەوخۆی دۆلار بۆ هەولێر لە ڕێگەی SmartTraderIraq API
+     * سەرچاوە: https://smarttraderiraq.com/currency
      */
     public function getLiveRateData(): ?array
     {
-        // ١. تاقیکردنەوەی سەرچاوەی سەرەکی (DinarLive)
+        // ١. وەرگرتنی ڕاستەوخۆ لە SmartTraderIraq (نرخی هەولێر و کوردستان)
         try {
-            $response = Http::timeout(4)
+            $response = Http::timeout(5)
                 ->withHeaders([
                     'Accept' => 'application/json',
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 ])
-                ->get('https://dinarlive.com/api/v2/get-price', [
-                    'id' => 5,
-                    'location' => 'baghdad',
-                ]);
+                ->get('https://smarttraderiraq.com:2096/grouped_currency_forclient?lang=krd');
 
             if ($response->successful()) {
                 $data = $response->json();
-                $value = (float) ($data['value'] ?? ($data['price'] ?? 0));
-                if ($value > 0) {
-                    $ratePer100 = $value > 10000 ? $value : $value * 100;
-                    $ratePerUsd = $value > 10000 ? $value / 100 : $value;
-                    return [
-                        'rate_per_usd' => round($ratePerUsd, 2),
-                        'rate_per_100' => round($ratePer100, 2),
-                        'source' => 'DinarLive',
-                    ];
+                if (!empty($data['status']) && !empty($data['data'])) {
+                    $currencies = collect($data['data'])->firstWhere('_id', 'Currencies');
+                    if ($currencies && !empty($currencies['opposite_currency_price'][0])) {
+                        $ratePer100 = (float) str_replace(',', '', (string) $currencies['opposite_currency_price'][0]);
+                        if ($ratePer100 > 1000) {
+                            $ratePerUsd = $ratePer100 > 10000 ? $ratePer100 / 100 : $ratePer100;
+                            $rate100 = $ratePer100 > 10000 ? $ratePer100 : $ratePer100 * 100;
+
+                            return [
+                                'rate_per_usd' => round($ratePerUsd, 2),
+                                'rate_per_100' => round($rate100, 2),
+                                'location' => 'Erbil (هەولێر)',
+                                'source' => 'SmartTraderIraq',
+                            ];
+                        }
+                    }
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning('DinarLive API fetch error: ' . $e->getMessage());
+            Log::warning('SmartTraderIraq API fetch error: ' . $e->getMessage());
         }
 
-        // ٢. ئەگەر DinarLive کاتی دانەخرابوو یان وەڵامی نەدایەوە، پەنا دەبەینە بەر سەرچاوەی یەدەگ
+        // ٢. ئەگەر سێرڤەر کاتی وەڵامی نەدایەوە، پەنا دەبەینە بەر سەرچاوەی یەدەگ
         $fallbacks = [
             'https://open.er-api.com/v6/latest/USD',
             'https://api.exchangerate-api.com/v4/latest/USD',
@@ -58,7 +62,8 @@ class ExchangeRateService
                         return [
                             'rate_per_usd' => round($rate, 2),
                             'rate_per_100' => round($rate * 100, 2),
-                            'source' => 'ExchangeRate-API',
+                            'location' => 'Erbil (هەولێر)',
+                            'source' => 'Fallback API',
                         ];
                     }
                 }
