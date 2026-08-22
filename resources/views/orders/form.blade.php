@@ -76,34 +76,37 @@
                        value="{{ old('delivery_date', $order->delivery_date?->toDateString()) }}">
             </div>
 
-            {{-- دراو --}}
-            <div>
-                <label class="label" for="currency">دراو</label>
-                <select id="currency" name="currency" class="field font-bold" x-model="currency">
-                    <option value="IQD">دینار (IQD)</option>
-                    <option value="USD">دۆلار ($ USD)</option>
-                </select>
-            </div>
-
-            {{-- نرخی دۆلار ئەگەر دۆلار بێت --}}
-            <div x-show="currency === 'USD'" x-cloak>
-                <label class="label" for="exchange_rate">نرخی ١٠٠ دۆلار</label>
-                <input id="exchange_rate" name="exchange_rate" type="number" step="0.01" class="field num"
-                       value="{{ old('exchange_rate', $order->exchange_rate ?: $rate) }}">
-            </div>
-
             {{-- تێبینی --}}
-            <div class="sm:col-span-2" :class="currency === 'USD' ? 'lg:col-span-2' : 'lg:col-span-3'">
+            <div class="sm:col-span-2 lg:col-span-4">
                 <label class="label" for="note">تێبینی</label>
                 <input id="note" name="note" class="field" value="{{ old('note', $order->note) }}" placeholder="تێبینی گشتی وەسڵ...">
             </div>
         </div>
     </div>
 
-    {{-- ٢. خشتەی شتەکان (تەنها وێنە، ناوەڕۆک/شتەکە، نرخ) --}}
+    {{-- ٢. خشتەی شتەکان (تەنها وێنە، ناوەڕۆک/شتەکە، نرخ) لەگەڵ هەڵبژاردنی دراو لە سەرەوەی خشتەکە --}}
     <div class="card mt-4">
-        <div class="card-head flex items-center justify-between">
-            <span>ناوەڕۆکی شتە داواکراوەکان</span>
+        <div class="card-head flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="font-bold text-slate-800 text-sm">ناوەڕۆکی شتە داواکراوەکان</span>
+
+                {{-- هەڵبژاردنی دراو لە تەنیشت ناوەڕۆک --}}
+                <div class="flex items-center gap-2 bg-slate-100/90 px-3 py-1 rounded-lg border border-slate-200">
+                    <span class="text-xs font-bold text-slate-600">دراو:</span>
+                    <select id="currency" name="currency" class="bg-white border border-slate-300 rounded px-2 py-0.5 text-xs font-bold text-slate-800 cursor-pointer outline-none focus:ring-1 focus:ring-blue-500" x-model="currency">
+                        <option value="IQD">دینار (IQD)</option>
+                        <option value="USD">دۆلار ($ USD)</option>
+                    </select>
+
+                    {{-- نرخی دۆلار ئەگەر دۆلار بێت --}}
+                    <div x-show="currency === 'USD'" x-cloak class="flex items-center gap-1.5 mr-2">
+                        <span class="text-xs text-slate-500 font-medium">نرخی ١٠٠$:</span>
+                        <input id="exchange_rate" name="exchange_rate" type="number" step="0.01" class="field num !py-0.5 !px-2 w-24 text-xs font-bold bg-white"
+                               value="{{ old('exchange_rate', $order->exchange_rate ?: $rate) }}" placeholder="150,000">
+                    </div>
+                </div>
+            </div>
+
             <button type="button" @click="addLine()" class="btn btn-ghost !py-1 !px-3 text-xs font-bold text-[--color-brand-700] hover:bg-blue-50 border border-blue-200">
                 + زیادکردنی شتی تر
             </button>
