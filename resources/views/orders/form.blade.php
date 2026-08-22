@@ -216,7 +216,7 @@
                 <div>
                     <label class="label" for="discount_percent">داشکاندن (٪)</label>
                     <input id="discount_percent" name="discount_percent" type="number" step="0.01" min="0" max="100"
-                           class="field num" x-model.number="discountPercent">
+                           class="field num" x-model.number="discountPercent" value="0">
                     <p class="mt-1 text-xs text-[--color-ink-soft]">
                         ئەگەر داشکاندن هەبێت بە ڕێژەی لەسەدا بنووسە.
                     </p>
@@ -493,7 +493,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
 
         applyCustomerDiscount() {
             const discount = this.customerDiscounts[this.customerId];
-            if (discount) this.discountPercent = discount;
+            this.discountPercent = discount ? parseFloat(discount) : 0;
         },
 
         formatInput(e, line) {
