@@ -52,7 +52,7 @@
                 <select id="customer_id" name="customer_id" class="field font-bold w-full" required
                         x-model="customerId" @change="onCustomerSelectChange($event)">
                     <option value="">— هەڵبژێرە —</option>
-                    <option value="__NEW__" class="font-bold text-blue-600 bg-blue-50">➕ زیادکردنی کڕیاری نوێ لەم شوێنەدا...</option>
+                    <option value="__NEW__" class="font-bold text-blue-600 bg-blue-50">➕ زیادکردنی کڕیاری نوێ</option>
                     <template x-for="c in customersList" :key="c.id">
                         <option :value="c.id" x-text="c.name + (c.phone ? ' — ' + c.phone : '')" :selected="c.id == customerId"></option>
                     </template>
@@ -315,10 +315,6 @@
                     <label class="label text-xs" for="modal_customer_phone">ژمارەی مۆبایل</label>
                     <input id="modal_customer_phone" x-model="newCustomer.phone" class="field num text-sm w-full" dir="ltr" placeholder="0750..." @keydown.enter.prevent="saveQuickCustomer()">
                 </div>
-                <div>
-                    <label class="label text-xs" for="modal_customer_address">ناونیشان (شوێن)</label>
-                    <input id="modal_customer_address" x-model="newCustomer.address" class="field text-sm w-full" placeholder="هەولێر..." @keydown.enter.prevent="saveQuickCustomer()">
-                </div>
 
                 <div x-show="customerModalError" class="text-xs text-rose-600 font-semibold bg-rose-50 p-2.5 rounded-lg border border-rose-200" x-text="customerModalError"></div>
 
@@ -347,14 +343,14 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         showCustomerModal: false,
         savingCustomer: false,
         customerModalError: '',
-        newCustomer: { name: '', phone: '', address: '' },
+        newCustomer: { name: '', phone: '' },
         prepaid: {{ (float) old('prepaid_amount', $order->exists ? $order->prepaid_amount : 0) }},
         prepaidManuallySet: {{ ($order->exists || old('prepaid_amount') !== null) ? 'true' : 'false' }},
         exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ?: ($rate ?: 150000)) }}',
         fetchingRate: false,
 
         openCustomerModal() {
-            this.newCustomer = { name: '', phone: '', address: '' };
+            this.newCustomer = { name: '', phone: '' };
             this.customerModalError = '';
             this.showCustomerModal = true;
             this.$nextTick(() => {
