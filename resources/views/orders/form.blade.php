@@ -230,12 +230,23 @@
 
                 {{-- پێشەکی / پارەی دراو --}}
                 <div>
-                    <label class="label" for="prepaid_amount">پێشەکی (بڕی پارەی دراو)</label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="label !mb-0" for="prepaid_amount">پێشەکی (بڕی پارەی دراو)</label>
+                        <div class="flex items-center gap-1">
+                            <button type="button" @click="setFullPaid()" class="text-[11px] font-bold text-emerald-700 hover:underline bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200" title="هەمووی دراوە (کاش)">
+                                هەمووی (کاش)
+                            </button>
+                            <button type="button" @click="setZeroPaid()" class="text-[11px] font-bold text-rose-700 hover:underline bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200" title="هەمووی قەرزە">
+                                قەرز (٠)
+                            </button>
+                        </div>
+                    </div>
                     <div class="relative">
                         <input id="prepaid_amount" name="prepaid_amount" type="number" step="any" min="0" class="field num font-bold text-emerald-700"
-                               value="{{ old('prepaid_amount', 0) }}" x-model.number="prepaid">
+                               @input="onPrepaidInput()"
+                               value="{{ old('prepaid_amount', $order->exists ? $order->prepaid_amount : '') }}" x-model.number="prepaid">
                     </div>
-                    <p class="mt-1 text-xs text-[--color-ink-soft]">ئەو بڕەی کە کڕیار ئێستا داویەتی (کاش).</p>
+                    <p class="mt-1 text-xs text-[--color-ink-soft]">بە شێوەی خۆکار تەواوی پارەکەیە (ئەگەر قەرز بوو دەتوانیت دەستکاری بکەیت).</p>
                 </div>
             </div>
         </div>
@@ -293,11 +304,15 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         currency: initialCurrency,
         customerId: '{{ old('customer_id', $order->customer_id) }}',
         customerDiscounts: customerDiscounts,
-        prepaid: {{ (float) old('prepaid_amount', 0) }},
+        prepaid: {{ (float) old('prepaid_amount', $order->exists ? $order->prepaid_amount : 0) }},
+        prepaidManuallySet: {{ ($order->exists || old('prepaid_amount') !== null) ? 'true' : 'false' }},
         exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ?: ($rate ?: 150000)) }}',
         fetchingRate: false,
 
         init() {
+            if (!this.prepaidManuallySet) {
+                this.prepaid = this.total;
+            }
             if (this.currency === 'USD') {
                 this.fetchLiveRate();
             }
@@ -306,6 +321,30 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
                     this.fetchLiveRate();
                 }
             });
+            this.$watch('lines', () => {
+                if (!this.prepaidManuallySet) {
+                    this.$nextTick(() => { this.prepaid = this.total; });
+                }
+            }, { deep: true });
+            this.$watch('discountPercent', () => {
+                if (!this.prepaidManuallySet) {
+                    this.$nextTick(() => { this.prepaid = this.total; });
+                }
+            });
+        },
+
+        onPrepaidInput() {
+            this.prepaidManuallySet = true;
+        },
+
+        setFullPaid() {
+            this.prepaid = this.total;
+            this.prepaidManuallySet = true;
+        },
+
+        setZeroPaid() {
+            this.prepaid = 0;
+            this.prepaidManuallySet = true;
         },
 
         fetchLiveRate() {
