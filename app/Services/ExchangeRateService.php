@@ -10,47 +10,62 @@ use Illuminate\Support\Facades\Log;
 class ExchangeRateService
 {
     /**
-     * دەرهێنانی نوێترین نرخی دۆلاری بازاڕی هەولێر و کوردستان (Cash Market Rate)
+     * دەرهێنانی نوێترین نرخی دۆلار لە ماڵپەڕی Barchn (https://barchn.com/exchangerate)
      */
     public function getLiveRateData(bool $forceRefresh = false): ?array
     {
         if ($forceRefresh) {
-            Cache::forget('hemin_live_exchange_rate');
+            Cache::forget('hemin_barchn_exchange_rate');
         }
 
-        return Cache::remember('hemin_live_exchange_rate', 1800, function () {
-            return $this->fetchErbilMarketRate();
+        return Cache::remember('hemin_barchn_exchange_rate', 900, function () {
+            return $this->fetchFromBarchn();
         });
     }
 
-    private function fetchErbilMarketRate(): ?array
+    private function fetchFromBarchn(): ?array
     {
-        // ١. دەرهێنانی ڕاستەوخۆی نرخی بازاڕی هەولێر لە SmartTraderIraq
         try {
-            $response = Http::timeout(4)
-                ->withHeaders(['Accept' => 'application/json', 'User-Agent' => 'Mozilla/5.0'])
-                ->get('https://smarttraderiraq.com:2096/grouped_currency_forclient?lang=krd');
+            $response = Http::timeout(5)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language' => 'ku,ar,en-US,en;q=0.9',
+                ])
+                ->get('https://barchn.com/exchangerate');
 
             if ($response->successful()) {
-                $data = $response->json();
-                $currencies = collect($data['data'] ?? [])->firstWhere('_id', 'Currencies');
-                if (!empty($currencies['opposite_currency_price'][0])) {
-                    $rate100 = (float) str_replace(',', '', (string) $currencies['opposite_currency_price'][0]);
-                    if ($rate100 > 100000) { // نرخی بازاڕی حەقیقی سەروو ١٠٠ هەزارە
+                $html = $response->body();
+
+                // ڕێگەی یەکەم: دەرهێنان لە snapshot json
+                if (preg_match('/(?:&quot;|")usDollar(?:&quot;|"):\s*([0-9.]+)/', $html, $m)) {
+                    $rate100 = (float) $m[1];
+                    if ($rate100 > 50000) {
                         return [
                             'rate_per_usd' => round($rate100 / 100, 2),
                             'rate_per_100' => round($rate100, 2),
-                            'city' => 'Erbil (هەولێر)',
-                            'source' => 'بازاڕی هەولێر',
+                            'source' => 'Barchn (نرخی بازاڕ)',
+                        ];
+                    }
+                }
+
+                // ڕێگەی دووەم: دەرهێنان لە خشتەی HTML (100 USD -> 154,150)
+                if (preg_match('/100\s*USD.*?([0-9,]+(?:\.[0-9]+)?)\s*د\.ع/s', $html, $m)) {
+                    $rate100 = (float) str_replace(',', '', $m[1]);
+                    if ($rate100 > 50000) {
+                        return [
+                            'rate_per_usd' => round($rate100 / 100, 2),
+                            'rate_per_100' => round($rate100, 2),
+                            'source' => 'Barchn (نرخی بازاڕ)',
                         ];
                     }
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning('Erbil market rate fetch error: ' . $e->getMessage());
+            Log::warning('Barchn exchange rate fetch error: ' . $e->getMessage());
         }
 
-        // ٢. ئەگەر سێرڤەر بەردەست نەبوو، نرخی تۆمارکراوی پێشووی داتابەیس بەکاردێت (وەک ١٥٠،٠٠٠)
+        // ئەگەر کێشەی ئینتەرنێت هەبوو، نرخی تۆمارکراوی پێشووی داتابەیس بەکاربێنە
         $dbRate = ExchangeRate::current();
         if ($dbRate > 100) {
             $rate100 = $dbRate > 10000 ? $dbRate : $dbRate * 100;
@@ -58,17 +73,14 @@ class ExchangeRateService
             return [
                 'rate_per_usd' => round($rateUsd, 2),
                 'rate_per_100' => round($rate100, 2),
-                'city' => 'Erbil (هەولێر)',
                 'source' => 'داتابەیسی سیستەم',
             ];
         }
 
-        // نرخی بنەڕەتی گریمانەیی بازاڕی هەولێر
         return [
             'rate_per_usd' => 1500.0,
             'rate_per_100' => 150000.0,
-            'city' => 'Erbil (هەولێر)',
-            'source' => 'نرخی بازاڕی هەولێر',
+            'source' => 'نرخی بنەڕەتی',
         ];
     }
 
