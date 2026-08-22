@@ -62,28 +62,51 @@
                 <tr>
                     <th>ژمارە</th>
                     <th>بەروار</th>
-                    <th>بەڕێز</th>
+                    <th>بەڕێز (کڕیار)</th>
                     <th class="num">کۆی گشتی</th>
-                    <th class="num">ماوە</th>
-                    <th>دۆخ</th>
+                    <th class="num">دراوە</th>
+                    <th class="num">ماوە (قەرز)</th>
+                    <th>دۆخی پارەدان</th>
+                    <th>دۆخی کار</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($orders as $order)
-                    @php $remaining = $order->remaining(); @endphp
-                    <tr>
-                        <td class="num font-medium">{{ $order->invoice_no }}</td>
+                    @php
+                        $remaining = $order->remaining();
+                        $paid = $order->paidAmount();
+                    @endphp
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="num font-bold text-slate-800">{{ $order->invoice_no }}</td>
                         <td class="num whitespace-nowrap">{{ fmt_date($order->order_date) }}</td>
                         <td>
-                            {{ $order->customer?->name }}
-                            @if ($order->customer->phone)
-                                <span class="num block text-xs text-[--color-ink-soft]" dir="ltr">{{ $order->customer->phone }}</span>
+                            @if ($order->customer)
+                                <a href="{{ route('customers.show', $order->customer) }}" class="font-bold text-slate-900 hover:text-blue-600">
+                                    {{ $order->customer->name }}
+                                </a>
+                                @if ($order->customer->phone)
+                                    <span class="num block text-xs text-slate-500" dir="ltr">{{ $order->customer->phone }}</span>
+                                @endif
+                            @else
+                                <span class="text-slate-400">—</span>
                             @endif
                         </td>
-                        <td class="num">{{ fmt_money($order->total, $order->currency) }}</td>
-                        <td class="num {{ $remaining > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
-                            {{ fmt_money($remaining) }}
+                        <td class="num font-bold">{{ fmt_money($order->total, $order->currency) }}</td>
+                        <td class="num text-emerald-700 font-semibold">{{ fmt_money($paid, $order->currency) }}</td>
+                        <td class="num font-bold {{ $remaining > 0 ? 'text-rose-600' : 'text-slate-400' }}">
+                            {{ fmt_money($remaining, $order->currency) }}
+                        </td>
+                        <td>
+                            @if ($remaining <= 0)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span>✓</span> <span>تەواوبوو (کاش)</span>
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                    <span>ماوە:</span> <span class="num">{{ fmt_money($remaining) }}</span>
+                                </span>
+                            @endif
                         </td>
                         <td>
                             <span class="badge {{ match ($order->status) {
@@ -93,9 +116,9 @@
                             } }}">{{ $order->status_label }}</span>
                         </td>
                         <td class="whitespace-nowrap text-left">
-                            <a href="{{ route('orders.show', $order) }}" class="text-sm text-[--color-brand-700]">بینین</a>
+                            <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-blue-700 hover:bg-blue-50">بینین</a>
                             <a href="{{ route('orders.print', $order) }}" target="_blank"
-                               class="mr-2 text-sm text-[--color-brand-700]">چاپ</a>
+                               class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-slate-700 hover:bg-slate-100 mr-1">چاپ</a>
                         </td>
                     </tr>
                 @empty

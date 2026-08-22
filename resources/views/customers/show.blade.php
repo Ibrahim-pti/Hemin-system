@@ -51,24 +51,51 @@
     <div class="overflow-x-auto">
         <table class="table">
             <thead>
-                <tr><th>ژمارە</th><th>بەروار</th><th class="num">کۆی گشتی</th><th class="num">ماوە</th><th>دۆخ</th><th></th></tr>
+                <tr>
+                    <th>ژمارە</th>
+                    <th>بەروار</th>
+                    <th class="num">کۆی گشتی</th>
+                    <th class="num">ماوە (قەرز)</th>
+                    <th>دۆخی پارەدان</th>
+                    <th>دۆخی کار</th>
+                    <th></th>
+                </tr>
             </thead>
             <tbody>
                 @forelse ($orders as $order)
+                    @php $rem = $order->remaining(); @endphp
                     <tr>
-                        <td class="num font-medium">{{ $order->invoice_no }}</td>
+                        <td class="num font-bold text-slate-800">{{ $order->invoice_no }}</td>
                         <td class="num">{{ fmt_date($order->order_date) }}</td>
-                        <td class="num">{{ fmt_money($order->total, $order->currency) }}</td>
-                        <td class="num {{ $order->remaining() > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
-                            {{ fmt_money($order->remaining()) }}
+                        <td class="num font-bold">{{ fmt_money($order->total, $order->currency) }}</td>
+                        <td class="num font-bold {{ $rem > 0 ? 'text-rose-600' : 'text-slate-400' }}">
+                            {{ fmt_money($rem, $order->currency) }}
                         </td>
-                        <td><span class="badge badge-warn">{{ $order->status_label }}</span></td>
-                        <td class="text-left">
-                            <a href="{{ route('orders.show', $order) }}" class="text-sm text-[--color-brand-700]">بینین</a>
+                        <td>
+                            @if ($rem <= 0)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span>✓</span> <span>تەواوبوو</span>
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                    <span>قەرز</span>
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge {{ match ($order->status) {
+                                'delivered' => 'badge-ok',
+                                'cancelled' => 'badge-danger',
+                                default => 'badge-warn',
+                            } }}">{{ $order->status_label }}</span>
+                        </td>
+                        <td class="text-left whitespace-nowrap">
+                            <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-blue-700 hover:bg-blue-50">بینین</a>
+                            <a href="{{ route('orders.print', $order) }}" target="_blank" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-slate-700 hover:bg-slate-100 mr-1">چاپ</a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="py-6 text-center text-sm text-[--color-ink-soft]">هیچ وەسڵێک نییە.</td></tr>
+                    <tr><td colspan="7" class="py-6 text-center text-sm text-[--color-ink-soft]">هیچ وەسڵێک نییە.</td></tr>
                 @endforelse
             </tbody>
         </table>
