@@ -110,8 +110,6 @@
                     <th class="py-3 px-4 text-center">کۆی نرخ</th>
                     <th class="py-3 px-4 text-center">دراو</th>
                     <th class="py-3 px-4 text-center">ماوە</th>
-                    <th class="py-3 px-4 text-center">دۆخ</th>
-                    <th class="py-3 px-4 text-center w-28">کردار</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-sm">
@@ -121,22 +119,27 @@
                         $paid = $order->paidAmount();
                         $itemsSummary = $order->items->pluck('description')->filter()->join('، ');
                     @endphp
-                    <tr class="hover:bg-slate-50/70 transition-colors">
+                    <tr class="hover:bg-blue-50/40 transition-colors cursor-pointer"
+                        onclick="if (!event.target.closest('a')) window.location='{{ route('orders.show', $order) }}'">
                         <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
                             {{ $index + 1 }}
                         </td>
                         <td class="py-3.5 px-4 text-center">
-                            <a href="{{ route('orders.show', $order) }}" class="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors">
+                            <a href="{{ route('orders.show', $order) }}"
+                               class="inline-flex items-center justify-center min-w-8 px-3 py-1 rounded-lg text-xs font-mono font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 shadow-2xs hover:shadow-xs transition-all"
+                               title="کرتە بکە بۆ بینینی وەسڵ">
                                 {{ $order->invoice_no }}
                             </a>
                         </td>
                         <td class="py-3.5 px-4">
-                            <div class="font-bold text-slate-800">{{ $itemsSummary ?: 'وەسڵی فرۆشتن' }}</div>
-                            @if ($order->items->count() > 0)
-                                <div class="text-xs text-slate-400 mt-0.5 font-normal">
-                                    {{ $order->items->count() }} بەندە / شت
-                                </div>
-                            @endif
+                            <a href="{{ route('orders.show', $order) }}" class="group block">
+                                <div class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ $itemsSummary ?: 'وەسڵی فرۆشتن' }}</div>
+                                @if ($order->items->count() > 0)
+                                    <div class="text-xs text-slate-400 mt-0.5 font-normal">
+                                        {{ $order->items->count() }} بەندە / شت
+                                    </div>
+                                @endif
+                            </a>
                         </td>
                         <td class="py-3.5 px-4 text-center num text-xs text-slate-600">
                             {{ fmt_date($order->order_date) }}
@@ -150,94 +153,11 @@
                         <td class="py-3.5 px-4 text-center num font-bold {{ $remaining > 0 ? 'text-rose-600' : 'text-slate-400' }}">
                             {{ $remaining > 0 ? fmt_money($remaining, $order->currency) : '-' }}
                         </td>
-                        <td class="py-3.5 px-4 text-center">
-                            @if ($remaining <= 0)
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                    <span>✓</span> <span>پارەدراو</span>
-                                </span>
-                            @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                                    <span>قەرز</span>
-                                </span>
-                            @endif
-                        </td>
-                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                            <div class="flex items-center justify-center gap-1">
-                                <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-blue-700 hover:bg-blue-50" title="بینینی وەسڵ">
-                                    بینین
-                                </a>
-                                <a href="{{ route('orders.print', $order) }}" target="_blank" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-slate-700 hover:bg-slate-100" title="چاپ">
-                                    چاپ
-                                </a>
-                            </div>
-                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="py-10 text-center text-slate-400 text-sm font-medium">
+                        <td colspan="7" class="py-10 text-center text-slate-400 text-sm font-medium">
                             هیچ وەسڵێکی فرۆشتن بۆ ئەم کڕیارە تۆمار نەکراوە.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-
-{{-- ٣. خشتەی حەقدی و پارەدانەکان (Payments Table) --}}
-<div class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden">
-    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-        <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
-            <span>🧾</span>
-            <span>حەقدی و وەرگرتنی پارە</span>
-        </div>
-        <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $customer->id]) }}" class="btn !py-1 !px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
-            + وەرگرتنی پارە (حەقدی)
-        </a>
-    </div>
-
-    <div class="overflow-x-auto">
-        <table class="table w-full text-right">
-            <thead>
-                <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
-                    <th class="py-3 px-4 w-12 text-center">#</th>
-                    <th class="py-3 px-4 text-center">ژمارەی پسوولە</th>
-                    <th class="py-3 px-4 text-center">بەروار</th>
-                    <th class="py-3 px-4">تێبینی / هۆکار</th>
-                    <th class="py-3 px-4 text-center">بڕی پارە</th>
-                    <th class="py-3 px-4 text-center w-24">کردار</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 text-sm">
-                @forelse ($payments as $index => $payment)
-                    <tr class="hover:bg-slate-50/70 transition-colors">
-                        <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
-                            {{ $index + 1 }}
-                        </td>
-                        <td class="py-3.5 px-4 text-center">
-                            <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-slate-700 bg-slate-100 border border-slate-200">
-                                {{ $payment->voucher_no }}
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-4 text-center num text-xs text-slate-600">
-                            {{ fmt_date($payment->paid_at) }}
-                        </td>
-                        <td class="py-3.5 px-4 text-slate-700">
-                            {{ $payment->note ?: ($payment->direction === 'in' ? 'وەرگرتنی پارە' : 'گەڕاندنەوەی پارە') }}
-                        </td>
-                        <td class="py-3.5 px-4 text-center num font-bold text-emerald-700">
-                            {{ fmt_money($payment->amount, $payment->currency) }}
-                        </td>
-                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                            <a href="{{ route('payments.print', $payment) }}" target="_blank" class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
-                                چاپ
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="py-8 text-center text-slate-400 text-sm font-medium">
-                            هیچ پارەدانێک بۆ ئەم کڕیارە تۆمار نەکراوە.
                         </td>
                     </tr>
                 @endforelse
