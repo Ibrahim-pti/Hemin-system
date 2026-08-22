@@ -6,7 +6,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>داشبۆرد — {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
     <script>
         if (localStorage.getItem('sidebar_open') === 'false') {
             document.documentElement.classList.add('sidebar-collapsed');
@@ -175,6 +174,5 @@
     </script>
 
     @stack('scripts')
-    @livewireScripts
 </body>
 </html>

@@ -7,10 +7,9 @@
         minWidth: sidebarOpen ? '16rem' : '5rem',
         transform: (window.innerWidth < 640 && !mobileOpen) ? 'translateX(100%)' : 'translateX(0)',
     }"
-    style="position: sticky; top: 0; height: 100vh; background: #0f172a; border-left: 1px solid rgba(255,255,255,0.07); z-index: 50; flex-shrink: 0; transition: width 0.2s ease, min-width 0.2s ease, transform 0.2s ease; display: flex; flex-direction: column; user-select: none;"
+    style="position: sticky; top: 0; height: 100vh; width: 16rem; min-width: 16rem; background: #0f172a; border-left: 1px solid rgba(255,255,255,0.07); z-index: 50; flex-shrink: 0; transition: width 0.2s ease, min-width 0.2s ease, transform 0.2s ease; display: flex; flex-direction: column; user-select: none;"
     class="sidebar-nav sidebar-no-transition"
-    x-init="$nextTick(() => { $el.classList.remove('sidebar-no-transition'); })"
-    x-cloak>
+    x-init="$nextTick(() => { $el.classList.remove('sidebar-no-transition'); })">
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}
     <div style="height: 4rem; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;">
@@ -18,7 +17,7 @@
             <span style="display: flex; width: 2.25rem; height: 2.25rem; align-items: center; justify-content: center; border-radius: 0.75rem; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); font-weight: bold; font-size: 1rem; flex-shrink: 0;">
                 هـ
             </span>
-            <div x-show="sidebarOpen" x-transition.opacity style="min-width: 0;">
+            <div x-show="sidebarOpen" style="min-width: 0;">
                 <div style="font-size: 0.85rem; font-weight: 700; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em;">
                     {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}
                 </div>
@@ -135,7 +134,7 @@
             <div style="display: flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 50%; background: rgba(59,130,246,0.15); color: #93c5fd; font-weight: bold; font-size: 0.75rem; flex-shrink: 0; border: 1px solid rgba(59,130,246,0.25);">
                 {{ mb_substr(auth()->user()->name, 0, 1) }}
             </div>
-            <div x-show="sidebarOpen" x-transition.opacity style="min-width: 0; flex: 1;">
+            <div x-show="sidebarOpen" style="min-width: 0; flex: 1;">
                 <div style="font-size: 0.78rem; font-weight: 600; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ auth()->user()->name }}</div>
                 <div style="font-size: 0.68rem; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                     {{ auth()->user()->isAdmin() ? 'بەڕێوەبەر' : 'بەرپرسی کۆگا' }}
