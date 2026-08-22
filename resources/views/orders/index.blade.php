@@ -67,7 +67,6 @@
                     <th class="num">دراوە</th>
                     <th class="num">ماوە (قەرز)</th>
                     <th>دۆخی پارەدان</th>
-                    <th>دۆخی کار</th>
                     <th></th>
                 </tr>
             </thead>
@@ -108,13 +107,6 @@
                                 </span>
                             @endif
                         </td>
-                        <td>
-                            <span class="badge {{ match ($order->status) {
-                                'delivered' => 'badge-ok',
-                                'cancelled' => 'badge-danger',
-                                default => 'badge-warn',
-                            } }}">{{ $order->status_label }}</span>
-                        </td>
                         <td class="whitespace-nowrap text-left">
                             <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-blue-700 hover:bg-blue-50">بینین</a>
                             <a href="{{ route('orders.print', $order) }}" target="_blank"
@@ -122,7 +114,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ وەسڵێک نەدۆزرایەوە.</td></tr>
+                    <tr><td colspan="8" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ وەسڵێک نەدۆزرایەوە.</td></tr>
                 @endforelse
             </tbody>
         </table>
