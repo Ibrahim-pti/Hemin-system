@@ -182,14 +182,15 @@ class CustomerController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string'],
         ], [], [
             'name' => 'ناو',
             'phone' => 'تەلەفۆن',
+            'address' => 'ناونیشان',
         ]);
 
         $data['phone2'] = null;
-        $data['address'] = null;
         $data['discount_percent'] = 0;
         $data['opening_balance'] = 0;
         $data['opening_currency'] = 'IQD';
