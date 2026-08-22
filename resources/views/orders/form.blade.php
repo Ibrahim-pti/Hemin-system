@@ -44,7 +44,7 @@
             <span>زانیاری وەسڵ و کڕیار</span>
             <a href="{{ route('customers.index') }}" class="btn btn-ghost !py-1 text-xs">گەڕانەوە &larr;</a>
         </div>
-        <div class="card-body grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="card-body grid gap-4 sm:grid-cols-3">
 
             {{-- بەڕێز (کڕیار) --}}
             <div class="sm:col-span-2">
@@ -60,21 +60,14 @@
             </div>
 
             {{-- بەروار --}}
-            <div>
+            <div class="sm:col-span-1">
                 <label class="label" for="order_date">بەروار <span class="text-[--color-danger]">*</span></label>
                 <input id="order_date" name="order_date" type="date" class="field num" required
                        value="{{ old('order_date', $order->order_date?->toDateString() ?? now()->toDateString()) }}">
             </div>
 
-            {{-- بەرواری گەیاندن --}}
-            <div>
-                <label class="label" for="delivery_date">بەرواری گەیاندن (ڕادەستکردن)</label>
-                <input id="delivery_date" name="delivery_date" type="date" class="field num"
-                       value="{{ old('delivery_date', $order->delivery_date?->toDateString()) }}">
-            </div>
-
             {{-- تێبینی --}}
-            <div class="sm:col-span-2 lg:col-span-4">
+            <div class="sm:col-span-3">
                 <label class="label" for="note">تێبینی</label>
                 <input id="note" name="note" class="field" value="{{ old('note', $order->note) }}" placeholder="تێبینی گشتی وەسڵ...">
             </div>

@@ -127,10 +127,12 @@
                     <span class="text-[--color-ink-soft]">بەروار</span>
                     <span class="num">{{ fmt_date($order->order_date) }}</span>
                 </div>
+                @if($order->delivery_date)
                 <div class="flex justify-between">
                     <span class="text-[--color-ink-soft]">گەیاندن</span>
                     <span class="num">{{ fmt_date($order->delivery_date) }}</span>
                 </div>
+                @endif
             </div>
         </div>
 
