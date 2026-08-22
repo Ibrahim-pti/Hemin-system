@@ -59,7 +59,15 @@
         <div class="card">
             <div class="card-head flex items-center justify-between">
                 <span>نرخی دۆلار</span>
-                <span class="num font-semibold">{{ fmt_num($currentRate) }} د.ع</span>
+                <div class="flex items-center gap-2">
+                    <span class="num font-semibold">{{ fmt_num($currentRate) }} د.ع</span>
+                    <form method="POST" action="{{ route('settings.sync-rate') }}">
+                        @csrf
+                        <button class="btn btn-ghost !py-1 !px-2 text-xs text-blue-600 hover:bg-blue-50 border border-blue-200" title="وەرگرتنی نرخی ئەمڕۆ لە ئینتەرنێت">
+                            🔄 وەرگرتن لە API
+                        </button>
+                    </form>
+                </div>
             </div>
             <form method="POST" action="{{ route('settings.rate') }}">
                 @csrf

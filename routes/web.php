@@ -127,7 +127,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
         Route::post('/settings/rate', [SettingController::class, 'storeRate'])->name('settings.rate');
+        Route::post('/settings/sync-rate', [SettingController::class, 'syncLiveRate'])->name('settings.sync-rate');
         Route::post('/settings/backup', [SettingController::class, 'backup'])->name('settings.backup');
         Route::get('/settings/backup/{file}', [SettingController::class, 'download'])->name('settings.backup.download');
     });
+
+    Route::get('/api/exchange-rate/live', [SettingController::class, 'liveRate'])->name('exchange-rate.live');
 });

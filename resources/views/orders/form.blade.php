@@ -101,8 +101,18 @@
                     {{-- نرخی دۆلار ئەگەر دۆلار بێت --}}
                     <div x-show="currency === 'USD'" x-cloak class="flex items-center gap-1.5 mr-2">
                         <span class="text-xs text-slate-500 font-medium">نرخی ١٠٠$:</span>
-                        <input id="exchange_rate" name="exchange_rate" type="number" step="0.01" class="field num !py-0.5 !px-2 w-24 text-xs font-bold bg-white"
-                               value="{{ old('exchange_rate', $order->exchange_rate ?: $rate) }}" placeholder="150,000">
+                        <div class="inline-flex items-center gap-1 bg-white rounded border border-slate-300 px-1 py-0.5">
+                            <input id="exchange_rate" name="exchange_rate" type="text" class="field num !py-0 !px-1 w-24 text-xs font-bold border-0 focus:ring-0"
+                                   x-model="exchangeRate" placeholder="150,000">
+                            <button type="button" @click="fetchLiveRate()"
+                                    :disabled="fetchingRate"
+                                    class="text-slate-400 hover:text-blue-600 p-0.5 rounded transition-all"
+                                    title="وەرگرتنی نرخی ئەمڕۆ لە ئینتەرنێت (Live API)">
+                                <svg class="size-3.5" :class="fetchingRate && 'animate-spin text-blue-600'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -288,6 +298,23 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         customerId: '{{ old('customer_id', $order->customer_id) }}',
         customerDiscounts: customerDiscounts,
         prepaid: {{ (float) old('prepaid_amount', 0) }},
+        exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ?: ($rate ?: 150000)) }}',
+        fetchingRate: false,
+
+        fetchLiveRate() {
+            this.fetchingRate = true;
+            fetch('/api/exchange-rate/live')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ok && data.rate_per_100) {
+                        this.exchangeRate = data.rate_per_100.toLocaleString('en-US');
+                    }
+                })
+                .catch(() => {})
+                .finally(() => {
+                    this.fetchingRate = false;
+                });
+        },
 
         addLine() {
             this.lines.push({
