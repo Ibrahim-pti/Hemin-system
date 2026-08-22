@@ -17,9 +17,7 @@
         <div class="card-body space-y-2 text-sm">
             @foreach ([
                 'تەلەفۆن' => $customer->phone ?? '—',
-                'تەلەفۆنی دووەم' => $customer->phone2 ?? '—',
-                'شوێن' => $customer->address ?? '—',
-                'داشکاندن' => $customer->discount_percent > 0 ? fmt_num($customer->discount_percent, 2).'٪' : '—',
+                'دۆخ' => $customer->is_active ? 'چالاک' : 'ناچالاک',
             ] as $label => $value)
                 <div class="flex justify-between border-b border-[--color-line] pb-2 last:border-0">
                     <span class="text-[--color-ink-soft]">{{ $label }}</span>

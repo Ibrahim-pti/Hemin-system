@@ -9,7 +9,7 @@
 
 <form method="GET" class="card mb-4">
     <div class="card-body flex gap-3">
-        <input type="search" name="q" value="{{ request('q') }}" class="field" placeholder="ناو، تەلەفۆن یان شوێن...">
+        <input type="search" name="q" value="{{ request('q') }}" class="field" placeholder="ناو یان تەلەفۆن...">
         <button class="btn btn-primary">گەڕان</button>
     </div>
 </form>
@@ -21,9 +21,7 @@
                 <tr>
                     <th>ناو</th>
                     <th>تەلەفۆن</th>
-                    <th>شوێن</th>
                     <th class="num">وەسڵ</th>
-                    <th class="num">داشکاندن</th>
                     <th class="num">قەرز</th>
                     <th></th>
                 </tr>
@@ -38,11 +36,7 @@
                             </a>
                         </td>
                         <td class="num" dir="ltr">{{ $customer->phone ?? '—' }}</td>
-                        <td class="text-[--color-ink-soft]">{{ $customer->address ?? '—' }}</td>
                         <td class="num">{{ fmt_num($customer->orders_count) }}</td>
-                        <td class="num text-[--color-ink-soft]">
-                            {{ $customer->discount_percent > 0 ? fmt_num($customer->discount_percent, 2).'٪' : '—' }}
-                        </td>
                         <td class="num font-medium {{ $balance > 0 ? 'text-[--color-danger]' : '' }}">
                             {{ fmt_money($balance) }}
                         </td>
@@ -51,7 +45,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ کڕیارێک نییە.</td></tr>
+                    <tr><td colspan="5" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ کڕیارێک نییە.</td></tr>
                 @endforelse
             </tbody>
         </table>

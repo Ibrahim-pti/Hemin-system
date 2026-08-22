@@ -137,17 +137,18 @@ class CustomerController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'phone2' => ['nullable', 'string', 'max:30'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'opening_balance' => ['nullable', 'numeric'],
-            'opening_currency' => ['required', 'in:IQD,USD'],
             'note' => ['nullable', 'string'],
-        ], [], ['name' => 'ناو']);
+        ], [], [
+            'name' => 'ناو',
+            'phone' => 'تەلەفۆن',
+        ]);
 
-        $data['discount_percent'] = $data['discount_percent'] ?? 0;
-        $data['opening_balance'] = $data['opening_balance'] ?? 0;
-        $data['is_active'] = $request->boolean('is_active');
+        $data['phone2'] = null;
+        $data['address'] = null;
+        $data['discount_percent'] = 0;
+        $data['opening_balance'] = 0;
+        $data['opening_currency'] = 'IQD';
+        $data['is_active'] = $request->boolean('is_active', true);
 
         return $data;
     }
