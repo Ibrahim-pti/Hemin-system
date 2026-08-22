@@ -19,10 +19,11 @@ class CustomerController extends Controller
 
         $allCustomers = Customer::all();
         $totalCustomers = $allCustomers->count();
-        $totalOrders = \App\Models\Order::count();
-        $totalDebt = $allCustomers->sum(fn ($c) => $c->balance());
+        $totalSales = (float) \App\Models\Order::whereNotIn('status', ['draft', 'cancelled'])->sum(\App\Models\Order::totalIqdExpression());
+        $totalDebt = (float) $allCustomers->sum(fn ($c) => max(0, $c->balance()));
+        $debtorCount = $allCustomers->filter(fn ($c) => $c->balance() > 0)->count();
 
-        return view('customers.index', compact('customers', 'totalCustomers', 'totalOrders', 'totalDebt'));
+        return view('customers.index', compact('customers', 'totalCustomers', 'totalSales', 'totalDebt', 'debtorCount'));
     }
 
     public function create(): View
@@ -67,11 +68,22 @@ class CustomerController extends Controller
 
     public function show(Customer $customer): View
     {
-        return view('customers.show', [
-            'customer' => $customer,
-            'orders' => $customer->orders()->latest('order_date')->latest('id')->limit(50)->get(),
-            'payments' => $customer->payments()->latest('paid_at')->limit(50)->get(),
-        ]);
+        $orders = $customer->orders()
+            ->with('items')
+            ->latest('order_date')
+            ->latest('id')
+            ->get();
+
+        $payments = $customer->payments()
+            ->latest('paid_at')
+            ->latest('id')
+            ->get();
+
+        $ordersCount = $orders->count();
+        $totalBought = (float) $orders->whereNotIn('status', ['draft', 'cancelled'])->sum(fn ($o) => $o->total_iqd);
+        $balance = $customer->balance();
+
+        return view('customers.show', compact('customer', 'orders', 'payments', 'ordersCount', 'totalBought', 'balance'));
     }
 
     /**

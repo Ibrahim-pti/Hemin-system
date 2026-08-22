@@ -1,30 +1,16 @@
 @extends('layouts.app')
-@section('title', 'وەسڵ و داواکاری')
+@section('title', 'فرۆشتن (وەسڵەکان)')
 
 @section('actions')
     <div class="flex items-center gap-2">
-        <a href="{{ route('orders.create') }}" class="btn btn-primary !py-1.5 !px-3 text-xs gap-1 shadow-sm">
-            <span>+ وەسڵی نوێ</span>
-        </a>
-        <a href="{{ route('customers.create') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs gap-1 border border-slate-200 hover:bg-slate-100">
-            <span>+ کڕیاری نوێ</span>
+        <a href="{{ route('orders.create') }}" class="btn btn-primary !py-2 !px-4 text-xs font-bold gap-1.5 shadow-sm bg-blue-600 hover:bg-blue-700">
+            <span>+</span>
+            <span>وەسڵی نوێ (فرۆشتن)</span>
         </a>
     </div>
 @endsection
 
 @section('content')
-
-{{-- بەستەری تابەکان بۆ هەڵبژاردنی نێوان کڕیارەکان و وەسڵەکان --}}
-<div class="flex items-center gap-1 border-b border-[--color-line] mb-4">
-    <a href="{{ route('customers.index') }}"
-       class="px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg transition-colors">
-        لیستی کڕیارەکان
-    </a>
-    <a href="{{ route('orders.index') }}"
-       class="px-4 py-2.5 text-sm font-bold border-b-2 border-[--color-brand-700] text-[--color-brand-700] bg-white rounded-t-lg">
-        هەموو وەسڵەکان
-    </a>
-</div>
 
 <form method="GET" class="card mb-4">
     <div class="card-body grid gap-3 sm:grid-cols-2 lg:grid-cols-5">

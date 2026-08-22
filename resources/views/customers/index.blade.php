@@ -1,124 +1,143 @@
 @extends('layouts.app')
-@section('title', 'کڕیارەکان و وەسڵ')
+@section('title', 'کڕیاران')
 
 @section('actions')
-    <div class="flex items-center gap-2">
-        <a href="{{ route('orders.create') }}" class="btn btn-primary !py-1.5 !px-3 text-xs gap-1 shadow-sm">
-            <span>+ وەسڵی نوێ</span>
-        </a>
-        <a href="{{ route('customers.create') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs gap-1 border border-slate-200 hover:bg-slate-100">
-            <span>+ کڕیاری نوێ</span>
-        </a>
-    </div>
+    <a href="{{ route('customers.create') }}" class="btn btn-primary !py-2 !px-4 text-xs font-bold gap-1.5 shadow-sm bg-blue-600 hover:bg-blue-700">
+        <span>+</span>
+        <span>زیادکردنی کڕیار</span>
+    </a>
 @endsection
 
 @section('content')
 
-{{-- کارتەکانی ئاماری خێرا --}}
-<div class="grid gap-3 sm:grid-cols-3 mb-4">
-    <div class="card p-3.5 bg-white">
-        <div class="text-xs text-[--color-ink-soft]">کۆی گشتی کڕیاران</div>
-        <div class="text-xl font-bold text-slate-900 num mt-0.5">{{ fmt_num($totalCustomers) }}</div>
-        <div class="text-xs text-slate-500 mt-1">کڕیاری تۆمارکراو</div>
+{{-- ٤ کارتە سەرەکییەکەی ئامار (هاوشێوەی دیزاینە نوێیەکە) --}}
+<div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+    {{-- کۆی کڕیاران --}}
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-blue-500 text-center relative overflow-hidden">
+        <div class="text-3xl font-black text-slate-800 num tracking-tight">{{ fmt_num($totalCustomers) }}</div>
+        <div class="text-xs font-bold text-slate-500 mt-1">کۆی کڕیاران</div>
     </div>
 
-    <div class="card p-3.5 bg-white">
-        <div class="text-xs text-[--color-ink-soft]">کۆی وەسڵ و داواکارییەکان</div>
-        <div class="text-xl font-bold text-slate-900 num mt-0.5">{{ fmt_num($totalOrders) }}</div>
-        <div class="text-xs text-slate-500 mt-1">
-            <a href="{{ route('orders.index') }}" class="text-[--color-brand-700] hover:underline font-semibold">بینینی هەموو وەسڵەکان &larr;</a>
-        </div>
+    {{-- کۆی فرۆشتن --}}
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-emerald-500 text-center relative overflow-hidden">
+        <div class="text-2xl lg:text-3xl font-black text-slate-800 num tracking-tight">{{ fmt_money($totalSales) }}</div>
+        <div class="text-xs font-bold text-slate-500 mt-1">کۆی فرۆشتن</div>
     </div>
 
-    <div class="card p-3.5 bg-white {{ $totalDebt > 0 ? 'border-rose-200 bg-rose-50/20' : '' }}">
-        <div class="text-xs text-[--color-ink-soft]">کۆی قەرزی لای کڕیاران</div>
-        <div class="text-xl font-bold num mt-0.5 {{ $totalDebt > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
-            {{ fmt_money($totalDebt) }}
-        </div>
-        <div class="text-xs mt-1 font-medium {{ $totalDebt > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
-            {{ $totalDebt > 0 ? 'قەرزی ماوەی لای کڕیارەکان' : 'حساب پاکە' }}
-        </div>
+    {{-- کۆی قەرز --}}
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-rose-500 text-center relative overflow-hidden">
+        <div class="text-2xl lg:text-3xl font-black text-rose-600 num tracking-tight">{{ fmt_money($totalDebt) }}</div>
+        <div class="text-xs font-bold text-slate-500 mt-1">کۆی قەرز</div>
+    </div>
+
+    {{-- کڕیاری قەرزدار --}}
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-amber-400 text-center relative overflow-hidden">
+        <div class="text-3xl font-black text-amber-500 num tracking-tight">{{ fmt_num($debtorCount) }}</div>
+        <div class="text-xs font-bold text-slate-500 mt-1">کڕیاری قەرزدار</div>
     </div>
 </div>
 
-{{-- بەستەری تابەکان بۆ هەڵبژاردنی نێوان کڕیارەکان و وەسڵەکان --}}
-<div class="flex items-center gap-1 border-b border-[--color-line] mb-4">
-    <a href="{{ route('customers.index') }}"
-       class="px-4 py-2.5 text-sm font-bold border-b-2 border-[--color-brand-700] text-[--color-brand-700] bg-white rounded-t-lg">
-        لیستی کڕیارەکان ({{ $totalCustomers }})
-    </a>
-    <a href="{{ route('orders.index') }}"
-       class="px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg transition-colors">
-        هەموو وەسڵەکان ({{ $totalOrders }})
-    </a>
-</div>
+{{-- کارتی لیستی کڕیاران --}}
+<div class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden">
+    <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <span>📋</span>
+            <span>لیستی کڕیاران</span>
+        </div>
 
-{{-- فۆرمی گەڕان --}}
-<form method="GET" class="card mb-4">
-    <div class="card-body flex gap-3">
-        <input type="search" name="q" value="{{ request('q') }}" class="field" placeholder="گەڕان بەپێی ناوی کڕیار یان ژمارەی تەلەفۆن...">
-        <button class="btn btn-primary">گەڕان</button>
-        @if(request('q'))
-            <a href="{{ route('customers.index') }}" class="btn btn-ghost">پاککردنەوە</a>
-        @endif
+        {{-- خانەی گەڕان --}}
+        <form method="GET" class="w-full sm:w-72">
+            <div class="relative">
+                <input type="search" name="q" value="{{ request('q') }}"
+                       class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50"
+                       placeholder="گەڕان...">
+                <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+            </div>
+        </form>
     </div>
-</form>
 
-{{-- خشتەی کڕیارەکان --}}
-<div class="card">
     <div class="overflow-x-auto">
-        <table class="table w-full">
+        <table class="table w-full text-right">
             <thead>
-                <tr class="bg-slate-50/80 text-xs text-slate-700">
-                    <th class="text-right py-3 px-4">ناوی کڕیار</th>
-                    <th class="text-right py-3 px-4">ژمارەی تەلەفۆن</th>
-                    <th class="num text-right py-3 px-4">ژمارەی وەسڵ</th>
-                    <th class="num text-right py-3 px-4">قەرزی ئێستا</th>
-                    <th class="text-left py-3 px-4 w-48">کردارەکان</th>
+                <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
+                    <th class="py-3 px-4 w-12 text-center">#</th>
+                    <th class="py-3 px-4 text-center">ژمارەی کڕیار</th>
+                    <th class="py-3 px-4">ناو</th>
+                    <th class="py-3 px-4 text-center">ژ. مۆبایل</th>
+                    <th class="py-3 px-4 text-center">قەرز / باڵانس</th>
+                    <th class="py-3 px-4 text-center w-36">کردار</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-sm">
-                @forelse ($customers as $customer)
-                    @php $balance = $customer->balance(); @endphp
-                    <tr class="hover:bg-slate-50/60 transition-colors">
-                        <td class="text-right py-3 px-4 font-bold">
-                            <a href="{{ route('customers.show', $customer) }}" class="text-slate-900 hover:text-[--color-brand-700] transition-colors">
+                @forelse ($customers as $index => $customer)
+                    @php $bal = $customer->balance(); @endphp
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
+                            {{ $customers->firstItem() + $index }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                            <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-rose-500 bg-rose-50/60 border border-rose-100">
+                                C-{{ str_pad($customer->id, 5, '0', STR_PAD_LEFT) }}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <a href="{{ route('customers.show', $customer) }}" class="font-bold text-slate-800 hover:text-blue-600 transition-colors">
                                 {{ $customer->name }}
                             </a>
+                            @if ($customer->note)
+                                <span class="block text-xs text-slate-400 font-normal">{{ Str::limit($customer->note, 30) }}</span>
+                            @endif
                         </td>
-                        <td class="text-right py-3 px-4 num text-slate-600" dir="ltr">{{ $customer->phone ?? '—' }}</td>
-                        <td class="text-right py-3 px-4 num font-medium text-slate-700">{{ fmt_num($customer->orders_count) }} وەسڵ</td>
-                        <td class="text-right py-3 px-4 num font-bold {{ $balance > 0 ? 'text-[--color-danger]' : ($balance < 0 ? 'text-[--color-brand-700]' : 'text-[--color-ok]') }}">
-                            {{ fmt_money($balance) }}
+                        <td class="py-3.5 px-4 text-center num font-medium text-slate-600" dir="ltr">
+                            {{ $customer->phone ?: '-' }}
                         </td>
-                        <td class="text-left py-3 px-4 whitespace-nowrap">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <a href="{{ route('orders.create', ['customer' => $customer->id]) }}"
-                                   class="btn btn-primary !py-1 !px-2.5 text-xs font-bold shadow-2xs"
-                                   title="وەسڵی نوێ بۆ ئەم کڕیارە">
-                                    + وەسڵ
-                                </a>
+                        <td class="py-3.5 px-4 text-center num font-bold {{ $bal > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
+                            {{ $bal > 0 ? fmt_money($bal) : 'حساب پاکە' }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-1.5">
+                                {{-- پڕۆفایل --}}
                                 <a href="{{ route('customers.show', $customer) }}"
-                                   class="btn btn-ghost !py-1 !px-2 text-xs border border-slate-200 hover:bg-slate-100"
-                                   title="بینینی هەموو مامەڵەکان">
-                                    پرۆفایل
+                                   class="size-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition-colors shadow-2xs"
+                                   title="پڕۆفایلی کڕیار">
+                                    👤
                                 </a>
-                                <a href="{{ route('customers.statement', $customer) }}"
-                                   class="btn btn-ghost !py-1 !px-2 text-xs text-[--color-brand-700] hover:bg-blue-50"
-                                   title="کەشف حسابی تەواو">
-                                    کەشف حساب
+                                {{-- دەستکاری --}}
+                                <a href="{{ route('customers.edit', $customer) }}"
+                                   class="size-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition-colors shadow-2xs"
+                                   title="دەستکاری">
+                                    ✏️
                                 </a>
+                                {{-- سڕینەوە --}}
+                                <form method="POST" action="{{ route('customers.destroy', $customer) }}"
+                                      onsubmit="return confirm('دڵنیایت لە سڕینەوەی ئەم کڕیارە؟')" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="size-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shadow-2xs"
+                                            title="سڕینەوە">
+                                        🗑️
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ کڕیارێک نەدۆزرایەوە.</td></tr>
+                    <tr>
+                        <td colspan="6" class="py-10 text-center text-slate-400 text-sm font-medium">
+                            هیچ کڕیارێک نەدۆزرایەوە.
+                        </td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-</div>
 
-<div class="mt-4">{{ $customers->links() }}</div>
+    @if ($customers->hasPages())
+        <div class="p-4 border-t border-slate-100">
+            {{ $customers->links() }}
+        </div>
+    @endif
+</div>
 
 @endsection

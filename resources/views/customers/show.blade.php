@@ -1,79 +1,159 @@
 @extends('layouts.app')
-@section('title', $customer->name)
+@section('title', 'پڕۆفایلی ' . $customer->name)
 
 @section('actions')
-    <a href="{{ route('orders.create', ['customer' => $customer->id]) }}" class="btn btn-primary">وەسڵی نوێ</a>
-    <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $customer->id]) }}" class="btn btn-ghost">حەقدی</a>
-    <a href="{{ route('customers.statement', $customer) }}" class="btn btn-ghost">کەشف حساب</a>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('customers.index') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs gap-1 border border-slate-200 hover:bg-slate-100 font-bold text-slate-700">
+            <span>&larr;</span>
+            <span>گەڕانەوە</span>
+        </a>
+        <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $customer->id]) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+            <span>+</span>
+            <span>حەقدی</span>
+        </a>
+        <a href="{{ route('customers.statement', $customer) }}" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold gap-1 border border-slate-200 hover:bg-slate-100 text-slate-700">
+            <span>📄</span>
+            <span>کەشف حساب</span>
+        </a>
+    </div>
 @endsection
 
 @section('content')
 
-@php $balance = $customer->balance(); @endphp
-
-<div class="grid gap-4 lg:grid-cols-3">
-    <div class="card">
-        <div class="card-head">زانیاری</div>
-        <div class="card-body space-y-2 text-sm">
-            @foreach ([
-                'تەلەفۆن' => $customer->phone ?? '—',
-                'دۆخ' => $customer->is_active ? 'چالاک' : 'ناچالاک',
-            ] as $label => $value)
-                <div class="flex justify-between border-b border-[--color-line] pb-2 last:border-0">
-                    <span class="text-[--color-ink-soft]">{{ $label }}</span>
-                    <span class="num" dir="auto">{{ $value }}</span>
+{{-- ١. هێرۆی سەرەوەی پڕۆفایل (Profile Hero Card) --}}
+<div class="bg-white rounded-2xl shadow-xs border border-slate-100 p-6 mb-6">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        {{-- لایەن و ناوی کڕیار --}}
+        <div class="flex items-center gap-4">
+            <div class="size-16 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex items-center justify-center text-3xl font-black text-slate-600 shadow-inner shrink-0">
+                👤
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h2 class="text-xl font-bold text-slate-900">{{ $customer->name }}</h2>
+                    <span class="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-rose-600 bg-rose-50 border border-rose-100">
+                        C-{{ str_pad($customer->id, 5, '0', STR_PAD_LEFT) }}
+                    </span>
                 </div>
-            @endforeach
+                <div class="flex flex-wrap items-center gap-4 mt-2 text-xs font-medium text-slate-600">
+                    <span class="flex items-center gap-1">
+                        <span class="text-slate-400">📱 مۆبایل:</span>
+                        <span class="num font-bold text-slate-800" dir="ltr">{{ $customer->phone ?: '—' }}</span>
+                    </span>
+                    <span class="text-slate-300">|</span>
+                    <span class="flex items-center gap-1">
+                        <span class="text-slate-400">📍 ناونیشان:</span>
+                        <span class="font-bold text-slate-800">{{ $customer->address ?: '—' }}</span>
+                    </span>
+                    @if ($customer->note)
+                        <span class="text-slate-300">|</span>
+                        <span class="flex items-center gap-1">
+                            <span class="text-slate-400">📝 تێبینی:</span>
+                            <span class="text-slate-700">{{ $customer->note }}</span>
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
 
-            @if ($customer->note)
-                <p class="pt-2 text-[--color-ink-soft]">{{ $customer->note }}</p>
-            @endif
-
-            <a href="{{ route('customers.edit', $customer) }}" class="btn btn-ghost mt-2 w-full">دەستکاری</a>
+        {{-- دوگمەی دەستکاری خێرا --}}
+        <div>
+            <a href="{{ route('customers.edit', $customer) }}" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold border border-slate-200 hover:bg-slate-100 text-slate-700">
+                ✏️ دەستکاری زانیاری
+            </a>
         </div>
     </div>
 
-    <div class="card lg:col-span-2">
-        <div class="card-head">قەرزی ئێستا</div>
-        <div class="card-body">
-            <div class="num text-3xl font-semibold {{ $balance > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
+    {{-- کارتەکانی ئاماری تایبەت بەم کڕیارە --}}
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-3 mt-6 pt-6 border-t border-slate-100">
+        {{-- فرۆشتن --}}
+        <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-100 border-r-4 border-r-blue-500 text-center">
+            <div class="text-2xl font-black text-slate-900 num">{{ fmt_num($ordersCount) }}</div>
+            <div class="text-xs font-bold text-slate-500 mt-1">فرۆشتن (وەسڵەکان)</div>
+        </div>
+
+        {{-- کۆی کڕینەکان --}}
+        <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-100 border-r-4 border-r-emerald-500 text-center">
+            <div class="text-2xl font-black text-slate-900 num">{{ fmt_money($totalBought) }}</div>
+            <div class="text-xs font-bold text-slate-500 mt-1">کۆی کڕینەکان</div>
+        </div>
+
+        {{-- قەرز --}}
+        <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-100 border-r-4 {{ $balance > 0 ? 'border-r-rose-500 bg-rose-50/20' : 'border-r-emerald-500' }} text-center">
+            <div class="text-2xl font-black num {{ $balance > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
                 {{ fmt_money($balance) }}
             </div>
-            <p class="mt-1 text-sm text-[--color-ink-soft]">
-                {{ $balance > 0 ? 'ئەم کڕیارە قەرزاری کارگەیە.' : ($balance < 0 ? 'کارگە قەرزاری ئەم کڕیارەیە.' : 'حساب پاکە.') }}
-            </p>
+            <div class="text-xs font-bold text-slate-500 mt-1">
+                {{ $balance > 0 ? 'قەرزی ماوە' : 'حساب پاکە' }}
+            </div>
         </div>
     </div>
 </div>
 
-<div class="card mt-4">
-    <div class="card-head">وەسڵەکان</div>
+{{-- ٢. خشتەی فرۆشتنەکان (Sales / Invoices Table) --}}
+<div class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden mb-6">
+    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <span>🛒</span>
+            <span>فرۆشتنەکان (ئەو شتانەی بردوویەتی)</span>
+        </div>
+    </div>
+
     <div class="overflow-x-auto">
-        <table class="table">
+        <table class="table w-full text-right">
             <thead>
-                <tr>
-                    <th>ژمارە</th>
-                    <th>بەروار</th>
-                    <th class="num">کۆی گشتی</th>
-                    <th class="num">ماوە (قەرز)</th>
-                    <th>دۆخی پارەدان</th>
-                    <th></th>
+                <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
+                    <th class="py-3 px-4 w-12 text-center">#</th>
+                    <th class="py-3 px-4 text-center">وەسڵ</th>
+                    <th class="py-3 px-4">ناوەڕۆک / شتەکان</th>
+                    <th class="py-3 px-4 text-center">بەروار و کات</th>
+                    <th class="py-3 px-4 text-center">کۆی نرخ</th>
+                    <th class="py-3 px-4 text-center">دراو</th>
+                    <th class="py-3 px-4 text-center">ماوە</th>
+                    <th class="py-3 px-4 text-center">دۆخ</th>
+                    <th class="py-3 px-4 text-center w-28">کردار</th>
                 </tr>
             </thead>
-            <tbody>
-                @forelse ($orders as $order)
-                    @php $rem = $order->remaining(); @endphp
-                    <tr>
-                        <td class="num font-bold text-slate-800">{{ $order->invoice_no }}</td>
-                        <td class="num">{{ fmt_date($order->order_date) }}</td>
-                        <td class="num font-bold">{{ fmt_money($order->total, $order->currency) }}</td>
-                        <td class="num font-bold {{ $rem > 0 ? 'text-rose-600' : 'text-slate-400' }}">
-                            {{ fmt_money($rem, $order->currency) }}
+            <tbody class="divide-y divide-slate-100 text-sm">
+                @forelse ($orders as $index => $order)
+                    @php
+                        $remaining = $order->remaining();
+                        $paid = $order->paidAmount();
+                        $itemsSummary = $order->items->pluck('description')->filter()->join('، ');
+                    @endphp
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
+                            {{ $index + 1 }}
                         </td>
-                        <td>
-                            @if ($rem <= 0)
+                        <td class="py-3.5 px-4 text-center">
+                            <a href="{{ route('orders.show', $order) }}" class="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors">
+                                {{ $order->invoice_no }}
+                            </a>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <div class="font-bold text-slate-800">{{ $itemsSummary ?: 'وەسڵی فرۆشتن' }}</div>
+                            @if ($order->items->count() > 0)
+                                <div class="text-xs text-slate-400 mt-0.5 font-normal">
+                                    {{ $order->items->count() }} بەندە / شت
+                                </div>
+                            @endif
+                        </td>
+                        <td class="py-3.5 px-4 text-center num text-xs text-slate-600">
+                            {{ fmt_date($order->order_date) }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center num font-bold text-slate-900">
+                            {{ fmt_money($order->total, $order->currency) }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center num font-semibold text-emerald-700">
+                            {{ fmt_money($paid, $order->currency) }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center num font-bold {{ $remaining > 0 ? 'text-rose-600' : 'text-slate-400' }}">
+                            {{ $remaining > 0 ? fmt_money($remaining, $order->currency) : '-' }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                            @if ($remaining <= 0)
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                    <span>✓</span> <span>تەواوبوو</span>
+                                    <span>✓</span> <span>پارەدراو</span>
                                 </span>
                             @else
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
@@ -81,38 +161,85 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="text-left whitespace-nowrap">
-                            <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-blue-700 hover:bg-blue-50">بینین</a>
-                            <a href="{{ route('orders.print', $order) }}" target="_blank" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-slate-700 hover:bg-slate-100 mr-1">چاپ</a>
+                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-1">
+                                <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-blue-700 hover:bg-blue-50" title="بینینی وەسڵ">
+                                    بینین
+                                </a>
+                                <a href="{{ route('orders.print', $order) }}" target="_blank" class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-slate-700 hover:bg-slate-100" title="چاپ">
+                                    چاپ
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="py-6 text-center text-sm text-[--color-ink-soft]">هیچ وەسڵێک نییە.</td></tr>
+                    <tr>
+                        <td colspan="9" class="py-10 text-center text-slate-400 text-sm font-medium">
+                            هیچ وەسڵێکی فرۆشتن بۆ ئەم کڕیارە تۆمار نەکراوە.
+                        </td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="card mt-4">
-    <div class="card-head">حەقدییەکان</div>
+{{-- ٣. خشتەی حەقدی و پارەدانەکان (Payments Table) --}}
+<div class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden">
+    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <span>🧾</span>
+            <span>حەقدی و وەرگرتنی پارە</span>
+        </div>
+        <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $customer->id]) }}" class="btn !py-1 !px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+            + وەرگرتنی پارە (حەقدی)
+        </a>
+    </div>
+
     <div class="overflow-x-auto">
-        <table class="table">
-            <thead><tr><th>ژمارە</th><th>بەروار</th><th>جۆر</th><th class="num">بڕ</th><th></th></tr></thead>
-            <tbody>
-                @forelse ($payments as $payment)
-                    <tr>
-                        <td class="num font-medium">{{ $payment->voucher_no }}</td>
-                        <td class="num">{{ fmt_date($payment->paid_at) }}</td>
-                        <td>{{ $payment->direction_label }}</td>
-                        <td class="num">{{ fmt_money($payment->amount, $payment->currency) }}</td>
-                        <td class="text-left">
-                            <a href="{{ route('payments.print', $payment) }}" target="_blank"
-                               class="text-sm text-[--color-brand-700]">چاپ</a>
+        <table class="table w-full text-right">
+            <thead>
+                <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
+                    <th class="py-3 px-4 w-12 text-center">#</th>
+                    <th class="py-3 px-4 text-center">ژمارەی پسوولە</th>
+                    <th class="py-3 px-4 text-center">بەروار</th>
+                    <th class="py-3 px-4">تێبینی / هۆکار</th>
+                    <th class="py-3 px-4 text-center">بڕی پارە</th>
+                    <th class="py-3 px-4 text-center w-24">کردار</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-sm">
+                @forelse ($payments as $index => $payment)
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
+                            {{ $index + 1 }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                            <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-slate-700 bg-slate-100 border border-slate-200">
+                                {{ $payment->voucher_no }}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-center num text-xs text-slate-600">
+                            {{ fmt_date($payment->paid_at) }}
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-700">
+                            {{ $payment->note ?: ($payment->direction === 'in' ? 'وەرگرتنی پارە' : 'گەڕاندنەوەی پارە') }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center num font-bold text-emerald-700">
+                            {{ fmt_money($payment->amount, $payment->currency) }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                            <a href="{{ route('payments.print', $payment) }}" target="_blank" class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
+                                چاپ
+                            </a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="py-6 text-center text-sm text-[--color-ink-soft]">هیچ حەقدییەک نییە.</td></tr>
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400 text-sm font-medium">
+                            هیچ پارەدانێک بۆ ئەم کڕیارە تۆمار نەکراوە.
+                        </td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
