@@ -120,19 +120,19 @@
                         $itemsSummary = $order->items->pluck('description')->filter()->join('، ');
                     @endphp
                     <tr class="hover:bg-blue-50/40 transition-colors cursor-pointer"
-                        onclick="if (!event.target.closest('a')) window.location='{{ route('orders.show', $order) }}'">
+                        onclick="if (!event.target.closest('a')) window.open('{{ route('orders.print', $order) }}', '_blank')">
                         <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
                             {{ $index + 1 }}
                         </td>
                         <td class="py-3.5 px-4 text-center">
-                            <a href="{{ route('orders.show', $order) }}"
-                               class="inline-flex items-center justify-center min-w-8 px-3 py-1 rounded-lg text-xs font-mono font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 shadow-2xs hover:shadow-xs transition-all"
-                               title="کرتە بکە بۆ بینینی وەسڵ">
+                            <a href="{{ route('orders.print', $order) }}" target="_blank"
+                               class="inline-flex items-center justify-center min-w-8 px-3 py-1 rounded-lg text-xs font-mono font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                               title="کرتە بکە بۆ کردنەوە و چاپی وەسڵ">
                                 {{ $order->invoice_no }}
                             </a>
                         </td>
                         <td class="py-3.5 px-4">
-                            <a href="{{ route('orders.show', $order) }}" class="group block">
+                            <a href="{{ route('orders.print', $order) }}" target="_blank" class="group block cursor-pointer">
                                 <div class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ $itemsSummary ?: 'وەسڵی فرۆشتن' }}</div>
                                 @if ($order->items->count() > 0)
                                     <div class="text-xs text-slate-400 mt-0.5 font-normal">
