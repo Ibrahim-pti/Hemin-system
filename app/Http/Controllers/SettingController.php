@@ -31,6 +31,7 @@ class SettingController extends Controller
             'company_phone2' => ['nullable', 'string', 'max:50'],
             'company_address' => ['nullable', 'string', 'max:255'],
             'invoice_footer' => ['nullable', 'string', 'max:255'],
+            'xeiqd_api_key' => ['nullable', 'string', 'max:500'],
         ], [], ['company_name' => 'ناوی کارگە']);
 
         foreach ($data as $key => $value) {
