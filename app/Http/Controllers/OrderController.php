@@ -181,7 +181,7 @@ class OrderController extends Controller
             'exchange_rate' => ['nullable', 'numeric', 'min:0'],
             'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
-            'prepaid_amount' => ['nullable', 'numeric', 'min:0'],
+            'prepaid_amount' => ['nullable'],
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.description' => ['required', 'string', 'max:255'],
@@ -198,6 +198,7 @@ class OrderController extends Controller
             'lines.*.description' => 'ناوەڕۆک / ناوی شتەکە',
             'lines.*.image' => 'وێنە',
             'lines.*.unit_price' => 'نرخ',
+            'prepaid_amount' => 'پێشەکی',
         ]);
     }
 
@@ -211,6 +212,8 @@ class OrderController extends Controller
             ? $subtotal * $percent / 100
             : (float) ($data['discount_amount'] ?? 0);
 
+        $prepaid = (float) str_replace(',', '', (string) ($data['prepaid_amount'] ?? 0));
+
         return [
             'customer_id' => $data['customer_id'],
             'order_date' => $data['order_date'],
@@ -223,7 +226,7 @@ class OrderController extends Controller
             'discount_percent' => $percent,
             'discount_amount' => $discount,
             'total' => max(0, $subtotal - $discount),
-            'prepaid_amount' => $data['prepaid_amount'] ?? 0,
+            'prepaid_amount' => $prepaid,
             'address_snapshot' => $customer?->address,
             'note' => $data['note'] ?? null,
         ];

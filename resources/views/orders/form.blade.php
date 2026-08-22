@@ -226,9 +226,11 @@
                 <div>
                     <label class="label" for="prepaid_amount">پێشەکی (بڕی پارەی دراو)</label>
                     <div class="relative">
-                        <input id="prepaid_amount" name="prepaid_amount" type="number" step="any" min="0" class="field num font-bold text-emerald-700"
-                               @input="onPrepaidInput()"
-                               value="{{ old('prepaid_amount', $order->exists ? $order->prepaid_amount : '') }}" x-model.number="prepaid">
+                        <input id="prepaid_amount" name="prepaid_amount" type="text" inputmode="numeric" class="field num font-bold text-emerald-700 w-full"
+                               dir="ltr"
+                               @input="formatPrepaidInput($event)"
+                               x-model="prepaid"
+                               placeholder="0">
                     </div>
                     <p class="mt-1 text-xs text-[--color-ink-soft]">بە شێوەی خۆکار تەواوی پارەکەیە (ئەگەر قەرز بوو دەتوانیت دەستکاری بکەیت).</p>
                 </div>
@@ -250,9 +252,9 @@
                     <span>کۆی گشتی</span>
                     <span class="num text-lg" x-text="money(total)">0</span>
                 </div>
-                <div class="flex justify-between items-center text-emerald-700 font-semibold" x-show="prepaid > 0">
+                <div class="flex justify-between items-center text-emerald-700 font-semibold" x-show="cleanPrepaid > 0">
                     <span>پێشەکی / دراو</span>
-                    <span class="num" x-text="money(prepaid)">0</span>
+                    <span class="num" x-text="money(cleanPrepaid)">0</span>
                 </div>
                 <div class="flex justify-between items-center font-bold border-t border-slate-100 pt-2 text-base" :class="remaining > 0 ? 'text-[--color-danger]' : 'text-emerald-600'">
                     <span>ماوە (قەرز)</span>
@@ -331,10 +333,24 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         savingCustomer: false,
         customerModalError: '',
         newCustomer: { name: '', phone: '' },
-        prepaid: {{ (float) old('prepaid_amount', $order->exists ? $order->prepaid_amount : 0) }},
+        prepaid: '{{ old('prepaid_amount', $order->exists ? ($order->prepaid_amount ? number_format($order->prepaid_amount) : '') : '') }}',
         prepaidManuallySet: {{ ($order->exists || old('prepaid_amount') !== null) ? 'true' : 'false' }},
         exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ?: ($rate ?: 150000)) }}',
         fetchingRate: false,
+
+        formatPrepaidInput(e) {
+            let clean = e.target.value.replace(/[^0-9.]/g, '');
+            let parts = clean.split('.');
+            if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+            let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+            let dec = parts.length > 1 ? '.' + parts[1] : '';
+            this.prepaid = int ? int + dec : '';
+            this.prepaidManuallySet = true;
+        },
+
+        get cleanPrepaid() {
+            return parseFloat((this.prepaid || '0').toString().replace(/,/g, '')) || 0;
+        },
 
         openCustomerModal() {
             this.newCustomer = { name: '', phone: '' };
@@ -394,7 +410,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
 
         init() {
             if (!this.prepaidManuallySet) {
-                this.prepaid = this.total;
+                this.prepaid = this.total ? this.total.toLocaleString('en-US') : '';
             }
             if (this.currency === 'USD') {
                 this.fetchLiveRate();
@@ -406,12 +422,12 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
             });
             this.$watch('lines', () => {
                 if (!this.prepaidManuallySet) {
-                    this.$nextTick(() => { this.prepaid = this.total; });
+                    this.$nextTick(() => { this.prepaid = this.total ? this.total.toLocaleString('en-US') : ''; });
                 }
             }, { deep: true });
             this.$watch('discountPercent', () => {
                 if (!this.prepaidManuallySet) {
-                    this.$nextTick(() => { this.prepaid = this.total; });
+                    this.$nextTick(() => { this.prepaid = this.total ? this.total.toLocaleString('en-US') : ''; });
                 }
             });
         },
@@ -507,7 +523,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         },
 
         get remaining() {
-            return this.total - (parseFloat(this.prepaid) || 0);
+            return this.total - this.cleanPrepaid;
         },
 
         money(value) {
