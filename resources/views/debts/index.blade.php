@@ -17,14 +17,8 @@
             <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0;">قەرزەکان</h1>
         </div>
 
-        {{-- لای چەپ: دوگمەی قەرزی کۆن --}}
-        <div>
-            <button type="button" @click="openOldDebtModal = true"
-                    style="background: #4f46e5; color: #ffffff; padding: 0.6rem 1.25rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); transition: all 0.2s;">
-                <span style="font-size: 1rem; font-weight: bold;">+</span>
-                <span>قەرزی کۆن زیادبکە</span>
-            </button>
-        </div>
+        {{-- لای چەپ --}}
+        <div></div>
     </div>
 
     {{-- ٢. کارتە ئامارییەکانی سەرەوە (٣ کارت لە تەنیشت یەک وەک وێنەکە) --}}
@@ -520,94 +514,6 @@
         </div>
     @endif
 
-    {{-- ٤. مۆداڵی زیادکردنی قەرزی کۆن --}}
-    <div x-show="openOldDebtModal"
-         x-cloak
-         style="position: fixed; inset: 0; z-index: 999; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);"
-         @keydown.escape.window="openOldDebtModal = false">
-        <div style="background: #ffffff; border-radius: 1rem; width: 100%; max-width: 32rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden;"
-             @click.outside="openOldDebtModal = false">
-
-            <div style="padding: 1rem 1.25rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: #1e293b;">
-                    <span style="color: #4f46e5;">💳</span>
-                    <span>زیادکردنی قەرزی کۆن (باڵانسی سەرەتایی)</span>
-                </div>
-                <button type="button" @click="openOldDebtModal = false" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; line-height: 1;">
-                    &times;
-                </button>
-            </div>
-
-            <form method="POST" action="{{ route('debts.old-debt') }}" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
-                @csrf
-
-                {{-- کڕیار --}}
-                <div x-data="{ isNewCustomer: false }">
-                    <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">کڕیار <span style="color: #ef4444;">*</span></label>
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <select name="customer_id" class="field" style="font-weight: 700; flex: 1;"
-                                x-show="!isNewCustomer"
-                                :required="!isNewCustomer">
-                            <option value="">— کڕیارێک هەڵبژێرە —</option>
-                            @foreach ($allCustomersList as $c)
-                                <option value="{{ $c->id }}">{{ $c->name }} {{ $c->phone ? "({$c->phone})" : '' }}</option>
-                            @endforeach
-                        </select>
-                        <button type="button" @click="isNewCustomer = !isNewCustomer"
-                                style="padding: 0.4rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: #ffffff; font-size: 0.75rem; font-weight: 700; color: #475569; cursor: pointer; white-space: nowrap;">
-                            <span x-text="isNewCustomer ? '👈 هەڵبژاردنی کڕیار' : '➕ کڕیاری نوێ'"></span>
-                        </button>
-                    </div>
-
-                    {{-- کڕیاری نوێ --}}
-                    <div x-show="isNewCustomer" x-cloak style="padding: 0.75rem; background: #f0fdf4; border-radius: 0.5rem; border: 1px solid #bbf7d0; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div>
-                            <label style="font-size: 0.75rem; font-weight: 700; color: #166534; display: block; margin-bottom: 0.25rem;">ناوی کڕیار <span style="color: #ef4444;">*</span></label>
-                            <input type="text" name="new_customer_name" class="field" style="font-size: 0.8rem;" placeholder="ناوی تەواو..." :required="isNewCustomer">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.75rem; font-weight: 700; color: #166534; display: block; margin-bottom: 0.25rem;">ژمارەی مۆبایل</label>
-                            <input type="text" name="new_customer_phone" class="field num" style="font-size: 0.8rem;" placeholder="0750...">
-                        </div>
-                    </div>
-                </div>
-
-                {{-- بڕی پارە و دراو --}}
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                    <div>
-                        <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">بڕی قەرز <span style="color: #ef4444;">*</span></label>
-                        <input type="number" step="any" min="0.01" name="amount" class="field num font-bold" placeholder="0" required>
-                    </div>
-                    <div>
-                        <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">دراو <span style="color: #ef4444;">*</span></label>
-                        <select name="currency" class="field" style="font-weight: 700;">
-                            <option value="IQD">دینار (IQD)</option>
-                            <option value="USD">دۆلار ($ USD)</option>
-                        </select>
-                    </div>
-                </div>
-
-                {{-- تێبینی --}}
-                <div>
-                    <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">تێبینی</label>
-                    <input type="text" name="note" class="field" style="font-size: 0.85rem;" placeholder="تێبینی گشتی قەرز...">
-                </div>
-
-                {{-- دوگمەکان --}}
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid #f1f5f9;">
-                    <button type="button" @click="openOldDebtModal = false"
-                            style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: #f1f5f9; color: #475569; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer;">
-                        داخستن
-                    </button>
-                    <button type="submit"
-                            style="padding: 0.5rem 1.25rem; border-radius: 0.5rem; background: #4f46e5; color: #ffffff; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer;">
-                        تۆمارکردن
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
 </div>
 
 <script>
@@ -615,7 +521,6 @@ function debtsPage(initialCustomers) {
     return {
         customers: initialCustomers,
         searchQuery: '',
-        openOldDebtModal: false,
 
         get filteredCustomers() {
             if (!this.searchQuery.trim()) {
