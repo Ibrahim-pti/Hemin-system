@@ -227,17 +227,7 @@
 
                 {{-- پێشەکی / پارەی دراو --}}
                 <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="label !mb-0" for="prepaid_amount">پێشەکی (بڕی پارەی دراو)</label>
-                        <div class="flex items-center gap-1">
-                            <button type="button" @click="setFullPaid()" class="text-[11px] font-bold text-emerald-700 hover:underline bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200" title="هەمووی دراوە (کاش)">
-                                هەمووی (کاش)
-                            </button>
-                            <button type="button" @click="setZeroPaid()" class="text-[11px] font-bold text-rose-700 hover:underline bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200" title="هەمووی قەرزە">
-                                قەرز (٠)
-                            </button>
-                        </div>
-                    </div>
+                    <label class="label" for="prepaid_amount">پێشەکی (بڕی پارەی دراو)</label>
                     <div class="relative">
                         <input id="prepaid_amount" name="prepaid_amount" type="number" step="any" min="0" class="field num font-bold text-emerald-700"
                                @input="onPrepaidInput()"
