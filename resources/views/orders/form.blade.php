@@ -116,10 +116,6 @@
                     </div>
                 </div>
             </div>
-
-            <button type="button" @click="addLine()" class="btn btn-ghost !py-1 !px-3 text-xs font-bold text-[--color-brand-700] hover:bg-blue-50 border border-blue-200">
-                + زیادکردنی شتی تر
-            </button>
         </div>
 
         <div class="overflow-x-auto">
