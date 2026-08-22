@@ -59,12 +59,13 @@ class SettingController extends Controller
     /** وەرگرتنی نرخی ڕاستەوخۆ لە رێگەی API */
     public function liveRate(\App\Services\ExchangeRateService $service)
     {
-        $rate = $service->fetchLiveRate();
-        if ($rate) {
+        $data = $service->getLiveRateData();
+        if ($data) {
             return response()->json([
                 'ok' => true,
-                'rate_per_usd' => $rate,
-                'rate_per_100' => $rate * 100,
+                'rate_per_usd' => $data['rate_per_usd'],
+                'rate_per_100' => $data['rate_per_100'],
+                'source' => $data['source'],
             ]);
         }
 
