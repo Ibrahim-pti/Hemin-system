@@ -2,7 +2,7 @@
 @section('title', $selectedCustomer ? 'قەرزەکانی ' . $selectedCustomer->name : 'قەرزەکان')
 
 @section('content')
-<div x-data="debtsPage(@js($customers))" style="display: flex; flex-direction: column; gap: 1.25rem;">
+<div x-data="debtsPage(@js($customers), @js($selectedCustomer ? (float)($customerStats['remaining_debt'] ?? 0) : 0))" style="display: flex; flex-direction: column; gap: 1.25rem;">
 
     {{-- ١. بەشی سەرەوە: سەردێڕ و دوگمەی زیادکردنی قەرزی کۆن --}}
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
@@ -104,35 +104,22 @@
             {{-- چەپ: دوگمەکان --}}
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 {{-- دوگمەی دانەوەی قەرز --}}
-                <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $selectedCustomer->id]) }}"
-                   style="background: #10b981; color: #ffffff; padding: 0.55rem 1rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);">
-                    <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button type="button" @click="openPayModal = true"
+                   style="background: #10b981; color: #ffffff; padding: 0.55rem 1.1rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.45rem; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25); transition: all 0.15s;">
+                    <svg style="width: 1.1rem; height: 1.1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="2" y="4" width="20" height="16" rx="2"/>
                         <circle cx="12" cy="12" r="3"/>
                     </svg>
                     <span>دانەوەی قەرز</span>
-                </a>
+                </button>
 
                 {{-- دوگمەی گەڕانەوە --}}
                 <a href="{{ route('debts.index') }}"
-                   style="background: #475569; color: #ffffff; padding: 0.55rem 1rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none;">
-                    <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                   style="background: #475569; color: #ffffff; padding: 0.55rem 1.1rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.45rem; text-decoration: none; transition: all 0.15s;">
+                    <svg style="width: 1.1rem; height: 1.1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                     <span>گەڕانەوە</span>
-                </a>
-
-                {{-- دوگمەی داگرتنی PDF / چاپکردن --}}
-                <a href="{{ route('customers.statement', $selectedCustomer) }}"
-                   style="background: #e11d48; color: #ffffff; padding: 0.55rem 1rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.2);">
-                    <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10 9 9 9 8 9"/>
-                    </svg>
-                    <span>داگرتنی PDF</span>
                 </a>
             </div>
         </div>
@@ -514,13 +501,122 @@
         </div>
     @endif
 
+    @if ($selectedCustomer)
+    {{-- ٤. مۆداڵی دانەوەی قەرز بە هەمان دیزاینی وێنەکە --}}
+    <div x-show="openPayModal"
+         x-cloak
+         style="position: fixed; inset: 0; z-index: 999; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(2px);"
+         @keydown.escape.window="openPayModal = false">
+        <div style="background: #ffffff; border-radius: 1.25rem; width: 100%; max-width: 30rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;"
+             @click.outside="openPayModal = false">
+
+            {{-- سەری مۆداڵ بە سەوزی تۆخ/گەش وەک وێنەکە --}}
+            <div style="padding: 1rem 1.25rem; background: #10b981; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
+                <button type="button" @click="openPayModal = false"
+                        style="background: none; border: none; font-size: 1.25rem; color: #ffffff; cursor: pointer; line-height: 1; opacity: 0.9;">
+                    ✕
+                </button>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.05rem;">
+                    <span>دانەوەی قەرزی {{ $selectedCustomer->name }}</span>
+                    <svg style="width: 1.25rem; height: 1.25rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('payments.store') }}" style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1.1rem;">
+                @csrf
+                <input type="hidden" name="direction" value="in">
+                <input type="hidden" name="party_kind" value="customer">
+                <input type="hidden" name="party_id" value="{{ $selectedCustomer->id }}">
+                <input type="hidden" name="currency" value="IQD">
+
+                {{-- ١. هۆشداری کۆی قەرزی ماوە --}}
+                <div style="background: #ffe4e6; border: 1px solid #fecdd3; border-radius: 0.75rem; padding: 0.85rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-align: center;">
+                    <span style="font-size: 1.1rem;">⚠️</span>
+                    <span style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">
+                        کۆی قەرزی ماوە:
+                        <strong class="num" style="color: #e11d48; font-size: 1.05rem;">{{ fmt_num($customerStats['remaining_debt']) }} دینار</strong>
+                    </span>
+                </div>
+
+                {{-- ٢. بڕی پارەدان لەگەڵ ٣ دوگمەی خێرا (هەموو، نیوەی، دەستکاری) --}}
+                <div>
+                    <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                        بڕی پارەدان <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="number" step="any" min="0.01"
+                           x-ref="payInput"
+                           x-model="payAmount"
+                           name="amount"
+                           class="field num"
+                           style="width: 100%; padding: 0.65rem 1rem; font-size: 1.25rem; font-weight: 800; text-align: center; color: #0f172a; border-radius: 0.6rem; border: 1px solid #cbd5e1; outline: none;"
+                           required>
+
+                    {{-- ٣ دوگمە لەژێر خانەی پارەدان --}}
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+                        <button type="button"
+                                @click="payAmount = remainingDebt"
+                                style="padding: 0.35rem 0.5rem; border: 1px solid #86efac; background: #f0fdf4; color: #166534; font-weight: 700; font-size: 0.78rem; border-radius: 0.45rem; cursor: pointer; transition: all 0.15s;">
+                            هەموو
+                        </button>
+                        <button type="button"
+                                @click="payAmount = Math.round(remainingDebt / 2)"
+                                style="padding: 0.35rem 0.5rem; border: 1px solid #93c5fd; background: #eff6ff; color: #1e40af; font-weight: 700; font-size: 0.78rem; border-radius: 0.45rem; cursor: pointer; transition: all 0.15s;">
+                            نیوەی
+                        </button>
+                        <button type="button"
+                                @click="$refs.payInput.focus(); $refs.payInput.select();"
+                                style="padding: 0.35rem 0.5rem; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; font-weight: 700; font-size: 0.78rem; border-radius: 0.45rem; cursor: pointer; transition: all 0.15s;">
+                            دەستکاری
+                        </button>
+                    </div>
+                </div>
+
+                {{-- ٣. بەرواری پارەدان --}}
+                <div>
+                    <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                        بەرواری پارەدان <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="date" name="paid_at" value="{{ now()->toDateString() }}" class="field num" style="width: 100%; text-align: right; font-weight: 600;" required>
+                </div>
+
+                {{-- ٤. تێبینی --}}
+                <div>
+                    <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                        تێبینی
+                    </label>
+                    <textarea name="note" rows="2" class="field" style="width: 100%; resize: vertical; font-size: 0.85rem;" placeholder="تێبینی ئیختیاری..."></textarea>
+                </div>
+
+                {{-- ٥. دوگمەکانی خوارەوە (داخستن و پارەدان) --}}
+                <div style="display: flex; justify-content: flex-start; gap: 0.6rem; padding-top: 0.5rem; margin-top: 0.25rem;">
+                    <button type="submit"
+                            style="background: #059669; color: #ffffff; padding: 0.55rem 1.5rem; border-radius: 0.55rem; font-weight: 800; font-size: 0.875rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);">
+                        <span>✓</span>
+                        <span>پارەدان</span>
+                    </button>
+                    <button type="button" @click="openPayModal = false"
+                            style="padding: 0.55rem 1.25rem; border-radius: 0.55rem; background: #ffffff; border: 1px solid #cbd5e1; color: #64748b; font-weight: 700; font-size: 0.875rem; cursor: pointer;">
+                        داخستن
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
 </div>
 
 <script>
-function debtsPage(initialCustomers) {
+function debtsPage(initialCustomers, initialRemainingDebt = 0) {
     return {
         customers: initialCustomers,
         searchQuery: '',
+        openPayModal: false,
+        remainingDebt: initialRemainingDebt,
+        payAmount: initialRemainingDebt > 0 ? initialRemainingDebt : '',
 
         get filteredCustomers() {
             if (!this.searchQuery.trim()) {
