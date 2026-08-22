@@ -83,10 +83,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:manage_customers')->group(function () {
         Route::post('/customers/quick', [CustomerController::class, 'quickStore'])->name('customers.quick');
         Route::resource('customers', CustomerController::class);
-        Route::get('/statement', function () {
-            $customer = \App\Models\Customer::orderBy('name')->first();
-            return $customer ? redirect()->route('customers.statement', $customer) : redirect()->route('customers.index');
-        })->name('statement.index');
+        Route::get('/statement', [CustomerController::class, 'statementIndex'])->name('statement.index');
         Route::get('/customers/{customer}/statement', [CustomerController::class, 'statement'])->name('customers.statement');
     });
 

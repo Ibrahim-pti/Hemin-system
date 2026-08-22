@@ -90,7 +90,39 @@ class CustomerController extends Controller
      * کەشف حساب — هەموو وەسڵ و حەقدییەکان بە ڕیزی بەروار،
      * لەگەڵ باڵانسی هەڵکشاو دوای هەر دێڕێک.
      */
+    public function statementIndex(Request $request): View
+    {
+        $allCustomers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
+        $customerId = $request->input('customer_id') ?: $request->input('customer');
+        $customer = $customerId ? Customer::find($customerId) : null;
+
+        if (! $customer) {
+            return view('customers.statement', [
+                'customer' => null,
+                'allCustomers' => $allCustomers,
+                'orders' => collect(),
+                'payments' => collect(),
+                'openingBalance' => 0,
+                'totalPurchases' => 0,
+                'totalPaid' => 0,
+                'debtPayments' => 0,
+                'remainingDebt' => 0,
+                'from' => $request->date('from') ?? now()->startOfYear(),
+                'to' => $request->date('to') ?? now(),
+            ]);
+        }
+
+        return $this->buildStatementView($customer, $request, $allCustomers);
+    }
+
     public function statement(Customer $customer, Request $request): View
+    {
+        $allCustomers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
+
+        return $this->buildStatementView($customer, $request, $allCustomers);
+    }
+
+    private function buildStatementView(Customer $customer, Request $request, $allCustomers): View
     {
         $from = ($request->date('from') ?? now()->startOfYear())->startOfDay();
         $to = ($request->date('to') ?? now())->endOfDay();
@@ -126,9 +158,6 @@ class CustomerController extends Controller
         $totalPaidAmount = (float) $payments->sum('amount_iqd');
         $debtPayments = $totalPaidAmount;
         $remainingDebt = max(0, $totalPurchases - $totalPaidAmount);
-
-        // هەموو کڕیاران بۆ گۆڕینی کڕیار لە درۆپداون
-        $allCustomers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
 
         return view('customers.statement', [
             'customer' => $customer,
