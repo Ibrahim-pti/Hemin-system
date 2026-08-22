@@ -54,7 +54,7 @@
 {{-- ── ٢. دوگمە خێراکانی دەستپێکردن (Quick Actions) ── --}}
 <div class="mb-6 flex flex-wrap items-center gap-2.5">
     @if (auth()->user()->can('manage_orders'))
-        <a wire:navigate href="{{ route('orders.create') }}" class="btn btn-primary !py-2 !px-4 text-xs font-semibold flex items-center gap-2">
+        <a href="{{ route('orders.create') }}" class="btn btn-primary !py-2 !px-4 text-xs font-semibold flex items-center gap-2">
             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -64,7 +64,7 @@
     @endif
 
     @if (auth()->user()->can('manage_purchases'))
-        <a wire:navigate href="{{ route('purchases.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
+        <a href="{{ route('purchases.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
             <svg class="size-4 text-cyan-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -75,7 +75,7 @@
     @endif
 
     @if (auth()->user()->can('manage_payments'))
-        <a wire:navigate href="{{ route('payments.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
+        <a href="{{ route('payments.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
             <svg class="size-4 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                 <line x1="12" y1="8" x2="12" y2="16"></line>
@@ -86,7 +86,7 @@
     @endif
 
     @if (auth()->user()->can('manage_external_jobs'))
-        <a wire:navigate href="{{ route('external-jobs.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
+        <a href="{{ route('external-jobs.create') }}" class="btn btn-secondary !py-2 !px-3.5 text-xs font-semibold flex items-center gap-2">
             <svg class="size-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
             </svg>
@@ -95,7 +95,7 @@
     @endif
 
     @if (auth()->user()->can('view_stock'))
-        <a wire:navigate href="{{ route('items.index') }}" class="btn btn-ghost !py-2 !px-3 text-xs text-slate-500 hover:text-blue-700 font-medium">
+        <a href="{{ route('items.index') }}" class="btn btn-ghost !py-2 !px-3 text-xs text-slate-500 hover:text-blue-700 font-medium">
             <span>کۆگا و مەخزەن &larr;</span>
         </a>
     @endif
@@ -113,9 +113,9 @@
                     <span class="font-bold text-sm text-slate-800">دواین وەسڵ و داواکارییەکان</span>
                 </div>
                 <div class="flex items-center gap-2 text-xs">
-                    <a wire:navigate href="{{ route('orders.create') }}" class="font-semibold text-blue-600 hover:underline">+ وەسڵی نوێ</a>
+                    <a href="{{ route('orders.create') }}" class="font-semibold text-blue-600 hover:underline">+ وەسڵی نوێ</a>
                     <span class="text-slate-300">|</span>
-                    <a wire:navigate href="{{ route('orders.index') }}" class="text-slate-500 hover:underline">هەمووی &larr;</a>
+                    <a href="{{ route('orders.index') }}" class="text-slate-500 hover:underline">هەمووی &larr;</a>
                 </div>
             </div>
 
@@ -148,7 +148,7 @@
                                     </span>
                                 </td>
                                 <td class="whitespace-nowrap text-left text-xs">
-                                    <a wire:navigate href="{{ route('orders.show', $order) }}" class="font-semibold text-blue-600 hover:underline">بینین</a>
+                                    <a href="{{ route('orders.show', $order) }}" class="font-semibold text-blue-600 hover:underline">بینین</a>
                                     <a href="{{ route('orders.print', $order) }}" target="_blank" class="mr-2 text-slate-400 hover:underline">چاپ</a>
                                 </td>
                             </tr>
@@ -179,7 +179,7 @@
                             <span class="text-sm font-semibold text-slate-800">دۆخی مەخزەن</span>
                         @endif
                     </div>
-                    <a wire:navigate href="{{ route('items.index') }}" class="text-xs text-slate-500 hover:underline">کۆگا &larr;</a>
+                    <a href="{{ route('items.index') }}" class="text-xs text-slate-500 hover:underline">کۆگا &larr;</a>
                 </div>
 
                 <div class="card-body">
@@ -197,7 +197,7 @@
 
                             @if ($lowStock->count() > 4)
                                 <div class="pt-1 text-center">
-                                    <a wire:navigate href="{{ route('items.index', ['low' => 1]) }}" class="text-xs font-semibold text-blue-600">
+                                    <a href="{{ route('items.index', ['low' => 1]) }}" class="text-xs font-semibold text-blue-600">
                                         + {{ $lowStock->count() - 4 }} بابەتی تر
                                     </a>
                                 </div>
@@ -218,7 +218,7 @@
             <div class="card">
                 <div class="card-head flex items-center justify-between">
                     <span class="text-sm font-semibold text-slate-800">باڵانسی قاسەکان</span>
-                    <a wire:navigate href="{{ route('cash.index') }}" class="text-xs text-slate-500 hover:underline">قاسە &larr;</a>
+                    <a href="{{ route('cash.index') }}" class="text-xs text-slate-500 hover:underline">قاسە &larr;</a>
                 </div>
                 <div class="card-body space-y-2.5">
                     @foreach ($cashBoxes as $box)
@@ -231,7 +231,7 @@
                     <div class="border-t border-slate-100 pt-2.5">
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-slate-600">ئامادەبوونی کارمەندان</span>
-                            <a wire:navigate href="{{ route('attendance.index') }}" class="num font-semibold text-blue-600 hover:underline">
+                            <a href="{{ route('attendance.index') }}" class="num font-semibold text-blue-600 hover:underline">
                                 {{ $presentToday ?? 0 }} لە {{ $totalEmployees ?? 0 }} ئامادەن
                             </a>
                         </div>

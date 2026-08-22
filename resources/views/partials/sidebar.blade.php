@@ -14,7 +14,7 @@
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}
     <div style="height: 4rem; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;">
-        <a wire:navigate href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden; text-decoration: none;">
+        <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden; text-decoration: none;">
             <span style="display: flex; width: 2.25rem; height: 2.25rem; align-items: center; justify-content: center; border-radius: 0.75rem; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); font-weight: bold; font-size: 1rem; flex-shrink: 0;">
                 هـ
             </span>
@@ -40,13 +40,9 @@
         {{-- سەرەکی / داشبۆرد --}}
         <div>
             @php $isDashboard = request()->routeIs('dashboard'); @endphp
-            <a wire:navigate
-               href="{{ route('dashboard') }}"
-               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ $isDashboard ? 'background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.22);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
-               onmouseover="if(!this.classList.contains('active-link')){this.style.background='rgba(255,255,255,0.05)';this.style.color='#f8fafc';}"
-               onmouseout="if(!this.classList.contains('active-link')){this.style.background='';this.style.color='#94a3b8';}"
-               class="{{ $isDashboard ? 'active-link' : '' }}"
-               title="داشبۆرد">
+            <a href="{{ route('dashboard') }}"
+               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isDashboard ? 'background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.22);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
+               class="sidebar-link {{ $isDashboard ? 'active-link' : '' }}">
                 <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.2); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
                     @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-4.5'])
                 </span>
@@ -117,13 +113,9 @@
                             @php
                                 $isActive = request()->routeIs($item['route']);
                             @endphp
-                            <a wire:navigate
-                               href="{{ $item['href'] }}"
-                               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: all 0.15s; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"
-                               onmouseover="if(!this.classList.contains('active-link')){this.style.background='rgba(255,255,255,0.05)';this.style.color='#f8fafc';}"
-                               onmouseout="if(!this.classList.contains('active-link')){this.style.background='';this.style.color='#94a3b8';}"
-                               class="{{ $isActive ? 'active-link' : '' }}"
-                               title="{{ $item['label'] }}">
+                            <a href="{{ $item['href'] }}"
+                               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"
+                               class="sidebar-link {{ $isActive ? 'active-link' : '' }}">
                                 <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isActive ? 'background: ' . $section['activeIconBg'] . '; color: ' . $section['activeIconColor'] . ';' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
                                     @include('partials.icon', ['name' => $item['icon'], 'class' => 'size-4.5'])
                                 </span>
