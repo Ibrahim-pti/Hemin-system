@@ -57,7 +57,7 @@ class OrderController extends Controller
     {
         $data = $this->validated($request);
 
-        $order = DB::transaction(function () use ($data, $request) {
+        $result = DB::transaction(function () use ($data, $request) {
             $customer = Customer::find($data['customer_id']);
 
             $order = Order::create($this->header($data, $customer) + [
@@ -67,12 +67,19 @@ class OrderController extends Controller
             ]);
 
             $this->syncLines($order, $data['lines'], $request->file('lines', []));
-            $this->recordPrepaid($order, $customer, (float) ($data['prepaid_amount'] ?? 0));
+            $payment = $this->recordPrepaid($order, $customer, (float) str_replace(',', '', (string) ($data['prepaid_amount'] ?? 0)));
 
-            return $order;
+            return ['order' => $order, 'payment' => $payment];
         });
 
-        return redirect()->route('orders.show', $order)->with('ok', "وەسڵی ژمارە {$order->invoice_no} تۆمارکرا.");
+        $order = $result['order'];
+        $payment = $result['payment'];
+
+        return redirect()->route('orders.show', $order)
+            ->with('ok', "وەسڵی ژمارە {$order->invoice_no} تۆمارکرا.")
+            ->with('just_created', true)
+            ->with('payment_id', $payment?->id)
+            ->with('has_prepaid', $payment !== null);
     }
 
     public function show(Order $order): View
@@ -267,13 +274,13 @@ class OrderController extends Controller
     }
 
     /** پێشەکی وەک حەقدییەکی جیا تۆمار دەکرێت تا دووجار نەژمێردرێت. */
-    private function recordPrepaid(Order $order, ?Customer $customer, float $amount): void
+    private function recordPrepaid(Order $order, ?Customer $customer, float $amount): ?\App\Models\Payment
     {
         if ($amount <= 0) {
-            return;
+            return null;
         }
 
-        $this->payments->record([
+        return $this->payments->record([
             'direction' => 'in',
             'amount' => $amount,
             'currency' => $order->currency,

@@ -12,6 +12,51 @@
 
 @section('content')
 
+@if (session('just_created'))
+    <div x-data="{ open: true }" x-show="open" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
+         x-transition.opacity>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 text-center"
+             @click.away="open = false"
+             x-transition.scale>
+            <div class="size-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3 text-3xl font-bold">
+                ✓
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-1">وەسڵی ژمارە {{ $order->invoice_no }} تۆمارکرا</h3>
+            <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+                ئایا دەتەوێت حەقدی (پێشەکی) چاپ بکەیت یان وەسڵ؟
+            </p>
+
+            <div class="space-y-2.5 mb-5">
+                @if (session('payment_id'))
+                    <a href="{{ route('payments.print', session('payment_id')) }}" target="_blank"
+                       @click="open = false"
+                       class="btn !py-3 !px-4 w-full flex items-center justify-center gap-2 font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-transform active:scale-95">
+                        <span class="text-lg">🧾</span>
+                        <span>چاپی حەقدی (پێشەکی)</span>
+                    </a>
+                @endif
+                <a href="{{ route('orders.print', $order) }}" target="_blank"
+                   @click="open = false"
+                   class="btn !py-3 !px-4 w-full flex items-center justify-center gap-2 font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-transform active:scale-95">
+                    <span class="text-lg">📄</span>
+                    <span>چاپی وەسڵ</span>
+                </a>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
+                <a href="{{ route('orders.create') }}" class="text-blue-600 font-bold hover:underline flex items-center gap-1">
+                    <span>+</span>
+                    <span>وەسڵی نوێ</span>
+                </a>
+                <button type="button" @click="open = false" class="text-slate-500 hover:text-slate-700 font-semibold px-2 py-1 rounded hover:bg-slate-100">
+                    داخستن و مانەوە لێرە
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
+
 <div class="grid gap-4 lg:grid-cols-4">
 
     {{-- دێڕەکان --}}
