@@ -62,7 +62,6 @@
                         ['route' => 'items.*', 'href' => route('items.index'), 'label' => 'دۆخی کۆگا', 'icon' => 'items', 'can' => 'view_stock'],
                         ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_stock_counts'],
                         ['route' => 'warehouses.*', 'href' => route('warehouses.index'), 'label' => 'کۆگاکان', 'icon' => 'warehouses', 'can' => 'manage_items'],
-                        ['route' => 'customers.*', 'href' => route('customers.index'), 'label' => 'کڕیارەکان', 'icon' => 'customers', 'can' => 'manage_customers'],
                         ['route' => 'suppliers.*', 'href' => route('suppliers.index'), 'label' => 'فرۆشیارەکان', 'icon' => 'suppliers', 'can' => 'manage_suppliers'],
                         ['route' => 'employees.*', 'href' => route('employees.index'), 'label' => 'کارمەندان', 'icon' => 'employees', 'can' => 'manage_employees'],
                     ],
@@ -75,7 +74,7 @@
                     'activeIconBg' => 'rgba(20, 184, 166, 0.2)',
                     'activeIconColor' => '#5eead4',
                     'items' => [
-                        ['route' => 'orders.*', 'href' => route('orders.index'), 'label' => 'وەسڵ و داواکاری', 'icon' => 'orders', 'can' => 'manage_orders'],
+                        ['route' => 'customers.*|orders.*', 'href' => route('customers.index'), 'label' => 'کڕیارەکان و وەسڵ', 'icon' => 'customers', 'can' => 'manage_customers'],
                         ['route' => 'purchases.*', 'href' => route('purchases.index'), 'label' => 'پسوولەی کڕین', 'icon' => 'purchases', 'can' => 'manage_purchases'],
                         ['route' => 'external-jobs.*', 'href' => route('external-jobs.index'), 'label' => 'ئیشی خاریجی', 'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
                         ['route' => 'cash.*', 'href' => route('cash.index'), 'label' => 'قاسە', 'icon' => 'cash', 'can' => 'manage_cash'],
@@ -110,7 +109,7 @@
                     @foreach ($section['items'] as $item)
                         @if (auth()->user()->can($item['can']))
                             @php
-                                $isActive = request()->routeIs($item['route']);
+                                $isActive = request()->routeIs(...explode('|', $item['route']));
                             @endphp
                             <a href="{{ $item['href'] }}"
                                style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"

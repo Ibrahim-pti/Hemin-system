@@ -9,15 +9,10 @@
             'description' => $l->description,
             'image' => $l->image,
             'preview' => $l->imageUrl(),
-            'item_id' => (string) ($l->item_id ?? ''),
-            'pricing_mode' => $l->pricing_mode,
-            'width' => $l->width !== null ? (string) (float) $l->width : '',
-            'height' => $l->height !== null ? (string) (float) $l->height : '',
-            'qty' => (string) (float) $l->qty,
-            'unit_price' => (string) (float) $l->unit_price,
+            'unit_price' => $l->unit_price !== null ? (float)$l->unit_price : '',
             'note' => $l->note ?? '',
           ])->all()
-        : [['description' => '', 'image' => '', 'preview' => null, 'item_id' => '', 'pricing_mode' => 'area', 'width' => '', 'height' => '', 'qty' => '1', 'unit_price' => '', 'note' => '']]);
+        : [['description' => '', 'image' => '', 'preview' => null, 'unit_price' => '', 'note' => '']]);
 @endphp
 
 <form method="POST"
@@ -31,30 +26,29 @@
       )">
     @csrf
     @if ($order->exists) @method('PUT') @endif
+    <input type="hidden" name="invoice_no" value="{{ old('invoice_no', $order->invoice_no ?: $nextNo) }}">
 
     @if ($errors->any())
         <div class="card mb-4 border-r-4 !border-r-[--color-danger] px-4 py-3 text-sm">
-            <ul class="list-inside list-disc space-y-1">
+            <div class="font-bold text-red-700 mb-1">تکایە ئەم هەڵانە چاک بکە:</div>
+            <ul class="list-inside list-disc space-y-1 text-red-600 text-xs">
                 @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
             </ul>
         </div>
     @endif
 
-    {{-- سەرەوەی وەسڵ --}}
+    {{-- ١. زانیاری سەرەکی کڕیار و بەروار --}}
     <div class="card">
-        <div class="card-head">زانیاری وەسڵ</div>
+        <div class="card-head flex items-center justify-between">
+            <span>زانیاری وەسڵ و کڕیار</span>
+            <a href="{{ route('customers.index') }}" class="btn btn-ghost !py-1 text-xs">گەڕانەوە &larr;</a>
+        </div>
         <div class="card-body grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-            <div>
-                <label class="label" for="invoice_no">ژمارەی وەسڵ</label>
-                <input id="invoice_no" name="invoice_no" class="field num" dir="ltr"
-                       value="{{ old('invoice_no', $order->invoice_no ?: $nextNo) }}">
-                <p class="mt-1 text-xs text-[--color-ink-soft]">وەک ژمارەی دەفتەری چاپکراو.</p>
-            </div>
-
-            <div class="sm:col-span-1 lg:col-span-2">
+            {{-- بەڕێز (کڕیار) --}}
+            <div class="sm:col-span-2">
                 <label class="label" for="customer_id">بەڕێز (کڕیار) <span class="text-[--color-danger]">*</span></label>
-                <select id="customer_id" name="customer_id" class="field" required
+                <select id="customer_id" name="customer_id" class="field font-bold" required
                         x-model="customerId" @change="applyCustomerDiscount()">
                     <option value="">— هەڵبژێرە —</option>
                     @foreach ($customers as $customer)
@@ -64,71 +58,76 @@
                     @endforeach
                 </select>
                 <p class="mt-1 text-xs text-[--color-ink-soft]">
-                    <a href="{{ route('customers.create') }}" class="text-[--color-brand-700]">کڕیاری نوێ زیاد بکە</a>
+                    <a href="{{ route('customers.create') }}" class="text-[--color-brand-700] hover:underline font-semibold">+ کڕیاری نوێ زیاد بکە</a>
                 </p>
             </div>
 
+            {{-- بەروار --}}
             <div>
                 <label class="label" for="order_date">بەروار <span class="text-[--color-danger]">*</span></label>
                 <input id="order_date" name="order_date" type="date" class="field num" required
                        value="{{ old('order_date', $order->order_date?->toDateString() ?? now()->toDateString()) }}">
             </div>
 
+            {{-- بەرواری گەیاندن --}}
             <div>
-                <label class="label" for="delivery_date">بەرواری گەیاندن</label>
+                <label class="label" for="delivery_date">بەرواری گەیاندن (ڕادەستکردن)</label>
                 <input id="delivery_date" name="delivery_date" type="date" class="field num"
                        value="{{ old('delivery_date', $order->delivery_date?->toDateString()) }}">
             </div>
 
+            {{-- دراو --}}
             <div>
                 <label class="label" for="currency">دراو</label>
-                <select id="currency" name="currency" class="field" x-model="currency">
-                    <option value="IQD">دینار</option>
-                    <option value="USD">دۆلار</option>
+                <select id="currency" name="currency" class="field font-bold" x-model="currency">
+                    <option value="IQD">دینار (IQD)</option>
+                    <option value="USD">دۆلار ($ USD)</option>
                 </select>
             </div>
 
+            {{-- نرخی دۆلار ئەگەر دۆلار بێت --}}
             <div x-show="currency === 'USD'" x-cloak>
-                <label class="label" for="exchange_rate">نرخی دۆلار</label>
+                <label class="label" for="exchange_rate">نرخی ١٠٠ دۆلار</label>
                 <input id="exchange_rate" name="exchange_rate" type="number" step="0.01" class="field num"
                        value="{{ old('exchange_rate', $order->exchange_rate ?: $rate) }}">
             </div>
 
-            <div class="sm:col-span-2 lg:col-span-1">
+            {{-- تێبینی --}}
+            <div class="sm:col-span-2" :class="currency === 'USD' ? 'lg:col-span-2' : 'lg:col-span-3'">
                 <label class="label" for="note">تێبینی</label>
-                <input id="note" name="note" class="field" value="{{ old('note', $order->note) }}">
+                <input id="note" name="note" class="field" value="{{ old('note', $order->note) }}" placeholder="تێبینی گشتی وەسڵ...">
             </div>
         </div>
     </div>
 
-    {{-- دێڕەکان + قیاس --}}
+    {{-- ٢. خشتەی شتەکان (تەنها وێنە، ناوەڕۆک/شتەکە، نرخ) --}}
     <div class="card mt-4">
         <div class="card-head flex items-center justify-between">
-            <span>ناوەڕۆک و قیاس</span>
-            <button type="button" @click="addLine()" class="btn btn-ghost !py-1">+ دێڕ</button>
+            <span>ناوەڕۆکی شتە داواکراوەکان</span>
+            <button type="button" @click="addLine()" class="btn btn-ghost !py-1 !px-3 text-xs font-bold text-[--color-brand-700] hover:bg-blue-50 border border-blue-200">
+                + زیادکردنی شتی تر
+            </button>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="table" style="min-width: 950px">
+            <table class="table w-full">
                 <thead>
-                    <tr>
-                        <th class="w-14 text-center">وێنە</th>
-                        <th class="w-[22%]">ناوەڕۆک</th>
-                        <th class="w-32">شێواز</th>
-                        <th class="num w-24">پانی (م)</th>
-                        <th class="num w-24">بەرزی (م)</th>
-                        <th class="num w-20">ژمارە</th>
-                        <th class="num w-24">بڕ</th>
-                        <th class="num w-28">نرخ</th>
-                        <th class="num w-32">بڕی پارە</th>
-                        <th class="w-10"></th>
+                    <tr class="bg-slate-50/80 text-xs text-slate-700 font-bold border-b border-[--color-line]">
+                        <th style="width: 44px; text-align: center; padding: 10px 6px;">#</th>
+                        <th style="width: 60px; text-align: center; padding: 10px 6px;">وێنە</th>
+                        <th style="text-align: right; padding: 10px 12px;">ناوەڕۆک / شتەکە (وەک دەرگا، مەحەجەرە...)</th>
+                        <th style="width: 220px; text-align: center; padding: 10px 12px;">نرخ (<span x-text="currency === 'USD' ? '$' : 'د.ع'"></span>)</th>
+                        <th style="width: 44px; text-align: center; padding: 10px 6px;"></th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100 text-sm">
                     <template x-for="(line, index) in lines" :key="index">
                         <tr>
+                            {{-- # --}}
+                            <td style="text-align: center; padding: 6px;" class="text-xs text-slate-400 font-bold" x-text="index + 1"></td>
+
                             {{-- وێنەی کاڵا / دیزاین --}}
-                            <td class="text-center !py-1">
+                            <td style="text-align: center; padding: 4px;">
                                 <div class="flex items-center justify-center">
                                     <input type="file"
                                            :name="`lines[${index}][image]`"
@@ -139,7 +138,7 @@
                                     <input type="hidden" :name="`lines[${index}][existing_image]`" :value="line.image || ''">
 
                                     <template x-if="line.preview">
-                                        <div class="relative group size-8 rounded-lg overflow-hidden border border-blue-400 shadow-2xs shrink-0">
+                                        <div class="relative group size-9 rounded-lg overflow-hidden border border-blue-400 shadow-2xs shrink-0">
                                             <img :src="line.preview" class="size-full object-cover cursor-pointer"
                                                  @click="document.getElementById(`order_line_image_${index}`).click()"
                                                  title="گۆڕینی وێنە">
@@ -152,9 +151,9 @@
                                     <template x-if="!line.preview">
                                         <button type="button"
                                                 @click="document.getElementById(`order_line_image_${index}`).click()"
-                                                class="size-8 rounded-lg border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all shrink-0"
+                                                class="size-9 rounded-lg border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all shrink-0"
                                                 title="دانانی وێنەی دیزاین">
-                                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                            <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                                                 <circle cx="8.5" cy="8.5" r="1.5"/>
                                                 <polyline points="21 15 16 10 5 21"/>
@@ -164,46 +163,30 @@
                                 </div>
                             </td>
 
-                            <td>
+                            {{-- ناوەڕۆک / ناوی شتەکە --}}
+                            <td style="padding: 6px 12px;">
                                 <input :name="`lines[${index}][description]`" x-model="line.description" required
-                                       class="field !py-1" placeholder="دەرگای ئاسنی هەندەسی">
-                                <input type="hidden" :name="`lines[${index}][item_id]`" :value="line.item_id">
+                                       class="field w-full !py-2 !px-3 text-sm bg-white"
+                                       placeholder="ناوی شتەکە بنووسە (وەک: دەرگای ئاسنی هەندەسی، مەحەجەرە...)">
                             </td>
-                            <td>
-                                <select :name="`lines[${index}][pricing_mode]`" x-model="line.pricing_mode" class="field !py-1">
-                                    <option value="area">مەتر دووجا</option>
-                                    <option value="length">مەتر</option>
-                                    <option value="count">دانە</option>
-                                </select>
+
+                            {{-- نرخ --}}
+                            <td style="padding: 6px 12px;">
+                                <div class="relative">
+                                    <input type="text" inputmode="numeric" required
+                                           :name="`lines[${index}][unit_price]`"
+                                           x-model="line.unit_price"
+                                           @input="formatInput($event, line)"
+                                           class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white"
+                                           dir="ltr"
+                                           placeholder="0">
+                                </div>
                             </td>
-                            <td>
-                                <input type="number" step="0.001" min="0" :name="`lines[${index}][width]`"
-                                       x-model="line.width" class="field num !py-1"
-                                       :disabled="line.pricing_mode === 'count'"
-                                       :class="line.pricing_mode === 'count' && 'opacity-40'">
-                            </td>
-                            <td>
-                                <input type="number" step="0.001" min="0" :name="`lines[${index}][height]`"
-                                       x-model="line.height" class="field num !py-1"
-                                       :disabled="line.pricing_mode !== 'area'"
-                                       :class="line.pricing_mode !== 'area' && 'opacity-40'">
-                            </td>
-                            <td>
-                                <input type="number" step="0.001" min="0.001" required :name="`lines[${index}][qty]`"
-                                       x-model="line.qty" class="field num !py-1">
-                            </td>
-                            <td class="num text-[--color-ink-soft]">
-                                <span x-text="computed(line).toFixed(3).replace(/\.?0+$/, '')"></span>
-                                <span class="text-xs" x-text="unitOf(line)"></span>
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" min="0" required :name="`lines[${index}][unit_price]`"
-                                       x-model="line.unit_price" class="field num !py-1">
-                            </td>
-                            <td class="num font-medium" x-text="money(lineTotal(line))"></td>
-                            <td>
-                                <button type="button" @click="removeLine(index)" class="text-[--color-danger]"
-                                        x-show="lines.length > 1">✕</button>
+
+                            {{-- سڕینەوە --}}
+                            <td style="text-align: center; padding: 6px;">
+                                <button type="button" @click="removeLine(index)" class="inline-flex items-center justify-center size-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                        x-show="lines.length > 1" title="سڕینەوە">✕</button>
                             </td>
                         </tr>
                     </template>
@@ -211,69 +194,84 @@
             </table>
         </div>
 
-        <div class="border-t border-[--color-line] px-4 py-2 text-xs text-[--color-ink-soft]">
-            مەتر دووجا = پانی × بەرزی × ژمارە &nbsp;·&nbsp; مەتر = پانی × ژمارە &nbsp;·&nbsp; دانە = ژمارە
+        {{-- دوگمەی زیادکردنی شتی تر --}}
+        <div class="p-3 border-t border-[--color-line] bg-slate-50/50 flex items-center justify-between">
+            <button type="button" @click="addLine()" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold text-[--color-brand-700] hover:bg-blue-50 border border-dashed border-blue-300">
+                + زیادکردنی شتی تر
+            </button>
+            <div class="text-xs text-[--color-ink-soft]">
+                دەتوانیت هەرچەند دێڕ یان دیزاین پێویست بێت لێرە زیادی بکەیت
+            </div>
         </div>
     </div>
 
-    {{-- کۆکان --}}
+    {{-- ٣. کۆی پارە، داشکاندن، پێشەکی و ماوە --}}
     <div class="mt-4 grid gap-4 lg:grid-cols-3">
         <div class="card lg:col-span-2">
             <div class="card-body grid gap-4 sm:grid-cols-2">
+                {{-- داشکاندن --}}
                 <div>
                     <label class="label" for="discount_percent">داشکاندن (٪)</label>
                     <input id="discount_percent" name="discount_percent" type="number" step="0.01" min="0" max="100"
                            class="field num" x-model.number="discountPercent">
                     <p class="mt-1 text-xs text-[--color-ink-soft]">
-                        داشکاندنی هەمیشەیی کڕیار خۆکار دادەنرێت.
+                        ئەگەر داشکاندن هەبێت بە ڕێژەی لەسەدا بنووسە.
                     </p>
                 </div>
+
+                {{-- پێشەکی / پارەی دراو --}}
                 <div>
-                    <label class="label" for="prepaid_amount">پێشەکی</label>
-                    <input id="prepaid_amount" name="prepaid_amount" type="number" step="0.01" min="0" class="field num"
-                           value="{{ old('prepaid_amount', 0) }}" x-model.number="prepaid">
-                    <p class="mt-1 text-xs text-[--color-ink-soft]">حەقدییەکی خۆکاری بۆ دروست دەبێت.</p>
+                    <label class="label" for="prepaid_amount">پێشەکی (بڕی پارەی دراو)</label>
+                    <div class="relative">
+                        <input id="prepaid_amount" name="prepaid_amount" type="number" step="any" min="0" class="field num font-bold text-emerald-700"
+                               value="{{ old('prepaid_amount', 0) }}" x-model.number="prepaid">
+                    </div>
+                    <p class="mt-1 text-xs text-[--color-ink-soft]">ئەو بڕەی کە کڕیار ئێستا داویەتی (کاش).</p>
                 </div>
             </div>
         </div>
 
+        {{-- کارتی کۆی گشتی و باڵانس --}}
         <div class="card">
-            <div class="card-body space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-[--color-ink-soft]">کۆی دێڕەکان</span>
-                    <span class="num" x-text="money(subtotal)"></span>
+            <div class="card-body space-y-2.5 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="text-[--color-ink-soft]">کۆی شتەکان</span>
+                    <span class="num font-semibold text-slate-800" x-text="money(subtotal)">0</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-[--color-ink-soft]">داشکاندن</span>
-                    <span class="num" x-text="money(discountAmount)"></span>
+                <div class="flex justify-between items-center" x-show="discountAmount > 0">
+                    <span class="text-rose-600">داشکاندن</span>
+                    <span class="num font-semibold text-rose-600" x-text="'- ' + money(discountAmount)">0</span>
                 </div>
-                <div class="flex justify-between border-t border-[--color-line] pt-2 text-base font-semibold">
+                <div class="flex justify-between items-center border-t border-[--color-line] pt-2 text-base font-bold text-slate-900">
                     <span>کۆی گشتی</span>
-                    <span class="num" x-text="money(total)"></span>
+                    <span class="num text-lg" x-text="money(total)">0</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-[--color-ink-soft]">پێشەکی</span>
-                    <span class="num" x-text="money(prepaid)"></span>
+                <div class="flex justify-between items-center text-emerald-700 font-semibold" x-show="prepaid > 0">
+                    <span>پێشەکی / دراو</span>
+                    <span class="num" x-text="money(prepaid)">0</span>
                 </div>
-                <div class="flex justify-between font-semibold">
-                    <span>ماوە</span>
-                    <span class="num" :class="remaining > 0 && 'text-[--color-danger]'" x-text="money(remaining)"></span>
+                <div class="flex justify-between items-center font-bold border-t border-slate-100 pt-2 text-base" :class="remaining > 0 ? 'text-[--color-danger]' : 'text-emerald-600'">
+                    <span>ماوە (قەرز)</span>
+                    <span class="num" x-text="money(remaining)">0</span>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- دوگمەکانی بنەوە --}}
     <div class="mt-4 flex flex-wrap items-center gap-3">
-        <button class="btn btn-primary">{{ $order->exists ? 'نوێکردنەوە' : 'تۆمارکردن' }}</button>
+        <button class="btn btn-primary !py-2.5 !px-6 text-sm font-bold shadow-sm">
+            {{ $order->exists ? 'نوێکردنەوەی وەسڵ' : 'تۆمارکردنی وەسڵ' }}
+        </button>
 
         @unless ($order->exists)
-            <label class="flex items-center gap-2 text-sm">
+            <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer font-medium">
                 <input type="checkbox" name="confirm" value="1" checked class="size-4 rounded border-[--color-line-strong]">
-                پەسەندکردن
+                پەسەندکردن و جێبەجێکردن
             </label>
         @endunless
 
-        <a href="{{ route('orders.index') }}" class="btn btn-ghost">پاشگەزبوونەوە</a>
+        <a href="{{ route('customers.index') }}" class="btn btn-ghost">پاشگەزبوونەوە</a>
     </div>
 </form>
 
@@ -289,12 +287,8 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         prepaid: {{ (float) old('prepaid_amount', 0) }},
 
         addLine() {
-            // شێوازی دێڕی نوێ لە دوایین دێڕەوە وەردەگیرێت — خێراتر بۆ نووسین.
-            const last = this.lines[this.lines.length - 1];
             this.lines.push({
-                description: '', image: '', preview: null, item_id: '',
-                pricing_mode: last ? last.pricing_mode : 'area',
-                width: '', height: '', qty: '1', unit_price: '', note: '',
+                description: '', image: '', preview: null, unit_price: '', note: '',
             });
         },
 
@@ -315,7 +309,11 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         },
 
         removeLine(index) {
-            this.lines.splice(index, 1);
+            if (this.lines.length > 1) {
+                this.lines.splice(index, 1);
+            } else {
+                this.lines[0] = { description: '', image: '', preview: null, unit_price: '', note: '' };
+            }
         },
 
         applyCustomerDiscount() {
@@ -323,26 +321,22 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
             if (discount) this.discountPercent = discount;
         },
 
-        computed(line) {
-            const width = parseFloat(line.width) || 0;
-            const height = parseFloat(line.height) || 0;
-            const qty = parseFloat(line.qty) || 0;
-
-            if (line.pricing_mode === 'area') return width * height * qty;
-            if (line.pricing_mode === 'length') return width * qty;
-            return qty;
+        formatInput(e, line) {
+            let clean = e.target.value.replace(/[^0-9.]/g, '');
+            let parts = clean.split('.');
+            if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+            let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+            let dec = parts.length > 1 ? '.' + parts[1] : '';
+            line.unit_price = int ? int + dec : '';
         },
 
-        unitOf(line) {
-            return { area: 'م²', length: 'م', count: 'دانە' }[line.pricing_mode] || '';
-        },
-
-        lineTotal(line) {
-            return this.computed(line) * (parseFloat(line.unit_price) || 0);
+        linePrice(line) {
+            let p = parseFloat(line.unit_price.toString().replace(/,/g, '')) || 0;
+            return p;
         },
 
         get subtotal() {
-            return this.lines.reduce((sum, line) => sum + this.lineTotal(line), 0);
+            return this.lines.reduce((sum, line) => sum + this.linePrice(line), 0);
         },
 
         get discountAmount() {

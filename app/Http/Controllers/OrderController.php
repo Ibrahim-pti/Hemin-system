@@ -187,12 +187,7 @@ class OrderController extends Controller
             'lines.*.description' => ['required', 'string', 'max:255'],
             'lines.*.image' => ['nullable', 'image', 'max:5120'],
             'lines.*.existing_image' => ['nullable', 'string'],
-            'lines.*.item_id' => ['nullable', 'exists:items,id'],
-            'lines.*.pricing_mode' => ['required', 'in:area,length,count'],
-            'lines.*.width' => ['nullable', 'numeric', 'min:0'],
-            'lines.*.height' => ['nullable', 'numeric', 'min:0'],
-            'lines.*.qty' => ['required', 'numeric', 'gt:0'],
-            'lines.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'lines.*.unit_price' => ['required'],
             'lines.*.note' => ['nullable', 'string', 'max:255'],
         ], [
             'lines.required' => 'لانیکەم یەک دێڕ زیاد بکە.',
@@ -200,8 +195,9 @@ class OrderController extends Controller
             'delivery_date.after_or_equal' => 'بەرواری گەیاندن ناتوانێت پێش بەرواری وەسڵ بێت.',
         ], [
             'customer_id' => 'کڕیار',
-            'lines.*.description' => 'ناوەڕۆک',
+            'lines.*.description' => 'ناوەڕۆک / ناوی شتەکە',
             'lines.*.image' => 'وێنە',
+            'lines.*.unit_price' => 'نرخ',
         ]);
     }
 
@@ -235,25 +231,13 @@ class OrderController extends Controller
 
     private function lineTotal(array $line): float
     {
-        $computed = OrderItem::compute(
-            $line['pricing_mode'],
-            isset($line['width']) ? (float) $line['width'] : null,
-            isset($line['height']) ? (float) $line['height'] : null,
-            (float) $line['qty'],
-        );
-
-        return round($computed * (float) $line['unit_price'], 2);
+        return (float) str_replace(',', '', (string) ($line['unit_price'] ?? 0));
     }
 
     private function syncLines(Order $order, array $lines, array $lineFiles = []): void
     {
         foreach ($lines as $index => $line) {
-            $computed = OrderItem::compute(
-                $line['pricing_mode'],
-                isset($line['width']) ? (float) $line['width'] : null,
-                isset($line['height']) ? (float) $line['height'] : null,
-                (float) $line['qty'],
-            );
+            $unitPrice = (float) str_replace(',', '', (string) ($line['unit_price'] ?? 0));
 
             $imagePath = null;
             if (isset($lineFiles[$index]['image']) && $lineFiles[$index]['image']->isValid()) {
@@ -267,13 +251,13 @@ class OrderController extends Controller
                 'description' => $line['description'],
                 'image' => $imagePath,
                 'item_id' => $line['item_id'] ?? null,
-                'pricing_mode' => $line['pricing_mode'],
-                'width' => $line['width'] ?? null,
-                'height' => $line['height'] ?? null,
-                'qty' => $line['qty'],
-                'computed_qty' => $computed,
-                'unit_price' => $line['unit_price'],
-                'line_total' => round($computed * (float) $line['unit_price'], 2),
+                'pricing_mode' => 'count',
+                'width' => null,
+                'height' => null,
+                'qty' => 1,
+                'computed_qty' => 1,
+                'unit_price' => $unitPrice,
+                'line_total' => $unitPrice,
                 'note' => $line['note'] ?? null,
             ]);
         }

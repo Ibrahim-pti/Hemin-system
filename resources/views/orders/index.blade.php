@@ -2,10 +2,29 @@
 @section('title', 'وەسڵ و داواکاری')
 
 @section('actions')
-    <a href="{{ route('orders.create') }}" class="btn btn-primary">وەسڵی نوێ</a>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('orders.create') }}" class="btn btn-primary !py-1.5 !px-3 text-xs gap-1 shadow-sm">
+            <span>+ وەسڵی نوێ</span>
+        </a>
+        <a href="{{ route('customers.create') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs gap-1 border border-slate-200 hover:bg-slate-100">
+            <span>+ کڕیاری نوێ</span>
+        </a>
+    </div>
 @endsection
 
 @section('content')
+
+{{-- بەستەری تابەکان بۆ هەڵبژاردنی نێوان کڕیارەکان و وەسڵەکان --}}
+<div class="flex items-center gap-1 border-b border-[--color-line] mb-4">
+    <a href="{{ route('customers.index') }}"
+       class="px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg transition-colors">
+        لیستی کڕیارەکان
+    </a>
+    <a href="{{ route('orders.index') }}"
+       class="px-4 py-2.5 text-sm font-bold border-b-2 border-[--color-brand-700] text-[--color-brand-700] bg-white rounded-t-lg">
+        هەموو وەسڵەکان
+    </a>
+</div>
 
 <form method="GET" class="card mb-4">
     <div class="card-body grid gap-3 sm:grid-cols-2 lg:grid-cols-5">

@@ -17,7 +17,12 @@ class CustomerController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        return view('customers.index', compact('customers'));
+        $allCustomers = Customer::all();
+        $totalCustomers = $allCustomers->count();
+        $totalOrders = \App\Models\Order::count();
+        $totalDebt = $allCustomers->sum(fn ($c) => $c->balance());
+
+        return view('customers.index', compact('customers', 'totalCustomers', 'totalOrders', 'totalDebt'));
     }
 
     public function create(): View
