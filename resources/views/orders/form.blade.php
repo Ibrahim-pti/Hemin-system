@@ -201,13 +201,10 @@
         </div>
 
         {{-- دوگمەی زیادکردنی شتی تر --}}
-        <div class="p-3 border-t border-[--color-line] bg-slate-50/50 flex items-center justify-between">
+        <div class="p-3 border-t border-[--color-line] bg-slate-50/50">
             <button type="button" @click="addLine()" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold text-[--color-brand-700] hover:bg-blue-50 border border-dashed border-blue-300">
-                + زیادکردنی شتی تر
+                + زیادکردنی هی تر
             </button>
-            <div class="text-xs text-[--color-ink-soft]">
-                دەتوانیت هەرچەند دێڕ یان دیزاین پێویست بێت لێرە زیادی بکەیت
-            </div>
         </div>
     </div>
 
