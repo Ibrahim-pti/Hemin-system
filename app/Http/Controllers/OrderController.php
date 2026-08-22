@@ -7,6 +7,7 @@ use App\Models\ExchangeRate;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\Warehouse;
 use App\Services\PaymentService;
@@ -24,18 +25,44 @@ class OrderController extends Controller
 
     public function index(Request $request): View
     {
+        $activeTab = $request->string('tab', 'customers')->toString();
+
         $orders = Order::query()
-            ->with('customer')
+            ->with(['customer', 'items'])
             ->search($request->string('q')->toString())
             ->when($request->string('status')->toString(), fn ($q, $s) => $q->where('status', $s))
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('order_date', '>=', $d))
             ->when($request->date('to'), fn ($q, $d) => $q->whereDate('order_date', '<=', $d))
             ->latest('order_date')
             ->latest('id')
-            ->paginate(25)
+            ->paginate(25, ['*'], 'orders_page')
             ->withQueryString();
 
-        return view('orders.index', compact('orders'));
+        $customers = Customer::query()
+            ->search($request->string('q')->toString())
+            ->withCount('orders')
+            ->with(['orders' => fn ($q) => $q->latest('order_date')->limit(1)])
+            ->orderBy('name')
+            ->paginate(25, ['*'], 'customers_page')
+            ->withQueryString();
+
+        $allCustomers = Customer::all();
+        $totalCustomers = $allCustomers->count();
+        $totalOrders = (int) Order::whereNotIn('status', ['draft', 'cancelled'])->count();
+        $totalSales = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->sum(Order::totalIqdExpression());
+        $totalReceived = (float) Payment::where('direction', 'in')->sum('amount_iqd');
+        $totalDebt = (float) $allCustomers->sum(fn ($c) => max(0, $c->balance()));
+
+        return view('orders.index', compact(
+            'orders',
+            'customers',
+            'activeTab',
+            'totalCustomers',
+            'totalOrders',
+            'totalSales',
+            'totalReceived',
+            'totalDebt'
+        ));
     }
 
     public function create(Request $request): View
