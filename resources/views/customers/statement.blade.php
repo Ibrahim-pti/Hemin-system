@@ -1,101 +1,364 @@
 @extends('layouts.app')
-@section('title', 'کەشف حساب — ' . $customer->name)
-
-@section('actions')
-    <button onclick="window.print()" class="btn btn-ghost no-print">چاپ</button>
-@endsection
+@section('title', 'کەشف حیسابی — ' . $customer->name)
 
 @section('content')
+<div style="display: flex; flex-direction: column; gap: 1.25rem;">
 
-{{-- ماوەی کات --}}
-<form method="GET" class="card mb-4 no-print">
-    <div class="card-body grid gap-3 sm:grid-cols-3">
-        <div>
-            <label class="label">لە بەرواری</label>
-            <input type="date" name="from" value="{{ $from->toDateString() }}" class="field num">
+    {{-- ١. سەردێڕی سەرەوە: کەشف حیسابی --}}
+    <div class="no-print" style="display: flex; align-items: center; gap: 0.75rem;">
+        <div style="width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center;">
+            <svg style="width: 1.35rem; height: 1.35rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="2" width="16" height="20" rx="2"/>
+                <line x1="8" y1="6" x2="16" y2="6"/>
+                <line x1="16" y1="14" x2="16" y2="18"/>
+                <path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/>
+            </svg>
         </div>
-        <div>
-            <label class="label">تا بەرواری</label>
-            <input type="date" name="to" value="{{ $to->toDateString() }}" class="field num">
-        </div>
-        <div class="flex items-end">
-            <button class="btn btn-primary w-full">پیشاندان</button>
-        </div>
-    </div>
-</form>
-
-{{-- سەردێڕی چاپ --}}
-<div class="card">
-    <div class="card-body border-b border-[--color-line]">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-                <h2 class="text-lg font-semibold">{{ \App\Models\Setting::get('company_name') }}</h2>
-                <p class="text-sm text-[--color-ink-soft]">کەشف حساب</p>
-            </div>
-            <div class="text-sm">
-                <div><span class="text-[--color-ink-soft]">بەڕێز:</span> <span class="font-medium">{{ $customer->name }}</span></div>
-                <div class="num" dir="ltr">{{ $customer->phone }}</div>
-                <div class="num text-[--color-ink-soft]">{{ fmt_date($from) }} — {{ fmt_date($to) }}</div>
-            </div>
-        </div>
+        <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0;">کەشف حیسابی</h1>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>بەروار</th>
-                    <th>بەڵگەنامە</th>
-                    <th>ڕوونکردنەوە</th>
-                    <th class="num">لەسەری</th>
-                    <th class="num">بۆی</th>
-                    <th class="num">باڵانس</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{-- باڵانسی پێشوو --}}
-                <tr class="bg-[--color-surface-soft]">
-                    <td colspan="5" class="font-medium">باڵانسی پێشوو</td>
-                    <td class="num font-semibold">{{ fmt_money($openingBalance) }}</td>
-                </tr>
+    {{-- ٢. کارتی فلتەری سەرەوە (کڕیار، لە بەرواری، بۆ بەرواری) --}}
+    <div class="no-print" style="background: #ffffff; border-radius: 1rem; padding: 1.25rem 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+        <form method="GET" action="{{ route('customers.statement', $customer) }}" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: flex-end;">
 
-                @foreach ($rows as $row)
-                    <tr>
-                        <td class="num whitespace-nowrap">{{ fmt_date($row['date']) }}</td>
-                        <td class="num">
-                            <a href="{{ $row['link'] }}" class="text-[--color-brand-700]">{{ $row['ref'] }}</a>
-                        </td>
-                        <td class="text-[--color-ink-soft]">{{ $row['description'] }}</td>
-                        <td class="num">{{ $row['debit'] > 0 ? fmt_money($row['debit']) : '—' }}</td>
-                        <td class="num text-[--color-ok]">{{ $row['credit'] > 0 ? fmt_money($row['credit']) : '—' }}</td>
-                        <td class="num font-medium">{{ fmt_money($row['balance']) }}</td>
-                    </tr>
-                @endforeach
+                {{-- کڕیار هەڵبژێرە --}}
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                        <span>👤</span>
+                        <span>کڕیار هەڵبژێرە</span>
+                    </label>
+                    <select onchange="window.location.href='/customers/' + this.value + '/statement?from={{ request('from') }}&to={{ request('to') }}'"
+                            class="field"
+                            style="width: 100%; font-weight: 700; color: #1e293b;">
+                        @foreach ($allCustomers as $c)
+                            <option value="{{ $c->id }}" {{ $c->id == $customer->id ? 'selected' : '' }}>
+                                {{ $c->name }} {{ $c->phone ? ' - ' . $c->phone : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                @if ($rows->isEmpty())
-                    <tr>
-                        <td colspan="6" class="py-8 text-center text-sm text-[--color-ink-soft]">
-                            لەم ماوەیەدا هیچ مامەڵەیەک نییە.
-                        </td>
-                    </tr>
+                {{-- لە مانگی / بەرواری --}}
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                        <span>📅</span>
+                        <span>لە بەرواری</span>
+                    </label>
+                    <input type="date" name="from" value="{{ $from->toDateString() }}" class="field num" style="width: 100%;">
+                </div>
+
+                {{-- بۆ مانگی / بەرواری --}}
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                        <span>📅</span>
+                        <span>بۆ بەرواری</span>
+                    </label>
+                    <input type="date" name="to" value="{{ $to->toDateString() }}" class="field num" style="width: 100%;">
+                </div>
+
+                {{-- دوگمەی نیشاندان --}}
+                <div>
+                    <button type="submit"
+                            style="background: #2563eb; color: #ffffff; padding: 0.6rem 1.5rem; border-radius: 0.65rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">
+                        <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <span>نیشاندان</span>
+                    </button>
+                </div>
+
+            </div>
+
+            {{-- تابی فلتەری چالاک --}}
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.25rem;">
+                <span class="num" style="background: #0284c7; color: #ffffff; padding: 0.3rem 0.85rem; border-radius: 0.5rem; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <svg style="width: 0.85rem; height: 0.85rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                    <span>فلتەر: {{ fmt_date($from) }} بۆ {{ fmt_date($to) }}</span>
+                </span>
+
+                @if (request('from') || request('to'))
+                    <a href="{{ route('customers.statement', $customer) }}"
+                       style="background: #ffffff; border: 1px solid #cbd5e1; color: #64748b; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
+                        <span>✕</span>
+                        <span>لابردنی فلتەر</span>
+                    </a>
                 @endif
-            </tbody>
-            <tfoot>
-                <tr class="bg-[--color-surface-soft]">
-                    <td colspan="3" class="font-semibold">کۆتا باڵانس</td>
-                    <td class="num">{{ fmt_money($rows->sum('debit')) }}</td>
-                    <td class="num">{{ fmt_money($rows->sum('credit')) }}</td>
-                    <td class="num text-base font-bold {{ $closingBalance > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
-                        {{ fmt_money($closingBalance) }}
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
+            </div>
+        </form>
     </div>
+
+    {{-- ٣. کارتی گەورەی کەشف حیسابی و ٤ کارتی ئامار --}}
+    <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden; padding: 1.5rem;">
+
+        {{-- دوگمەی داگرتنی PDF لە سەرەوەی کارت --}}
+        <div class="no-print" style="display: flex; justify-content: flex-start; margin-bottom: 1rem;">
+            <button type="button" onclick="window.print()"
+                    style="background: #e11d48; color: #ffffff; padding: 0.55rem 1.25rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);">
+                <svg style="width: 1.05rem; height: 1.05rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>داگرتنی PDF</span>
+            </button>
+        </div>
+
+        {{-- سەردێڕی ناوی کڕیار و بەروار --}}
+        <div style="background: #f8fafc; border-radius: 0.85rem; padding: 0.85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+            {{-- ڕاست --}}
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.15rem; font-weight: 800; color: #1e293b;">
+                <svg style="width: 1.25rem; height: 1.25rem; color: #0284c7;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>کەشف حیسابی: {{ $customer->name }}</span>
+            </div>
+
+            {{-- چەپ --}}
+            <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                <span class="num" dir="ltr">{{ $customer->phone ? $customer->phone . ' 📞' : '' }}</span>
+                <span class="num" dir="ltr">📅 {{ fmt_date($from) }} بۆ {{ fmt_date($to) }}</span>
+            </div>
+        </div>
+
+        {{-- ٤ کارتی ئاماری سەرەکی وەک وێنەکە --}}
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
+
+            {{-- ١. کۆی کڕینەکانی (Green) --}}
+            <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                <div style="color: #16a34a; margin-bottom: 0.15rem;">
+                    <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                </div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #166534;">کۆی کڕینەکانی</div>
+                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #15803d; line-height: 1.2;">
+                    {{ fmt_num($totalPurchases) }} <span style="font-size: 0.85rem; font-weight: 700;">دینار</span>
+                </div>
+            </div>
+
+            {{-- ٢. پارەی دراو (Blue) --}}
+            <div style="background: #f0f9ff; border: 1.5px solid #7dd3fc; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                <div style="color: #0284c7; margin-bottom: 0.15rem;">
+                    <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <circle cx="12" cy="12" r="2"/>
+                        <path d="M6 12h.01M18 12h.01"/>
+                    </svg>
+                </div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #075985;">پارەی دراو</div>
+                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #0369a1; line-height: 1.2;">
+                    {{ fmt_num($totalPaid) }} <span style="font-size: 0.85rem; font-weight: 700;">دینار</span>
+                </div>
+            </div>
+
+            {{-- ٣. پارەدانی قەرز (Yellow / Orange) --}}
+            <div style="background: #fefce8; border: 1.5px solid #fde047; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                <div style="color: #ca8a04; margin-bottom: 0.15rem;">
+                    <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #854d0e;">پارەدانی قەرز</div>
+                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #b45309; line-height: 1.2;">
+                    {{ fmt_num($debtPayments) }} <span style="font-size: 0.85rem; font-weight: 700;">دینار</span>
+                </div>
+            </div>
+
+            {{-- ٤. قەرزی ماوە (Teal or Red) --}}
+            <div style="background: {{ $remainingDebt > 0 ? '#fff1f2' : '#f0fdf4' }}; border: 1.5px solid {{ $remainingDebt > 0 ? '#fecdd3' : '#a7f3d0' }}; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                <div style="color: {{ $remainingDebt > 0 ? '#e11d48' : '#10b981' }}; margin-bottom: 0.15rem;">
+                    <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                </div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: {{ $remainingDebt > 0 ? '#9f1239' : '#166534' }};">قەرزی ماوە</div>
+                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $remainingDebt > 0 ? '#dc2626' : '#15803d' }}; line-height: 1.2;">
+                    {{ fmt_num($remainingDebt) }} <span style="font-size: 0.85rem; font-weight: 700;">دینار</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    {{-- ٤. دوو خشتەی تەنیشت یەک (فرۆشتنەکان لە دەستە ڕاست، پارەدانی قەرزەکان لە دەستە چەپ) --}}
+    <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 1.25rem; align-items: start;">
+
+        {{-- خشتەی دەستە ڕاست: فرۆشتنەکان --}}
+        <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden;">
+            <div style="padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; color: #1e293b; border-bottom: 1px solid #f8fafc;">
+                <span style="color: #10b981;">🛒</span>
+                <span>فرۆشتنەکان</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.875rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 0.75rem; font-weight: 700;">
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">بەروار</th>
+                            <th style="padding: 0.75rem 0.85rem; text-align: right;">جۆر / ناوەڕۆک</th>
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">بڕ</th>
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">نرخ</th>
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">دراو</th>
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">دۆخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($orders as $order)
+                            @php
+                                $paid = $order->paidAmount();
+                                $remaining = $order->remaining();
+                                $itemDesc = $order->items->pluck('description')->join(', ') ?: 'وەسڵی ' . $order->invoice_no;
+                                $itemCount = $order->items->count();
+                            @endphp
+                            <tr style="border-bottom: 1px solid #f8fafc; transition: background 0.15s;"
+                                onmouseover="this.style.background='#fbfcfd'"
+                                onmouseout="this.style.background='transparent'">
+
+                                {{-- بەروار --}}
+                                <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; color: #475569; font-size: 0.8rem;">
+                                    {{ fmt_date($order->order_date) }}
+                                </td>
+
+                                {{-- جۆر / ناوەڕۆک --}}
+                                <td style="padding: 0.85rem 0.85rem; text-align: right;">
+                                    <a href="{{ route('orders.show', $order) }}"
+                                       style="color: #1e293b; font-weight: 700; text-decoration: none; font-size: 0.85rem;">
+                                        {{ $itemDesc }}
+                                    </a>
+                                </td>
+
+                                {{-- بڕ --}}
+                                <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 600; color: #64748b; font-size: 0.85rem;">
+                                    {{ $itemCount }}
+                                </td>
+
+                                {{-- نرخ (کۆی وەسڵ) --}}
+                                <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 700; color: #334155; font-size: 0.85rem;">
+                                    {{ fmt_num($order->total_iqd) }}
+                                </td>
+
+                                {{-- دراو --}}
+                                <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 800; color: #10b981; font-size: 0.85rem;">
+                                    {{ fmt_num($paid) }}
+                                </td>
+
+                                {{-- دۆخ --}}
+                                <td style="padding: 0.85rem 0.85rem; text-align: center;">
+                                    @if ($remaining <= 0.5)
+                                        <span style="background: #dcfce7; color: #16a34a; padding: 0.2rem 0.65rem; border-radius: 0.4rem; font-weight: 700; font-size: 0.72rem; display: inline-block;">
+                                            پاردراو
+                                        </span>
+                                    @else
+                                        <span style="background: #fee2e2; color: #dc2626; padding: 0.2rem 0.65rem; border-radius: 0.4rem; font-weight: 700; font-size: 0.72rem; display: inline-block;">
+                                            قەرز
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" style="padding: 2.5rem 1rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                                    هیچ فرۆشتنێک لەم ماوەیەدا نییە.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- خشتەی دەستە چەپ: پارەدانی قەرزەکان --}}
+        <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden;">
+            <div style="padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; color: #1e293b; border-bottom: 1px solid #f8fafc;">
+                <span style="color: #ca8a04;">📁</span>
+                <span>پارەدانی قەرزەکان</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.875rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 0.75rem; font-weight: 700;">
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">بەروار</th>
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">بڕی پارەدان</th>
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">کۆی قەرز</th>
+                            <th style="padding: 0.75rem 0.85rem; text-align: center;">تێبینی</th>
+                            <th style="padding: 0.75rem 0.85rem; width: 3rem; text-align: center;">وەسڵ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($payments as $payment)
+                            <tr style="border-bottom: 1px solid #f8fafc; transition: background 0.15s;"
+                                onmouseover="this.style.background='#fbfcfd'"
+                                onmouseout="this.style.background='transparent'">
+
+                                {{-- بەروار --}}
+                                <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; color: #475569; font-size: 0.8rem;">
+                                    {{ fmt_date($payment->paid_at) }}
+                                </td>
+
+                                {{-- بڕی پارەدان --}}
+                                <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 800; color: #10b981; font-size: 0.85rem;">
+                                    {{ fmt_num($payment->amount_iqd) }}
+                                </td>
+
+                                {{-- کۆی قەرز --}}
+                                <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; color: #64748b; font-size: 0.85rem;">
+                                    {{ $payment->order ? fmt_num($payment->order->total_iqd) : '—' }}
+                                </td>
+
+                                {{-- تێبینی --}}
+                                <td style="padding: 0.85rem 0.85rem; text-align: center; color: #64748b; font-size: 0.8rem;">
+                                    {{ $payment->note ?: '-' }}
+                                </td>
+
+                                {{-- وەسڵ (ئایکۆنی چاپی حەقدی) --}}
+                                <td style="padding: 0.85rem 0.85rem; text-align: center;">
+                                    <a href="{{ route('payments.print', $payment) }}"
+                                       style="width: 1.85rem; height: 1.85rem; border-radius: 0.45rem; background: #eff6ff; color: #2563eb; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid #bfdbfe;"
+                                       title="چاپی حەقدی">
+                                        <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14 2 14 8 20 8"/>
+                                            <line x1="16" y1="13" x2="8" y2="13"/>
+                                            <line x1="16" y1="17" x2="8" y2="17"/>
+                                        </svg>
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="padding: 2.5rem 1rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                                    هیچ پارەدانێک تۆمارنەکراوە.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+
+                    {{-- کۆی پارەدانەکان لە خوارەوە --}}
+                    <tfoot>
+                        <tr style="border-top: 2px solid #f1f5f9; background: #fafafa; font-weight: 800;">
+                            <td style="padding: 0.85rem 1rem; text-align: center; color: #1e293b; font-size: 0.9rem;">
+                                کۆ
+                            </td>
+                            <td class="num" style="padding: 0.85rem 1rem; text-align: center; color: #10b981; font-size: 0.95rem;">
+                                {{ fmt_num($debtPayments) }}
+                            </td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
 </div>
-
-<p class="mt-3 text-xs text-[--color-ink-soft]">
-    «لەسەری» = ئەوەی کڕیار قەرزاری بووە &nbsp;·&nbsp; «بۆی» = ئەوەی داویەتی. باڵانسی ئەرێنی واتە قەرزارە.
-</p>
-
 @endsection

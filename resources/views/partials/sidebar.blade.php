@@ -81,6 +81,7 @@
                         ['route' => 'cash.*', 'href' => route('cash.index'), 'label' => 'قاسە', 'icon' => 'cash', 'can' => 'manage_cash'],
                         ['route' => 'payments.*', 'href' => route('payments.index'), 'label' => 'حەقدی و پارەدان', 'icon' => 'payments', 'can' => 'manage_payments'],
                         ['route' => 'debts.*', 'href' => route('debts.index'), 'label' => 'قەرزەکان', 'icon' => 'debts', 'can' => 'manage_payments'],
+                        ['route' => 'customers.statement|statement.*', 'href' => route('statement.index'), 'label' => 'کەشف حیسابی', 'icon' => 'reports', 'can' => 'manage_customers'],
                     ],
                 ],
                 [

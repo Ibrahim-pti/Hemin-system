@@ -93,35 +93,24 @@ class CustomerController extends Controller
     public function statement(Customer $customer, Request $request): View
     {
         $from = ($request->date('from') ?? now()->startOfYear())->startOfDay();
-        // تا کۆتایی ڕۆژ — ئەگەر نا مامەڵەکانی هەمان ڕۆژ دەرناکەون.
         $to = ($request->date('to') ?? now())->endOfDay();
 
+        // وەسڵەکان بە وردەکاری شتەکان
         $orders = $customer->orders()
+            ->with(['items', 'payments'])
             ->whereNotIn('status', ['draft', 'cancelled'])
             ->whereBetween('order_date', [$from, $to])
-            ->get()
-            ->map(fn ($order) => [
-                'date' => $order->order_date,
-                'ref' => 'وەسڵی '.$order->invoice_no,
-                'description' => 'فرۆشتن',
-                'debit' => $order->total_iqd,   // لەسەری
-                'credit' => 0.0,                // بۆی
-                'link' => route('orders.show', $order),
-            ]);
+            ->orderBy('order_date', 'asc')
+            ->get();
 
+        // حەقدییەکان
         $payments = $customer->payments()
+            ->where('direction', 'in')
             ->whereBetween('paid_at', [$from, $to])
-            ->get()
-            ->map(fn ($payment) => [
-                'date' => $payment->paid_at,
-                'ref' => 'حەقدی '.$payment->voucher_no,
-                'description' => $payment->direction === 'in' ? 'پارەدان' : 'گەڕاندنەوەی پارە',
-                'debit' => $payment->direction === 'in' ? 0.0 : (float) $payment->amount_iqd,
-                'credit' => $payment->direction === 'in' ? (float) $payment->amount_iqd : 0.0,
-                'link' => route('payments.print', $payment),
-            ]);
+            ->orderBy('paid_at', 'asc')
+            ->get();
 
-        // باڵانسی پێش دەستپێکی ماوەکە.
+        // باڵانسی سەرەتایی
         $openingBalance = $customer->openingIqd()
             + (float) $customer->orders()
                 ->whereNotIn('status', ['draft', 'cancelled'])
@@ -132,23 +121,25 @@ class CustomerController extends Controller
                 ->whereDate('paid_at', '<', $from)
                 ->sum('amount_iqd');
 
-        $running = $openingBalance;
+        $totalOrdersAmount = (float) $orders->sum(fn ($o) => $o->total_iqd);
+        $totalPurchases = $openingBalance + $totalOrdersAmount;
+        $totalPaidAmount = (float) $payments->sum('amount_iqd');
+        $debtPayments = $totalPaidAmount;
+        $remainingDebt = max(0, $totalPurchases - $totalPaidAmount);
 
-        $rows = $orders->concat($payments)
-            ->sortBy('date')
-            ->values()
-            ->map(function (array $row) use (&$running) {
-                $running += $row['debit'] - $row['credit'];
-                $row['balance'] = $running;
-
-                return $row;
-            });
+        // هەموو کڕیاران بۆ گۆڕینی کڕیار لە درۆپداون
+        $allCustomers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
 
         return view('customers.statement', [
             'customer' => $customer,
-            'rows' => $rows,
+            'allCustomers' => $allCustomers,
+            'orders' => $orders,
+            'payments' => $payments,
             'openingBalance' => $openingBalance,
-            'closingBalance' => $running,
+            'totalPurchases' => $totalPurchases,
+            'totalPaid' => $totalPaidAmount,
+            'debtPayments' => $debtPayments,
+            'remainingDebt' => $remainingDebt,
             'from' => $from,
             'to' => $to,
         ]);
