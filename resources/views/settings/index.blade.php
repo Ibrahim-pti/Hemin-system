@@ -49,16 +49,6 @@
                        value="{{ old('invoice_footer', $settings['invoice_footer'] ?? '') }}">
             </div>
 
-            <div>
-                <label class="label" for="xeiqd_api_key">کلیل (Token)ی XEIQD API</label>
-                <input id="xeiqd_api_key" name="xeiqd_api_key" class="field num text-xs" dir="ltr"
-                       placeholder="Bearer Token لێرە دابنێ..."
-                       value="{{ old('xeiqd_api_key', $settings['xeiqd_api_key'] ?? '') }}">
-                <p class="mt-1 text-xs text-[--color-ink-soft]">
-                    بۆ وەرگرتنی نوێترین نرخی هەولێر لە <a href="https://xeiqd.com/profile" target="_blank" class="text-blue-600 underline">xeiqd.com/profile</a>.
-                </p>
-            </div>
-
             <button class="btn btn-primary">پاشەکەوتکردن</button>
         </div>
     </form>
