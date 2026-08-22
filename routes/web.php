@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('payments', PaymentController::class)->except(['edit', 'update']);
         Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
         Route::get('/debts', [DebtController::class, 'index'])->name('debts.index');
+        Route::post('/debts/old-debt', [DebtController::class, 'storeOldDebt'])->name('debts.old-debt');
     });
 
     Route::middleware('can:manage_cash')->group(function () {
