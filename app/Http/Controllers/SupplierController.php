@@ -50,14 +50,21 @@ class SupplierController extends Controller
 
             // وەرگرتنی مەوادە داخڵکراوەکان بە دەست
             $lines = $request->input('purchase_lines', []);
+            $lineFiles = $request->file('purchase_lines', []);
             $validLines = [];
             $totalCost = 0;
 
-            foreach ($lines as $line) {
+            foreach ($lines as $index => $line) {
                 $name = trim((string) ($line['name'] ?? ''));
                 $qty = (float) str_replace(',', '', (string) ($line['qty'] ?? 0));
                 $unitPrice = (float) str_replace(',', '', (string) ($line['unit_price'] ?? 0));
                 $unitId = (int) ($line['unit_id'] ?? (\App\Models\Unit::first()?->id ?? 1));
+
+                // پشکنینی وێنەی کاڵاکە
+                $imagePath = null;
+                if (isset($lineFiles[$index]['image']) && $lineFiles[$index]['image']->isValid()) {
+                    $imagePath = $lineFiles[$index]['image']->store('items', 'public');
+                }
 
                 if ($name !== '' && $qty > 0) {
                     $item = Item::where('name', $name)->first();
@@ -65,6 +72,7 @@ class SupplierController extends Controller
                         $item = Item::create([
                             'name' => $name,
                             'code' => Item::nextCode(),
+                            'image' => $imagePath,
                             'unit_id' => $unitId,
                             'last_cost' => $unitPrice,
                             'purchase_date' => $request->input('purchase_date', now()->toDateString()),
@@ -72,8 +80,11 @@ class SupplierController extends Controller
                             'is_for_sale' => false,
                             'is_active' => true,
                         ]);
-                    } elseif ($unitPrice > 0) {
-                        $item->update(['last_cost' => $unitPrice]);
+                    } else {
+                        $updates = [];
+                        if ($unitPrice > 0) $updates['last_cost'] = $unitPrice;
+                        if ($imagePath) $updates['image'] = $imagePath;
+                        if (!empty($updates)) $item->update($updates);
                     }
 
                     $lineTotal = $qty * $unitPrice;
@@ -84,6 +95,7 @@ class SupplierController extends Controller
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
                         'line_total' => $lineTotal,
+                        'image' => $imagePath ?? $item->image,
                     ];
                 }
             }
@@ -127,6 +139,7 @@ class SupplierController extends Controller
                         'qty' => $vl['qty'],
                         'unit_price' => $vl['unit_price'],
                         'line_total' => $vl['line_total'],
+                        'image' => $vl['image'] ?? null,
                     ]);
 
                     // جوڵەی کۆگا (چوونی کاڵا بۆ ناو کۆگا)

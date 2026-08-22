@@ -5,22 +5,36 @@
 
 <form method="POST"
       action="{{ $supplier->exists ? route('suppliers.update', $supplier) : route('suppliers.store') }}"
+      enctype="multipart/form-data"
       class="w-full"
       x-data="{
           lines: [
-              { name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}' }
+              { name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}', preview: null }
           ],
           paymentType: 'debt',
           paidAmount: '',
           addLine() {
-              this.lines.push({ name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}' });
+              this.lines.push({ name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}', preview: null });
           },
           removeLine(index) {
               if (this.lines.length > 1) {
                   this.lines.splice(index, 1);
               } else {
-                  this.lines[0] = { name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}' };
+                  this.lines[0] = { name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}', preview: null };
               }
+          },
+          onImageChange(e, line) {
+              const file = e.target.files[0];
+              if (file) {
+                  line.preview = URL.createObjectURL(file);
+              } else {
+                  line.preview = null;
+              }
+          },
+          removeImage(line, index) {
+              line.preview = null;
+              const input = document.getElementById('line_image_' + index);
+              if (input) input.value = '';
           },
           lineTotal(line) {
               let q = parseFloat(line.qty) || 0;
@@ -143,6 +157,7 @@
                             <thead>
                                 <tr class="bg-slate-50/80 border-b border-[--color-line] text-xs text-slate-600 font-bold">
                                     <th style="width: 44px; text-align: center; padding: 10px 6px;">#</th>
+                                    <th style="width: 56px; text-align: center; padding: 10px 6px;">وێنە</th>
                                     <th style="text-align: right; padding: 10px 8px;">ناوی مەواد</th>
                                     <th style="width: 140px; text-align: right; padding: 10px 8px;">یەکە</th>
                                     <th style="width: 130px; text-align: center; padding: 10px 8px;">بڕ</th>
@@ -156,6 +171,42 @@
                                     <tr>
                                         {{-- # --}}
                                         <td style="text-align: center; padding: 6px;" class="text-xs text-slate-400 font-bold" x-text="index + 1"></td>
+
+                                        {{-- وێنەی مەواد --}}
+                                        <td style="text-align: center; padding: 4px;">
+                                            <div class="flex items-center justify-center">
+                                                <input type="file"
+                                                       :name="'purchase_lines[' + index + '][image]'"
+                                                       :id="'line_image_' + index"
+                                                       accept="image/*"
+                                                       class="hidden"
+                                                       @change="onImageChange($event, line)">
+
+                                                <template x-if="line.preview">
+                                                    <div class="relative group size-8 rounded-lg overflow-hidden border border-blue-400 shadow-2xs">
+                                                        <img :src="line.preview" class="size-full object-cover cursor-pointer"
+                                                             @click="document.getElementById('line_image_' + index).click()"
+                                                             title="گۆڕینی وێنە">
+                                                        <button type="button" @click="removeImage(line, index)"
+                                                                class="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full size-3.5 flex items-center justify-center text-[9px] shadow"
+                                                                title="لابردنی وێنە">×</button>
+                                                    </div>
+                                                </template>
+
+                                                <template x-if="!line.preview">
+                                                    <button type="button"
+                                                            @click="document.getElementById('line_image_' + index).click()"
+                                                            class="size-8 rounded-lg border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all"
+                                                            title="دانانی وێنە">
+                                                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                                                            <polyline points="21 15 16 10 5 21"/>
+                                                        </svg>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </td>
 
                                         {{-- ناوی مەواد --}}
                                         <td style="padding: 6px 8px;">

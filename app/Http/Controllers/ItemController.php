@@ -191,16 +191,22 @@ class ItemController extends Controller
             'cost_currency' => ['nullable', 'in:IQD,USD'],
             'purchase_date' => ['nullable', 'date'],
             'sale_price' => ['nullable', 'numeric', 'min:0'],
+            'image' => ['nullable', 'image', 'max:5120'],
             'is_for_sale' => ['nullable', 'boolean'],
             'note' => ['nullable', 'string'],
         ], [], [
             'code' => 'کۆد',
             'name' => 'ناو',
+            'image' => 'وێنە',
             'unit_id' => 'یەکە',
             'min_qty' => 'نرخی بڕ',
             'last_cost' => 'تێچووی کڕین',
             'purchase_date' => 'بەرواری کڕین',
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('items', 'public');
+        }
 
         $data['is_active'] = $request->boolean('is_active', true);
         $data['is_for_sale'] = $request->boolean('is_for_sale');

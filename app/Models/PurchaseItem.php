@@ -8,8 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PurchaseItem extends Model
 {
     protected $fillable = [
-        'purchase_id', 'item_id', 'qty', 'unit_price', 'line_total', 'note',
+        'purchase_id', 'item_id', 'qty', 'unit_price', 'line_total', 'image', 'note',
     ];
+
+    public function imageUrl(): ?string
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        return $this->item?->imageUrl();
+    }
 
     protected function casts(): array
     {

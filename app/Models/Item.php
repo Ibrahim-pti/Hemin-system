@@ -16,9 +16,17 @@ class Item extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'code', 'name', 'item_category_id', 'unit_id', 'min_qty',
+        'code', 'name', 'image', 'item_category_id', 'unit_id', 'min_qty',
         'last_cost', 'cost_currency', 'purchase_date', 'sale_price', 'is_for_sale', 'is_active', 'note',
     ];
+
+    public function imageUrl(): ?string
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        return null;
+    }
 
     protected function casts(): array
     {

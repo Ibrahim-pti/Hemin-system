@@ -5,8 +5,10 @@
 
 <form method="POST"
       action="{{ $item->exists ? route('items.update', $item) : route('items.store') }}"
+      enctype="multipart/form-data"
       x-data="{
           selectedUnit: '{{ old('unit_id', $item->unit_id) }}',
+          imagePreview: '{{ $item->imageUrl() }}',
           unitNames: {
               @foreach ($units as $unit)
                   '{{ $unit->id }}': '{{ $unit->name }}',
@@ -14,6 +16,12 @@
           },
           get unitText() {
               return this.unitNames[this.selectedUnit] || '';
+          },
+          onImageChange(e) {
+              const file = e.target.files[0];
+              if (file) {
+                  this.imagePreview = URL.createObjectURL(file);
+              }
           }
       }"
       class="mx-auto max-w-4xl">
@@ -56,14 +64,37 @@
                 </div>
             @endif
 
-            {{-- ڕیزی ١: ناو --}}
-            <div>
-                <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="name">
-                    ناوی مەواد <span class="text-[--color-danger]">*</span>
-                </label>
-                <input id="name" name="name" class="field py-2.5 text-sm" required
-                       value="{{ old('name', $item->name) }}" placeholder="ناوی مەواد لێرە داخڵ بکە">
-                @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
+            {{-- ڕیزی ١: ناو و وێنەی مەواد --}}
+            <div class="grid gap-5 sm:grid-cols-3 items-start">
+                <div class="sm:col-span-2">
+                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5" for="name">
+                        ناوی مەواد <span class="text-[--color-danger]">*</span>
+                    </label>
+                    <input id="name" name="name" class="field py-2.5 text-sm" required
+                           value="{{ old('name', $item->name) }}" placeholder="ناوی مەواد لێرە داخڵ بکە">
+                    @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="label text-xs font-bold text-[--color-ink-soft] mb-1.5">وێنەی مەواد</label>
+                    <div class="flex items-center gap-3">
+                        <label class="flex items-center justify-center size-11 rounded-xl border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 cursor-pointer text-slate-400 hover:text-blue-600 transition-all overflow-hidden shrink-0">
+                            <input type="file" name="image" accept="image/*" class="hidden" @change="onImageChange($event)">
+                            <template x-if="imagePreview">
+                                <img :src="imagePreview" class="size-full object-cover">
+                            </template>
+                            <template x-if="!imagePreview">
+                                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
+                            </template>
+                        </label>
+                        <span class="text-xs text-[--color-ink-soft]">دانانی وێنەی کاڵا (ئارەزوومەندانە)</span>
+                    </div>
+                    @error('image') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             {{-- ڕیزی ٢: یەکە، نرخی بڕ، تێچووی کڕین و بەرواری کڕین --}}

@@ -90,12 +90,16 @@
                     <tr class="hover:bg-blue-50/30 transition-colors duration-150 group">
                         <td class="px-5 py-3.5 align-middle text-right">
                             <div class="flex items-center gap-3.5">
-                                <div class="size-10 rounded-[10px] bg-gradient-to-br from-[--color-brand-50] to-blue-100/50 text-[--color-brand-600] flex items-center justify-center border border-[--color-brand-100] shrink-0 group-hover:scale-105 group-hover:shadow-sm transition-all duration-300">
-                                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                    </svg>
+                                <div class="size-10 rounded-[10px] bg-gradient-to-br from-[--color-brand-50] to-blue-100/50 text-[--color-brand-600] flex items-center justify-center border border-[--color-brand-100] shrink-0 overflow-hidden group-hover:scale-105 group-hover:shadow-sm transition-all duration-300">
+                                    @if ($item->imageUrl())
+                                        <img src="{{ $item->imageUrl() }}" class="size-full object-cover" alt="{{ $item->name }}">
+                                    @else
+                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                        </svg>
+                                    @endif
                                 </div>
                                 <div class="flex flex-col justify-center">
                                     <a href="{{ route('items.show', $item) }}" class="font-bold text-[--color-ink] hover:text-[--color-brand-600] transition-colors text-[15px] leading-snug">

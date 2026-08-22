@@ -35,7 +35,17 @@
                 <tbody>
                     @foreach ($purchase->items as $line)
                         <tr>
-                            <td>{{ $line->item?->name }}</td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    @if ($line->imageUrl())
+                                        <img src="{{ $line->imageUrl() }}"
+                                             class="size-8 rounded-lg object-cover border border-slate-200 cursor-pointer hover:scale-110 transition-transform"
+                                             onclick="window.open(this.src, '_blank')"
+                                             title="کرتە بکە بۆ بینینی تەواوی وێنە">
+                                    @endif
+                                    <span class="font-medium">{{ $line->item?->name }}</span>
+                                </div>
+                            </td>
                             <td class="num">{{ fmt_qty($line->qty) }} {{ $line->item?->unit?->name }}</td>
                             <td class="num">{{ fmt_money($line->unit_price, $purchase->currency) }}</td>
                             <td class="num font-medium">{{ fmt_money($line->line_total, $purchase->currency) }}</td>

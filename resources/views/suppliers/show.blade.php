@@ -223,10 +223,16 @@
                                 {{ $purchase->warehouse?->name ?? '—' }}
                             </td>
                             <td class="text-right py-3 px-4 text-xs text-slate-700">
-                                <div class="flex flex-wrap gap-1">
+                                <div class="flex flex-wrap gap-1.5 items-center">
                                     @foreach($purchase->items as $pItem)
-                                        <span class="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded text-xs border border-slate-200">
-                                            <strong>{{ $pItem->item?->name }}</strong>: {{ fmt_qty($pItem->qty) }} {{ $pItem->item?->unit?->name }} × {{ fmt_money($pItem->unit_cost, $purchase->currency) }}
+                                        <span class="inline-flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-md text-xs border border-slate-200">
+                                            @if($pItem->imageUrl())
+                                                <img src="{{ $pItem->imageUrl() }}"
+                                                     class="size-5 rounded object-cover border border-slate-300 cursor-pointer hover:scale-150 transition-transform"
+                                                     onclick="window.open(this.src, '_blank')"
+                                                     title="کرتە بکە بۆ بینینی تەواوی وێنە">
+                                            @endif
+                                            <strong>{{ $pItem->item?->name }}</strong>: {{ fmt_qty($pItem->qty) }} {{ $pItem->item?->unit?->name }} × {{ fmt_money($pItem->unit_price, $purchase->currency) }}
                                         </span>
                                     @endforeach
                                 </div>
