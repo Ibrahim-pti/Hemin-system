@@ -70,12 +70,77 @@ class DebtController extends Controller
         // هەموو کڕیارە چالاکەکان بۆ مۆداڵی قەرزی کۆن
         $allCustomersList = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
 
+        // هەڵبژاردنی کڕیار بۆ بینینی وردەکاری قەرزەکانی
+        $selectedCustomer = null;
+        $customerOrders = collect();
+        $customerStats = null;
+
+        if ($request->filled('customer')) {
+            $c = Customer::with([
+                'orders' => function ($q) {
+                    $q->whereNotIn('status', ['draft', 'cancelled'])->with('payments')->orderBy('order_date', 'asc');
+                },
+                'payments' => function ($q) {
+                    $q->where('direction', 'in')->orderBy('payment_date', 'asc');
+                },
+            ])->find($request->customer);
+
+            if ($c) {
+                $openingIqd = (float) $c->openingIqd();
+                $invoicedTotal = 0;
+                $activeOrdersCount = 0;
+                $totalDiscount = 0;
+
+                $ordersList = $c->orders->map(function ($order) use (&$invoicedTotal, &$activeOrdersCount, &$totalDiscount) {
+                    $orderTotal = (float) $order->total_iqd;
+                    $invoicedTotal += $orderTotal;
+                    $orderPaid = (float) $order->payments->where('direction', 'in')->sum('amount_iqd');
+                    $orderRemaining = max(0, $orderTotal - $orderPaid);
+                    if ($orderRemaining > 0.5) {
+                        $activeOrdersCount++;
+                    }
+                    $discount = (float) ($order->discount_percent > 0 ? ($order->subtotal * $order->discount_percent / 100) : $order->discount_amount);
+                    $totalDiscount += $discount;
+
+                    return [
+                        'order' => $order,
+                        'id' => $order->id,
+                        'invoice_no' => $order->invoice_no,
+                        'note' => $order->note,
+                        'order_date' => $order->order_date,
+                        'discount' => $discount,
+                        'total' => $orderTotal,
+                        'paid' => $orderPaid,
+                        'remaining' => $orderRemaining,
+                    ];
+                });
+
+                $paidTotal = (float) $c->payments->sum('amount_iqd');
+                $totalDebt = $openingIqd + $invoicedTotal;
+                $remainingDebt = max(0, $totalDebt - $paidTotal);
+
+                $selectedCustomer = $c;
+                $customerOrders = $ordersList;
+                $customerStats = [
+                    'total_debt' => $totalDebt,
+                    'paid_total' => $paidTotal,
+                    'remaining_debt' => $remainingDebt,
+                    'active_orders_count' => $activeOrdersCount,
+                    'total_discount' => $totalDiscount,
+                    'opening_iqd' => $openingIqd,
+                ];
+            }
+        }
+
         return view('debts.index', [
             'customers' => $customers,
             'allCustomersList' => $allCustomersList,
             'totalRemainingDebt' => $totalRemainingDebt,
             'totalPaid' => $totalPaid,
             'activeDebtorsCount' => $activeDebtorsCount,
+            'selectedCustomer' => $selectedCustomer,
+            'customerOrders' => $customerOrders,
+            'customerStats' => $customerStats,
         ]);
     }
 
