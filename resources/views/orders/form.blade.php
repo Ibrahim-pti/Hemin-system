@@ -22,7 +22,8 @@
           @js($initialLines),
           @js((float) old('discount_percent', $order->discount_percent ?: 0)),
           @js(old('currency', $order->currency ?: 'IQD')),
-          @js(collect($customers)->mapWithKeys(fn ($c) => [$c->id => (float) $c->discount_percent])->all())
+          @js(collect($customers)->mapWithKeys(fn ($c) => [$c->id => (float) $c->discount_percent])->all()),
+          @js($customers->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone, 'discount_percent' => (float) $c->discount_percent])->values()->all())
       )">
     @csrf
     @if ($order->exists) @method('PUT') @endif
@@ -48,18 +49,14 @@
             {{-- بەڕێز (کڕیار) --}}
             <div class="sm:col-span-2">
                 <label class="label" for="customer_id">بەڕێز (کڕیار) <span class="text-[--color-danger]">*</span></label>
-                <select id="customer_id" name="customer_id" class="field font-bold" required
-                        x-model="customerId" @change="applyCustomerDiscount()">
+                <select id="customer_id" name="customer_id" class="field font-bold w-full" required
+                        x-model="customerId" @change="onCustomerSelectChange($event)">
                     <option value="">— هەڵبژێرە —</option>
-                    @foreach ($customers as $customer)
-                        <option value="{{ $customer->id }}" @selected(old('customer_id', $order->customer_id) == $customer->id)>
-                            {{ $customer->name }}{{ $customer->phone ? ' — '.$customer->phone : '' }}
-                        </option>
-                    @endforeach
+                    <option value="__NEW__" class="font-bold text-blue-600 bg-blue-50">➕ زیادکردنی کڕیاری نوێ لەم شوێنەدا...</option>
+                    <template x-for="c in customersList" :key="c.id">
+                        <option :value="c.id" x-text="c.name + (c.phone ? ' — ' + c.phone : '')" :selected="c.id == customerId"></option>
+                    </template>
                 </select>
-                <p class="mt-1 text-xs text-[--color-ink-soft]">
-                    <a href="{{ route('customers.create') }}" class="text-[--color-brand-700] hover:underline font-semibold">+ کڕیاری نوێ زیاد بکە</a>
-                </p>
             </div>
 
             {{-- بەروار --}}
@@ -293,21 +290,124 @@
 
         <a href="{{ route('customers.index') }}" class="btn btn-ghost">پاشگەزبوونەوە</a>
     </div>
+
+    {{-- مۆداڵی خێرای دروستکردنی کڕیار بەبێ بەجێهێشتنی فۆرمی وەسڵ --}}
+    <div x-show="showCustomerModal" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
+         x-transition.opacity>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 border border-slate-200"
+             @click.away="showCustomerModal = false"
+             x-transition.scale>
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <div class="font-bold text-slate-800 text-base flex items-center gap-2">
+                    <span class="size-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold">👤</span>
+                    <span>زیادکردنی کڕیاری نوێ</span>
+                </div>
+                <button type="button" @click="showCustomerModal = false" class="text-slate-400 hover:text-slate-600 size-7 rounded-lg flex items-center justify-center text-lg hover:bg-slate-100 transition-colors">✕</button>
+            </div>
+
+            <div class="space-y-3.5 text-right">
+                <div>
+                    <label class="label text-xs" for="modal_customer_name">ناوی کڕیار <span class="text-red-500">*</span></label>
+                    <input id="modal_customer_name" x-model="newCustomer.name" class="field text-sm font-bold w-full" placeholder="ناوی تەواوی کڕیار بنووسە..." @keydown.enter.prevent="saveQuickCustomer()">
+                </div>
+                <div>
+                    <label class="label text-xs" for="modal_customer_phone">ژمارەی مۆبایل</label>
+                    <input id="modal_customer_phone" x-model="newCustomer.phone" class="field num text-sm w-full" dir="ltr" placeholder="0750..." @keydown.enter.prevent="saveQuickCustomer()">
+                </div>
+                <div>
+                    <label class="label text-xs" for="modal_customer_address">ناونیشان (شوێن)</label>
+                    <input id="modal_customer_address" x-model="newCustomer.address" class="field text-sm w-full" placeholder="هەولێر..." @keydown.enter.prevent="saveQuickCustomer()">
+                </div>
+
+                <div x-show="customerModalError" class="text-xs text-rose-600 font-semibold bg-rose-50 p-2.5 rounded-lg border border-rose-200" x-text="customerModalError"></div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" @click="showCustomerModal = false" class="btn btn-ghost !py-1.5 text-xs">پاشگەزبوونەوە</button>
+                    <button type="button" @click="saveQuickCustomer()" :disabled="savingCustomer" class="btn btn-primary !py-1.5 !px-5 text-xs font-bold shadow-sm">
+                        <span x-show="!savingCustomer">تۆمارکردن</span>
+                        <span x-show="savingCustomer">تۆماردەکرێت...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </form>
 
 @push('scripts')
 <script>
-function orderForm(initialLines, initialDiscount, initialCurrency, customerDiscounts) {
+function orderForm(initialLines, initialDiscount, initialCurrency, customerDiscounts, initialCustomersList) {
     return {
         lines: initialLines,
         discountPercent: initialDiscount,
         currency: initialCurrency,
         customerId: '{{ old('customer_id', $order->customer_id) }}',
         customerDiscounts: customerDiscounts,
+        customersList: initialCustomersList,
+        showCustomerModal: false,
+        savingCustomer: false,
+        customerModalError: '',
+        newCustomer: { name: '', phone: '', address: '' },
         prepaid: {{ (float) old('prepaid_amount', $order->exists ? $order->prepaid_amount : 0) }},
         prepaidManuallySet: {{ ($order->exists || old('prepaid_amount') !== null) ? 'true' : 'false' }},
         exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ?: ($rate ?: 150000)) }}',
         fetchingRate: false,
+
+        openCustomerModal() {
+            this.newCustomer = { name: '', phone: '', address: '' };
+            this.customerModalError = '';
+            this.showCustomerModal = true;
+            this.$nextTick(() => {
+                const el = document.getElementById('modal_customer_name');
+                if (el) el.focus();
+            });
+        },
+
+        onCustomerSelectChange(e) {
+            if (this.customerId === '__NEW__') {
+                this.customerId = '';
+                this.openCustomerModal();
+            } else {
+                this.applyCustomerDiscount();
+            }
+        },
+
+        saveQuickCustomer() {
+            if (!this.newCustomer.name.trim()) {
+                this.customerModalError = 'تکایە ناوی کڕیار بنووسە.';
+                return;
+            }
+            this.savingCustomer = true;
+            this.customerModalError = '';
+
+            fetch('{{ route('customers.quick') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify(this.newCustomer)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok && data.customer) {
+                    this.customersList.unshift(data.customer);
+                    this.customerId = data.customer.id;
+                    this.customerDiscounts[data.customer.id] = data.customer.discount_percent;
+                    this.applyCustomerDiscount();
+                    this.showCustomerModal = false;
+                } else {
+                    this.customerModalError = data.message || 'هەڵەیەک ڕوویدا لە کاتی تۆمارکردن.';
+                }
+            })
+            .catch(() => {
+                this.customerModalError = 'نەتوانرا پەیوەندی بە سێرڤەرەوە بکرێت.';
+            })
+            .finally(() => {
+                this.savingCustomer = false;
+            });
+        },
 
         init() {
             if (!this.prepaidManuallySet) {

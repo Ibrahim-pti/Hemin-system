@@ -81,6 +81,7 @@ Route::middleware('auth')->group(function () {
 
     // ── کڕیار و وەسڵ ──
     Route::middleware('can:manage_customers')->group(function () {
+        Route::post('/customers/quick', [CustomerController::class, 'quickStore'])->name('customers.quick');
         Route::resource('customers', CustomerController::class);
         Route::get('/customers/{customer}/statement', [CustomerController::class, 'statement'])->name('customers.statement');
     });

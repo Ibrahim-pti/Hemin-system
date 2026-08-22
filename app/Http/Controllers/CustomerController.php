@@ -37,6 +37,34 @@ class CustomerController extends Controller
         return redirect()->route('customers.show', $customer)->with('ok', 'کڕیار زیادکرا.');
     }
 
+    /** دروستکردنی خێرای کڕیار بەبێ بەجێهێشتنی فۆرمی وەسڵ (AJAX) */
+    public function quickStore(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'address' => ['nullable', 'string', 'max:255'],
+        ], [], [
+            'name' => 'ناوی کڕیار',
+            'phone' => 'ژمارەی مۆبایل',
+        ]);
+
+        $data['opening_currency'] = 'IQD';
+        $data['is_active'] = true;
+
+        $customer = Customer::create($data);
+
+        return response()->json([
+            'ok' => true,
+            'customer' => [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'phone' => $customer->phone,
+                'discount_percent' => (float) $customer->discount_percent,
+            ],
+        ]);
+    }
+
     public function show(Customer $customer): View
     {
         return view('customers.show', [
