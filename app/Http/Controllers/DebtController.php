@@ -81,7 +81,7 @@ class DebtController extends Controller
                     $q->whereNotIn('status', ['draft', 'cancelled'])->with('payments')->orderBy('order_date', 'asc');
                 },
                 'payments' => function ($q) {
-                    $q->where('direction', 'in')->orderBy('payment_date', 'asc');
+                    $q->where('direction', 'in')->orderBy('paid_at', 'asc');
                 },
             ])->find($request->customer);
 
