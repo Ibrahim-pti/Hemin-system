@@ -3,143 +3,330 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>وەسڵی ژمارە {{ $order->invoice_no }}</title>
+    <title>وەسڵی ژمارە {{ $order->invoice_no }} — {{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}</title>
     @vite(['resources/css/app.css'])
     <style>
-        /* وەسڵ — وێنەی دەفتەرە چاپکراوەکەی کارگە. */
-        .sheet { width: 190mm; margin: 0 auto; background: #fff; }
-        .inv-table { width: 100%; border-collapse: collapse; }
-        .inv-table th, .inv-table td { border: 1px solid #1e3a5f; padding: 6px 8px; }
-        .inv-table th { background: #f6ece4; font-weight: 600; text-align: center; }
-        .dotted { border-bottom: 1px dotted #64748b; display: inline-block; min-width: 120px; }
+        @page {
+            size: A4 portrait;
+            margin: 10mm;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+            color: #0f172a;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .receipt-sheet {
+            width: 190mm;
+            min-height: 260mm;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #1e3a5f;
+            border-radius: 4px;
+            padding: 16px 20px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .inv-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1.5px solid #1e3a5f;
+        }
+
+        .inv-table th, .inv-table td {
+            border: 1px solid #1e3a5f;
+            padding: 6px 8px;
+            font-size: 13px;
+        }
+
+        .inv-table th {
+            background-color: #f7ede2 !important;
+            font-weight: 700;
+            color: #1e3a5f;
+            text-align: center;
+        }
+
+        .dotted-line {
+            border-bottom: 1.5px dotted #64748b;
+            display: inline-block;
+            padding-bottom: 1px;
+        }
+
+        .side-printer-text {
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: rotate(-90deg) translateX(50%);
+            transform-origin: left center;
+            font-size: 10px;
+            color: #dc2626;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
 
         @media print {
-            .no-print { display: none !important; }
-            .sheet { width: auto; }
-            @page { size: A4; margin: 8mm; }
+            body {
+                background: none !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .receipt-sheet {
+                width: 100% !important;
+                min-height: auto !important;
+                box-shadow: none !important;
+                border: 2px solid #1e3a5f !important;
+                margin: 0 !important;
+                padding: 12px 16px !important;
+            }
         }
     </style>
 </head>
-<body class="bg-[--color-canvas] p-4">
+<body class="p-4 sm:p-6">
 
-    {{-- تووڵامرازی چاپ --}}
-    <div class="no-print mx-auto mb-4 flex max-w-[190mm] gap-2">
-        <button onclick="window.print()" class="btn btn-primary">چاپکردن</button>
-        <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost">گەڕانەوە</a>
+    {{-- دوگمەکانی سەرەوە بۆ چاپ --}}
+    <div class="no-print mx-auto mb-4 flex max-w-[190mm] items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+            <button onclick="window.print()" class="btn btn-primary !py-2 !px-5 text-sm shadow-sm">
+                🖨️ چاپکردنی وەسڵ
+            </button>
+            <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost !py-2 text-sm bg-white border border-slate-200">
+                گەڕانەوە بۆ وەسڵ
+            </a>
+        </div>
+        <div class="text-xs text-slate-500 font-medium">
+            دەتوانیت ڕاستەوخۆ بە قەبارەی A4 یان A5 چاپ بکەیت
+        </div>
     </div>
 
-    <div class="sheet border border-[--color-line] p-6">
+    <div class="receipt-sheet">
 
-        {{-- سەردێڕ --}}
-        <div class="flex items-start justify-between border-b-2 border-[#b91c1c] pb-3">
-            <div class="text-xs leading-6">
-                <div>ژ. تەلەفۆن: <span class="num" dir="ltr">{{ $settings['company_phone'] ?? '' }}</span></div>
-                <div><span class="num" dir="ltr">{{ $settings['company_phone2'] ?? '' }}</span></div>
-            </div>
+        {{-- دەقی پەراوێزی چاپخانە (وەک وەسڵە ئەسڵییەکە) --}}
+        <div class="side-printer-text">
+            چاپخانەی نێخاڵ 0750 460 79 57
+        </div>
 
-            <div class="text-center">
-                <h1 class="text-2xl font-bold text-[#b91c1c]">{{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}</h1>
-                <p class="mt-1 text-xs">{{ $settings['company_tagline'] ?? '' }}</p>
-            </div>
+        {{-- بەشی سەرەوە / سەردێڕ --}}
+        <div class="border-b-2 border-[#b91c1c] pb-3">
+            <div class="flex items-center justify-between">
+                {{-- ژمارەی مۆبایل و خاوەن کارگە لە دەستە ڕاست --}}
+                <div class="text-right text-xs leading-5">
+                    <div class="font-bold text-slate-800">
+                        هێمن:
+                        <span class="num font-bold text-slate-900" dir="ltr">{{ $settings['company_phone'] ?? '٠٧٥٠٤٥٦٨٥٥٦' }}</span>
+                        -
+                        <span class="num font-bold text-slate-900" dir="ltr">{{ $settings['company_phone2'] ?? '٠٧٥٠١٢٠١١١٠' }}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-600 mt-0.5">
+                        {{ $settings['company_address'] ?? 'هەولێر — ١٠٠م بەرامبەر گۆڕستانی شێخ ئەحمەد' }}
+                    </div>
+                </div>
 
-            <div class="text-left text-xs leading-6">
-                <div class="inline-block rounded border border-[#b91c1c] px-2 py-1 font-bold text-[#b91c1c]">
-                    ژمارە: <span class="num">{{ $order->invoice_no }}</span>
+                {{-- ناوی سەرەکی کارگە لە ناوەڕاست --}}
+                <div class="text-center flex-1 px-4">
+                    <h1 class="text-2xl sm:text-3xl font-black text-[#b91c1c] tracking-tight">
+                        {{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}
+                    </h1>
+                    <p class="text-[11px] sm:text-xs font-semibold text-slate-800 mt-0.5">
+                        {{ $settings['company_tagline'] ?? 'بۆ دروست کردنی دەرگا و مەحەجەرە و کەپر و مەسعەد بە شێوازێکی ئەندەسی' }}
+                    </p>
+                </div>
+
+                {{-- ژمارەی پسوولە لە چەپ --}}
+                <div class="text-left">
+                    <div class="inline-block rounded border-2 border-[#b91c1c] bg-red-50/50 px-3 py-1 text-sm font-bold text-[#b91c1c]">
+                        No. <span class="num">{{ $order->invoice_no }}</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <p class="mt-1 text-center text-xs">{{ $settings['company_address'] ?? '' }}</p>
+        {{-- زانیاری کڕیار و بەروار بە شێوازی خەتی خاڵخاڵ --}}
+        <div class="mt-3.5 mb-2 grid grid-cols-12 gap-2 text-[13px]">
+            <div class="col-span-5 flex items-baseline gap-1.5">
+                <span class="font-bold text-slate-800 shrink-0">بەڕێز:</span>
+                <span class="dotted-line font-bold text-slate-900 flex-1 px-1">{{ $order->customer?->name }}</span>
+            </div>
 
-        {{-- زانیاری کڕیار --}}
-        <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
-            <div>بەڕێز: <span class="dotted font-medium">{{ $order->customer?->name }}</span></div>
-            <div>ناونیشان: <span class="dotted">{{ $order->address_snapshot ?? $order->customer->address }}</span></div>
-            <div>بەروار: <span class="dotted num">{{ fmt_date($order->order_date) }}</span></div>
+            <div class="col-span-4 flex items-baseline gap-1.5">
+                <span class="font-bold text-slate-800 shrink-0">ناونیشان:</span>
+                <span class="dotted-line text-slate-800 flex-1 px-1 truncate">
+                    {{ $order->address_snapshot ?: ($order->customer?->address ?: '—') }}
+                </span>
+            </div>
+
+            <div class="col-span-3 flex items-baseline gap-1.5">
+                <span class="font-bold text-slate-800 shrink-0">بەروار:</span>
+                <span class="dotted-line num font-bold text-slate-900 flex-1 px-1 text-center" dir="ltr">
+                    {{ $order->order_date?->format('Y / m / d') }}
+                </span>
+            </div>
         </div>
 
-        {{-- خشتەی ناوەڕۆک — هەمان ڕیزبەندی دەفتەرەکە --}}
-        <table class="inv-table mt-3 text-sm">
+        {{-- خشتەی سەرەکی وەسڵ (ڕێک وەک دەفتەرە چاپکراوەکە) --}}
+        <table class="inv-table mt-3">
             <thead>
                 <tr>
-                    <th style="width: 18%">بڕی پارە<br><span class="text-xs font-normal">دینار</span></th>
-                    <th>ناوەڕۆک</th>
-                    <th style="width: 12%">ژمارە</th>
-                    <th style="width: 18%">نرخ<br><span class="text-xs font-normal">دینار</span></th>
+                    <th style="width: 20%;" class="leading-snug">
+                        بڕی پارە<br>
+                        <span class="text-[11px] font-normal text-slate-600">
+                            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                        </span>
+                    </th>
+                    <th style="text-align: right; padding-right: 12px;">ناوەڕۆک</th>
+                    <th style="width: 10%;">ژمارە</th>
+                    <th style="width: 18%;" class="leading-snug">
+                        نرخ<br>
+                        <span class="text-[11px] font-normal text-slate-600">
+                            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                        </span>
+                    </th>
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $filledRows = $order->items->count();
+                    $minRows = 11;
+                @endphp
+
                 @foreach ($order->items as $line)
-                    <tr>
-                        <td class="num text-center font-medium">{{ fmt_num($line->line_total) }}</td>
-                        <td>
-                            {{ $line->description }}
-                            @if ($line->pricing_mode !== 'count')
-                                <span class="num text-xs text-[--color-ink-soft]">
-                                    ({{ $line->measurement_label }} = {{ fmt_qty($line->computed_qty) }} {{ $line->mode_unit }})
-                                </span>
-                            @endif
-                            @if ($line->note)
-                                <span class="text-xs text-[--color-ink-soft]">— {{ $line->note }}</span>
-                            @endif
+                    <tr style="height: 38px;">
+                        {{-- بڕی پارە --}}
+                        <td class="num text-center font-bold text-slate-900 text-sm">
+                            {{ fmt_num($line->line_total) }}
                         </td>
-                        <td class="num text-center">{{ fmt_qty($line->qty) }}</td>
-                        <td class="num text-center">{{ fmt_num($line->unit_price) }}</td>
+
+                        {{-- ناوەڕۆک + وێنە ئەگەر هەبێت --}}
+                        <td>
+                            <div class="flex items-center gap-2">
+                                @if ($line->imageUrl())
+                                    <img src="{{ $line->imageUrl() }}"
+                                         class="size-7 rounded object-cover border border-slate-300 shrink-0"
+                                         alt="دیزاین">
+                                @endif
+                                <span class="font-bold text-slate-900">{{ $line->description }}</span>
+                                @if ($line->pricing_mode !== 'count' && $line->measurement_label)
+                                    <span class="num text-xs text-slate-600">
+                                        ({{ $line->measurement_label }} = {{ fmt_qty($line->computed_qty) }} {{ $line->mode_unit }})
+                                    </span>
+                                @endif
+                                @if ($line->note)
+                                    <span class="text-xs text-slate-500">— {{ $line->note }}</span>
+                                @endif
+                            </div>
+                        </td>
+
+                        {{-- ژمارە --}}
+                        <td class="num text-center font-semibold text-slate-800">
+                            {{ fmt_qty($line->qty) }}
+                        </td>
+
+                        {{-- نرخ --}}
+                        <td class="num text-center font-semibold text-slate-800">
+                            {{ fmt_num($line->unit_price) }}
+                        </td>
                     </tr>
                 @endforeach
 
-                {{-- دێڕی بەتاڵ تا خشتەکە وەک دەفتەرەکە پڕ بێت --}}
-                @for ($i = $order->items->count(); $i < 10; $i++)
-                    <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+                {{-- دێڕی بەتاڵ بۆ ئەوەی وەسڵەکە وەک دەفتەرە ئەسڵییەکە پڕ بێت --}}
+                @for ($i = $filledRows; $i < $minRows; $i++)
+                    <tr style="height: 34px;">
+                        <td>&nbsp;</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
                 @endfor
-            </tbody>
-        </table>
 
-        {{-- کۆکان --}}
-        <table class="inv-table mt-0 text-sm">
-            <tbody>
-                <tr>
-                    <td class="num text-center font-bold" style="width: 18%">{{ fmt_num($order->subtotal) }}</td>
-                    <td class="text-left font-bold">کۆی گشتی</td>
+                {{-- کۆی گشتی --}}
+                <tr class="bg-slate-50/50 font-bold border-t-2 border-[#1e3a5f]">
+                    <td class="num text-center text-base font-black text-slate-900 bg-[#f7ede2]">
+                        {{ fmt_num($order->subtotal) }}
+                    </td>
+                    <td colspan="3" class="text-left px-3 text-sm font-bold text-slate-900">
+                        کۆی گشتی:
+                    </td>
                 </tr>
 
+                {{-- داشکاندن ئەگەر هەبێت --}}
                 @if ($order->discount_amount > 0)
                     <tr>
-                        <td class="num text-center">{{ fmt_num($order->discount_amount) }}</td>
-                        <td class="text-left">داشکاندن {{ $order->discount_percent > 0 ? '('.fmt_num($order->discount_percent, 2).'٪)' : '' }}</td>
+                        <td class="num text-center font-semibold text-rose-700">
+                            - {{ fmt_num($order->discount_amount) }}
+                        </td>
+                        <td colspan="3" class="text-left px-3 text-xs font-semibold text-rose-700">
+                            داشکاندن {{ $order->discount_percent > 0 ? '('.fmt_num($order->discount_percent, 2).'٪)' : '' }}:
+                        </td>
                     </tr>
-                    <tr>
-                        <td class="num text-center font-bold">{{ fmt_num($order->total) }}</td>
-                        <td class="text-left font-bold">دوای داشکاندن</td>
+                    <tr class="bg-slate-50 font-bold">
+                        <td class="num text-center text-sm font-bold text-slate-900">
+                            {{ fmt_num($order->total) }}
+                        </td>
+                        <td colspan="3" class="text-left px-3 text-xs font-bold text-slate-900">
+                            کۆی گشتی دوای داشکاندن:
+                        </td>
                     </tr>
                 @endif
 
+                {{-- پێشەکی و ماوە --}}
                 @php $paid = $order->paidAmount(); @endphp
-                @if ($paid > 0)
+                @if ($paid > 0 || $order->remaining() > 0)
                     <tr>
-                        <td class="num text-center">{{ fmt_num($paid) }}</td>
-                        <td class="text-left">پێشەکی / دراوە</td>
+                        <td class="num text-center font-bold text-emerald-700">
+                            {{ fmt_num($paid) }}
+                        </td>
+                        <td colspan="3" class="text-left px-3 text-xs font-semibold text-emerald-700">
+                            پێشەکی / پارەی دراو:
+                        </td>
                     </tr>
-                    <tr>
-                        <td class="num text-center font-bold">{{ fmt_num($order->remaining()) }}</td>
-                        <td class="text-left font-bold">ماوە</td>
+                    <tr class="bg-red-50/30">
+                        <td class="num text-center font-black text-sm {{ $order->remaining() > 0 ? 'text-[#b91c1c]' : 'text-emerald-700' }}">
+                            {{ fmt_num($order->remaining()) }}
+                        </td>
+                        <td colspan="3" class="text-left px-3 text-xs font-bold {{ $order->remaining() > 0 ? 'text-[#b91c1c]' : 'text-emerald-700' }}">
+                            ماوە (قەرز):
+                        </td>
                     </tr>
                 @endif
             </tbody>
         </table>
 
         {{-- بڕی پارە بە نووسین --}}
-        <p class="mt-3 text-sm">
-            بە نووسین:
-            <span class="font-medium">{{ \App\Support\KurdishNumber::spell((int) round((float) $order->total)) }}
-            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
-        </p>
+        <div class="mt-3 flex items-center justify-between text-xs sm:text-sm">
+            <div class="flex items-baseline gap-1.5">
+                <span class="font-bold text-slate-800">کۆی گشتی بە نووسین:</span>
+                <span class="font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                    {{ \App\Support\KurdishNumber::spell((int) round((float) $order->total)) }}
+                    {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                </span>
+            </div>
 
-        {{-- ژێرەوە --}}
-        <div class="mt-6 flex items-end justify-between text-sm">
-            <div class="font-medium text-[#b91c1c]">{{ $settings['invoice_footer'] ?? 'هەڵە دەگەڕێتەوە بۆ هەردوو لا' }}</div>
-            <div>ئیمزا: <span class="dotted">&nbsp;</span></div>
+            @if ($order->delivery_date)
+                <div class="flex items-baseline gap-1.5">
+                    <span class="text-slate-600 font-medium">بەرواری گەیاندن:</span>
+                    <span class="num font-bold text-slate-800">{{ fmt_date($order->delivery_date) }}</span>
+                </div>
+            @endif
         </div>
+
+        {{-- ژێرەوەی وەسڵ: هەڵە دەگەڕێتەوە بۆ هەردوو لا و ئیمزا --}}
+        <div class="mt-6 pt-3 border-t border-slate-200 flex items-end justify-between text-sm">
+            <div class="font-black text-[#1e3a5f] text-sm">
+                {{ $settings['invoice_footer'] ?? 'هەڵە دەگەڕێتەوە بۆ هەردوو لا' }}
+            </div>
+
+            <div class="flex items-baseline gap-2">
+                <span class="font-bold text-slate-800">ئیمزا:</span>
+                <span class="dotted-line w-32">&nbsp;</span>
+            </div>
+        </div>
+
     </div>
 
 </body>

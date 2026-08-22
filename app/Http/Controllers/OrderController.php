@@ -66,7 +66,7 @@ class OrderController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            $this->syncLines($order, $data['lines']);
+            $this->syncLines($order, $data['lines'], $request->file('lines', []));
             $this->recordPrepaid($order, $customer, (float) ($data['prepaid_amount'] ?? 0));
 
             return $order;
@@ -118,10 +118,10 @@ class OrderController extends Controller
 
         $data = $this->validated($request, $order);
 
-        DB::transaction(function () use ($order, $data) {
+        DB::transaction(function () use ($order, $data, $request) {
             $order->update($this->header($data, Customer::find($data['customer_id'])));
             $order->items()->delete();
-            $this->syncLines($order, $data['lines']);
+            $this->syncLines($order, $data['lines'], $request->file('lines', []));
         });
 
         return redirect()->route('orders.show', $order)->with('ok', 'وەسڵەکە نوێکرایەوە.');
@@ -185,6 +185,8 @@ class OrderController extends Controller
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.description' => ['required', 'string', 'max:255'],
+            'lines.*.image' => ['nullable', 'image', 'max:5120'],
+            'lines.*.existing_image' => ['nullable', 'string'],
             'lines.*.item_id' => ['nullable', 'exists:items,id'],
             'lines.*.pricing_mode' => ['required', 'in:area,length,count'],
             'lines.*.width' => ['nullable', 'numeric', 'min:0'],
@@ -199,6 +201,7 @@ class OrderController extends Controller
         ], [
             'customer_id' => 'کڕیار',
             'lines.*.description' => 'ناوەڕۆک',
+            'lines.*.image' => 'وێنە',
         ]);
     }
 
@@ -242,9 +245,9 @@ class OrderController extends Controller
         return round($computed * (float) $line['unit_price'], 2);
     }
 
-    private function syncLines(Order $order, array $lines): void
+    private function syncLines(Order $order, array $lines, array $lineFiles = []): void
     {
-        foreach ($lines as $line) {
+        foreach ($lines as $index => $line) {
             $computed = OrderItem::compute(
                 $line['pricing_mode'],
                 isset($line['width']) ? (float) $line['width'] : null,
@@ -252,9 +255,17 @@ class OrderController extends Controller
                 (float) $line['qty'],
             );
 
+            $imagePath = null;
+            if (isset($lineFiles[$index]['image']) && $lineFiles[$index]['image']->isValid()) {
+                $imagePath = $lineFiles[$index]['image']->store('orders', 'public');
+            } elseif (!empty($line['existing_image'])) {
+                $imagePath = $line['existing_image'];
+            }
+
             OrderItem::create([
                 'order_id' => $order->id,
                 'description' => $line['description'],
+                'image' => $imagePath,
                 'item_id' => $line['item_id'] ?? null,
                 'pricing_mode' => $line['pricing_mode'],
                 'width' => $line['width'] ?? null,

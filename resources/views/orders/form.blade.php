@@ -7,6 +7,8 @@
     $initialLines = old('lines', $order->exists
         ? $order->items->map(fn ($l) => [
             'description' => $l->description,
+            'image' => $l->image,
+            'preview' => $l->imageUrl(),
             'item_id' => (string) ($l->item_id ?? ''),
             'pricing_mode' => $l->pricing_mode,
             'width' => $l->width !== null ? (string) (float) $l->width : '',
@@ -15,11 +17,12 @@
             'unit_price' => (string) (float) $l->unit_price,
             'note' => $l->note ?? '',
           ])->all()
-        : [['description' => '', 'item_id' => '', 'pricing_mode' => 'area', 'width' => '', 'height' => '', 'qty' => '1', 'unit_price' => '', 'note' => '']]);
+        : [['description' => '', 'image' => '', 'preview' => null, 'item_id' => '', 'pricing_mode' => 'area', 'width' => '', 'height' => '', 'qty' => '1', 'unit_price' => '', 'note' => '']]);
 @endphp
 
 <form method="POST"
       action="{{ $order->exists ? route('orders.update', $order) : route('orders.store') }}"
+      enctype="multipart/form-data"
       x-data="orderForm(
           @js($initialLines),
           @js((float) old('discount_percent', $order->discount_percent ?: 0)),
@@ -106,9 +109,10 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="table" style="min-width: 900px">
+            <table class="table" style="min-width: 950px">
                 <thead>
                     <tr>
+                        <th class="w-14 text-center">وێنە</th>
                         <th class="w-[22%]">ناوەڕۆک</th>
                         <th class="w-32">شێواز</th>
                         <th class="num w-24">پانی (م)</th>
@@ -123,6 +127,43 @@
                 <tbody>
                     <template x-for="(line, index) in lines" :key="index">
                         <tr>
+                            {{-- وێنەی کاڵا / دیزاین --}}
+                            <td class="text-center !py-1">
+                                <div class="flex items-center justify-center">
+                                    <input type="file"
+                                           :name="`lines[${index}][image]`"
+                                           :id="`order_line_image_${index}`"
+                                           accept="image/*"
+                                           class="hidden"
+                                           @change="onImageChange($event, line)">
+                                    <input type="hidden" :name="`lines[${index}][existing_image]`" :value="line.image || ''">
+
+                                    <template x-if="line.preview">
+                                        <div class="relative group size-8 rounded-lg overflow-hidden border border-blue-400 shadow-2xs shrink-0">
+                                            <img :src="line.preview" class="size-full object-cover cursor-pointer"
+                                                 @click="document.getElementById(`order_line_image_${index}`).click()"
+                                                 title="گۆڕینی وێنە">
+                                            <button type="button" @click="removeImage(line, index)"
+                                                    class="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full size-3.5 flex items-center justify-center text-[9px] shadow"
+                                                    title="لابردنی وێنە">×</button>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="!line.preview">
+                                        <button type="button"
+                                                @click="document.getElementById(`order_line_image_${index}`).click()"
+                                                class="size-8 rounded-lg border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all shrink-0"
+                                                title="دانانی وێنەی دیزاین">
+                                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                                <polyline points="21 15 16 10 5 21"/>
+                                            </svg>
+                                        </button>
+                                    </template>
+                                </div>
+                            </td>
+
                             <td>
                                 <input :name="`lines[${index}][description]`" x-model="line.description" required
                                        class="field !py-1" placeholder="دەرگای ئاسنی هەندەسی">
@@ -251,10 +292,26 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
             // شێوازی دێڕی نوێ لە دوایین دێڕەوە وەردەگیرێت — خێراتر بۆ نووسین.
             const last = this.lines[this.lines.length - 1];
             this.lines.push({
-                description: '', item_id: '',
+                description: '', image: '', preview: null, item_id: '',
                 pricing_mode: last ? last.pricing_mode : 'area',
                 width: '', height: '', qty: '1', unit_price: '', note: '',
             });
+        },
+
+        onImageChange(e, line) {
+            const file = e.target.files[0];
+            if (file) {
+                line.preview = URL.createObjectURL(file);
+            } else {
+                line.preview = null;
+            }
+        },
+
+        removeImage(line, index) {
+            line.preview = null;
+            line.image = '';
+            const input = document.getElementById('order_line_image_' + index);
+            if (input) input.value = '';
         },
 
         removeLine(index) {

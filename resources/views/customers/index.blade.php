@@ -40,8 +40,16 @@
                         <td class="num font-medium {{ $balance > 0 ? 'text-[--color-danger]' : '' }}">
                             {{ fmt_money($balance) }}
                         </td>
-                        <td class="whitespace-nowrap text-left">
-                            <a href="{{ route('customers.statement', $customer) }}" class="text-sm text-[--color-brand-700]">کەشف حساب</a>
+                        <td class="whitespace-nowrap text-left flex items-center justify-end gap-2">
+                            <a href="{{ route('orders.create', ['customer' => $customer->id]) }}" class="btn btn-primary !py-1 !px-2 text-xs">
+                                + وەسڵ
+                            </a>
+                            <a href="{{ route('customers.show', $customer) }}" class="btn btn-ghost !py-1 !px-2 text-xs">
+                                پرۆفایل
+                            </a>
+                            <a href="{{ route('customers.statement', $customer) }}" class="btn btn-ghost !py-1 !px-2 text-xs text-[--color-brand-700]">
+                                کەشف حساب
+                            </a>
                         </td>
                     </tr>
                 @empty

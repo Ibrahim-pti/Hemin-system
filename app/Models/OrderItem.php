@@ -11,9 +11,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OrderItem extends Model
 {
     protected $fillable = [
-        'order_id', 'description', 'item_id', 'pricing_mode',
+        'order_id', 'description', 'image', 'item_id', 'pricing_mode',
         'width', 'height', 'qty', 'computed_qty', 'unit_price', 'line_total', 'note',
     ];
+
+    public function imageUrl(): ?string
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        return $this->item?->imageUrl();
+    }
 
     protected function casts(): array
     {

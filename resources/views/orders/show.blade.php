@@ -33,10 +33,20 @@
                     @foreach ($order->items as $line)
                         <tr>
                             <td>
-                                {{ $line->description }}
-                                @if ($line->note)
-                                    <span class="block text-xs text-[--color-ink-soft]">{{ $line->note }}</span>
-                                @endif
+                                <div class="flex items-center gap-3">
+                                    @if ($line->imageUrl())
+                                        <img src="{{ $line->imageUrl() }}"
+                                             class="size-10 rounded-lg object-cover border border-slate-200 cursor-pointer hover:scale-125 transition-transform shrink-0"
+                                             onclick="window.open(this.src, '_blank')"
+                                             title="کرتە بکە بۆ بینینی تەواوی وێنە">
+                                    @endif
+                                    <div>
+                                        <span class="font-medium">{{ $line->description }}</span>
+                                        @if ($line->note)
+                                            <span class="block text-xs text-[--color-ink-soft]">{{ $line->note }}</span>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
                             <td class="num text-[--color-ink-soft]">{{ $line->measurement_label }}</td>
                             <td class="num">{{ fmt_qty($line->qty) }}</td>
