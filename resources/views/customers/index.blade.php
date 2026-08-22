@@ -64,13 +64,11 @@
                     <th class="py-3 px-4 text-center">ژمارەی کڕیار</th>
                     <th class="py-3 px-4">ناو</th>
                     <th class="py-3 px-4 text-center">ژ. مۆبایل</th>
-                    <th class="py-3 px-4 text-center">قەرز / باڵانس</th>
                     <th class="py-3 px-4 text-center w-36">کردار</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-sm">
                 @forelse ($customers as $index => $customer)
-                    @php $bal = $customer->balance(); @endphp
                     <tr class="hover:bg-slate-50/70 transition-colors">
                         <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
                             {{ $customers->firstItem() + $index }}
@@ -90,9 +88,6 @@
                         </td>
                         <td class="py-3.5 px-4 text-center num font-medium text-slate-600" dir="ltr">
                             {{ $customer->phone ?: '-' }}
-                        </td>
-                        <td class="py-3.5 px-4 text-center num font-bold {{ $bal > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
-                            {{ $bal > 0 ? fmt_money($bal) : 'حساب پاکە' }}
                         </td>
                         <td class="py-3.5 px-4 text-center whitespace-nowrap">
                             <div class="flex items-center justify-center gap-1.5">
@@ -124,7 +119,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="py-10 text-center text-slate-400 text-sm font-medium">
+                        <td colspan="5" class="py-10 text-center text-slate-400 text-sm font-medium">
                             هیچ کڕیارێک نەدۆزرایەوە.
                         </td>
                     </tr>
