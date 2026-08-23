@@ -36,6 +36,7 @@
           action="{{ $item->exists ? route('items.update', $item) : route('items.store') }}"
           x-data="{
               selectedUnit: '{{ old('unit_id', $item->unit_id) }}',
+              previousUnit: '{{ old('unit_id', $item->unit_id) }}',
               units: [
                   @foreach ($units as $unit)
                       { id: '{{ $unit->id }}', name: '{{ $unit->name }}' },
@@ -48,6 +49,20 @@
               get unitText() {
                   const u = this.units.find(item => String(item.id) === String(this.selectedUnit));
                   return u ? u.name : '';
+              },
+
+              onUnitChange(e) {
+                  if (this.selectedUnit === '__NEW__') {
+                      this.newUnitName = '';
+                      this.showNewUnitModal = true;
+                  } else {
+                      this.previousUnit = this.selectedUnit;
+                  }
+              },
+
+              cancelUnitModal() {
+                  this.showNewUnitModal = false;
+                  this.selectedUnit = this.previousUnit;
               },
 
               async addUnit() {
@@ -70,11 +85,13 @@
                               this.units.push({ id: String(data.id), name: data.name });
                           }
                           this.selectedUnit = String(data.id);
+                          this.previousUnit = String(data.id);
                           this.newUnitName = '';
                           this.showNewUnitModal = false;
                       }
                   } catch (err) {
                       alert('کێشەیەک ڕوویدا لە زیادکردنی یەکە');
+                      this.selectedUnit = this.previousUnit;
                   } finally {
                       this.newUnitLoading = false;
                   }
@@ -119,28 +136,28 @@
                     @error('name') <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p> @enderror
                 </div>
 
-                {{-- ڕیزی ٢: یەکە (لەگەڵ زیادکردنی خێرا)، بڕ، تێچووی کڕین و بەرواری کڕین (٤ ستوون) --}}
+                {{-- ڕیزی ٢: یەکە (لەگەڵ بژاردەی زیادکردن لە ناو درۆپداون)، بڕ، تێچووی کڕین و بەرواری کڕین (٤ ستوون) --}}
                 <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem;">
 
-                    {{-- یەکە لەگەڵ دوگمەی زیادکردن --}}
+                    {{-- یەکە --}}
                     <div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.45rem;">
-                            <label style="font-size: 0.85rem; font-weight: 700; color: #334155;" for="unit_id">
-                                یەکە <span style="color: #ef4444;">*</span>
-                            </label>
-                            <button type="button"
-                                    @click="showNewUnitModal = true"
-                                    style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 0.72rem; font-weight: 800; padding: 0.15rem 0.5rem; border-radius: 0.4rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
-                                <span>+</span>
-                                <span>زیادکردنی یەکە</span>
-                            </button>
-                        </div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 0.45rem; display: block;" for="unit_id">
+                            یەکە <span style="color: #ef4444;">*</span>
+                        </label>
 
-                        <select id="unit_id" name="unit_id" x-model="selectedUnit" class="field" required style="width: 100%; padding: 0.75rem 1rem; font-weight: 600;">
+                        <select id="unit_id" name="unit_id"
+                                x-model="selectedUnit"
+                                @change="onUnitChange($event)"
+                                class="field"
+                                required
+                                style="width: 100%; padding: 0.75rem 1rem; font-weight: 600;">
                             <option value="">— هەڵبژێرە (دانە، تەن...) —</option>
                             <template x-for="u in units" :key="u.id">
                                 <option :value="u.id" x-text="u.name" :selected="String(u.id) === String(selectedUnit)"></option>
                             </template>
+                            <option value="__NEW__" style="color: #2563eb; font-weight: 800; background: #eff6ff;">
+                                ➕ + زیادکردنی یەکەی نوێ...
+                            </option>
                         </select>
                         @error('unit_id') <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p> @enderror
                     </div>
@@ -250,12 +267,12 @@
             <div x-show="showNewUnitModal"
                  x-cloak
                  style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);"
-                 @keydown.escape.window="showNewUnitModal = false">
+                 @keydown.escape.window="cancelUnitModal()">
                 <div style="background: #ffffff; border-radius: 1rem; width: 100%; max-width: 24rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; margin: auto; position: relative;"
-                     @click.outside="showNewUnitModal = false">
+                     @click.outside="cancelUnitModal()">
 
                     <div style="padding: 1rem 1.25rem; background: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
-                        <button type="button" @click="showNewUnitModal = false" style="background: none; border: none; color: #ffffff; font-size: 1.1rem; cursor: pointer;">✕</button>
+                        <button type="button" @click="cancelUnitModal()" style="background: none; border: none; color: #ffffff; font-size: 1.1rem; cursor: pointer;">✕</button>
                         <span style="font-weight: 800; font-size: 0.95rem;">زیادکردنی یەکەی نوێ</span>
                     </div>
 
@@ -281,7 +298,7 @@
                                 <span x-show="!newUnitLoading">✓ زیادکردن</span>
                                 <span x-show="newUnitLoading">کەمێک بوەستە...</span>
                             </button>
-                            <button type="button" @click="showNewUnitModal = false"
+                            <button type="button" @click="cancelUnitModal()"
                                     style="padding: 0.55rem 1rem; border-radius: 0.5rem; background: #ffffff; border: 1px solid #cbd5e1; color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer;">
                                 داخستن
                             </button>
