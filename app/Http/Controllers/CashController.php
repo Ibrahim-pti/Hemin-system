@@ -10,53 +10,88 @@ use Illuminate\View\View;
 
 class CashController extends Controller
 {
-    /** حیسابی ڕۆژانەی قاسە. */
+    /** حیسابی ڕۆژانە و مێژووی جوڵەی قاسە. */
     public function index(Request $request): View
     {
-        $date = $request->date('date')?->toDateString() ?? now()->toDateString();
-        $boxes = CashBox::where('is_active', true)->get();
+        $dateFrom = $request->date('from')?->toDateString() ?? ($request->date('date')?->toDateString() ?? now()->toDateString());
+        $dateTo = $request->date('to')?->toDateString() ?? $dateFrom;
+        $boxId = $request->integer('cash_box_id') ?: null;
+        $direction = $request->string('direction')->toString() ?: null;
 
-        $summary = $boxes->map(function (CashBox $box) use ($date) {
-            $totals = $box->dayTotals($date);
-            // باڵانسی سەرەتای ڕۆژ = باڵانسی کۆتایی ڕۆژی پێشوو.
-            $opening = $box->balance(now()->parse($date)->subDay()->toDateString());
+        $boxes = CashBox::where('is_active', true)->get();
+        $defaultBox = $boxes->where('currency', 'IQD')->first() ?? $boxes->first();
+
+        // هەژمارکردنی باڵانسی ڕاستەوخۆی هەموو قاسەکان
+        $boxStats = $boxes->map(function (CashBox $box) use ($dateFrom, $dateTo) {
+            $currentBalance = $box->balance();
+            $periodIn = (float) $box->transactions()->where('direction', 'in')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount');
+            $periodOut = (float) $box->transactions()->where('direction', 'out')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount');
 
             return [
                 'box' => $box,
-                'opening' => $opening,
-                'in' => $totals['in'],
-                'out' => $totals['out'],
-                'expected' => $opening + $totals['in'] - $totals['out'],
-                'closing' => CashClosing::where('cash_box_id', $box->id)
-                    ->whereDate('closing_date', $date)
-                    ->first(),
+                'currentBalance' => $currentBalance,
+                'periodIn' => $periodIn,
+                'periodOut' => $periodOut,
+                'periodNet' => $periodIn - $periodOut,
             ];
         });
 
-        $transactions = CashTransaction::query()
+        $query = CashTransaction::query()
             ->with(['cashBox', 'user', 'reference'])
-            ->whereDate('occurred_at', $date)
-            ->latest('id')
-            ->get();
+            ->whereBetween('occurred_at', [$dateFrom, $dateTo]);
 
-        return view('cash.index', compact('summary', 'transactions', 'boxes', 'date'));
+        if ($boxId) {
+            $query->where('cash_box_id', $boxId);
+        }
+
+        if ($direction && in_array($direction, ['in', 'out'])) {
+            $query->where('direction', $direction);
+        }
+
+        $transactions = $query->latest('occurred_at')->latest('id')->paginate(50)->withQueryString();
+
+        return view('cash.index', compact('boxes', 'defaultBox', 'boxStats', 'transactions', 'dateFrom', 'dateTo', 'boxId', 'direction'));
     }
 
-    /** خەرجی یان داهاتی دەستی — بێ حەقدی. */
+    /** تێکردنی پارە یان دەرهێنانی پارە (خەرجی / کێشکردن بۆ کەسێک). */
     public function storeTransaction(Request $request)
     {
         $data = $request->validate([
             'cash_box_id' => ['required', 'exists:cash_boxes,id'],
             'direction' => ['required', 'in:in,out'],
             'amount' => ['required', 'numeric', 'gt:0'],
-            'category' => ['required', 'in:'.implode(',', array_keys(CashTransaction::CATEGORIES))],
+            'category' => ['nullable', 'string'],
+            'person_name' => ['nullable', 'string', 'max:150'],
             'occurred_at' => ['required', 'date'],
             'note' => ['nullable', 'string'],
-        ], ['amount.gt' => 'بڕ دەبێت لە سفر زیاتر بێت.']);
+        ], ['amount.gt' => 'بڕ دەبێت لە ٠ زیاتر بێت.']);
 
-        CashTransaction::create($data + ['user_id' => auth()->id()]);
+        $category = $data['category'] ?? ($data['direction'] === 'in' ? 'other' : 'expense');
+        if (! array_key_exists($category, CashTransaction::CATEGORIES)) {
+            $category = $data['direction'] === 'in' ? 'other' : 'expense';
+        }
 
-        return back()->with('ok', 'جوڵەی قاسە تۆمارکرا.');
+        $finalNote = '';
+        if (! empty($data['person_name'])) {
+            $finalNote .= 'کەس / لایەن: ' . trim($data['person_name']);
+        }
+        if (! empty($data['note'])) {
+            $finalNote .= ($finalNote ? ' — ' : '') . trim($data['note']);
+        }
+
+        CashTransaction::create([
+            'cash_box_id' => $data['cash_box_id'],
+            'direction' => $data['direction'],
+            'amount' => $data['amount'],
+            'category' => $category,
+            'occurred_at' => $data['occurred_at'],
+            'note' => $finalNote ?: null,
+            'user_id' => auth()->id(),
+        ]);
+
+        $msg = $data['direction'] === 'in' ? 'پارە بە سەرکەوتوویی خرایە ناو قاسە.' : 'پارە بە سەرکەوتوویی لە قاسە دەرکرا.';
+
+        return back()->with('ok', $msg);
     }
 
     /** داخستنی ڕۆژ — بەراوردی باڵانسی سیستەم لەگەڵ ئەوەی ژمێردراو. */
