@@ -23,6 +23,9 @@ class StockCountController extends Controller
                 ->latest('id')
                 ->paginate(20),
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
+            'totalCounts' => StockCount::count(),
+            'postedCounts' => StockCount::where('status', 'posted')->count(),
+            'draftCounts' => StockCount::where('status', 'draft')->count(),
         ]);
     }
 
