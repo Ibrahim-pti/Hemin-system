@@ -3,8 +3,9 @@
 
 @section('actions')
     @can('manage_items')
-        <a href="{{ route('items.create') }}" class="btn btn-primary">
-            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <a href="{{ route('items.create') }}"
+           style="background: #2563eb; color: #ffffff; padding: 0.55rem 1.25rem; border-radius: 0.65rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">
+            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -14,195 +15,313 @@
 @endsection
 
 @section('content')
+<div style="display: flex; flex-direction: column; gap: 1.25rem;">
 
-{{-- فلتەرکردنی مەوادەکان --}}
-<div class="card mb-6 border-0 ring-1 ring-[--color-line] shadow-sm bg-white rounded-2xl p-5">
-    <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-        <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-            <svg class="size-4 text-[--color-brand-600]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-            فلتەرکردنی مەوادەکان
-        </h2>
+    {{-- ١. سەردێڕی سەرەوە --}}
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center;">
+                <svg style="width: 1.35rem; height: 1.35rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+            </div>
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0;">دۆخی کۆگا</h1>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+            @can('manage_items')
+                <a href="{{ route('items.create') }}"
+                   class="sm:hidden"
+                   style="background: #2563eb; color: #ffffff; padding: 0.5rem 1rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.8rem; text-decoration: none;">
+                    + زیادکردن
+                </a>
+            @endcan
+        </div>
     </div>
 
-    <form method="GET" action="{{ route('items.index') }}">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-            {{-- ناوی مەواد --}}
-            <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1.5 text-right">ناوی مەواد</label>
-                <input type="text" name="q" value="{{ request('q') }}" 
-                       class="field px-3.5 py-2 rounded-xl border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm bg-gray-50/60 focus:bg-white" 
-                       placeholder="ناوی مەواد بنووسە...">
+    {{-- ٢. کارتە ئامارییەکانی سەرەوە (٤ ستوون) --}}
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
+
+        {{-- ١. کۆی جۆری مەوادەکان --}}
+        <div style="background: #f0f9ff; border: 1.5px solid #7dd3fc; border-radius: 1rem; padding: 1.15rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+            <div style="color: #0284c7; margin-bottom: 0.15rem;">
+                <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
             </div>
-
-            {{-- فلتەری بڕ --}}
-            <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1.5 text-right">فلتەری بڕ</label>
-                <select name="qty_filter" 
-                        class="field py-2 px-3 rounded-xl border-gray-200 focus:border-[--color-brand-500] focus:ring focus:ring-[--color-brand-100] transition-all w-full text-sm bg-gray-50/60 focus:bg-white text-gray-700 font-medium">
-                    <option value="">هەموو مەوادەکان</option>
-                    <option value="qty_desc" @selected(request('qty_filter') === 'qty_desc' || request('sort') === 'qty_desc')>مەوادی زۆر (زۆرترین بڕ)</option>
-                    <option value="qty_asc" @selected(request('qty_filter') === 'qty_asc' || request('sort') === 'qty_asc')>مەوادی کەم (کەمترین بڕ)</option>
-                </select>
-            </div>
-
-            {{-- دوگمەی فلتەرکردن و پاککردنەوە --}}
-            <div class="flex items-center gap-2">
-                <button type="submit" 
-                        class="btn btn-primary flex-1 py-2 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all">
-                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                    </svg>
-                    فلتەرکردن
-                </button>
-
-                @if(request()->hasAny(['q', 'qty_filter', 'sort']))
-                    <a href="{{ route('items.index') }}" 
-                       class="btn bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200/80 py-2 px-3.5 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 transition-all"
-                       title="پاککردنەوەی فلتەر">
-                        <svg class="size-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        پاککردنەوە
-                    </a>
-                @endif
+            <div style="font-size: 0.8rem; font-weight: 700; color: #075985;">کۆی جۆری مەوادەکان</div>
+            <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #0369a1; line-height: 1.2;">
+                {{ fmt_num($totalItemsCount) }} <span style="font-size: 0.8rem; font-weight: 700;">مەواد</span>
             </div>
         </div>
-    </form>
-</div>
 
-{{-- خشتە --}}
-<div class="card border-0 ring-1 ring-[--color-line] shadow-sm rounded-[14px] overflow-hidden bg-white">
-    <div class="overflow-x-auto">
-        <table class="table w-full text-sm text-right border-collapse">
-            <thead class="bg-[--color-surface-soft]/80 text-[--color-ink-soft] text-[13px] border-b border-[--color-line]">
-                <tr>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold text-right">ناوی مەواد</th>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold text-right">بڕ</th>
-                    @can('view_reports')
-                        <th class="px-5 py-4 whitespace-nowrap font-semibold text-right">تێچووی کڕین</th>
-                    @endcan
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold text-right">بەرواری کڕین</th>
-                    <th class="px-5 py-4 whitespace-nowrap font-semibold text-center">کردار</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-[--color-line]/60">
-                @forelse ($items as $item)
-                    <tr class="hover:bg-blue-50/30 transition-colors duration-150 group">
-                        <td class="px-5 py-3.5 align-middle text-right">
-                            <div class="flex items-center gap-3.5">
-                                <div class="size-10 rounded-[10px] bg-gradient-to-br from-[--color-brand-50] to-blue-100/50 text-[--color-brand-600] flex items-center justify-center border border-[--color-brand-100] shrink-0 overflow-hidden group-hover:scale-105 group-hover:shadow-sm transition-all duration-300">
-                                    @if ($item->imageUrl())
-                                        <img src="{{ $item->imageUrl() }}" class="size-full object-cover" alt="{{ $item->name }}">
-                                    @else
-                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                        </svg>
+        {{-- ٢. کۆی بڕی بەردەست لە کۆگا --}}
+        <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 1rem; padding: 1.15rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+            <div style="color: #16a34a; margin-bottom: 0.15rem;">
+                <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2"/>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                </svg>
+            </div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: #166534;">کۆی بڕی بەردەست</div>
+            <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #15803d; line-height: 1.2;">
+                {{ fmt_num($totalStockQty) }} <span style="font-size: 0.8rem; font-weight: 700;">دانە / تەن</span>
+            </div>
+        </div>
+
+        {{-- ٣. مەوادی کەمبووەوە --}}
+        <div style="background: {{ $lowStockCount > 0 ? '#fff1f2' : '#f8fafc' }}; border: 1.5px solid {{ $lowStockCount > 0 ? '#fecdd3' : '#e2e8f0' }}; border-radius: 1rem; padding: 1.15rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+            <div style="color: {{ $lowStockCount > 0 ? '#e11d48' : '#94a3b8' }}; margin-bottom: 0.15rem;">
+                <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: {{ $lowStockCount > 0 ? '#9f1239' : '#64748b' }};">مەوادی کەمبووەوە</div>
+            <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $lowStockCount > 0 ? '#dc2626' : '#64748b' }}; line-height: 1.2;">
+                {{ fmt_num($lowStockCount) }} <span style="font-size: 0.8rem; font-weight: 700;">مەواد</span>
+            </div>
+        </div>
+
+        {{-- ٤. کۆی بەهای مەوادی کۆگا --}}
+        @can('view_reports')
+            <div style="background: #faf5ff; border: 1.5px solid #d8b4fe; border-radius: 1rem; padding: 1.15rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                <div style="color: #9333ea; margin-bottom: 0.15rem;">
+                    <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: #6b21a8;">کۆی بەهای کۆگا</div>
+                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #7e22ce; line-height: 1.2;">
+                    {{ fmt_num($totalInventoryValue) }} <span style="font-size: 0.8rem; font-weight: 700;">دینار</span>
+                </div>
+            </div>
+        @else
+            <div style="background: #fefce8; border: 1.5px solid #fde047; border-radius: 1rem; padding: 1.15rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                <div style="color: #ca8a04; margin-bottom: 0.15rem;">
+                    <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: #854d0e;">دۆخی گشتی</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #a16207;">
+                    چالاک و ڕێکخراو
+                </div>
+            </div>
+        @endcan
+
+    </div>
+
+    {{-- ٣. کارتی فلتەرکردنی مەوادەکان --}}
+    <div style="background: #ffffff; border-radius: 1.15rem; padding: 1.25rem 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+        <form method="GET" action="{{ route('items.index') }}" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: flex-end;">
+
+                {{-- ناوی مەواد --}}
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                        <span>📦</span>
+                        <span>ناوی مەواد</span>
+                    </label>
+                    <input type="text" name="q" value="{{ request('q') }}"
+                           class="field"
+                           style="width: 100%; font-weight: 600;"
+                           placeholder="ناوی مەواد بنووسە...">
+                </div>
+
+                {{-- فلتەری بڕ --}}
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                        <span>📊</span>
+                        <span>فلتەری بڕ</span>
+                    </label>
+                    <select name="qty_filter" class="field" style="width: 100%; font-weight: 600;">
+                        <option value="">هەموو مەوادەکان</option>
+                        <option value="qty_desc" @selected(request('qty_filter') === 'qty_desc' || request('sort') === 'qty_desc')>مەوادی زۆر (زۆرترین بڕ)</option>
+                        <option value="qty_asc" @selected(request('qty_filter') === 'qty_asc' || request('sort') === 'qty_asc')>مەوادی کەم (کەمترین بڕ)</option>
+                    </select>
+                </div>
+
+                {{-- ڕیزبەندی --}}
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                        <span>⇅</span>
+                        <span>ڕیزبەندی بەپێی</span>
+                    </label>
+                    <select name="order" class="field" style="width: 100%; font-weight: 600;">
+                        <option value="">ئاسایی (بەپێی ناو)</option>
+                        <option value="latest" @selected(request('order') === 'latest')>نوێترین تۆمارکراو</option>
+                        <option value="cost_desc" @selected(request('order') === 'cost_desc')>بەرزترین نرخ</option>
+                        <option value="cost_asc" @selected(request('order') === 'cost_asc')>نزمترین نرخ</option>
+                    </select>
+                </div>
+
+                {{-- دوگمەی فلتەر و پاککردنەوە --}}
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button type="submit"
+                            style="background: #2563eb; color: #ffffff; padding: 0.6rem 1.35rem; border-radius: 0.65rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">
+                        <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                        </svg>
+                        <span>فلتەرکردن</span>
+                    </button>
+
+                    @if(request()->hasAny(['q', 'qty_filter', 'sort', 'order']))
+                        <a href="{{ route('items.index') }}"
+                           style="background: #f8fafc; border: 1px solid #cbd5e1; color: #64748b; padding: 0.55rem 0.85rem; border-radius: 0.65rem; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;"
+                           title="پاککردنەوە">
+                            ✕
+                        </a>
+                    @endif
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    {{-- ٤. خشتەی مەوادەکانی کۆگا --}}
+    <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden;">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.875rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #f1f5f9; background: #fafcff; color: #64748b; font-size: 0.78rem; font-weight: 700;">
+                        <th style="padding: 0.9rem 1.25rem; text-align: right;">ناوی مەواد</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: center;">بڕی بەردەست</th>
+                        @can('view_reports')
+                            <th style="padding: 0.9rem 1.25rem; text-align: center;">تێچووی کڕین / نرخ</th>
+                        @endcan
+                        <th style="padding: 0.9rem 1.25rem; text-align: center;">بەرواری کڕین</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: center;">کردار</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($items as $item)
+                        @php
+                            $isLow = (float) $item->min_qty > 0 && (float) $item->stock_qty <= (float) $item->min_qty;
+                        @endphp
+                        <tr style="border-bottom: 1px solid #f8fafc; transition: background 0.15s;"
+                            onmouseover="this.style.background='#fbfcfd'"
+                            onmouseout="this.style.background='transparent'">
+
+                            {{-- ناوی مەواد بە ئایکۆن --}}
+                            <td style="padding: 0.9rem 1.25rem; text-align: right;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 2.5rem; height: 2.5rem; border-radius: 0.65rem; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #dbeafe;">
+                                        @if ($item->imageUrl())
+                                            <img src="{{ $item->imageUrl() }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.65rem;" alt="{{ $item->name }}">
+                                        @else
+                                            <svg style="width: 1.35rem; height: 1.35rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                            </svg>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 800; color: #1e293b; font-size: 0.92rem;">
+                                            {{ $item->name }}
+                                        </div>
+                                        @if ($item->unit)
+                                            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.1rem;">
+                                                یەکە: {{ $item->unit->name }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+
+                            {{-- بڕی بەردەست --}}
+                            <td class="num" style="padding: 0.9rem 1.25rem; text-align: center;">
+                                <div style="display: inline-flex; flex-direction: column; align-items: center; gap: 0.2rem;">
+                                    <span class="num" style="font-size: 1.15rem; font-weight: 800; color: {{ $isLow ? '#dc2626' : '#15803d' }};">
+                                        {{ fmt_num($item->stock_qty ?? 0) }}
+                                    </span>
+                                    <span style="font-size: 0.72rem; font-weight: 700; color: #64748b;">
+                                        {{ $item->unit?->name ?? 'دانە' }}
+                                    </span>
+                                    @if ($isLow)
+                                        <span style="background: #fee2e2; color: #dc2626; padding: 0.15rem 0.5rem; border-radius: 0.4rem; font-size: 0.68rem; font-weight: 800;">
+                                            کەمبووەتەوە
+                                        </span>
                                     @endif
                                 </div>
-                                <div class="flex flex-col justify-center">
-                                    <a href="{{ route('items.show', $item) }}" class="font-bold text-[--color-ink] hover:text-[--color-brand-600] transition-colors text-[15px] leading-snug">
-                                        {{ $item->name }}
-                                    </a>
-                                    @unless ($item->is_active)
-                                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded text-red-700 bg-red-50 border border-red-100 mt-1 w-max">
-                                            <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span> ناچالاک
-                                        </span>
-                                    @endunless
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-5 py-3.5 align-middle text-right">
-                            <div class="flex flex-col items-start">
-                                <span class="font-bold text-[15px] text-gray-800 num">
-                                    {{ fmt_qty($item->min_qty) }}
-                                </span>
-                                <span class="text-[11px] text-[--color-ink-soft] font-medium">{{ $item->unit?->name }}</span>
-                            </div>
-                        </td>
-                        @can('view_reports')
-                            <td class="px-5 py-3.5 align-middle text-right font-medium text-gray-600 text-[13px]">
-                                <span class="num font-bold text-[14px] text-gray-800">{{ $item->last_cost ? number_format((float)$item->last_cost, 0, '.', ',') : '—' }}</span>
-                                @if($item->last_cost)
-                                    <span class="text-xs text-gray-400 font-normal">د.ع</span>
+                            </td>
+
+                            {{-- تێچووی کڕین / نرخ --}}
+                            @can('view_reports')
+                                <td class="num" style="padding: 0.9rem 1.25rem; text-align: center; font-weight: 800; font-size: 0.92rem; color: #334155;">
+                                    @if ($item->last_cost > 0)
+                                        {{ fmt_num($item->last_cost) }} <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">د.ع</span>
+                                    @else
+                                        <span style="color: #94a3b8;">—</span>
+                                    @endif
+                                </td>
+                            @endcan
+
+                            {{-- بەرواری کڕین --}}
+                            <td class="num" style="padding: 0.9rem 1.25rem; text-align: center; color: #475569; font-size: 0.85rem; font-weight: 600;">
+                                @if ($item->purchase_date)
+                                    {{ fmt_date($item->purchase_date) }}
+                                @else
+                                    <span style="color: #94a3b8;">—</span>
                                 @endif
                             </td>
-                        @endcan
-                        <td class="px-5 py-3.5 align-middle text-right text-[13px] text-gray-600 font-medium">
-                            @if ($item->purchase_date)
-                                <span class="num bg-gray-50 border border-gray-200/80 px-2 py-1 rounded-md text-xs text-gray-700 font-medium">
-                                    {{ $item->purchase_date->format('Y/m/d') }}
-                                </span>
-                            @else
-                                <span class="text-gray-400">—</span>
-                            @endif
-                        </td>
-                        <td class="px-5 py-3.5 align-middle text-center">
-                            <div class="flex items-center justify-center gap-1.5">
-                                @can('manage_items')
-                                    <a href="{{ route('items.edit', $item) }}" 
-                                       class="inline-flex items-center justify-center size-8 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors bg-white border border-gray-200 shadow-sm hover:border-blue-200" 
-                                       title="دەستکاری">
-                                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                        </svg>
-                                    </a>
 
-                                    <form method="POST" action="{{ route('items.destroy', $item) }}" 
-                                          onsubmit="return confirm('دڵنیایت لە سڕینەوەی ئەم مەوادە؟')"
-                                          class="inline-block">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="inline-flex items-center justify-center size-8 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors bg-white border border-gray-200 shadow-sm hover:border-red-200" 
-                                                title="سڕینەوە">
-                                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            {{-- کردار --}}
+                            <td style="padding: 0.9rem 1.25rem; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 0.45rem;">
+                                    @can('manage_items')
+                                        <a href="{{ route('items.edit', $item) }}"
+                                           style="width: 2rem; height: 2rem; border-radius: 0.5rem; background: #eff6ff; color: #2563eb; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid #bfdbfe;"
+                                           title="دەستکاری">
+                                            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                             </svg>
-                                        </button>
-                                    </form>
-                                @endcan
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="px-5 py-24 text-center bg-gray-50/30">
-                            <div class="inline-flex flex-col items-center justify-center text-gray-400 max-w-sm mx-auto">
-                                <div class="size-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-5 border border-gray-100">
-                                    <svg class="size-10 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                    </svg>
+                                        </a>
+
+                                        <form method="POST" action="{{ route('items.destroy', $item) }}" onsubmit="return confirm('دڵنیایت لە سڕینەوەی ئەم مەوادە؟')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    style="width: 2rem; height: 2rem; border-radius: 0.5rem; background: #fff1f2; color: #e11d48; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #fecdd3; cursor: pointer;"
+                                                    title="سڕینەوە">
+                                                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endcan
                                 </div>
-                                <h3 class="text-lg font-bold text-gray-700 mb-2">هیچ بابەتێک نەدۆزرایەوە</h3>
-                                <p class="text-[13px] text-gray-500 leading-relaxed mb-6">داتایەک بۆ پیشاندان نییە. گەڕانەکەت بگۆڕە یان کلیک لە دوگمەی خوارەوە بکە بۆ زیادکردنی بابەت.</p>
-                                @can('manage_items')
-                                    <a href="{{ route('items.create') }}" class="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all rounded-lg text-sm px-5 py-2.5">
-                                        زیادکردنی بابەت
-                                    </a>
-                                @endcan
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" style="padding: 3rem 1rem; text-align: center; color: #94a3b8; font-size: 0.9rem;">
+                                هیچ مەوادێک نەدۆزرایەوە.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- لاپەڕەبەندی (Pagination) --}}
+        @if ($items->hasPages())
+            <div style="padding: 1rem 1.25rem; border-top: 1px solid #f1f5f9;">
+                {{ $items->links() }}
+            </div>
+        @endif
     </div>
+
 </div>
-
-@if ($items->hasPages())
-    <div class="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-        <div class="font-medium">
-            پیشاندانی <span class="font-bold text-gray-800 num">{{ $items->firstItem() ?? 0 }}</span> تا <span class="font-bold text-gray-800 num">{{ $items->lastItem() ?? 0 }}</span> لە کۆی <span class="font-bold text-gray-800 num">{{ $items->total() }}</span> مەواد
-        </div>
-        <div>
-            {{ $items->links() }}
-        </div>
-    </div>
-@endif
-
 @endsection

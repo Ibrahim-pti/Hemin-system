@@ -42,9 +42,20 @@ class ItemController extends Controller
 
         $items = $query->paginate(30)->withQueryString();
 
+        // ئامارەکانی کۆگا بۆ سەرەوەی لاپەڕە
+        $allItems = Item::active()->withStock($warehouseId)->get();
+        $totalItemsCount = $allItems->count();
+        $lowStockCount = $allItems->filter(fn ($item) => $item->stock_qty <= (float) $item->min_qty && (float) $item->min_qty > 0)->count();
+        $totalStockQty = $allItems->sum('stock_qty');
+        $totalInventoryValue = $allItems->sum(fn ($item) => (float) $item->stock_qty * (float) $item->last_cost);
+
         return view('items.index', [
             'items' => $items,
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
+            'totalItemsCount' => $totalItemsCount,
+            'lowStockCount' => $lowStockCount,
+            'totalStockQty' => $totalStockQty,
+            'totalInventoryValue' => $totalInventoryValue,
         ]);
     }
 
