@@ -93,6 +93,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/orders/{order}/status', [OrderController::class, 'setStatus'])->name('orders.status');
     });
 
+    Route::post('/units/quick', [ItemController::class, 'quickStoreUnit'])->name('units.quick');
+
     // ── پارە ──
     Route::middleware('can:manage_payments')->group(function () {
         Route::resource('payments', PaymentController::class)->except(['edit', 'update']);

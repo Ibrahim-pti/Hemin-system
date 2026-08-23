@@ -71,6 +71,23 @@ class ItemController extends Controller
         ]);
     }
 
+    public function quickStoreUnit(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+        ]);
+
+        $unit = Unit::firstOrCreate(
+            ['name' => trim($data['name'])],
+            ['code' => trim($data['name']), 'type' => 'count', 'is_active' => true]
+        );
+
+        return response()->json([
+            'id' => $unit->id,
+            'name' => $unit->name,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $item = Item::create($this->validated($request));

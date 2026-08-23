@@ -34,22 +34,49 @@
     {{-- ٢. فۆڕمی سەرەکی بە پانتایی تەواوی شاشە --}}
     <form method="POST"
           action="{{ $item->exists ? route('items.update', $item) : route('items.store') }}"
-          enctype="multipart/form-data"
           x-data="{
               selectedUnit: '{{ old('unit_id', $item->unit_id) }}',
-              imagePreview: '{{ $item->imageUrl() }}',
-              unitNames: {
+              units: [
                   @foreach ($units as $unit)
-                      '{{ $unit->id }}': '{{ $unit->name }}',
+                      { id: '{{ $unit->id }}', name: '{{ $unit->name }}' },
                   @endforeach
-              },
+              ],
+              showNewUnitModal: false,
+              newUnitName: '',
+              newUnitLoading: false,
+
               get unitText() {
-                  return this.unitNames[this.selectedUnit] || '';
+                  const u = this.units.find(item => String(item.id) === String(this.selectedUnit));
+                  return u ? u.name : '';
               },
-              onImageChange(e) {
-                  const file = e.target.files[0];
-                  if (file) {
-                      this.imagePreview = URL.createObjectURL(file);
+
+              async addUnit() {
+                  const name = this.newUnitName.trim();
+                  if (!name) return;
+                  this.newUnitLoading = true;
+                  try {
+                      const res = await fetch('{{ route('units.quick') }}', {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json',
+                              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                              'Accept': 'application/json'
+                          },
+                          body: JSON.stringify({ name: name })
+                      });
+                      const data = await res.json();
+                      if (data.id) {
+                          if (!this.units.some(u => String(u.id) === String(data.id))) {
+                              this.units.push({ id: String(data.id), name: data.name });
+                          }
+                          this.selectedUnit = String(data.id);
+                          this.newUnitName = '';
+                          this.showNewUnitModal = false;
+                      }
+                  } catch (err) {
+                      alert('کێشەیەک ڕوویدا لە زیادکردنی یەکە');
+                  } finally {
+                      this.newUnitLoading = false;
                   }
               }
           }"
@@ -59,15 +86,12 @@
 
         <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden; width: 100%;">
 
-            {{-- سەردێڕی ناوەوەی کارت --}}
+            {{-- سەردێڕی ناوەوەی کارت بەبێ دەقی زیادە --}}
             <div style="padding: 1.25rem 1.75rem; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1rem; color: #1e293b;">
+                <div style="display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.05rem; color: #1e293b;">
                     <span style="color: #2563eb;">📦</span>
                     <span>{{ $item->exists ? 'دەستکاریکردنی زانیارییەکانی مەواد' : 'تۆمارکردنی مەوادی نوێ لە کۆگا' }}</span>
                 </div>
-                <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">
-                    ناو، یەکە، بڕ و تێچووی کڕین دیاری بکە
-                </span>
             </div>
 
             <div style="padding: 2rem 2.25rem; display: flex; flex-direction: column; gap: 1.5rem;">
@@ -83,61 +107,40 @@
                     </div>
                 @endif
 
-                {{-- ڕیزی ١: ناو و وێنەی مەواد --}}
-                <div style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 1.5rem; align-items: start;">
-                    {{-- ناوی مەواد --}}
-                    <div>
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 0.45rem; display: block;" for="name">
-                            ناوی مەواد <span style="color: #ef4444;">*</span>
-                        </label>
-                        <input id="name" name="name" class="field" required
-                               value="{{ old('name', $item->name) }}"
-                               placeholder="ناوی مەواد لێرە بنووسە..."
-                               style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; font-weight: 600;">
-                        @error('name') <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- وێنەی مەواد --}}
-                    <div>
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 0.45rem; display: block;">
-                            وێنەی مەواد <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">(ئارەزوومەندانە)</span>
-                        </label>
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <label style="width: 3.25rem; height: 3.25rem; border-radius: 0.75rem; border: 2px dashed #cbd5e1; background: #f8fafc; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #94a3b8; overflow: hidden; flex-shrink: 0; transition: border-color 0.2s;"
-                                   onmouseover="this.style.borderColor='#2563eb'"
-                                   onmouseout="this.style.borderColor='#cbd5e1'">
-                                <input type="file" name="image" accept="image/*" style="display: none;" @change="onImageChange($event)">
-                                <template x-if="imagePreview">
-                                    <img :src="imagePreview" style="width: 100%; height: 100%; object-fit: cover;">
-                                </template>
-                                <template x-if="!imagePreview">
-                                    <svg style="width: 1.5rem; height: 1.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                                        <polyline points="21 15 16 10 5 21"/>
-                                    </svg>
-                                </template>
-                            </label>
-                            <span style="font-size: 0.78rem; color: #64748b; font-weight: 600;">دانانی وێنەی کاڵا</span>
-                        </div>
-                        @error('image') <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p> @enderror
-                    </div>
+                {{-- ڕیزی ١: ناوی مەواد (پانی تەواو) --}}
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 0.45rem; display: block;" for="name">
+                        ناوی مەواد <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input id="name" name="name" class="field" required
+                           value="{{ old('name', $item->name) }}"
+                           placeholder="ناوی مەواد لێرە بنووسە..."
+                           style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; font-weight: 600;">
+                    @error('name') <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p> @enderror
                 </div>
 
-                {{-- ڕیزی ٢: یەکە، بڕ، تێچووی کڕین و بەرواری کڕین (٤ ستوون) --}}
+                {{-- ڕیزی ٢: یەکە (لەگەڵ زیادکردنی خێرا)، بڕ، تێچووی کڕین و بەرواری کڕین (٤ ستوون) --}}
                 <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem;">
-                    {{-- یەکە --}}
+
+                    {{-- یەکە لەگەڵ دوگمەی زیادکردن --}}
                     <div>
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 0.45rem; display: block;" for="unit_id">
-                            یەکە <span style="color: #ef4444;">*</span>
-                        </label>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.45rem;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: #334155;" for="unit_id">
+                                یەکە <span style="color: #ef4444;">*</span>
+                            </label>
+                            <button type="button"
+                                    @click="showNewUnitModal = true"
+                                    style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 0.72rem; font-weight: 800; padding: 0.15rem 0.5rem; border-radius: 0.4rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                <span>+</span>
+                                <span>زیادکردنی یەکە</span>
+                            </button>
+                        </div>
+
                         <select id="unit_id" name="unit_id" x-model="selectedUnit" class="field" required style="width: 100%; padding: 0.75rem 1rem; font-weight: 600;">
                             <option value="">— هەڵبژێرە (دانە، تەن...) —</option>
-                            @foreach ($units as $unit)
-                                <option value="{{ $unit->id }}" @selected(old('unit_id', $item->unit_id) == $unit->id)>
-                                    {{ $unit->name }}
-                                </option>
-                            @endforeach
+                            <template x-for="u in units" :key="u.id">
+                                <option :value="u.id" x-text="u.name" :selected="String(u.id) === String(selectedUnit)"></option>
+                            </template>
                         </select>
                         @error('unit_id') <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p> @enderror
                     </div>
@@ -241,6 +244,53 @@
             </div>
 
         </div>
+
+        {{-- مۆداڵی خێرای زیادکردنی یەکە --}}
+        <template x-teleport="body">
+            <div x-show="showNewUnitModal"
+                 x-cloak
+                 style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);"
+                 @keydown.escape.window="showNewUnitModal = false">
+                <div style="background: #ffffff; border-radius: 1rem; width: 100%; max-width: 24rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; margin: auto; position: relative;"
+                     @click.outside="showNewUnitModal = false">
+
+                    <div style="padding: 1rem 1.25rem; background: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
+                        <button type="button" @click="showNewUnitModal = false" style="background: none; border: none; color: #ffffff; font-size: 1.1rem; cursor: pointer;">✕</button>
+                        <span style="font-weight: 800; font-size: 0.95rem;">زیادکردنی یەکەی نوێ</span>
+                    </div>
+
+                    <div style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 0.4rem; display: block; text-align: right;">
+                                ناوی یەکە (وەک: دانە، تەن، مەتر، کارتۆن...)
+                            </label>
+                            <input type="text"
+                                   x-model="newUnitName"
+                                   @keydown.enter.prevent="addUnit()"
+                                   class="field"
+                                   placeholder="ناوی یەکە بنووسە..."
+                                   style="width: 100%; padding: 0.65rem 0.85rem; font-weight: 700; text-align: right;"
+                                   autofocus>
+                        </div>
+
+                        <div style="display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem;">
+                            <button type="button"
+                                    @click="addUnit()"
+                                    :disabled="newUnitLoading || !newUnitName.trim()"
+                                    style="background: #2563eb; color: #ffffff; padding: 0.55rem 1.25rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                <span x-show="!newUnitLoading">✓ زیادکردن</span>
+                                <span x-show="newUnitLoading">کەمێک بوەستە...</span>
+                            </button>
+                            <button type="button" @click="showNewUnitModal = false"
+                                    style="padding: 0.55rem 1rem; border-radius: 0.5rem; background: #ffffff; border: 1px solid #cbd5e1; color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                                داخستن
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </template>
     </form>
 
     @if ($item->exists)
