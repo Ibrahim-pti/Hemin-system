@@ -4,36 +4,6 @@
 @section('content')
 <div class="space-y-4 sm:space-y-6">
 
-    {{-- ١. هێڵی سەرەوە: ناونیشان و ڕوونکردنەوە --}}
-    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-            <div class="size-11 sm:size-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center text-xl sm:text-2xl shadow-xs shrink-0">
-                ⚒️
-            </div>
-            <div class="min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <h1 class="text-lg sm:text-xl font-black text-slate-800">داشبۆردی کارگە و وەستاکان</h1>
-                    <span class="px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 truncate">
-                        {{ $workshopWarehouse?->name ?? 'شوێنی دروستکردن' }}
-                    </span>
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5 font-medium">
-                    چاودێری گشتی و پوختەی وەسڵەکان، مەوادی خاو و وەستاکانی کارگە
-                </p>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            <a href="{{ route('workshop.orders') }}" class="btn btn-primary !py-2 !px-3.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 shadow-xs flex-1 sm:flex-initial text-center justify-center">
-                <span>📋</span>
-                <span>داواکارییەکانی کارگە</span>
-            </a>
-            <a href="{{ route('workshop.materials') }}" class="btn btn-ghost !py-2 !px-3 text-xs font-bold border border-slate-200 hover:bg-slate-50 text-slate-700 flex-1 sm:flex-initial text-center justify-center">
-                <span>📦</span>
-                <span>مەوادی خاو</span>
-            </a>
-        </div>
-    </div>
 
     {{-- ٢. کارتە ئامارییەکان --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
