@@ -125,19 +125,4 @@
         @endforeach
 
     </div>
-
-    {{-- بەشی خوارەوە: بەکارهێنەر --}}
-    <div style="border-top: 1px solid rgba(255,255,255,0.07); padding: 0.75rem; flex-shrink: 0; background: rgba(2,6,23,0.3);">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="display: flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 50%; background: rgba(59,130,246,0.15); color: #93c5fd; font-weight: bold; font-size: 0.75rem; flex-shrink: 0; border: 1px solid rgba(59,130,246,0.25);">
-                {{ mb_substr(auth()->user()->name, 0, 1) }}
-            </div>
-            <div x-show="sidebarOpen" style="min-width: 0; flex: 1;">
-                <div style="font-size: 0.78rem; font-weight: 600; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ auth()->user()->name }}</div>
-                <div style="font-size: 0.68rem; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    {{ auth()->user()->isAdmin() ? 'بەڕێوەبەر' : 'بەرپرسی کۆگا' }}
-                </div>
-            </div>
-        </div>
-    </div>
 </aside>

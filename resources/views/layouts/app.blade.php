@@ -80,9 +80,17 @@
                     </h1>
                 </div>
 
-                {{-- لای چەپ: دوگمەکانی کردار، حاسیبە و بەکارهێنەر --}}
+                {{-- لای چەپ: دوگمەکانی کردار، بەکارهێنەر، حاسیبە و دەرچوون --}}
                 <div class="flex items-center gap-2.5">
                     @yield('actions')
+
+                    {{-- بەکارهێنەر --}}
+                    <div class="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-2.5 py-1.5 text-slate-700">
+                        <div class="flex size-6 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 font-bold text-xs border border-blue-500/20">
+                            {{ mb_substr(auth()->user()->name, 0, 1) }}
+                        </div>
+                        <span class="text-xs font-bold text-slate-800">{{ auth()->user()->name }}</span>
+                    </div>
 
                     <button @click="$dispatch('open-calculator')" class="btn btn-ghost !px-3 !py-1.5 text-xs text-slate-600 hover:bg-slate-100" title="حاسیبە">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
