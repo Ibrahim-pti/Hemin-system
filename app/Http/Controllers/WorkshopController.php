@@ -106,13 +106,14 @@ class WorkshopController extends Controller
             'notes' => $o->notes ?? '',
             'items' => $o->items->map(fn ($it) => [
                 'id' => $it->id,
-                'item_name' => $it->item_name,
+                'item_name' => $it->description ?: ($it->item?->name ?? 'کەلوپەل'),
                 'qty' => (float) $it->qty,
-                'unit_name' => $it->unit_name,
+                'unit_name' => $it->mode_unit ?: ($it->unit_name ?? 'دانە'),
                 'width' => $it->width,
                 'height' => $it->height,
+                'measurement' => $it->measurement_label,
                 'note' => $it->note,
-                'image' => Item::find($it->item_id)?->imageUrl(),
+                'image' => $it->imageUrl(),
             ])->values()->all(),
         ])->values()->all();
 

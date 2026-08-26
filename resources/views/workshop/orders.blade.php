@@ -41,9 +41,9 @@
         </div>
     </div>
 
-    {{-- ٣. کارتی وەسڵەکان بە داتای زیندوو --}}
+    {{-- ٣. کارتی وەسڵەکان بە داتای زیندوو (پاجینەیشن) --}}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-4">
-        <template x-for="order in filteredOrders" :key="order.id">
+        <template x-for="order in paginatedOrders" :key="order.id">
             <div class="rounded-2xl border p-4 sm:p-4.5 shadow-xs flex flex-col justify-between transition-all hover:shadow-md bg-white"
                  :class="{
                      'border-blue-300 bg-blue-50/20 ring-1 ring-blue-200': order.status === 'in_production',
@@ -81,19 +81,23 @@
                         <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">کەلوپەل و قیاسات:</div>
                         <template x-for="it in order.items" :key="it.id">
                             <div class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                                <div class="size-11 sm:size-12 rounded-lg bg-white border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                                <div class="size-12 sm:size-14 rounded-xl bg-white border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center shadow-2xs">
                                     <template x-if="it.image">
                                         <img :src="it.image" :alt="it.item_name" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="previewImg = it.image">
                                     </template>
                                     <template x-if="!it.image">
-                                        <span class="text-slate-300 text-[10px] sm:text-xs">بێ وێنە</span>
+                                        <div class="flex flex-col items-center justify-center text-slate-300">
+                                            <span class="text-sm">🖼️</span>
+                                            <span class="text-[9px]">بێ وێنە</span>
+                                        </div>
                                     </template>
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <div class="font-bold text-xs text-slate-800 truncate" x-text="it.item_name"></div>
                                     <div class="text-[11px] text-slate-500 font-medium mt-0.5 flex items-center gap-1.5 flex-wrap">
                                         <span>بڕ: <span class="font-bold text-blue-600" x-text="it.qty + ' ' + (it.unit_name || 'دانە')"></span></span>
-                                        <span x-show="it.width || it.height" class="text-slate-400 font-mono text-[10px]" x-text="'(' + it.width + '×' + it.height + ')'"></span>
+                                        <span x-show="it.measurement && it.measurement !== '—'" class="text-indigo-600 font-bold font-mono text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded" x-text="it.measurement"></span>
+                                        <span x-show="!it.measurement && (it.width || it.height)" class="text-slate-400 font-mono text-[10px]" x-text="'(' + (it.width || '') + '×' + (it.height || '') + ')'"></span>
                                     </div>
                                     <div x-show="it.note" class="text-[10px] text-amber-700 bg-amber-50/80 px-1.5 py-0.5 rounded-md mt-1 border border-amber-200/50" x-text="'تێبینی: ' + it.note"></div>
                                 </div>
@@ -130,10 +134,66 @@
         </template>
     </div>
 
+    {{-- هیچ نەدۆزرایەوە --}}
     <div x-show="filteredOrders.length === 0" class="bg-white rounded-2xl p-8 sm:p-12 text-center border border-slate-200 shadow-xs">
         <div class="text-4xl mb-2">📋</div>
         <div class="font-bold text-slate-700 text-base">هیچ وەسڵێک نەدۆزرایەوە</div>
         <div class="text-xs text-slate-400 mt-1">لەگەڵ ئەم فلتەر یان گەڕانەدا هیچ داواکارییەک ناگونجێت.</div>
+    </div>
+
+    {{-- ٤. بەشی پاجینەیشن (Pagination Bar) --}}
+    <div x-show="filteredOrders.length > 0" class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2 text-slate-500 font-medium text-[11px] sm:text-xs">
+            <span>نیشاندانی</span>
+            <span class="font-bold text-slate-800 font-mono" x-text="((currentPage - 1) * perPage) + 1"></span>
+            <span>تا</span>
+            <span class="font-bold text-slate-800 font-mono" x-text="Math.min(currentPage * perPage, filteredOrders.length)"></span>
+            <span>لە کۆی</span>
+            <span class="font-bold text-blue-600 font-mono" x-text="filteredOrders.length"></span>
+            <span>داواکاری</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap justify-center">
+            {{-- دوگمەی پێشتر --}}
+            <button type="button" @click="prevPage" :disabled="currentPage === 1"
+                    :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer'"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1">
+                <span>←</span>
+                <span>پێشتر</span>
+            </button>
+
+            {{-- ژمارەی لاپەڕەکان --}}
+            <div class="flex items-center gap-1">
+                <template x-for="p in totalPages" :key="p">
+                    <button type="button" @click="goToPage(p)"
+                            x-show="totalPages <= 7 || Math.abs(p - currentPage) <= 1 || p === 1 || p === totalPages"
+                            :class="p === currentPage ? 'bg-blue-600 text-white font-black shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'"
+                            class="size-8 sm:size-8.5 rounded-xl font-bold font-mono text-xs flex items-center justify-center cursor-pointer transition-all"
+                            x-text="p">
+                    </button>
+                </template>
+            </div>
+
+            {{-- دوگمەی دواتر --}}
+            <button type="button" @click="nextPage" :disabled="currentPage === totalPages"
+                    :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer'"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1">
+                <span>دواتر</span>
+                <span>→</span>
+            </button>
+
+            {{-- هەڵبژاردنی ژمارەی دێڕ لە هەر لاپەڕەیەک --}}
+            <div class="flex items-center gap-1 mr-2 border-r border-slate-200 pr-2">
+                <span class="text-[11px] text-slate-400">ژمارە:</span>
+                <select x-model.number="perPage" @change="currentPage = 1"
+                        class="text-xs px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 font-bold font-mono focus:outline-hidden focus:border-blue-500">
+                    <option :value="6">6</option>
+                    <option :value="9">9</option>
+                    <option :value="12">12</option>
+                    <option :value="24">24</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     {{-- مۆداڵی وێنەی گەورە --}}
@@ -155,9 +215,17 @@ function workshopOrdersApp() {
         orderSearch: '',
         previewImg: null,
         ordersList: @json($ordersData),
+        currentPage: 1,
+        perPage: 9,
+
+        init() {
+            this.$watch('orderFilter', () => { this.currentPage = 1; });
+            this.$watch('orderSearch', () => { this.currentPage = 1; });
+        },
 
         setFilter(status) {
             this.orderFilter = status;
+            this.currentPage = 1;
         },
 
         get pendingCount() {
@@ -183,6 +251,30 @@ function workshopOrdersApp() {
                 const matchSearch = !q || o.invoice_no.toString().includes(q) || (o.customer_name && o.customer_name.toLowerCase().includes(q));
                 return matchStatus && matchSearch;
             });
+        },
+
+        get totalPages() {
+            return Math.ceil(this.filteredOrders.length / this.perPage) || 1;
+        },
+
+        get paginatedOrders() {
+            const start = (this.currentPage - 1) * this.perPage;
+            return this.filteredOrders.slice(start, start + this.perPage);
+        },
+
+        goToPage(p) {
+            if (p >= 1 && p <= this.totalPages) {
+                this.currentPage = p;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        },
+
+        nextPage() {
+            this.goToPage(this.currentPage + 1);
+        },
+
+        prevPage() {
+            this.goToPage(this.currentPage - 1);
         },
 
         async changeStatus(orderId, newStatus) {
