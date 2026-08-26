@@ -129,6 +129,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/attendance/wages', [AttendanceController::class, 'wages'])->name('attendance.wages');
     });
 
+    Route::post('/attendance/quick-check-in', [AttendanceController::class, 'quickCheckIn'])->name('attendance.quick-check-in');
+    Route::post('/attendance/quick-check-out', [AttendanceController::class, 'quickCheckOut'])->name('attendance.quick-check-out');
+    Route::post('/attendance/record-single', [AttendanceController::class, 'recordSingle'])->name('attendance.record-single');
+
     Route::middleware('can:manage_external_jobs')->group(function () {
         Route::resource('external-jobs', ExternalJobController::class)->parameters(['external-jobs' => 'job']);
     });

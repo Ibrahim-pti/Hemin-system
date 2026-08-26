@@ -164,17 +164,59 @@ class WorkshopController extends Controller
         ));
     }
 
-    /** لاپەڕەی جیاکراوەی وەستا و حەمەڵەکان */
+    /** لاپەڕەی جیاکراوەی وەستا و حەمەڵەکان بە سیستەمی چیک ئین و ئامادەبوون */
     public function employees(Request $request): View
     {
+        $date = $request->date('date')?->toDateString() ?? now()->toDateString();
+
         $employees = Employee::query()
             ->active()
-            ->with(['attendances' => fn ($q) => $q->whereDate('work_date', now()->toDateString())])
+            ->with(['attendances' => fn ($q) => $q->whereDate('work_date', $date)])
             ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
             ->orderBy('name')
             ->get();
 
-        return view('workshop.employees', compact('employees'));
+        $employeesData = $employees->map(function ($emp) use ($date) {
+            $att = $emp->attendances->first();
+            return [
+                'id' => $emp->id,
+                'name' => $emp->name,
+                'phone' => $emp->phone,
+                'job_title' => $emp->job_title,
+                'job_title_label' => $emp->job_title_label,
+                'daily_wage' => (float) $emp->daily_wage,
+                'wage_currency' => $emp->wage_currency,
+                'hire_date' => $emp->hire_date?->format('Y/m/d'),
+                'note' => $emp->note,
+                'attendance' => $att ? [
+                    'id' => $att->id,
+                    'status' => $att->status,
+                    'status_label' => $att->status_label,
+                    'check_in' => $att->check_in ? substr($att->check_in, 0, 5) : '',
+                    'check_out' => $att->check_out ? substr($att->check_out, 0, 5) : '',
+                    'hours' => (float) $att->hours,
+                    'overtime_hours' => (float) $att->overtime_hours,
+                    'temporary_exit_hours' => (float) $att->temporary_exit_hours,
+                    'exit_reason' => $att->exit_reason ?? '',
+                    'fuel_expense' => (float) $att->fuel_expense,
+                    'trip_destination' => $att->trip_destination ?? '',
+                    'note' => $att->note ?? '',
+                ] : null,
+            ];
+        })->values()->all();
+
+        $presentCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'present')->count();
+        $leaveCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'leave')->count();
+        $absentCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'absent')->count();
+
+        return view('workshop.employees', compact(
+            'employees',
+            'employeesData',
+            'date',
+            'presentCount',
+            'leaveCount',
+            'absentCount'
+        ));
     }
 
     /** گۆڕینی دۆخی دروستکردنی وەسڵ */

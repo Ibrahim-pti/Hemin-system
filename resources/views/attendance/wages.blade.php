@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'حەقدەستەکان')
+@section('title', 'حەقدەست و ئامارەکان')
 
 @section('actions')
     <button onclick="window.print()" class="btn btn-ghost no-print">چاپ</button>
@@ -22,16 +22,23 @@
 </form>
 
 <div class="card">
-    <div class="card-head">
-        حەقدەست — <span class="num">{{ fmt_date($from) }} تا {{ fmt_date($to) }}</span>
+    <div class="card-head flex items-center justify-between">
+        <span>حەقدەست و خەرجی کارمەندان — <span class="num">{{ fmt_date($from) }} تا {{ fmt_date($to) }}</span></span>
     </div>
     <div class="overflow-x-auto">
         <table class="table">
             <thead>
                 <tr>
-                    <th>کارمەند</th><th>پیشە</th>
-                    <th class="num">ڕۆژی ئامادە</th><th class="num">کاتی زیادە</th>
-                    <th class="num">کۆی حەقدەست</th><th class="num">دراوە</th><th class="num">ماوە</th><th></th>
+                    <th>کارمەند</th>
+                    <th>پیشە</th>
+                    <th class="num">ڕۆژی ئامادە</th>
+                    <th class="num">مۆڵەت</th>
+                    <th class="num">کاتی زیادە (کاتژمێر)</th>
+                    <th class="num">خەرجی بەنزین (د.ع)</th>
+                    <th class="num">کۆی حەقدەست</th>
+                    <th class="num">دراوە</th>
+                    <th class="num">ماوە</th>
+                    <th class="no-print"></th>
                 </tr>
             </thead>
             <tbody>
@@ -44,28 +51,32 @@
                             </a>
                         </td>
                         <td class="text-[--color-ink-soft]">{{ $employee->job_title_label }}</td>
-                        <td class="num">{{ fmt_num($row['days']) }}</td>
-                        <td class="num">{{ fmt_num($row['overtime'], 2) }}</td>
-                        <td class="num">{{ fmt_money($row['earned']) }}</td>
+                        <td class="num font-bold text-slate-800">{{ fmt_num($row['days']) }}</td>
+                        <td class="num text-amber-600">{{ fmt_num($row['leave_days'] ?? 0) }}</td>
+                        <td class="num text-blue-600 font-bold">{{ fmt_num($row['overtime'], 1) }}</td>
+                        <td class="num text-emerald-600 font-bold">{{ fmt_money($row['fuel_expense'] ?? 0) }}</td>
+                        <td class="num font-bold text-slate-900">{{ fmt_money($row['earned']) }}</td>
                         <td class="num text-[--color-ok]">{{ fmt_money($row['paid']) }}</td>
-                        <td class="num font-medium {{ $row['remaining'] > 0 ? 'text-[--color-warn]' : '' }}">
+                        <td class="num font-bold {{ $row['remaining'] > 0 ? 'text-rose-600' : 'text-slate-600' }}">
                             {{ fmt_money($row['remaining']) }}
                         </td>
                         <td class="text-left no-print">
                             <a href="{{ route('payments.create', ['type' => 'out']) }}"
-                               class="text-sm text-[--color-brand-700]">حەقدی</a>
+                               class="text-xs btn btn-ghost !py-1 !px-2 text-[--color-brand-700]">حەقدی</a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ کارمەندێک نییە.</td></tr>
+                    <tr><td colspan="10" class="py-8 text-center text-sm text-[--color-ink-soft]">هیچ کارمەندێک نییە.</td></tr>
                 @endforelse
             </tbody>
             <tfoot>
-                <tr class="bg-[--color-surface-soft] font-semibold">
+                <tr class="bg-[--color-surface-soft] font-bold">
                     <td colspan="4">کۆی گشتی</td>
+                    <td class="num text-blue-700">{{ fmt_num($rows->sum('overtime'), 1) }}</td>
+                    <td class="num text-emerald-700">{{ fmt_money($rows->sum('fuel_expense')) }}</td>
                     <td class="num">{{ fmt_money($rows->sum('earned')) }}</td>
-                    <td class="num">{{ fmt_money($rows->sum('paid')) }}</td>
-                    <td class="num">{{ fmt_money($rows->sum('remaining')) }}</td>
+                    <td class="num text-emerald-700">{{ fmt_money($rows->sum('paid')) }}</td>
+                    <td class="num text-rose-700">{{ fmt_money($rows->sum('remaining')) }}</td>
                     <td class="no-print"></td>
                 </tr>
             </tfoot>

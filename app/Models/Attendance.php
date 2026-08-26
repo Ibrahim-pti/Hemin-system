@@ -19,7 +19,8 @@ class Attendance extends Model
 
     protected $fillable = [
         'employee_id', 'work_date', 'check_in', 'check_out', 'status',
-        'hours', 'overtime_hours', 'wage_snapshot', 'user_id', 'note',
+        'hours', 'overtime_hours', 'temporary_exit_hours', 'exit_reason',
+        'fuel_expense', 'trip_destination', 'wage_snapshot', 'user_id', 'note',
     ];
 
     protected function casts(): array
@@ -28,6 +29,8 @@ class Attendance extends Model
             'work_date' => 'date',
             'hours' => 'decimal:2',
             'overtime_hours' => 'decimal:2',
+            'temporary_exit_hours' => 'decimal:2',
+            'fuel_expense' => 'decimal:2',
             'wage_snapshot' => 'decimal:2',
         ];
     }
