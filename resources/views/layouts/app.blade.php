@@ -26,11 +26,11 @@
             background: rgba(255, 255, 255, 0.06) !important;
             color: #f8fafc !important;
         }
-        .sidebar-scroll {
+        .sidebar-scroll, main, aside, body {
             scrollbar-width: none !important;
             -ms-overflow-style: none !important;
         }
-        .sidebar-scroll::-webkit-scrollbar {
+        .sidebar-scroll::-webkit-scrollbar, main::-webkit-scrollbar, aside::-webkit-scrollbar, body::-webkit-scrollbar {
             display: none !important;
             width: 0 !important;
             height: 0 !important;
