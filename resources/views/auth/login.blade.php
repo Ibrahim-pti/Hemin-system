@@ -6,14 +6,46 @@
     <title>چوونەژوورەوە بۆ سیستەم</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
+        @font-face {
+            font-family: 'Rabar';
+            src: url('/fonts/Rabar-Regular.ttf') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Rabar';
+            src: url('/fonts/Rabar-Medium.ttf') format('truetype');
+            font-weight: 500;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Rabar';
+            src: url('/fonts/Rabar-Bold.ttf') format('truetype');
+            font-weight: 700;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Rabar';
+            src: url('/fonts/Rabar-Bold.ttf') format('truetype');
+            font-weight: 800;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Rabar';
+            src: url('/fonts/Rabar-Bold.ttf') format('truetype');
+            font-weight: 900;
+            font-style: normal;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Rabar', 'Vazirmatn', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         
         body {
-            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Rabar', 'Vazirmatn', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #ebf0f7;
             background-image: 
                 radial-gradient(at 0% 0%, rgba(219, 234, 254, 0.8) 0px, transparent 50%),
