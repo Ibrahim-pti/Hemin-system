@@ -4,26 +4,6 @@
 @section('content')
 <div x-data="workshopOrdersApp()" class="space-y-4 sm:space-y-6">
 
-    {{-- ١. هێڵی سەرەوە: سەردێڕ و کورتە --}}
-    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-            <div class="size-11 sm:size-12 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-xl sm:text-2xl shadow-xs shrink-0">
-                📋
-            </div>
-            <div>
-                <h1 class="text-lg sm:text-xl font-black text-slate-800">داواکارییەکان و وەسڵەکانی کارگە</h1>
-                <p class="text-xs text-slate-500 mt-0.5 font-medium">
-                    فلتەرکردن و گەڕانی خێرا، چاودێری قیاسات و کەرەستە داواکراوەکان و گۆڕینی قۆناغی کار
-                </p>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-            <a href="{{ route('workshop.index') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold border border-slate-200 hover:bg-slate-50 text-slate-700 w-full sm:w-auto text-center justify-center">
-                <span>📊 پوختەی کارگە</span>
-            </a>
-        </div>
-    </div>
 
     {{-- ٢. فلتەری دۆخەکان و گەڕانی زیندوو --}}
     <div class="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
