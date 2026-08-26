@@ -36,7 +36,10 @@ Route::middleware('auth')->group(function () {
 
     // ── داشبۆردی وەستاکان و دروستکردن ──
     Route::middleware('can:view_workshop')->group(function () {
-        Route::get('/workshop', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('workshop.index');
+        Route::get('/workshop', [\App\Http\Controllers\WorkshopController::class, 'dashboard'])->name('workshop.index');
+        Route::get('/workshop/orders', [\App\Http\Controllers\WorkshopController::class, 'orders'])->name('workshop.orders');
+        Route::get('/workshop/materials', [\App\Http\Controllers\WorkshopController::class, 'materials'])->name('workshop.materials');
+        Route::get('/workshop/employees', [\App\Http\Controllers\WorkshopController::class, 'employees'])->name('workshop.employees');
         Route::post('/workshop/orders/{order}/status', [\App\Http\Controllers\WorkshopController::class, 'updateStatus'])->name('workshop.status');
         Route::post('/workshop/materials', [\App\Http\Controllers\WorkshopController::class, 'storeRawMaterial'])->name('workshop.store-material');
         Route::post('/workshop/stock-in', [\App\Http\Controllers\WorkshopController::class, 'stockIn'])->name('workshop.stock-in');

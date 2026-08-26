@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\Item;
 use App\Models\ItemCategory;
 use App\Models\Order;
-use App\Models\StockMovement;
 use App\Models\Unit;
 use App\Models\Warehouse;
 use App\Services\StockService;
@@ -19,19 +19,73 @@ class WorkshopController extends Controller
         private readonly StockService $stockService
     ) {}
 
-    public function index(Request $request): View
+    /** بەدەستهێنانی کۆگای دروستکردن */
+    private function getWorkshopWarehouse(): ?Warehouse
     {
-        // وەرگرتنی کۆگای دروستکردن
-        $workshopWarehouse = Warehouse::where('name', 'like', '%دروستکردن%')->first()
+        return Warehouse::where('name', 'like', '%دروستکردن%')->first()
             ?? Warehouse::where('is_default', false)->first()
             ?? Warehouse::first();
+    }
 
+    /** ١. داشبۆردی سەرەکی کارگە */
+    public function dashboard(): View
+    {
+        $workshopWarehouse = $this->getWorkshopWarehouse();
         $warehouseId = $workshopWarehouse?->id;
-        $section = $request->string('section', 'dashboard')->toString();
+
+        // ئامارە خێراکان
+        $pendingCount = Order::where('status', 'confirmed')->count();
+        $inProductionCount = Order::where('status', 'in_production')->count();
+        $readyCount = Order::where('status', 'ready')->count();
+        $deliveredCount = Order::where('status', 'delivered')->whereDate('updated_at', now()->toDateString())->count();
+
+        // کارە چالاکەکان بۆ پیشاندان لە داشبۆرد
+        $activeOrders = Order::query()
+            ->with(['customer', 'items'])
+            ->whereIn('status', ['in_production', 'confirmed'])
+            ->orderByRaw("FIELD(status, 'in_production', 'confirmed')")
+            ->latest('order_date')
+            ->take(6)
+            ->get();
+
+        // مەوادی کەمبووەوە
+        $lowStockMaterials = Item::query()
+            ->active()
+            ->withStock($warehouseId)
+            ->with(['unit', 'category'])
+            ->where('min_qty', '>', 0)
+            ->get()
+            ->filter(fn ($item) => $item->stock_qty <= (float) $item->min_qty);
+
+        // کارمەندانی ئەمڕۆ
+        $employees = Employee::query()
+            ->active()
+            ->with(['attendances' => fn ($q) => $q->whereDate('work_date', now()->toDateString())])
+            ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
+            ->orderBy('name')
+            ->get();
+
+        $allItems = Item::active()->orderBy('name')->get(['id', 'name', 'code']);
+
+        return view('workshop.dashboard', compact(
+            'workshopWarehouse',
+            'pendingCount',
+            'inProductionCount',
+            'readyCount',
+            'deliveredCount',
+            'activeOrders',
+            'lowStockMaterials',
+            'employees',
+            'allItems'
+        ));
+    }
+
+    /** ٢. بەشی داواکارییەکان و وەسڵەکانی دروستکردن */
+    public function orders(Request $request): View
+    {
         $tab = $request->string('tab', 'all')->toString();
         $q = $request->string('q')->toString();
 
-        // فەرمانەکانی دروستکردن (وەسڵەکان)
         $ordersQuery = Order::query()
             ->with(['customer', 'items'])
             ->whereNotIn('status', ['draft', 'cancelled'])
@@ -50,26 +104,39 @@ class WorkshopController extends Controller
         $orders = $ordersQuery
             ->orderByRaw("FIELD(status, 'in_production', 'confirmed', 'ready', 'delivered')")
             ->latest('order_date')
-            ->paginate(20)
+            ->paginate(18)
             ->withQueryString();
 
-        // ئامارە خێراکان
         $pendingCount = Order::where('status', 'confirmed')->count();
         $inProductionCount = Order::where('status', 'in_production')->count();
         $readyCount = Order::where('status', 'ready')->count();
         $deliveredCount = Order::where('status', 'delivered')->whereDate('updated_at', now()->toDateString())->count();
 
-        // مەوادی خاو و کۆگا لە شوێنی دروستکردن
+        return view('workshop.orders', compact(
+            'orders',
+            'tab',
+            'pendingCount',
+            'inProductionCount',
+            'readyCount',
+            'deliveredCount'
+        ));
+    }
+
+    /** ٣. بەشی مەوادی خاوی کارگە */
+    public function materials(Request $request): View
+    {
+        $workshopWarehouse = $this->getWorkshopWarehouse();
+        $warehouseId = $workshopWarehouse?->id;
+
         $rawMaterials = Item::query()
             ->active()
             ->withStock($warehouseId)
             ->with(['unit', 'category'])
             ->search($request->string('mat_q')->toString())
             ->orderBy('name')
-            ->paginate(15, ['*'], 'materials_page')
+            ->paginate(20)
             ->withQueryString();
 
-        // مەوادی کەمبووەوە (ئاگاداری مەوادە کەمەکان)
         $lowStockMaterials = Item::query()
             ->active()
             ->withStock($warehouseId)
@@ -78,37 +145,34 @@ class WorkshopController extends Controller
             ->get()
             ->filter(fn ($item) => $item->stock_qty <= (float) $item->min_qty);
 
-        // لیستی وەستاکان، حەمەڵەکان و کارمەندان بۆ بینین
-        $employees = \App\Models\Employee::query()
-            ->active()
-            ->with(['attendances' => fn ($q) => $q->whereDate('work_date', now()->toDateString())])
-            ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
-            ->orderBy('name')
-            ->get();
-
         $categories = ItemCategory::orderBy('name')->get();
         $units = Unit::orderBy('name')->get();
         $allItems = Item::active()->orderBy('name')->get(['id', 'name', 'code']);
 
-        return view('workshop.dashboard', compact(
+        return view('workshop.materials', compact(
             'workshopWarehouse',
-            'section',
-            'orders',
-            'tab',
-            'pendingCount',
-            'inProductionCount',
-            'readyCount',
-            'deliveredCount',
             'rawMaterials',
             'lowStockMaterials',
-            'employees',
             'categories',
             'units',
             'allItems'
         ));
     }
 
-    /** گۆڕینی دۆخی دروستکردنی وەسڵ (دەستپێکردن، ئامادەکردن، ڕادەستکردن) */
+    /** ٤. بەشی وەستا و حەمەڵەکان */
+    public function employees(Request $request): View
+    {
+        $employees = Employee::query()
+            ->active()
+            ->with(['attendances' => fn ($q) => $q->whereDate('work_date', now()->toDateString())])
+            ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
+            ->orderBy('name')
+            ->get();
+
+        return view('workshop.employees', compact('employees'));
+    }
+
+    /** گۆڕینی دۆخی دروستکردنی وەسڵ */
     public function updateStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
