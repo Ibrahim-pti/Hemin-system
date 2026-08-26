@@ -2,7 +2,7 @@
 <html lang="ckb" dir="rtl" class="h-full">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>چوونەژوورەوە بۆ سیستەم</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -22,17 +22,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 16px;
-            overflow: hidden;
+            padding: 24px 16px;
+            overflow-x: hidden;
+            overflow-y: auto;
             position: relative;
         }
 
         /* SVG Facet Polygon Shapes in Background */
         .facet-bg {
-            position: absolute;
+            position: fixed;
             inset: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             pointer-events: none;
             z-index: 1;
         }
@@ -41,32 +42,47 @@
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 450px;
+            max-width: 680px;
             background: #ffffff;
-            border-radius: 28px;
-            padding: 36px 32px;
-            box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
+            border-radius: 32px;
+            padding: 52px 48px;
+            box-shadow: 0 30px 70px -15px rgba(15, 23, 42, 0.09), 0 0 0 1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .card-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 500;
         }
 
         .pill-container {
             background-color: #e2e8f0;
             border-radius: 9999px;
-            padding: 4px;
+            padding: 6px;
             display: flex;
-            gap: 4px;
-            margin-bottom: 24px;
+            gap: 6px;
+            margin-bottom: 30px;
         }
 
         .pill-btn {
             flex: 1;
-            padding: 8px 12px;
+            padding: 11px 18px;
             border-radius: 9999px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             border: none;
             background: transparent;
             color: #64748b;
@@ -77,20 +93,20 @@
         .pill-btn.active {
             background: #ffffff;
             color: #2563eb;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
         }
 
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 22px;
         }
 
         .form-label {
             display: block;
             text-align: right;
-            font-size: 12px;
+            font-size: 13.5px;
             font-weight: 700;
             color: #334155;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .input-wrapper {
@@ -101,11 +117,11 @@
 
         .form-input {
             width: 100%;
-            height: 44px;
+            height: 52px;
             background: #ffffff;
             border: 1.5px solid #cbd5e1;
-            border-radius: 14px;
-            font-size: 13.5px;
+            border-radius: 16px;
+            font-size: 15px;
             color: #0f172a;
             font-weight: 500;
             outline: none;
@@ -114,23 +130,23 @@
 
         .form-input:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.12);
         }
 
         .input-email {
-            padding: 0 38px 0 14px;
+            padding: 0 46px 0 18px;
             text-align: left;
         }
 
         .input-password {
-            padding: 0 38px 0 38px;
+            padding: 0 46px 0 46px;
             text-align: center;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
         }
 
         .input-icon-right {
             position: absolute;
-            right: 12px;
+            right: 16px;
             color: #94a3b8;
             display: flex;
             align-items: center;
@@ -140,7 +156,7 @@
 
         .input-icon-left {
             position: absolute;
-            left: 12px;
+            left: 16px;
             color: #94a3b8;
             display: flex;
             align-items: center;
@@ -150,7 +166,7 @@
 
         .eye-btn {
             position: absolute;
-            right: 12px;
+            right: 16px;
             color: #94a3b8;
             background: none;
             border: none;
@@ -169,29 +185,30 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 22px;
+            margin-top: 28px;
+            gap: 16px;
         }
 
         .submit-btn {
             background: #2563eb;
             color: #ffffff;
             border: none;
-            border-radius: 12px;
-            padding: 10px 20px;
-            font-size: 13px;
+            border-radius: 14px;
+            padding: 13px 28px;
+            font-size: 14.5px;
             font-weight: 700;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
             transition: all 0.2s ease;
         }
 
         .submit-btn:hover {
             background: #1d4ed8;
             transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.38);
         }
 
         .submit-btn:active {
@@ -201,8 +218,8 @@
         .remember-label {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 12px;
+            gap: 9px;
+            font-size: 13.5px;
             font-weight: 600;
             color: #475569;
             cursor: pointer;
@@ -210,12 +227,59 @@
         }
 
         .remember-checkbox {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
             border: 1.5px solid #cbd5e1;
             cursor: pointer;
             accent-color: #2563eb;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            .login-card {
+                max-width: 540px;
+                padding: 40px 32px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .login-card {
+                padding: 30px 20px;
+                border-radius: 24px;
+                max-width: 100%;
+            }
+
+            .card-title {
+                font-size: 20px;
+            }
+
+            .card-subtitle {
+                font-size: 12px;
+            }
+
+            .pill-btn {
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+
+            .form-input {
+                height: 46px;
+                font-size: 13.5px;
+            }
+
+            .submit-btn {
+                padding: 11px 20px;
+                font-size: 13px;
+            }
+
+            .remember-label {
+                font-size: 12.5px;
+            }
         }
     </style>
 </head>
@@ -250,11 +314,11 @@
     <div class="login-card">
         
         <!-- Header -->
-        <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; margin-bottom: 6px;">
+        <div style="text-align: center; margin-bottom: 26px;">
+            <h1 class="card-title">
                 بەخێربێیتەوە بۆ سیستەم
             </h1>
-            <p style="font-size: 12.5px; color: #94a3b8; font-weight: 500;">
+            <p class="card-subtitle">
                 تکایە بەشەکەت دیاری بکە و زانیارییەکانت بنووسە بۆ چوونەژوورەوە
             </p>
         </div>
@@ -267,7 +331,7 @@
                     class="pill-btn"
                     :class="{ 'active': selectedRole === 'wasta' }">
                 <span>کارگە و دروستکردن</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                 </svg>
             </button>
@@ -278,7 +342,7 @@
                     class="pill-btn"
                     :class="{ 'active': selectedRole === 'admin' }">
                 <span>ئۆفیس و دارایی</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
                     <path d="M9 22v-4h6v4"/>
                     <path d="M8 6h.01"/>
@@ -302,7 +366,7 @@
             @if (isset($errors) && $errors->any())
                 <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; font-size: 12px; font-weight: 700; border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
                     </svg>
                     <span>{{ $errors->first() }}</span>
                 </div>
@@ -321,7 +385,7 @@
                            dir="ltr" 
                            placeholder="admin@hemin.krd">
                     <div class="input-icon-right">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="2"/>
                             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
                         </svg>
@@ -335,7 +399,7 @@
                 <div class="input-wrapper">
                     <!-- Key icon on the left -->
                     <div class="input-icon-left">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="7.5" cy="15.5" r="4.5"/>
                             <path d="m21 3-9.5 9.5"/>
                             <path d="m15.5 7.5 3 3"/>
@@ -356,11 +420,11 @@
                     <button type="button" 
                             @click="showPassword = !showPassword"
                             class="eye-btn">
-                        <svg x-show="!showPassword" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <svg x-show="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/>
                             <circle cx="12" cy="12" r="3"/>
                         </svg>
-                        <svg x-show="showPassword" style="display: none;" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <svg x-show="showPassword" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
                             <line x1="1" y1="1" x2="23" y2="23"/>
                         </svg>
