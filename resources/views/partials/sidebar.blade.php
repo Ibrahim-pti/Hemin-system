@@ -64,9 +64,9 @@
                     'activeIconBg' => 'rgba(99, 102, 241, 0.2)',
                     'activeIconColor' => '#a5b4fc',
                     'items' => [
-                        ['route' => 'workshop.*', 'href' => route('workshop.index', ['tab' => 'orders']), 'label' => 'داواکارییەکانی کارگە', 'icon' => 'orders', 'can' => 'view_workshop', 'activeCheck' => fn() => request()->routeIs('workshop.*') && request('tab') === 'orders'],
-                        ['route' => 'workshop.*', 'href' => route('workshop.index', ['tab' => 'materials']), 'label' => 'مەوادی خاو', 'icon' => 'items', 'can' => 'view_workshop', 'activeCheck' => fn() => request()->routeIs('workshop.*') && request('tab') === 'materials'],
-                        ['route' => 'workshop.*', 'href' => route('workshop.index', ['tab' => 'employees']), 'label' => 'وەستا و حەمەڵەکان', 'icon' => 'employees', 'can' => 'view_workshop', 'activeCheck' => fn() => request()->routeIs('workshop.*') && request('tab') === 'employees'],
+                        ['route' => 'workshop.orders', 'href' => route('workshop.orders'), 'label' => 'داواکارییەکانی کارگە', 'icon' => 'orders', 'can' => 'view_workshop'],
+                        ['route' => 'workshop.materials', 'href' => route('workshop.materials'), 'label' => 'مەوادی خاو', 'icon' => 'items', 'can' => 'view_workshop'],
+                        ['route' => 'workshop.employees', 'href' => route('workshop.employees'), 'label' => 'وەستا و حەمەڵەکان', 'icon' => 'employees', 'can' => 'view_workshop'],
                     ],
                 ],
                 [
