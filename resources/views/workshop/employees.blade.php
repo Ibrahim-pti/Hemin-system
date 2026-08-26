@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.menu')
 @section('title', 'وەستا و حەمەڵەکان')
 
 @section('content')
