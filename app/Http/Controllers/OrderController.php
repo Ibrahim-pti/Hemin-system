@@ -204,6 +204,17 @@ class OrderController extends Controller
 
     private function validated(Request $request, ?Order $order = null): array
     {
+        if ($request->has('exchange_rate')) {
+            $request->merge([
+                'exchange_rate' => $request->filled('exchange_rate') ? str_replace(',', '', (string) $request->input('exchange_rate')) : null,
+            ]);
+        }
+        if ($request->has('discount_percent')) {
+            $request->merge([
+                'discount_percent' => $request->filled('discount_percent') ? str_replace(',', '', (string) $request->input('discount_percent')) : 0,
+            ]);
+        }
+
         $unique = 'unique:orders,invoice_no'.($order ? ",{$order->id}" : '');
 
         return $request->validate([
