@@ -112,7 +112,6 @@
             <table class="table w-full">
                 <thead>
                     <tr class="bg-slate-50/80 text-xs text-slate-700 font-bold border-b border-[--color-line]">
-                        <th style="width: 44px; text-align: center; padding: 10px 6px;">#</th>
                         <th style="width: 60px; text-align: center; padding: 10px 6px;">وێنە</th>
                         <th style="text-align: right; padding: 10px 12px;">ناوەڕۆک / شتەکە (وەک دەرگا، مەحەجەرە...)</th>
                         <th style="width: 220px; text-align: center; padding: 10px 12px;">نرخ (<span x-text="currency === 'USD' ? '$' : 'د.ع'"></span>)</th>
@@ -122,9 +121,6 @@
                 <tbody class="divide-y divide-slate-100 text-sm">
                     <template x-for="(line, index) in lines" :key="index">
                         <tr>
-                            {{-- # --}}
-                            <td style="text-align: center; padding: 6px;" class="text-xs text-slate-400 font-bold" x-text="index + 1"></td>
-
                             {{-- وێنەی کاڵا / دیزاین --}}
                             <td style="text-align: center; padding: 4px;">
                                 <div class="flex items-center justify-center">
@@ -166,7 +162,7 @@
                             <td style="padding: 6px 12px;">
                                 <input :name="`lines[${index}][description]`" x-model="line.description" required
                                        class="field w-full !py-2 !px-3 text-sm bg-white"
-                                       placeholder="ناوی شتەکە بنووسە (وەک: دەرگای ئاسنی هەندەسی، مەحەجەرە...)">
+                                       :placeholder="'ناوەڕۆک / شتەکە ' + (index + 1) + ' (وەک: دەرگای ئاسن، مەحەجەرە...)'">
                             </td>
 
                             {{-- نرخ --}}
