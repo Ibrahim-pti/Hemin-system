@@ -12,12 +12,43 @@
         }
     </script>
     <style>
-        html.sidebar-collapsed aside.sidebar-nav {
-            width: 5rem !important;
-            min-width: 5rem !important;
+        /* Mobile sidebar rules (< 640px) */
+        @media (max-width: 639px) {
+            #main-sidebar {
+                position: fixed !important;
+                top: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                height: 100vh !important;
+                width: 17rem !important;
+                min-width: 17rem !important;
+                z-index: 50 !important;
+                transform: translateX(100%) !important;
+                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            #main-sidebar.mobile-open {
+                transform: translateX(0) !important;
+            }
+            #main-sidebar [x-show="sidebarOpen"] {
+                display: block !important;
+            }
         }
-        html.sidebar-collapsed aside.sidebar-nav [x-show="sidebarOpen"] {
-            display: none !important;
+        /* Desktop sidebar rules (>= 640px) */
+        @media (min-width: 640px) {
+            #main-sidebar {
+                position: sticky !important;
+                top: 0 !important;
+                height: 100vh !important;
+                transform: none !important;
+                transition: width 0.2s ease, min-width 0.2s ease !important;
+            }
+            html.sidebar-collapsed aside.sidebar-nav {
+                width: 5rem !important;
+                min-width: 5rem !important;
+            }
+            html.sidebar-collapsed aside.sidebar-nav [x-show="sidebarOpen"] {
+                display: none !important;
+            }
         }
         .sidebar-no-transition, .sidebar-no-transition * {
             transition: none !important;

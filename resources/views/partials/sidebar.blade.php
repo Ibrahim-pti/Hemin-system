@@ -2,15 +2,12 @@
 {{-- NOTE: Using inline styles for critical layout to avoid Vite rebuild dependency --}}
 <aside
     id="main-sidebar"
+    :class="{ 'mobile-open': mobileOpen }"
     :style="{
-        width: (window.innerWidth < 640) ? '17rem' : (sidebarOpen ? '16rem' : '5rem'),
-        minWidth: (window.innerWidth < 640) ? '17rem' : (sidebarOpen ? '16rem' : '5rem'),
-        position: (window.innerWidth < 640) ? 'fixed' : 'sticky',
-        right: '0',
-        top: '0',
-        transform: (window.innerWidth < 640 && !mobileOpen) ? 'translateX(100%)' : 'translateX(0)',
+        width: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '5rem') : '',
+        minWidth: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '5rem') : '',
     }"
-    style="position: sticky; top: 0; height: 100vh; width: 16rem; min-width: 16rem; background: #0f172a; border-left: 1px solid rgba(255,255,255,0.07); z-index: 50; flex-shrink: 0; transition: width 0.2s ease, min-width 0.2s ease, transform 0.2s ease; display: flex; flex-direction: column; user-select: none;"
+    style="background: #0f172a; border-left: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; display: flex; flex-direction: column; user-select: none;"
     class="sidebar-nav sidebar-no-transition"
     x-init="$nextTick(() => { $el.classList.remove('sidebar-no-transition'); })">
 
