@@ -34,6 +34,15 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
+    // ── داشبۆردی وەستاکان و دروستکردن ──
+    Route::middleware('can:view_workshop')->group(function () {
+        Route::get('/workshop', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('workshop.index');
+        Route::post('/workshop/orders/{order}/status', [\App\Http\Controllers\WorkshopController::class, 'updateStatus'])->name('workshop.status');
+        Route::post('/workshop/materials', [\App\Http\Controllers\WorkshopController::class, 'storeRawMaterial'])->name('workshop.store-material');
+        Route::post('/workshop/stock-in', [\App\Http\Controllers\WorkshopController::class, 'stockIn'])->name('workshop.stock-in');
+        Route::post('/workshop/stock-out', [\App\Http\Controllers\WorkshopController::class, 'stockOut'])->name('workshop.stock-out');
+    });
+
     // ── مەخزەن ──
     Route::middleware('can:view_stock')->group(function () {
         Route::get('/items', [ItemController::class, 'index'])->name('items.index');

@@ -38,19 +38,35 @@
 
         {{-- سەرەکی / داشبۆرد --}}
         <div>
-            @php $isDashboard = request()->routeIs('dashboard'); @endphp
-            <a href="{{ route('dashboard') }}"
+            @php
+                $isWasta = auth()->user()->isStorekeeper() && !auth()->user()->isAdmin();
+                $dashRoute = $isWasta ? 'workshop.index' : 'dashboard';
+                $dashLabel = $isWasta ? 'داشبۆردی کارگە و وەستاکان' : 'داشبۆردی سەرەکی';
+                $isDashboard = request()->routeIs('dashboard') || ($isWasta && request()->routeIs('workshop.*'));
+            @endphp
+            <a href="{{ route($dashRoute) }}"
                style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isDashboard ? 'background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.22);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
                class="sidebar-link {{ $isDashboard ? 'active-link' : '' }}">
                 <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.2); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
-                    @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-4.5'])
+                    @include('partials.icon', ['name' => $isWasta ? 'workshop' : 'dashboard', 'class' => 'size-4.5'])
                 </span>
-                <span x-show="sidebarOpen" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">داشبۆردی سەرەکی</span>
+                <span x-show="sidebarOpen" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $dashLabel }}</span>
             </a>
         </div>
 
         @php
             $sections = [
+                [
+                    'title' => 'کارگە و دروستکردن',
+                    'activeBg' => 'rgba(99, 102, 241, 0.12)',
+                    'activeBorder' => 'rgba(99, 102, 241, 0.22)',
+                    'activeText' => '#818cf8',
+                    'activeIconBg' => 'rgba(99, 102, 241, 0.2)',
+                    'activeIconColor' => '#a5b4fc',
+                    'items' => [
+                        ['route' => 'workshop.*', 'href' => route('workshop.index'), 'label' => 'داشبۆردی کارگە و مەواد', 'icon' => 'workshop', 'can' => 'view_workshop'],
+                    ],
+                ],
                 [
                     'title' => 'کۆگا و لایەنەکان',
                     'activeBg' => 'rgba(14, 165, 233, 0.12)',
@@ -100,13 +116,16 @@
         @endphp
 
         @foreach ($sections as $section)
-            <div>
-                <div x-show="sidebarOpen" style="padding: 0 0.625rem; margin-bottom: 0.375rem; font-size: 0.68rem; font-weight: 600; color: #64748b; letter-spacing: 0.04em;">
-                    {{ $section['title'] }}
-                </div>
-                <nav style="display: flex; flex-direction: column; gap: 0.125rem;">
-                    @foreach ($section['items'] as $item)
-                        @if (auth()->user()->can($item['can']))
+            @php
+                $visibleItems = array_filter($section['items'], fn ($it) => auth()->user()->can($it['can']));
+            @endphp
+            @if (count($visibleItems) > 0)
+                <div>
+                    <div x-show="sidebarOpen" style="padding: 0 0.625rem; margin-bottom: 0.375rem; font-size: 0.68rem; font-weight: 600; color: #64748b; letter-spacing: 0.04em;">
+                        {{ $section['title'] }}
+                    </div>
+                    <nav style="display: flex; flex-direction: column; gap: 0.125rem;">
+                        @foreach ($visibleItems as $item)
                             @php
                                 $isActive = request()->routeIs(...explode('|', $item['route']));
                             @endphp
@@ -118,10 +137,10 @@
                                 </span>
                                 <span x-show="sidebarOpen" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item['label'] }}</span>
                             </a>
-                        @endif
-                    @endforeach
-                </nav>
-            </div>
+                        @endforeach
+                    </nav>
+                </div>
+            @endif
         @endforeach
 
     </div>

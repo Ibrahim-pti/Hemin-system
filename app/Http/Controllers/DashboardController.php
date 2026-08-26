@@ -13,13 +13,19 @@ use App\Models\Payment;
 use App\Models\Purchase;
 use App\Models\StockMovement;
 use App\Models\Supplier;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
         $user = auth()->user();
+
+        // ئەگەر وەستا یان بەرپرسی کارگە بێت ڕاستەوخۆ دەچێتە داشبۆردی کارگە
+        if ($user && $user->isStorekeeper() && ! $user->isAdmin()) {
+            return redirect()->route('workshop.index');
+        }
         $today = now()->toDateString();
         $startOfMonth = now()->startOfMonth()->toDateString();
 
