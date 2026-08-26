@@ -797,38 +797,8 @@ function workshopApp() {
         selectedItemId: '',
         previewImg: null,
 
-        ordersList: @json($orders->map(fn($o) => [
-            'id' => $o->id,
-            'invoice_no' => $o->invoice_no,
-            'status' => $o->status,
-            'status_label' => $o->status_label,
-            'customer_name' => $o->customer?->name ?? 'نەناسراو',
-            'customer_phone' => $o->customer?->phone ?? '',
-            'order_date' => $o->order_date?->format('Y/m/d') ?? '',
-            'delivery_date' => $o->delivery_date?->format('Y/m/d') ?? '',
-            'notes' => $o->notes ?? '',
-            'items' => $o->items->map(fn($it) => [
-                'id' => $it->id,
-                'item_name' => $it->item_name,
-                'qty' => (float) $it->qty,
-                'unit_name' => $it->unit_name,
-                'width' => $it->width,
-                'height' => $it->height,
-                'note' => $it->note,
-                'image' => \App\Models\Item::find($it->item_id)?->imageUrl(),
-            ]),
-        ])),
-
-        materialsList: @json($rawMaterials->map(fn($m) => [
-            'id' => $m->id,
-            'code' => $m->code,
-            'name' => $m->name,
-            'category_name' => $m->category?->name,
-            'stock_qty' => (float) $m->stock_qty,
-            'min_qty' => (float) $m->min_qty,
-            'unit_name' => $m->unit?->name ?? '',
-            'is_low' => $m->is_low,
-        ])),
+        ordersList: @json($ordersData),
+        materialsList: @json($materialsData),
 
         init() {
             // گۆڕینی تاب لەڕێگەی URL ئەگەر دەستکاری کرا
