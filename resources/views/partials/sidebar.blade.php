@@ -92,10 +92,7 @@
                     'activeIconBg' => 'rgba(139, 92, 246, 0.2)',
                     'activeIconColor' => '#c4b5fd',
                     'items' => [
-                        ['route' => 'attendance.index', 'href' => route('attendance.index'), 'label' => 'هاتن و چوون', 'icon' => 'attendance', 'can' => 'manage_employees'],
-                        ['route' => 'attendance.wages', 'href' => route('attendance.wages'), 'label' => 'حەقدەستەکان', 'icon' => 'employees', 'can' => 'manage_employees'],
                         ['route' => 'reports.*', 'href' => route('reports.index'), 'label' => 'ڕاپۆرتەکان', 'icon' => 'reports', 'can' => 'view_reports'],
-                        ['route' => 'activity.*', 'href' => route('activity.index'), 'label' => 'مێژووی کردارەکان', 'icon' => 'activity', 'can' => 'manage_settings'],
                         ['route' => 'settings.*', 'href' => route('settings.index'), 'label' => 'ڕێکخستن و باکەپ', 'icon' => 'settings', 'can' => 'manage_settings'],
                     ],
                 ],
