@@ -3,36 +3,231 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>چوونەژوورەوە — {{ \App\Models\Setting::get('company_name', 'کارگەی ئاسنگەری هێمن') }}</title>
+    <title>چوونەژوورەوە بۆ سیستەم</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        .login-bg-pattern {
-            background-color: #0f172a;
-            background-image: radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
-                              radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-                              radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.9) 0px, transparent 100%);
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        
+        body {
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #ebf0f7;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(219, 234, 254, 0.8) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(224, 231, 255, 0.8) 0px, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* SVG Facet Polygon Shapes in Background */
+        .facet-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 36px 32px;
+            box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
+        }
+
+        .pill-container {
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            padding: 4px;
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+        }
+
+        .pill-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pill-btn.active {
+            background: #ffffff;
+            color: #2563eb;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            text-align: right;
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 44px;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 14px;
+            font-size: 13.5px;
+            color: #0f172a;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .input-email {
+            padding: 0 38px 0 14px;
+            text-align: left;
+        }
+
+        .input-password {
+            padding: 0 38px 0 38px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .input-icon-right {
+            position: absolute;
+            right: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .input-icon-left {
+            position: absolute;
+            left: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .eye-btn {
+            position: absolute;
+            right: 12px;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+        }
+
+        .eye-btn:hover {
+            color: #475569;
+        }
+
+        .form-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 22px;
+        }
+
+        .submit-btn {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+            transition: all 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .remember-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember-checkbox {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1.5px solid #cbd5e1;
+            cursor: pointer;
+            accent-color: #2563eb;
         }
     </style>
 </head>
-<body class="h-full bg-slate-50 antialiased font-sans text-slate-800"
-      x-data="{
+<body x-data="{
           selectedRole: 'admin',
           email: 'admin@hemin.krd',
           password: '',
           showPassword: false,
+          loading: false,
           setRole(role) {
               this.selectedRole = role;
-              if (role === 'admin') {
-                  this.email = 'admin@hemin.krd';
-              } else {
-                  this.email = 'kogha@hemin.krd';
-              }
+              this.email = role === 'admin' ? 'admin@hemin.krd' : 'kogha@hemin.krd';
               this.password = '';
               this.$nextTick(() => {
                   const passInput = document.getElementById('password');
@@ -41,214 +236,155 @@
           }
       }">
 
-    <div class="min-h-screen w-full flex flex-col lg:flex-row">
+    <!-- SVG Facet Geometric Background -->
+    <svg class="facet-bg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="none">
+        <polygon points="0,0 600,0 350,450 0,300" fill="#f8fafc" opacity="0.6"/>
+        <polygon points="600,0 1440,0 1440,400 900,300" fill="#e2e8f0" opacity="0.4"/>
+        <polygon points="0,300 350,450 200,900 0,900" fill="#e2e8f0" opacity="0.5"/>
+        <polygon points="350,450 900,300 1100,750 500,900" fill="#ffffff" opacity="0.4"/>
+        <polygon points="900,300 1440,400 1440,900 1100,750" fill="#cbd5e1" opacity="0.3"/>
+        <polygon points="200,900 500,900 1100,750 1440,900" fill="#f1f5f9" opacity="0.7"/>
+    </svg>
 
-        {{-- ── ١. لای ڕاست: بەشی فۆرمی چوونەژوورەوە (Main Form Area) ── --}}
-        <div class="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 xl:p-18 bg-white z-10">
+    <!-- Centered Login Box -->
+    <div class="login-card">
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; margin-bottom: 6px;">
+                بەخێربێیتەوە بۆ سیستەم
+            </h1>
+            <p style="font-size: 12.5px; color: #94a3b8; font-weight: 500;">
+                تکایە بەشەکەت دیاری بکە و زانیارییەکانت بنووسە بۆ چوونەژوورەوە
+            </p>
+        </div>
 
-            {{-- سەری پەڕە: لۆگۆ بۆ مۆبایل و ناوی سیستەم --}}
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="flex size-11 items-center justify-center rounded-xl bg-blue-600 text-white font-black text-xl shadow-md shadow-blue-500/20">
-                        هـ
-                    </span>
-                    <div>
-                        <div class="font-black text-slate-900 text-base leading-tight">
-                            {{ \App\Models\Setting::get('company_name', 'کارگەی ئاسنگەری هێمن') }}
-                        </div>
-                        <div class="text-xs text-slate-400 font-medium">سیستەمی بەڕێوەبردنی کارگە</div>
-                    </div>
+        <!-- Pill Switcher -->
+        <div class="pill-container">
+            <!-- کارگە و دروستکردن -->
+            <button type="button" 
+                    @click="setRole('wasta')"
+                    class="pill-btn"
+                    :class="{ 'active': selectedRole === 'wasta' }">
+                <span>کارگە و دروستکردن</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+            </button>
+
+            <!-- ئۆفیس و دارایی -->
+            <button type="button" 
+                    @click="setRole('admin')"
+                    class="pill-btn"
+                    :class="{ 'active': selectedRole === 'admin' }">
+                <span>ئۆفیس و دارایی</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                    <path d="M9 22v-4h6v4"/>
+                    <path d="M8 6h.01"/>
+                    <path d="M16 6h.01"/>
+                    <path d="M12 6h.01"/>
+                    <path d="M12 10h.01"/>
+                    <path d="M12 14h.01"/>
+                    <path d="M16 10h.01"/>
+                    <path d="M16 14h.01"/>
+                    <path d="M8 10h.01"/>
+                    <path d="M8 14h.01"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" action="{{ route('login') }}" @submit="loading = true">
+            @csrf
+
+            <!-- Errors Alert -->
+            @if (isset($errors) && $errors->any())
+                <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; font-size: 12px; font-weight: 700; border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>{{ $errors->first() }}</span>
                 </div>
+            @endif
 
-                <div class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
-                    <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>سیستەم ئامادەیە</span>
+            <!-- Email Field -->
+            <div class="form-group">
+                <label class="form-label" for="email">ئیمەیڵ</label>
+                <div class="input-wrapper">
+                    <input id="email" 
+                           name="email" 
+                           type="email" 
+                           required
+                           x-model="email"
+                           class="form-input input-email"
+                           dir="ltr" 
+                           placeholder="admin@hemin.krd">
+                    <div class="input-icon-right">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"/>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
 
-            {{-- ناوەڕۆکی فۆرم: ڕێکخراو و فراوان --}}
-            <div class="my-auto py-8 max-w-md w-full mx-auto space-y-6">
-
-                <div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">بەخێربێیتەوە 👋</h2>
-                    <p class="text-sm text-slate-500 font-medium mt-1.5">
-                        تکایە بەشەکەت دیاری بکە و پاسۆرد بنووسە بۆ چوونەژوورەوە
-                    </p>
-                </div>
-
-                {{-- هەڵبژاردنی ڕۆڵ (دوو بەشە سەرەکییەکە بە کارتی گەورە و جوان) --}}
-                <div class="space-y-2.5">
-                    <label class="block text-xs font-bold text-slate-700">هەڵبژاردنی بەشی کار:</label>
-
-                    <div class="grid grid-cols-2 gap-3.5">
-                        {{-- بەشی بەڕێوەبەر و فرۆشتن --}}
-                        <button type="button" @click="setRole('admin')"
-                                :class="selectedRole === 'admin'
-                                    ? 'bg-blue-50/80 border-blue-500 ring-2 ring-blue-200 shadow-sm'
-                                    : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 hover:border-slate-300'"
-                                class="p-4 rounded-2xl border-2 transition-all text-right flex flex-col justify-between cursor-pointer group">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="size-10 rounded-xl flex items-center justify-center text-xl transition-transform group-hover:scale-110"
-                                     :class="selectedRole === 'admin' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-700'">
-                                    🏢
-                                </div>
-                                <span x-show="selectedRole === 'admin'" class="size-5 rounded-full bg-blue-600 text-white text-[11px] flex items-center justify-center font-bold">✓</span>
-                            </div>
-                            <div>
-                                <div class="text-sm font-bold" :class="selectedRole === 'admin' ? 'text-blue-900' : 'text-slate-800'">بەڕێوەبەر</div>
-                                <div class="text-xs text-slate-500 mt-0.5 font-medium">ئۆفیس و فرۆشتن</div>
-                            </div>
-                        </button>
-
-                        {{-- بەشی کارگە و وەستاکان --}}
-                        <button type="button" @click="setRole('wasta')"
-                                :class="selectedRole === 'wasta'
-                                    ? 'bg-indigo-50/80 border-indigo-500 ring-2 ring-indigo-200 shadow-sm'
-                                    : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 hover:border-slate-300'"
-                                class="p-4 rounded-2xl border-2 transition-all text-right flex flex-col justify-between cursor-pointer group">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="size-10 rounded-xl flex items-center justify-center text-xl transition-transform group-hover:scale-110"
-                                     :class="selectedRole === 'wasta' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-700'">
-                                    ⚒️
-                                </div>
-                                <span x-show="selectedRole === 'wasta'" class="size-5 rounded-full bg-indigo-600 text-white text-[11px] flex items-center justify-center font-bold">✓</span>
-                            </div>
-                            <div>
-                                <div class="text-sm font-bold" :class="selectedRole === 'wasta' ? 'text-indigo-900' : 'text-slate-800'">وەستا</div>
-                                <div class="text-xs text-slate-500 mt-0.5 font-medium">کارگە و دروستکردن</div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-
-                {{-- فۆرمی تێپەڕەوشە --}}
-                <form method="POST" action="{{ route('login') }}" class="space-y-4 pt-1">
-                    @csrf
-
-                    @if (isset($errors) && $errors->any())
-                        <div class="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs text-rose-700 font-bold flex items-center gap-2.5">
-                            <svg class="size-5 shrink-0 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                            </svg>
-                            <span>{{ $errors->first() }}</span>
-                        </div>
-                    @endif
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5" for="email">ئیمەیڵ</label>
-                        <div class="relative">
-                            <input id="email" name="email" type="email" required
-                                   x-model="email"
-                                   class="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 px-4 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 font-medium transition-all"
-                                   dir="ltr" placeholder="admin@hemin.krd">
-                        </div>
+            <!-- Password Field -->
+            <div class="form-group">
+                <label class="form-label" for="password">وشەی نهێنی</label>
+                <div class="input-wrapper">
+                    <!-- Key icon on the left -->
+                    <div class="input-icon-left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="7.5" cy="15.5" r="4.5"/>
+                            <path d="m21 3-9.5 9.5"/>
+                            <path d="m15.5 7.5 3 3"/>
+                        </svg>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5" for="password">وشەی نهێنی</label>
-                        <div class="relative">
-                            <input id="password" name="password"
-                                   :type="showPassword ? 'text' : 'password'"
-                                   required autofocus
-                                   x-model="password"
-                                   class="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 px-4 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 font-medium transition-all"
-                                   dir="ltr" placeholder="••••••••">
-                            <button type="button" @click="showPassword = !showPassword"
-                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 text-xs cursor-pointer select-none">
-                                <span x-show="!showPassword">👁️</span>
-                                <span x-show="showPassword">🙈</span>
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Input -->
+                    <input id="password" 
+                           name="password" 
+                           :type="showPassword ? 'text' : 'password'"
+                           required
+                           x-model="password"
+                           class="form-input input-password"
+                           dir="ltr" 
+                           placeholder="••••••••">
 
-                    <div class="flex items-center justify-between text-xs pt-0.5">
-                        <label class="flex items-center gap-2 text-slate-600 cursor-pointer select-none font-medium">
-                            <input type="checkbox" name="remember" class="size-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                            <span>لەبیرم مەکە</span>
-                        </label>
-                    </div>
-
-                    <button type="submit"
-                            class="w-full py-3.5 px-5 rounded-xl text-sm font-black text-white shadow-lg transition-all active:scale-98 cursor-pointer mt-3"
-                            :class="selectedRole === 'admin'
-                                ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/25'
-                                : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/25'">
-                        <span x-text="selectedRole === 'admin' ? 'چوونەژوورەوە بۆ ئۆفیسی فرۆشتن 🏢' : 'چوونەژوورەوە بۆ کارگەی دروستکردن ⚒️'"></span>
+                    <!-- Eye toggle on the right -->
+                    <button type="button" 
+                            @click="showPassword = !showPassword"
+                            class="eye-btn">
+                        <svg x-show="!showPassword" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg x-show="showPassword" style="display: none;" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
                     </button>
-                </form>
-            </div>
-
-            {{-- بنەوەی فۆرم: ناونیشان --}}
-            <div class="pt-6 border-t border-slate-100 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2">
-                <span>{{ \App\Models\Setting::get('company_address', 'هەولێر — کۆمەڵگەی پیشەسازی') }}</span>
-                <span>سیستەمی هێمن v2.0</span>
-            </div>
-        </div>
-
-        {{-- ── ٢. لای چەپ: پەنێڵی ناوازە و براندینگی کارگە (Brand Showcase Side) ── --}}
-        <div class="hidden lg:flex flex-1 login-bg-pattern text-white p-10 xl:p-16 flex-col justify-between relative overflow-hidden">
-
-            {{-- ڕووناکی و دیکۆراتی سەرنجڕاکێش لە باکگراوند --}}
-            <div class="absolute -top-24 -left-24 size-96 rounded-full bg-blue-500/20 blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-24 -right-24 size-96 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none"></div>
-
-            {{-- بەشی سەرەوە: ناونیشان و تاگ --}}
-            <div class="relative z-10">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card text-blue-300 text-xs font-bold border border-blue-400/20 mb-6">
-                    <span>✨</span>
-                    <span>سیستەمی زیرەکی بەڕێوەبردنی کارگە و فرۆشتن</span>
-                </div>
-
-                <h2 class="text-3xl xl:text-4xl font-black leading-snug tracking-tight text-white max-w-lg">
-                    بەڕێوەبردنی کارگە، فرۆشتن و مەواد بە شێوازێکی خێرا و پرۆفشناڵ
-                </h2>
-                <p class="mt-3 text-slate-300 text-sm max-w-md leading-relaxed">
-                    بەستنەوەی ئۆفیسی فرۆشتن لەگەڵ وەستاکانی کارگە لە یەک سیستەمی یەکگرتوودا بۆ خێرایی کارکردن.
-                </p>
-            </div>
-
-            {{-- بەشی ناوەڕاست: کارتە تایبەتمەندەکان (Feature Glass Cards) --}}
-            <div class="relative z-10 space-y-3.5 my-8 max-w-lg">
-                {{-- کارتی فرۆشتن --}}
-                <div class="glass-card p-4.5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all border border-white/10">
-                    <div class="size-12 rounded-xl bg-blue-500/20 border border-blue-400/30 text-blue-300 flex items-center justify-center text-xl shrink-0">
-                        📋
-                    </div>
-                    <div>
-                        <div class="font-bold text-sm text-white">فرۆشتن، وەسڵەکان و دارایی</div>
-                        <div class="text-xs text-slate-300 mt-0.5">تۆمارکردنی وەسڵ، حسابی کڕیاران و قەرزەکان بە دینار و دۆلار</div>
-                    </div>
-                </div>
-
-                {{-- کارتی دروستکردن --}}
-                <div class="glass-card p-4.5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all border border-white/10">
-                    <div class="size-12 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 flex items-center justify-center text-xl shrink-0">
-                        ⚒️
-                    </div>
-                    <div>
-                        <div class="font-bold text-sm text-white">داشبۆردی وەستاکان و کارگە</div>
-                        <div class="text-xs text-slate-300 mt-0.5">بینینی وێنەی شتە داواکراوەکان و گۆڕینی دۆخی دروستکردن</div>
-                    </div>
-                </div>
-
-                {{-- کارتی مەوادی خاو --}}
-                <div class="glass-card p-4.5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all border border-white/10">
-                    <div class="size-12 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center text-xl shrink-0">
-                        📦
-                    </div>
-                    <div>
-                        <div class="font-bold text-sm text-white">دوو کۆگا و مەوادی دروستکردن</div>
-                        <div class="text-xs text-slate-300 mt-0.5">کۆگای سەرەکی و شوێنی دروستکردن بە تۆمارکردنی کەمبوون و بەکارهێنان</div>
-                    </div>
                 </div>
             </div>
 
-            {{-- بەشی خوارەوە: ماف پارێزراوە --}}
-            <div class="relative z-10 text-xs text-slate-400 flex items-center justify-between">
-                <span>{{ \App\Models\Setting::get('company_name', 'کارگەی ئاسنگەری هێمن') }} &copy; {{ date('Y') }}</span>
-                <span class="text-slate-500 font-mono">Hemin Workshop Suite</span>
+            <!-- Bottom Row -->
+            <div class="form-bottom">
+                <!-- Button on the LEFT in RTL visual row -->
+                <button type="submit" 
+                        :disabled="loading"
+                        class="submit-btn">
+                    <span style="font-size: 15px; line-height: 1;">←</span>
+                    <span x-text="selectedRole === 'admin' ? 'چوونەژوورەوەی ئۆفیس' : 'چوونەژوورەوەی کارگە'"></span>
+                </button>
+
+                <!-- Remember me on the RIGHT in RTL visual row -->
+                <label class="remember-label">
+                    <span>لەبیرم مەکە</span>
+                    <input type="checkbox" name="remember" class="remember-checkbox">
+                </label>
             </div>
-        </div>
+        </form>
 
     </div>
 
