@@ -100,12 +100,13 @@
 *::after {
     box-shadow: none !important;
     text-shadow: none !important;
+    font-family: 'Rabar', 'Vazirmatn Variable', sans-serif !important;
 }
 
 @layer base {
     html {
         direction: rtl;
-        font-family: 'Rabar', 'Vazirmatn Variable', sans-serif;
+        font-family: 'Rabar', 'Vazirmatn Variable', sans-serif !important;
     }
 
     /* Alpine — ڕێگری لە دەرکەوتنی ناوەڕۆکی شاراوە پێش بارکردن */
@@ -114,14 +115,14 @@
     }
 
     body {
-        font-family: 'Rabar', 'Vazirmatn Variable', sans-serif;
+        font-family: 'Rabar', 'Vazirmatn Variable', sans-serif !important;
         background-color: var(--color-canvas);
         color: var(--color-ink);
         -webkit-font-smoothing: antialiased;
     }
 
-    button, input, select, textarea {
-        font-family: inherit;
+    button, input, select, textarea, optgroup, option {
+        font-family: 'Rabar', 'Vazirmatn Variable', sans-serif !important;
     }
 
     /* ژمارەکان هەمیشە بە ئاراستەی چەپ بۆ راست بخوێنرێنەوە */
