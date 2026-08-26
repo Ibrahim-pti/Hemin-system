@@ -34,7 +34,7 @@
     </div>
 
     {{-- بەشی بەستەرەکانی مێنیو --}}
-    <div style="flex: 1; overflow-y: auto; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 1.25rem;">
+    <div class="sidebar-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 1rem;">
 
         {{-- سەرەکی / داشبۆرد --}}
         <div>

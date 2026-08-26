@@ -26,6 +26,15 @@
             background: rgba(255, 255, 255, 0.06) !important;
             color: #f8fafc !important;
         }
+        .sidebar-scroll {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        .sidebar-scroll::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
     </style>
 </head>
 <body class="h-full bg-slate-100 text-slate-800 antialiased font-sans"
