@@ -27,6 +27,7 @@ class WorkshopController extends Controller
             ?? Warehouse::first();
 
         $warehouseId = $workshopWarehouse?->id;
+        $section = $request->string('section', 'dashboard')->toString();
         $tab = $request->string('tab', 'all')->toString();
         $q = $request->string('q')->toString();
 
@@ -68,12 +69,30 @@ class WorkshopController extends Controller
             ->paginate(15, ['*'], 'materials_page')
             ->withQueryString();
 
+        // مەوادی کەمبووەوە (ئاگاداری مەوادە کەمەکان)
+        $lowStockMaterials = Item::query()
+            ->active()
+            ->withStock($warehouseId)
+            ->with(['unit', 'category'])
+            ->where('min_qty', '>', 0)
+            ->get()
+            ->filter(fn ($item) => $item->stock_qty <= (float) $item->min_qty);
+
+        // لیستی وەستاکان، حەمەڵەکان و کارمەندان بۆ بینین
+        $employees = \App\Models\Employee::query()
+            ->active()
+            ->with(['attendances' => fn ($q) => $q->whereDate('work_date', now()->toDateString())])
+            ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
+            ->orderBy('name')
+            ->get();
+
         $categories = ItemCategory::orderBy('name')->get();
         $units = Unit::orderBy('name')->get();
         $allItems = Item::active()->orderBy('name')->get(['id', 'name', 'code']);
 
         return view('workshop.dashboard', compact(
             'workshopWarehouse',
+            'section',
             'orders',
             'tab',
             'pendingCount',
@@ -81,6 +100,8 @@ class WorkshopController extends Controller
             'readyCount',
             'deliveredCount',
             'rawMaterials',
+            'lowStockMaterials',
+            'employees',
             'categories',
             'units',
             'allItems'

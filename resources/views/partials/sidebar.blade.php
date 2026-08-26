@@ -41,14 +41,15 @@
             @php
                 $isWasta = auth()->user()->isStorekeeper() && !auth()->user()->isAdmin();
                 $dashRoute = $isWasta ? 'workshop.index' : 'dashboard';
-                $dashLabel = $isWasta ? 'داشبۆردی کارگە و وەستاکان' : 'داشبۆردی سەرەکی';
-                $isDashboard = request()->routeIs('dashboard') || ($isWasta && request()->routeIs('workshop.*'));
+                $dashParams = $isWasta ? ['section' => 'dashboard'] : [];
+                $dashLabel = 'داشبۆردی سەرەکی';
+                $isDashboard = request()->routeIs('dashboard') || ($isWasta && request()->routeIs('workshop.*') && (!request()->has('section') || request('section') === 'dashboard'));
             @endphp
-            <a href="{{ route($dashRoute) }}"
+            <a href="{{ route($dashRoute, $dashParams) }}"
                style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isDashboard ? 'background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.22);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
                class="sidebar-link {{ $isDashboard ? 'active-link' : '' }}">
                 <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.2); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
-                    @include('partials.icon', ['name' => $isWasta ? 'workshop' : 'dashboard', 'class' => 'size-4.5'])
+                    @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-4.5'])
                 </span>
                 <span x-show="sidebarOpen" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $dashLabel }}</span>
             </a>
@@ -64,7 +65,9 @@
                     'activeIconBg' => 'rgba(99, 102, 241, 0.2)',
                     'activeIconColor' => '#a5b4fc',
                     'items' => [
-                        ['route' => 'workshop.*', 'href' => route('workshop.index'), 'label' => 'داشبۆردی کارگە و مەواد', 'icon' => 'workshop', 'can' => 'view_workshop'],
+                        ['route' => 'workshop.*', 'href' => route('workshop.index', ['section' => 'orders']), 'label' => 'داواکارییەکانی کارگە', 'icon' => 'orders', 'can' => 'view_workshop', 'activeCheck' => fn() => request()->routeIs('workshop.*') && request('section') === 'orders'],
+                        ['route' => 'workshop.*', 'href' => route('workshop.index', ['section' => 'materials']), 'label' => 'مەوادی خاو', 'icon' => 'items', 'can' => 'view_workshop', 'activeCheck' => fn() => request()->routeIs('workshop.*') && request('section') === 'materials'],
+                        ['route' => 'workshop.*', 'href' => route('workshop.index', ['section' => 'employees']), 'label' => 'وەستا و حەمەڵەکان', 'icon' => 'employees', 'can' => 'view_workshop', 'activeCheck' => fn() => request()->routeIs('workshop.*') && request('section') === 'employees'],
                     ],
                 ],
                 [
@@ -76,8 +79,8 @@
                     'activeIconColor' => '#7dd3fc',
                     'items' => [
                         ['route' => 'items.*', 'href' => route('items.index'), 'label' => 'دۆخی کۆگا', 'icon' => 'items', 'can' => 'view_stock'],
-                        ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_stock_counts'],
-                        ['route' => 'warehouses.*', 'href' => route('warehouses.index'), 'label' => 'کۆگاکان', 'icon' => 'warehouses', 'can' => 'manage_items'],
+                        ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_settings'],
+                        ['route' => 'warehouses.*', 'href' => route('warehouses.index'), 'label' => 'کۆگاکان', 'icon' => 'warehouses', 'can' => 'manage_settings'],
                         ['route' => 'suppliers.*', 'href' => route('suppliers.index'), 'label' => 'فرۆشیارەکان', 'icon' => 'suppliers', 'can' => 'manage_suppliers'],
                         ['route' => 'employees.*', 'href' => route('employees.index'), 'label' => 'کارمەندان', 'icon' => 'employees', 'can' => 'manage_employees'],
                     ],
@@ -127,7 +130,9 @@
                     <nav style="display: flex; flex-direction: column; gap: 0.125rem;">
                         @foreach ($visibleItems as $item)
                             @php
-                                $isActive = request()->routeIs(...explode('|', $item['route']));
+                                $isActive = isset($item['activeCheck'])
+                                    ? $item['activeCheck']()
+                                    : request()->routeIs(...explode('|', $item['route']));
                             @endphp
                             <a href="{{ $item['href'] }}"
                                style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"

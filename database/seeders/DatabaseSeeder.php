@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
 {
     /** هەموو مۆڵەتەکانی سیستەم لەگەڵ ناوی کوردییان. */
     public const PERMISSIONS = [
+        'view_workshop' => 'بەشی کارگە و دروستکردن',
         'view_stock' => 'بینینی مەخزەن',
         'manage_stock' => 'زیادکردن و کەمکردنی مەخزەن',
         'manage_items' => 'بەڕێوەبردنی کاڵا و کۆگا',
@@ -34,12 +35,11 @@ class DatabaseSeeder extends Seeder
         'manage_settings' => 'ڕێکخستن و باکەپ',
     ];
 
-    /** بەرپرسی کۆگا تەنها ئەمانەی هەیە — هیچ نرخێک نابینێت. */
+    /** بەرپرسی کۆگا و وەستا — تەنها کارگە و بینینی مەواد */
     public const STOREKEEPER_PERMISSIONS = [
+        'view_workshop',
         'view_stock',
         'manage_stock',
-        'manage_items',
-        'manage_stock_counts',
     ];
 
     public function run(): void
