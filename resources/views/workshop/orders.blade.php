@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    {{-- ٣. کارتی وەسڵەکان بە داتای زیندوو (پاجینەیشن) --}}
+    {{-- ٣. کارتی وەسڵەکان بە داتای یندوو (پاجینەیشن) --}}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-4">
         <template x-for="order in paginatedOrders" :key="order.id">
             <div class="rounded-2xl border p-4 sm:p-4.5 shadow-xs flex flex-col justify-between transition-all hover:shadow-md bg-white"
