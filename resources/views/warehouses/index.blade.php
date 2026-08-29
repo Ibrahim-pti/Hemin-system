@@ -239,36 +239,34 @@
     </div>
 
 
-    {{-- ٦. خشتەی کەلوپەل و مەوادە بەردەستەکانی کۆگا --}}
+    {{-- ٥. خشتەی کەلوپەل و مەوادە بەردەستەکانی کۆگا --}}
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden"
-         x-data="{ search: '', catFilter: 'all' }">
+         x-data="{ search: '' }">
         <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/60">
             <div class="flex items-center gap-2">
                 <span class="text-base">📦</span>
                 <h3 class="font-black text-sm text-slate-800">کەلوپەل و مەوادە بەردەستەکان لە کۆگا</h3>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700 font-mono">
-                    {{ $allItems->count() }} ماددە
+                    {{ $totalItemsCount }} ماددە
                 </span>
             </div>
 
             <div class="flex items-center gap-2 flex-wrap">
                 <input type="text" x-model="search"
                        class="text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-right w-full sm:w-64"
-                       placeholder="🔍 گەڕان بە ناو، جۆر، بارکۆد...">
-            </div>
+                       placeholder="🔍 گەڕان بە ناو، ...">
+            </div
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-right text-xs">
                 <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-black">
                     <tr>
-                        <th class="p-3.5 w-12 text-center">#</th>
+                        <th class="p-3.5 w-14 text-center">#</th>
                         <th class="p-3.5">ناوی کەلوپەل / مەواد</th>
-                        <th class="p-3.5">جۆر / بەش</th>
-                        <th class="p-3.5 text-center">یەکە</th>
-                        <th class="p-3.5 text-center">بڕی بەردەست لە کۆگا</th>
-                        <th class="p-3.5 text-center">دۆخی مەخزەن</th>
-                        <th class="p-3.5 text-left">نرخی فرۆشتن</th>
+                        <th class="p-3.5 text-center w-28">یەکە</th>
+                        <th class="p-3.5 text-center w-40">بڕی بەردەست لە کۆگا</th>
+                        <th class="p-3.5 text-center w-36">دۆخی مەخزەن</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -277,9 +275,9 @@
                             $isLow = $item->is_low;
                         @endphp
                         <tr class="hover:bg-slate-50/80 transition-colors"
-                            x-show="!search || '{{ strtolower($item->name) }}'.includes(search.toLowerCase()) || '{{ strtolower($item->category?->name) }}'.includes(search.toLowerCase())">
+                            x-show="!search || '{{ strtolower($item->name) }}'.includes(search.toLowerCase()) || '{{ strtolower($item->barcode) }}'.includes(search.toLowerCase())">
                             <td class="p-3.5 text-center font-mono font-bold text-slate-400">
-                                {{ $index + 1 }}
+                                {{ $allItems->firstItem() ? ($allItems->firstItem() + $index) : ($index + 1) }}
                             </td>
                             <td class="p-3.5 font-black text-slate-900">
                                 <div class="flex items-center gap-2">
@@ -289,42 +287,85 @@
                                     @endif
                                 </div>
                             </td>
-                            <td class="p-3.5 text-slate-600 font-medium">
-                                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-bold">
-                                    {{ $item->category?->name ?: 'گشتی' }}
-                                </span>
-                            </td>
-                            <td class="p-3.5 text-center text-slate-500 font-bold">
+                            <td class="p-3.5 text-center text-slate-600 font-bold">
                                 {{ $item->unit?->name ?: 'دانە' }}
                             </td>
                             <td class="p-3.5 text-center">
-                                <span class="font-mono font-black text-xs px-2.5 py-0.5 rounded-lg {{ $isLow ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-slate-100 text-slate-900 border border-slate-200/60' }}">
+                                <span class="font-mono font-black text-xs px-2.5 py-1 rounded-lg {{ $isLow ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-slate-100 text-slate-900 border border-slate-200/60' }}">
                                     {{ fmt_num($item->current_stock) }}
                                 </span>
                             </td>
                             <td class="p-3.5 text-center">
                                 @if($isLow)
-                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200 inline-block">
                                         ⚠️ کەمبووە
                                     </span>
                                 @else
-                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-block">
                                         بەردەستە ✔️
                                     </span>
                                 @endif
                             </td>
-                            <td class="p-3.5 text-left font-mono font-bold text-slate-900">
-                                {{ fmt_money($item->sale_price, $item->currency ?? 'IQD') }}
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-10 text-center text-slate-400 font-medium">هیچ کەلوپەلێک لە کۆگا تۆمار نەکراوە.</td>
+                            <td colspan="5" class="py-10 text-center text-slate-400 font-medium">هیچ کەلوپەلێک لە کۆگا تۆمار نەکراوە.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
+        {{-- بەشی پەڕەبەندی (Pagination) --}}
+        @if ($allItems->hasPages())
+            <div class="p-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div class="font-bold text-slate-600">
+                    پێشاندانی <span class="font-mono text-slate-900 font-black">{{ $allItems->firstItem() ?? 0 }}</span> تا <span class="font-mono text-slate-900 font-black">{{ $allItems->lastItem() ?? 0 }}</span> لە کۆی <span class="font-mono text-indigo-700 font-black">{{ $allItems->total() }}</span> ماددە
+                </div>
+
+                <div class="flex items-center gap-1.5 self-center sm:self-auto">
+                    {{-- پەڕەی پێشوو --}}
+                    @if ($allItems->onFirstPage())
+                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed">
+                            → پێشوو
+                        </span>
+                    @else
+                        <a href="{{ $allItems->previousPageUrl() }}"
+                           class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all shadow-2xs">
+                            → پێشوو
+                        </a>
+                    @endif
+
+                    {{-- ژمارەی پەڕەکان --}}
+                    @foreach ($allItems->getUrlRange(1, $allItems->lastPage()) as $page => $url)
+                        @if ($page == $allItems->currentPage())
+                            <span style="min-width: 34px; height: 34px;"
+                                  class="px-2.5 py-1 rounded-xl bg-blue-600 text-white font-mono font-black text-xs inline-flex items-center justify-center shadow-xs">
+                                {{ $page }}
+                            </span>
+                        @else
+                            <a href="{{ $url }}"
+                               style="min-width: 34px; height: 34px;"
+                               class="px-2.5 py-1 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-mono font-bold text-xs border border-slate-300 inline-flex items-center justify-center transition-all">
+                                {{ $page }}
+                            </a>
+                        @endif
+                    @endforeach
+
+                    {{-- پەڕەی دواتر --}}
+                    @if ($allItems->hasMorePages())
+                        <a href="{{ $allItems->nextPageUrl() }}"
+                           class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all shadow-2xs">
+                            دواتر ←
+                        </a>
+                    @else
+                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed">
+                            دواتر ←
+                        </span>
+                    @endif
+                </div>
+            </div>
+        @endif
     </div>
 
 </div>

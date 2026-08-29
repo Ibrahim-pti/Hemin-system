@@ -19,16 +19,24 @@ class WarehouseController extends Controller
             ?? $warehouses->where('is_default', false)->first()
             ?? $warehouses->first();
 
-        // سەرجەم کەلوپەل و مەوادەکان لەگەڵ بڕی بەردەست
-        $allItems = \App\Models\Item::query()
+        // سەرجەم کەلوپەل و مەوادەکان لەگەڵ بڕی بەردەست و پەیجینەیشن
+        $itemsQuery = \App\Models\Item::query()
             ->active()
             ->withStock()
             ->with(['unit', 'category'])
-            ->orderBy('name')
-            ->get();
+            ->when(request('search'), function ($q, $search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name');
 
-        $totalItemsCount = $allItems->count();
-        $lowStockItems = $allItems->filter(fn ($item) => $item->is_low);
+        $totalItemsCount = \App\Models\Item::active()->count();
+        $allItems = (clone $itemsQuery)->paginate(5)->withQueryString();
+
+        $allStockItems = \App\Models\Item::active()->withStock()->get();
+        $lowStockItems = $allStockItems->filter(fn ($item) => $item->is_low);
 
         // وەسڵەکانی کارگە (چ ئیشێک دەکرێت و چ تەواو کراوە)
         $ordersInProduction = \App\Models\Order::query()
