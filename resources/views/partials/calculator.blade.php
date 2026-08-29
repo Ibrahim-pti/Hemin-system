@@ -1,37 +1,49 @@
-{{-- حاسیبە — لە هەموو لاپەڕەیەکەوە بەردەستە. --}}
+{{-- حاسیبە — لە هەموو لاپەڕەیەکەوە بەردەستە --}}
 <div x-data="calculator()" x-cloak
      @open-calculator.window="open = true"
      @keydown.window.escape="open = false">
 
-    <div x-show="open" class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center no-print"
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 no-print"
          @click.self="open = false">
 
-        <div class="w-full max-w-xs rounded-[--radius-card] border border-[--color-line] bg-[--color-surface]">
-            <div class="flex items-center justify-between border-b border-[--color-line] px-4 py-3">
-                <span class="text-sm font-semibold">حاسیبە</span>
-                <button @click="open = false" class="text-[--color-ink-soft] hover:text-[--color-ink]">✕</button>
+        <div x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             class="w-full max-w-xs bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
+            
+            {{-- سەردێڕی حاسیبە --}}
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 bg-slate-50/80">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">🧮</span>
+                    <span class="text-xs font-black text-slate-800">حاسیبە</span>
+                </div>
+                <button @click="open = false" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer">✕</button>
             </div>
 
-            <div class="p-3">
-                {{-- پیشاندەر --}}
-                <div class="mb-3 rounded-md border border-[--color-line] bg-[--color-surface-soft] p-3">
-                    <div class="num h-4 text-xs text-[--color-ink-soft]" x-text="history"></div>
-                    <div class="num truncate text-2xl font-semibold" x-text="display"></div>
+            <div class="p-4 space-y-3.5 bg-white">
+                {{-- شاشەی ژمارەکان --}}
+                <div class="rounded-2xl bg-slate-900 p-4 shadow-inner text-left font-mono">
+                    <div class="h-4 text-[11px] font-medium text-slate-400 text-right overflow-hidden" x-text="history || '&nbsp;'"></div>
+                    <div class="truncate text-3xl font-black text-white text-right tracking-wider mt-1" x-text="display"></div>
                 </div>
 
-                {{-- دوگمەکان --}}
+                {{-- دوگمەکانی حاسیبە --}}
                 <div class="grid grid-cols-4 gap-2">
                     <template x-for="key in keys" :key="key.label">
                         <button type="button" @click="press(key)"
                                 :class="key.style"
-                                class="rounded-md border border-[--color-line] py-3 text-sm font-medium transition-colors"
+                                class="rounded-xl py-3 text-sm font-black transition-all cursor-pointer select-none active:scale-95"
                                 x-text="key.label"></button>
                     </template>
                 </div>
-
-                <p class="mt-3 text-center text-xs text-[--color-ink-soft]">
-                    ئەنجام: <span class="num" x-text="formatted"></span>
-                </p>
             </div>
         </div>
     </div>
@@ -48,26 +60,30 @@ function calculator() {
         fresh: true,
 
         keys: [
-            { label: 'C',  action: 'clear',  style: 'bg-[--color-danger-soft] text-[--color-danger] hover:bg-[--color-surface-soft]' },
-            { label: '⌫',  action: 'back',   style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '%',  action: 'op', op: '%',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '÷',  action: 'op', op: '/',  style: 'bg-[--color-surface-soft] font-semibold hover:bg-[--color-surface]' },
-            { label: '7',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '8',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '9',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '×',  action: 'op', op: '*',  style: 'bg-[--color-surface-soft] font-semibold hover:bg-[--color-surface]' },
-            { label: '4',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '5',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '6',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '−',  action: 'op', op: '-',  style: 'bg-[--color-surface-soft] font-semibold hover:bg-[--color-surface]' },
-            { label: '1',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '2',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '3',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '+',  action: 'op', op: '+',  style: 'bg-[--color-surface-soft] font-semibold hover:bg-[--color-surface]' },
-            { label: '0',  action: 'num',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '.',  action: 'dot',  style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '±',  action: 'sign', style: 'bg-[--color-surface] hover:bg-[--color-surface-soft]' },
-            { label: '=',  action: 'eq',   style: '!bg-[--color-brand-700] !border-[--color-brand-700] font-semibold text-white' },
+            { label: 'C',  action: 'clear',  style: 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200' },
+            { label: '⌫',  action: 'back',   style: 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200' },
+            { label: '%',  action: 'op', op: '%',  style: 'bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200' },
+            { label: '÷',  action: 'op', op: '/',  style: 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs' },
+            
+            { label: '7',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '8',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '9',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '×',  action: 'op', op: '*',  style: 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs' },
+            
+            { label: '4',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '5',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '6',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '−',  action: 'op', op: '-',  style: 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs' },
+            
+            { label: '1',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '2',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '3',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '+',  action: 'op', op: '+',  style: 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs' },
+            
+            { label: '0',  action: 'num',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '.',  action: 'dot',  style: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 shadow-2xs' },
+            { label: '±',  action: 'sign', style: 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200' },
+            { label: '=',  action: 'eq',   style: 'bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-md' },
         ],
 
         get formatted() {
@@ -120,7 +136,6 @@ function calculator() {
                 case '-': result = this.previous - current; break;
                 case '*': result = this.previous * current; break;
                 case '/': result = current === 0 ? NaN : this.previous / current; break;
-                // ڕێژەی سەدی: ٥٠٠ % ١٠ = ٥٠ (١٠٪ی ٥٠٠)
                 case '%': result = this.previous * current / 100; break;
             }
 
