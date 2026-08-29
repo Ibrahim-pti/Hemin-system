@@ -61,8 +61,7 @@
             <thead>
                 <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
                     <th class="py-3 px-4 w-12 text-center">#</th>
-                    <th class="py-3 px-4 text-center">ژمارەی کڕیار</th>
-                    <th class="py-3 px-4">ناو</th>
+                    <th class="py-3 px-4">ناوی کڕیار</th>
                     <th class="py-3 px-4 text-center">ژ. مۆبایل</th>
                     <th class="py-3 px-4 text-center w-36">کردار</th>
                 </tr>
@@ -72,11 +71,6 @@
                     <tr class="hover:bg-slate-50/70 transition-colors">
                         <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
                             {{ $customers->firstItem() + $index }}
-                        </td>
-                        <td class="py-3.5 px-4 text-center">
-                            <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-rose-500 bg-rose-50/60 border border-rose-100">
-                                C-{{ str_pad($customer->id, 5, '0', STR_PAD_LEFT) }}
-                            </span>
                         </td>
                         <td class="py-3.5 px-4">
                             <a href="{{ route('customers.show', $customer) }}" class="font-bold text-slate-800 hover:text-blue-600 transition-colors">
