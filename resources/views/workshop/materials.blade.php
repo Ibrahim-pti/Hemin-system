@@ -49,8 +49,8 @@
             </div>
 
             <div class="w-full sm:w-auto">
-                <input type="text" x-model="materialSearch" placeholder="گەڕانی خێرا بە ناوی مەواد..."
-                       class="text-xs px-3 py-2 rounded-xl border border-slate-200 w-full sm:w-64 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 sm:bg-white">
+                <input type="text" x-model="materialSearch" placeholder="🔍 گەڕانی خێرا بە ناوی مەواد..."
+                       class="text-xs px-3.5 py-2 rounded-xl border border-slate-200 w-full sm:w-64 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 sm:bg-white text-right">
             </div>
         </div>
 
@@ -59,7 +59,10 @@
             <template x-for="mat in paginatedMaterials" :key="mat.id">
                 <div class="p-3.5 space-y-2.5 hover:bg-slate-50/80 transition-colors">
                     <div class="flex items-start justify-between gap-2">
-                        <div class="font-black text-sm text-slate-900" x-text="mat.name"></div>
+                        <div>
+                            <div class="font-black text-sm text-slate-900" x-text="mat.name"></div>
+                            <div class="text-[11px] text-slate-400 font-mono mt-0.5" x-show="mat.date" x-text="'بەروار: ' + mat.date"></div>
+                        </div>
                         <div class="flex items-center gap-1.5">
                             <span class="font-black text-sm num font-mono"
                                   :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'"
@@ -68,7 +71,7 @@
                                   x-show="mat.unit_name"
                                   x-text="mat.unit_name"></span>
                             <span x-show="mat.is_low"
-                                  class="inline-flex items-center gap-1 text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200 px-1.5 py-0.5 rounded-full">
+                                  class="inline-flex items-center gap-1 text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full">
                                 <span>⚠️</span>
                                 <span>کەمە</span>
                             </span>
@@ -98,6 +101,7 @@
                 <thead class="bg-slate-50 text-slate-500 border-b border-slate-200">
                     <tr>
                         <th class="p-3.5 font-bold">ناوی مەواد</th>
+                        <th class="p-3.5 font-bold text-center">بەروار</th>
                         <th class="p-3.5 font-bold text-center">بڕی بەردەست</th>
                         <th class="p-3.5 font-bold text-center">کردار</th>
                     </tr>
@@ -106,6 +110,7 @@
                     <template x-for="mat in paginatedMaterials" :key="mat.id">
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="p-3.5 font-bold text-slate-900" x-text="mat.name"></td>
+                            <td class="p-3.5 text-center text-slate-500 font-mono text-xs font-bold" x-text="mat.date || '—'"></td>
                             <td class="p-3.5 text-center">
                                 <div class="inline-flex items-center justify-center gap-2">
                                     <span class="font-black text-sm num font-mono"
@@ -136,7 +141,7 @@
                         </tr>
                     </template>
                     <tr x-show="filteredMaterials.length === 0">
-                        <td colspan="3" class="p-8 text-center text-slate-400 font-bold">هیچ مەوادێک نەدۆزرایەوە</td>
+                        <td colspan="4" class="p-8 text-center text-slate-400 font-bold">هیچ مەوادێک نەدۆزرایەوە</td>
                     </tr>
                 </tbody>
             </table>

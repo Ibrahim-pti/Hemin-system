@@ -55,6 +55,11 @@ class Item extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
     /**
      * باڵانسی ئێستا — هەمیشە لە جوڵەکانەوە کۆدەکرێتەوە، نەک لە خانەیەکی هەڵگیراو.
      * ئەگەر کۆگایەک دیاری بکرێت، تەنها باڵانسی ئەو کۆگایە دەداتەوە.

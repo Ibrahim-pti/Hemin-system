@@ -136,7 +136,11 @@ class WorkshopController extends Controller
         $rawMaterials = Item::query()
             ->active()
             ->withStock($warehouseId)
-            ->with(['unit', 'category'])
+            ->with([
+                'unit',
+                'category',
+                'movements' => fn ($q) => $q->where('warehouse_id', $warehouseId)->latest('moved_at')->latest('id')
+            ])
             ->orderBy('name')
             ->get();
 
@@ -150,16 +154,22 @@ class WorkshopController extends Controller
             ->take(50)
             ->get();
 
-        $materialsData = $rawMaterials->map(fn ($m) => [
-            'id' => $m->id,
-            'code' => $m->code,
-            'name' => $m->name,
-            'category_name' => $m->category?->name,
-            'stock_qty' => (float) $m->stock_qty,
-            'min_qty' => (float) $m->min_qty,
-            'unit_name' => $m->unit?->name ?? '',
-            'is_low' => $m->is_low,
-        ])->values()->all();
+        $materialsData = $rawMaterials->map(function ($m) {
+            $latestMovement = $m->movements->first();
+            $date = $latestMovement?->moved_at?->format('Y/m/d') ?? $m->created_at?->format('Y/m/d') ?? '';
+
+            return [
+                'id' => $m->id,
+                'code' => $m->code,
+                'name' => $m->name,
+                'category_name' => $m->category?->name,
+                'stock_qty' => (float) $m->stock_qty,
+                'min_qty' => (float) $m->min_qty,
+                'unit_name' => $m->unit?->name ?? '',
+                'is_low' => $m->is_low,
+                'date' => $date,
+            ];
+        })->values()->all();
 
         return view('workshop.materials', compact(
             'workshopWarehouse',
