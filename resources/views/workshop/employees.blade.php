@@ -4,7 +4,7 @@
 @section('content')
 <div x-data="workshopEmployeesApp()" x-init="initClock()" class="space-y-4 sm:space-y-6">
 
-    {{-- ١. هێڵی سەرەوە: ناونیشان و بەرواری ئەمڕۆ بە شێوەی خۆکار و قفڵکراو --}}
+    {{-- ١. هێڵی سەرەوە: ناونیشان و بەرواری ئەمڕۆ و بەستەری ڕاپۆرت --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
             <div class="size-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-2xl shadow-md shadow-indigo-500/20 shrink-0">
@@ -23,16 +23,25 @@
             </div>
         </div>
 
-        {{-- بەرواری ئەمڕۆ و کاتژمێری ڕاستەوخۆ --}}
-        <div class="flex items-center gap-3 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shrink-0">
-            <div class="size-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg shadow-2xs">
-                📅
-            </div>
-            <div>
-                <div class="text-xs font-black text-slate-800 font-mono">{{ now()->format('Y/m/d') }}</div>
-                <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
-                    <span>کاتی ئێستا:</span>
-                    <span class="font-mono font-bold text-slate-800" x-text="currentTime"></span>
+        <div class="flex items-center gap-2.5 flex-wrap">
+            {{-- بەستەری ڕاپۆرتی مانگانەی بەڕێوەبەر --}}
+            <a href="{{ route('attendance.wages') }}"
+               class="px-3.5 py-2.5 rounded-2xl text-xs font-black bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer">
+                <span>📊</span>
+                <span>ڕاپۆرتی مانگانە و حەقدەست</span>
+            </a>
+
+            {{-- بەرواری ئەمڕۆ و کاتژمێری ڕاستەوخۆ --}}
+            <div class="flex items-center gap-3 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shrink-0">
+                <div class="size-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base shadow-2xs">
+                    📅
+                </div>
+                <div>
+                    <div class="text-xs font-black text-slate-800 font-mono">{{ now()->format('Y/m/d') }}</div>
+                    <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
+                        <span>کاتی ئێستا:</span>
+                        <span class="font-mono font-bold text-slate-800" x-text="currentTime"></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -102,27 +111,27 @@
         <div class="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-50/50">
             {{-- فلتەرەکان بەپێی دۆخ --}}
             <div class="flex items-center gap-1.5 flex-wrap">
-                <button type="button" @click="statusFilter = 'all'"
+                <button type="button" @click="setStatusFilter('all')"
                         :class="statusFilter === 'all' ? 'bg-slate-900 text-white font-black shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 font-bold'"
                         class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     هەموو (<span x-text="employeesList.length"></span>)
                 </button>
-                <button type="button" @click="statusFilter = 'present'"
+                <button type="button" @click="setStatusFilter('present')"
                         :class="statusFilter === 'present' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-white text-emerald-700 hover:bg-emerald-50 border border-emerald-200 font-bold'"
                         class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     ئامادەبووان (<span x-text="countByStatus('present')"></span>)
                 </button>
-                <button type="button" @click="statusFilter = 'absent'"
+                <button type="button" @click="setStatusFilter('absent')"
                         :class="statusFilter === 'absent' ? 'bg-rose-600 text-white font-black shadow-xs' : 'bg-white text-rose-700 hover:bg-rose-50 border border-rose-200 font-bold'"
                         class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     نەهاتووان (<span x-text="countByStatus('absent')"></span>)
                 </button>
-                <button type="button" @click="statusFilter = 'leave'"
+                <button type="button" @click="setStatusFilter('leave')"
                         :class="statusFilter === 'leave' ? 'bg-amber-500 text-white font-black shadow-xs' : 'bg-white text-amber-800 hover:bg-amber-50 border border-amber-200 font-bold'"
                         class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     ئیجازە (<span x-text="countByStatus('leave')"></span>)
                 </button>
-                <button type="button" @click="statusFilter = 'not_recorded'"
+                <button type="button" @click="setStatusFilter('not_recorded')"
                         :class="statusFilter === 'not_recorded' ? 'bg-slate-600 text-white font-black shadow-xs' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200 font-bold'"
                         class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     تۆمارنەکراو (<span x-text="countByStatus('not_recorded')"></span>)
@@ -130,11 +139,14 @@
             </div>
 
             {{-- گەڕان و گۆڕینی شێوازی بینین (خشتە / کارت) --}}
-            <div class="flex items-center gap-2">
-                <div class="relative flex-1 sm:w-64">
-                    <input type="text" x-model="searchQuery" placeholder="گەڕان بە ناوی وەستا یان ژمارە..."
-                           class="w-full text-xs pr-8 pl-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 bg-white font-medium">
-                    <span class="absolute right-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+            <div class="flex items-center gap-2.5">
+                {{-- بۆکسی گەڕان لەگەڵ ئایکۆنی ڕێککراو لە ناوەوە --}}
+                <div class="relative w-full sm:w-64">
+                    <input type="text" x-model="searchQuery" @input="currentPage = 1" placeholder="گەڕان بە ناوی وەستا یان ژمارە..."
+                           class="w-full text-xs pr-8 pl-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 bg-white font-medium transition-all text-right">
+                    <div class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none flex items-center">
+                        🔍
+                    </div>
                 </div>
 
                 {{-- گۆڕینی شێوازی بینین --}}
@@ -194,10 +206,10 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        <template x-for="(emp, index) in filteredEmployees" :key="emp.id">
+                        <template x-for="(emp, index) in paginatedEmployees" :key="emp.id">
                             <tr class="hover:bg-slate-50/80 transition-colors">
                                 {{-- # --}}
-                                <td class="p-3.5 text-center text-slate-400 font-mono font-bold" x-text="index + 1"></td>
+                                <td class="p-3.5 text-center text-slate-400 font-mono font-bold" x-text="(currentPage - 1) * perPage + index + 1"></td>
 
                                 {{-- وەستا / کارمەند --}}
                                 <td class="p-3.5">
@@ -357,7 +369,7 @@
 
             {{-- ٤.٢ شێوازی کارتەکان (CARD VIEW) --}}
             <div x-show="viewMode === 'cards'" class="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-4">
-                <template x-for="emp in filteredEmployees" :key="emp.id">
+                <template x-for="emp in paginatedEmployees" :key="emp.id">
                     <div class="bg-slate-50/70 rounded-2xl p-4 sm:p-4.5 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-md transition-all">
                         <div>
                             {{-- بەشی سەرەوەی کارت --}}
@@ -486,6 +498,58 @@
             <div x-show="filteredEmployees.length === 0" class="p-10 text-center text-slate-400 text-xs font-bold">
                 هیچ ئەنجامێک بەپێی ئەم فلتەرە نەدۆزرایەوە
             </div>
+
+            {{-- ٤.٣ هێڵی پەڕەبەندی و پاجینەیشن (PAGINATION) --}}
+            <div x-show="filteredEmployees.length > 0"
+                 class="p-3.5 sm:p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div class="text-slate-500 font-medium flex items-center gap-2">
+                    <span>پیشاندانی</span>
+                    <span class="font-black text-slate-800 font-mono" x-text="Math.min((currentPage - 1) * perPage + 1, filteredEmployees.length)"></span>
+                    <span>تا</span>
+                    <span class="font-black text-slate-800 font-mono" x-text="Math.min(currentPage * perPage, filteredEmployees.length)"></span>
+                    <span>لە کۆی</span>
+                    <span class="font-black text-slate-800 font-mono" x-text="filteredEmployees.length"></span>
+                    <span>وەستا و کارمەند</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    {{-- ژمارەی دێڕەکان لە هەر پەڕەیەک --}}
+                    <div class="flex items-center gap-1 text-slate-500 font-medium">
+                        <span>لە هەر پەڕەیەک:</span>
+                        <select x-model="perPage" @change="currentPage = 1"
+                                class="text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white font-mono font-bold focus:outline-hidden">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="1000">هەموو</option>
+                        </select>
+                    </div>
+
+                    {{-- دوگمەکانی پێشوو و دواتر --}}
+                    <div x-show="totalPages > 1" class="flex items-center gap-1">
+                        <button type="button" @click="currentPage--"
+                                :disabled="currentPage === 1"
+                                :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white text-slate-700 hover:bg-slate-100 shadow-2xs cursor-pointer'"
+                                class="px-2.5 py-1 rounded-lg border border-slate-200 font-bold transition-all">
+                            ◀ پێشوو
+                        </button>
+
+                        <div class="flex items-center gap-1 font-mono font-bold px-1">
+                            <span class="text-indigo-600 font-black" x-text="currentPage"></span>
+                            <span class="text-slate-400">/</span>
+                            <span class="text-slate-600" x-text="totalPages"></span>
+                        </div>
+
+                        <button type="button" @click="currentPage++"
+                                :disabled="currentPage === totalPages"
+                                :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white text-slate-700 hover:bg-slate-100 shadow-2xs cursor-pointer'"
+                                class="px-2.5 py-1 rounded-lg border border-slate-200 font-bold transition-all">
+                            دواتر ▶
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         @endif
     </div>
 
@@ -652,6 +716,8 @@ function workshopEmployeesApp() {
         loadingId: null,
         isSaving: false,
         currentTime: '',
+        currentPage: 1,
+        perPage: 10,
         toast: {
             show: false,
             message: '',
@@ -697,6 +763,11 @@ function workshopEmployeesApp() {
             }, 3500);
         },
 
+        setStatusFilter(st) {
+            this.statusFilter = st;
+            this.currentPage = 1;
+        },
+
         get filteredEmployees() {
             let list = this.employeesList;
 
@@ -722,6 +793,18 @@ function workshopEmployeesApp() {
             }
 
             return list;
+        },
+
+        get totalPages() {
+            const count = this.filteredEmployees.length;
+            const per = parseInt(this.perPage);
+            return Math.ceil(count / per) || 1;
+        },
+
+        get paginatedEmployees() {
+            const per = parseInt(this.perPage);
+            const start = (this.currentPage - 1) * per;
+            return this.filteredEmployees.slice(start, start + per);
         },
 
         countByStatus(status) {
