@@ -31,49 +31,7 @@
         </div>
     </div>
 
-    {{-- ٢. ئاگاداری مەوادە کەمبووەکان --}}
-    @if ($lowStockMaterials->isNotEmpty())
-        <div class="bg-rose-50/80 rounded-2xl p-4 sm:p-4.5 shadow-xs">
-            <div class="flex items-center justify-between gap-3 mb-3">
-                <div class="flex items-center gap-2.5">
-                    <span class="flex size-7 sm:size-8 items-center justify-center rounded-xl bg-rose-600 text-white font-bold text-xs sm:text-sm shadow-xs shrink-0">
-                        ⚠️
-                    </span>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <h3 class="font-black text-xs sm:text-sm text-rose-900">مەوادە کەمبووەکان</h3>
-                        <span class="px-2 py-0.5 rounded-full bg-rose-200/60 text-rose-800 text-[11px] font-black">
-                            {{ $lowStockMaterials->count() }} مەواد
-                        </span>
-                    </div>
-                </div>
-                <span class="text-[11px] font-medium text-rose-600 hidden sm:inline-block">پێویستیان بە هاتنی مەوادە</span>
-            </div>
-
-            {{-- لیستی مەوادەکان بە بەرزی دیاریکراو و سکرۆڵی ئۆتۆماتیکی ئەگەر داتا زۆر بوو --}}
-            <div class="flex flex-wrap gap-2.5 max-h-36 overflow-y-auto pr-1">
-                @foreach ($lowStockMaterials as $lm)
-                    <div class="bg-white px-3 py-2 rounded-xl flex items-center gap-2.5 shadow-xs shrink-0">
-                        <span class="font-black text-xs text-slate-800">{{ $lm->name }}</span>
-                        
-                        <div class="flex items-center gap-1">
-                            <span class="font-black text-xs font-mono text-rose-600 num">{{ fmt_num($lm->stock_qty) }}</span>
-                            @if($lm->unit?->name)
-                                <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md">{{ $lm->unit->name }}</span>
-                            @endif
-                        </div>
-
-                        <button type="button" @click="openStockInModalFor('{{ $lm->id }}')" 
-                                class="px-2 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 cursor-pointer flex items-center gap-0.5">
-                            <span>+</span>
-                            <span>هاتن</span>
-                        </button>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    @endif
-
-    {{-- ٣. بەشی سەرەکی مەوادەکان --}}
+    {{-- ٢. بەشی سەرەکی مەوادەکان --}}
     <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div class="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="text-xs font-bold text-slate-600">
@@ -98,6 +56,11 @@
                             <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"
                                   x-show="mat.unit_name"
                                   x-text="mat.unit_name"></span>
+                            <span x-show="mat.is_low"
+                                  class="inline-flex items-center gap-1 text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200 px-1.5 py-0.5 rounded-full">
+                                <span>⚠️</span>
+                                <span>کەمە</span>
+                            </span>
                         </div>
                     </div>
 
@@ -133,13 +96,18 @@
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="p-3.5 font-bold text-slate-900" x-text="mat.name"></td>
                             <td class="p-3.5 text-center">
-                                <div class="inline-flex items-center justify-center gap-1.5">
+                                <div class="inline-flex items-center justify-center gap-2">
                                     <span class="font-black text-sm num font-mono"
                                           :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'"
                                           x-text="mat.stock_qty"></span>
                                     <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"
                                           x-show="mat.unit_name"
                                           x-text="mat.unit_name"></span>
+                                    <span x-show="mat.is_low"
+                                          class="inline-flex items-center gap-1 text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full">
+                                        <span>⚠️</span>
+                                        <span>کەمە</span>
+                                    </span>
                                 </div>
                             </td>
                             <td class="p-3.5 text-center">
