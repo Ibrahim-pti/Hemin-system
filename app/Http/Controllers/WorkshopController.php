@@ -216,14 +216,28 @@ class WorkshopController extends Controller
         $presentCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'present')->count();
         $leaveCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'leave')->count();
         $absentCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'absent')->count();
+        $notRecordedCount = $employees->filter(fn ($e) => !$e->attendances->first() || !$e->attendances->first()?->status)->count();
+        $totalOvertime = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->overtime_hours ?? 0));
+        $totalFuel = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->fuel_expense ?? 0));
+
+        $carbonDate = \Illuminate\Support\Carbon::parse($date);
+        $prevDate = $carbonDate->copy()->subDay()->toDateString();
+        $nextDate = $carbonDate->copy()->addDay()->toDateString();
+        $isToday = $date === now()->toDateString();
 
         return view('workshop.employees', compact(
             'employees',
             'employeesData',
             'date',
+            'prevDate',
+            'nextDate',
+            'isToday',
             'presentCount',
             'leaveCount',
-            'absentCount'
+            'absentCount',
+            'notRecordedCount',
+            'totalOvertime',
+            'totalFuel'
         ));
     }
 

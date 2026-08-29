@@ -119,15 +119,15 @@ class AttendanceController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'ok' => true,
-                'message' => "چیک ئین بۆ {$employee->name} لە کاتژمێر {$currentTime} تۆمارکرا.",
+                'message' => "هاتنی {$employee->name} لە کاتژمێر {$currentTime} تۆمارکرا.",
                 'attendance' => $attendance,
             ]);
         }
 
-        return back()->with('ok', "چیک ئین بۆ {$employee->name} تۆمارکرا ({$currentTime}).");
+        return back()->with('ok', "هاتنی {$employee->name} تۆمارکرا ({$currentTime}).");
     }
 
-    /** چیک ئاوتی خێرا (Check-out Now) */
+    /** دەرچوونی خێرا */
     public function quickCheckOut(Request $request)
     {
         $validated = $request->validate([
@@ -160,12 +160,12 @@ class AttendanceController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'ok' => true,
-                'message' => "چیک ئاوت بۆ {$employee->name} لە کاتژمێر {$currentTime} تۆمارکرا.",
+                'message' => "دەرچوونی {$employee->name} لە کاتژمێر {$currentTime} تۆمارکرا.",
                 'attendance' => $attendance,
             ]);
         }
 
-        return back()->with('ok', "چیک ئاوت بۆ {$employee->name} تۆمارکرا ({$currentTime}).");
+        return back()->with('ok', "دەرچوونی {$employee->name} تۆمارکرا ({$currentTime}).");
     }
 
     /** پاشەکەوتکردنی وردەکاری ئامادەبوونی تەنها یەک کارمەند */
