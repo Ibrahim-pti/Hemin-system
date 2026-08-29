@@ -94,31 +94,35 @@
         </a>
     </div>
 
-    {{-- ٣. ئاگاداری کەمی مەواد (بانەری سادە و پاک) --}}
+    {{-- ٣. ئاگاداری کەمی مەواد (تەواو هاوشێوەی کۆنتەینەری سەرەوە بە دیزاینی سپی و ڕێک) --}}
     @if ($lowStockMaterials->isNotEmpty())
-        <div class="bg-rose-50/90 rounded-2xl p-4 sm:p-4.5 border border-rose-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-center gap-3.5">
-                <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xl shrink-0 border border-rose-200/80 shadow-2xs">
+                <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px;"
+                     class="rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
                     ⚠️
                 </div>
                 <div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <h3 class="font-black text-xs sm:text-sm text-rose-950">
-                            ئاگاداری: ({{ $lowStockMaterials->count() }}) جۆر مەواد لە مەخزەن کەم بووەتەوە
-                        </h3>
+                        <h2 class="text-base sm:text-lg font-black text-slate-900">ئاگاداری: مەوادە کەمبووەکانی مەخزەن</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            {{ $lowStockMaterials->count() }} جۆر مەواد
+                        </span>
                     </div>
-                    <p class="text-[11px] sm:text-xs text-rose-800 font-medium mt-0.5">
-                        بڕی هەندێک مەواد لە مەخزەندا کەم بووەتەوە و پێویستیان بە زیادکردن و پڕکردنەوەیە.
+                    <p class="text-xs text-slate-500 mt-0.5 font-medium">
+                        بڕی هەندێک مەواد لە مەخزەندا لە سنووری کەمترین پێویست کەمتریان ماوە و پێویستیان بە پڕکردنەوەیە.
                     </p>
                 </div>
             </div>
 
-            <a href="{{ route('workshop.materials') }}?filter=low"
-               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold text-xs shrink-0 self-start sm:self-center transition-all shadow-xs">
-                <span>📦</span>
-                <span>بینینی مەوادە کەمبووەکان</span>
-                <span>←</span>
-            </a>
+            <div class="flex items-center gap-2.5 flex-wrap shrink-0">
+                <a href="{{ route('workshop.materials') }}?filter=low"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition-all border border-amber-700">
+                    <span>📦</span>
+                    <span>بینینی مەوادە کەمبووەکان</span>
+                    <span>←</span>
+                </a>
+            </div>
         </div>
     @endif
 
