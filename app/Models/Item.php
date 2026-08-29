@@ -20,6 +20,15 @@ class Item extends Model
         'last_cost', 'cost_currency', 'purchase_date', 'sale_price', 'is_for_sale', 'is_active', 'note',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Item $item) {
+            if (empty($item->code)) {
+                $item->code = static::nextCode();
+            }
+        });
+    }
+
     public function imageUrl(): ?string
     {
         if ($this->image) {

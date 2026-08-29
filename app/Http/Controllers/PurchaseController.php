@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\Supplier;
+use App\Models\Unit;
 use App\Models\Warehouse;
 use App\Services\PaymentService;
 use App\Services\StockService;
@@ -321,6 +322,7 @@ class PurchaseController extends Controller
                 $item = $existingItem;
             } else {
                 $item = Item::where('name', $itemName)->first() ?? Item::create([
+                    'code' => Item::nextCode(),
                     'name' => $itemName,
                     'unit_id' => $defaultUnitId,
                     'is_active' => true,
