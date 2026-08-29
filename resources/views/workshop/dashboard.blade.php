@@ -94,76 +94,31 @@
         </a>
     </div>
 
-    {{-- ٣. ئاگاداری کەمی مەواد (بە سیستەمی زیرەک و کۆنتڕۆڵی ژمارەی زۆر) --}}
+    {{-- ٣. ئاگاداری کەمی مەواد (بانەری سادە و پاک) --}}
     @if ($lowStockMaterials->isNotEmpty())
-        <div x-data="{ showAllLowStock: false }" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-lg shrink-0">
-                        ⚠️
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <h3 class="font-black text-xs sm:text-sm text-slate-900">ئاگاداری: کەمیی مەواد لە مەخزەن</h3>
-                            <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-black border border-rose-200">
-                                {{ $lowStockMaterials->count() }} جۆر مەواد
-                            </span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 font-medium mt-0.5">ئەم مەوادانە بڕەکەیان لە مەخزەندا لە سنووری پێویست کەمتر بووەتەوە</p>
-                    </div>
+        <div class="bg-rose-50/90 rounded-2xl p-4 sm:p-4.5 border border-rose-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+            <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xl shrink-0 border border-rose-200/80 shadow-2xs">
+                    ⚠️
                 </div>
-
-                <a href="{{ route('workshop.materials') }}"
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shrink-0 self-start sm:self-center transition-all shadow-2xs">
-                    <span>📦</span>
-                    <span>چوون بۆ مەخزەن</span>
-                    <span>←</span>
-                </a>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="font-black text-xs sm:text-sm text-rose-950">
+                            ئاگاداری: ({{ $lowStockMaterials->count() }}) جۆر مەواد لە مەخزەن کەم بووەتەوە
+                        </h3>
+                    </div>
+                    <p class="text-[11px] sm:text-xs text-rose-800 font-medium mt-0.5">
+                        بڕی هەندێک مەواد لە مەخزەندا کەم بووەتەوە و پێویستیان بە زیادکردن و پڕکردنەوەیە.
+                    </p>
+                </div>
             </div>
 
-            {{-- بۆکسە ڕێکەکانی مەوادە کەمبووەکان --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                @foreach ($lowStockMaterials as $index => $lowMat)
-                    <div x-show="showAllLowStock || {{ $index }} < 4"
-                         x-cloak
-                         class="bg-slate-50 hover:bg-rose-50/40 rounded-xl p-3.5 border border-slate-200 hover:border-rose-300 transition-all flex flex-col justify-between shadow-2xs">
-                        <div class="flex items-start justify-between gap-2">
-                            <div class="min-w-0">
-                                <div class="font-black text-xs text-slate-900 truncate">{{ $lowMat->name }}</div>
-                                @if($lowMat->code)
-                                    <div class="text-[10px] text-slate-400 font-mono">{{ $lowMat->code }}</div>
-                                @endif
-                            </div>
-                            <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-100 text-rose-700 border border-rose-200 shrink-0">
-                                کەمە ⚠️
-                            </span>
-                        </div>
-
-                        <div class="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                            <span class="text-[11px] text-slate-500 font-medium">بڕی ماوە:</span>
-                            <span class="font-mono font-black text-rose-700 text-sm">
-                                {{ fmt_num($lowMat->stock_qty) }}
-                                <span class="text-[10px] font-bold text-slate-500">{{ $lowMat->unit?->name ?? 'دانە' }}</span>
-                            </span>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            {{-- ئەگەر زیاتر لە ٤ مەواد کەم بێت: دوگمەی درێژکردنەوە و پیشاندانی هەمووان --}}
-            @if ($lowStockMaterials->count() > 4)
-                <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
-                    <button type="button" @click="showAllLowStock = !showAllLowStock"
-                            class="font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer transition-colors">
-                        <span x-show="!showAllLowStock">👇 پیشاندانی تەواوی مەوادە کەمبووەکان (+{{ $lowStockMaterials->count() - 4 }} دانەی تر)</span>
-                        <span x-show="showAllLowStock">🔼 کورتکردنەوە بۆ ٤ مەواد</span>
-                    </button>
-
-                    <a href="{{ route('workshop.materials') }}" class="font-bold text-blue-600 hover:text-blue-800">
-                        بینین لە مەخزەن ←
-                    </a>
-                </div>
-            @endif
+            <a href="{{ route('workshop.materials') }}?filter=low"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold text-xs shrink-0 self-start sm:self-center transition-all shadow-xs">
+                <span>📦</span>
+                <span>بینینی مەوادە کەمبووەکان</span>
+                <span>←</span>
+            </a>
         </div>
     @endif
 

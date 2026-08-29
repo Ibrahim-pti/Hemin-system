@@ -442,7 +442,7 @@
 function workshopMaterialsApp() {
     return {
         materialSearch: '',
-        stockFilter: 'all',
+        stockFilter: '{{ request('filter', 'all') }}',
         showNewMaterialModal: false,
         showStockInModal: false,
         showStockOutModal: false,
