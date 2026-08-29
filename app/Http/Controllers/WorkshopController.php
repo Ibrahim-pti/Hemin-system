@@ -85,12 +85,10 @@ class WorkshopController extends Controller
         $pendingCount = Order::where('status', 'confirmed')->count();
         $inProductionCount = Order::where('status', 'in_production')->count();
         $readyCount = Order::where('status', 'ready')->count();
-        $deliveredCount = Order::where('status', 'delivered')->whereDate('updated_at', now()->toDateString())->count();
-
         $orders = Order::query()
             ->with(['customer', 'items'])
-            ->whereNotIn('status', ['draft', 'cancelled'])
-            ->orderByRaw("FIELD(status, 'in_production', 'confirmed', 'ready', 'delivered')")
+            ->whereIn('status', ['in_production', 'confirmed', 'ready'])
+            ->orderByRaw("FIELD(status, 'in_production', 'confirmed', 'ready')")
             ->latest('order_date')
             ->get();
 

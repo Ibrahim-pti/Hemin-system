@@ -47,7 +47,7 @@
             <button type="button" @click="setFilter('all')"
                     :class="orderFilter === 'all' ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
                     class="px-3 py-1.5 rounded-xl transition-all cursor-pointer text-xs">
-                هەموو (<span x-text="ordersList.length"></span>)
+                هەموو کارە کاراکان (<span x-text="ordersList.length"></span>)
             </button>
             <button type="button" @click="setFilter('in_production')"
                     :class="orderFilter === 'in_production' ? 'bg-blue-600 text-white shadow-xs' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'"
@@ -63,11 +63,6 @@
                     :class="orderFilter === 'ready' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'"
                     class="px-3 py-1.5 rounded-xl transition-all cursor-pointer text-xs">
                 ✅ ئامادەیە (<span x-text="readyCount"></span>)
-            </button>
-            <button type="button" @click="setFilter('delivered')"
-                    :class="orderFilter === 'delivered' ? 'bg-slate-700 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'"
-                    class="px-3 py-1.5 rounded-xl transition-all cursor-pointer text-xs">
-                🚚 ڕادەستکراوە (<span x-text="deliveredCount"></span>)
             </button>
         </div>
 
@@ -414,8 +409,9 @@ function workshopOrdersApp() {
                 'delivered': 'ڕادەستکراو'
             };
 
-            const order = this.ordersList.find(o => o.id === orderId);
-            if (order) {
+            const index = this.ordersList.findIndex(o => o.id === orderId);
+            if (index !== -1) {
+                const order = this.ordersList[index];
                 const oldStatus = order.status;
                 order.status = newStatus;
                 order.status_label = labels[newStatus] || newStatus;
@@ -431,7 +427,11 @@ function workshopOrdersApp() {
                         body: JSON.stringify({ status: newStatus })
                     });
 
-                    if (!response.ok) {
+                    if (response.ok) {
+                        if (newStatus === 'delivered') {
+                            this.ordersList.splice(index, 1);
+                        }
+                    } else {
                         order.status = oldStatus;
                         order.status_label = labels[oldStatus];
                         alert('هەڵەیەک ڕوویدا لە گۆڕینی دۆخەکە.');
