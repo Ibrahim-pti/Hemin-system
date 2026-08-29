@@ -266,23 +266,20 @@
                 <a href="{{ route('workshop.employees') }}"
                    class="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all">
                     <span>👷</span>
-                    <span>وەستا و حەمەڵەکان</span>
+                    <span>بینینی وەستاکان</span>
+                </a>
+
+                <a href="{{ route('reports.show', 'workshop_production') }}"
+                   class="px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
+                    <span>⚙️</span>
+                    <span>ڕاپۆرتی دروستکردن</span>
                 </a>
 
                 <a href="{{ route('reports.show', 'workshop_materials') }}"
                    class="px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
                     <span>🧱</span>
-                    <span>مەوادی خاو و کۆگا</span>
+                    <span>ڕاپۆرتی مەوادی خاو</span>
                 </a>
-
-                @if($workshopWarehouse)
-                    <a href="{{ route('warehouses.edit', $workshopWarehouse) }}"
-                       class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 inline-flex items-center gap-1.5 transition-all"
-                       title="دەستکاری ناونیشان">
-                        <span>✏️</span>
-                        <span>دەستکاری شوێن</span>
-                    </a>
-                @endif
             </div>
         </div>
     </div>
