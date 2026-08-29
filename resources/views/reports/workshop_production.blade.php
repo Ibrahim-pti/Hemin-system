@@ -85,13 +85,11 @@
         <div class="overflow-x-auto">
             <table class="w-full text-right text-xs">
                 <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-black">
-                    <tr>
-                        <th class="p-3.5 text-center w-14">#</th>
-                        <th class="p-3.5 w-44">کڕیار</th>
+                        <th class="p-3.5 text-center w-16"># وەسڵ</th>
+                        <th class="p-3.5 w-48">کڕیار</th>
                         <th class="p-3.5">کەلوپەل و قیاساتی دروستکردن</th>
-                        <th class="p-3.5 w-40">بەرواری داواکاری و گەیاندن</th>
-                        <th class="p-3.5 text-center w-32">دۆخی کارگە</th>
-                        <th class="p-3.5 text-center w-20">کردار</th>
+                        <th class="p-3.5 w-44">بەرواری داواکاری و گەیاندن</th>
+                        <th class="p-3.5 text-center w-36">دۆخی کارگە</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -99,9 +97,10 @@
                         <tr class="hover:bg-slate-50/80 transition-colors align-top">
                             {{-- ژمارەی وەسڵ --}}
                             <td class="p-3.5 text-center font-mono font-black pt-4">
-                                <span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-800 font-mono font-bold text-xs border border-slate-200 inline-block">
+                                <a href="{{ route('orders.show', $order) }}"
+                                   class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-mono font-bold text-xs border border-indigo-200 inline-block shadow-2xs">
                                     #{{ $order->id }}
-                                </span>
+                                </a>
                             </td>
 
                             {{-- کڕیار --}}
@@ -207,18 +206,10 @@
                                     </span>
                                 @endif
                             </td>
-
-                            {{-- کردار --}}
-                            <td class="p-3.5 pt-4 text-center">
-                                <a href="{{ route('orders.show', $order) }}"
-                                   class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-slate-200 transition-all inline-block">
-                                    بینین 👁️
-                                </a>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-xs text-slate-400 font-medium">
+                            <td colspan="5" class="py-10 text-center text-xs text-slate-400 font-medium">
                                 هیچ وەسڵێک لەم ماوەیەدا تۆمار نەکراوە.
                             </td>
                         </tr>
