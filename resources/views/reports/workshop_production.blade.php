@@ -35,39 +35,67 @@
     {{-- پاڵاوتنی بەروار --}}
     @include('reports._filter')
 
-    {{-- ٢. ٤ کارتی ئاماری سەرەکی --}}
+    {{-- ٢. ٤ کارتی ئاماری سەرەکی (کرتە بکە بۆ فلتەرکردنی خشتەکە) --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
-            <div class="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1.5">
-                <span>📋</span>
-                <span>کۆی وەسڵەکانی ئەم ماوەیە</span>
+        {{-- ١. هەموو وەسڵەکان --}}
+        <a href="{{ route('reports.show', ['report' => 'workshop_production', 'from' => $from, 'to' => $to]) }}"
+           class="bg-white rounded-2xl p-4 border transition-all hover:shadow-md cursor-pointer block {{ !$currentStatus ? 'border-slate-800 ring-2 ring-slate-800/10 shadow-xs' : 'border-slate-200/80 shadow-2xs hover:border-slate-400' }}">
+            <div class="text-xs font-bold text-slate-500 mb-1 flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                    <span>📋</span>
+                    <span>کۆی وەسڵەکان</span>
+                </span>
+                @if(!$currentStatus)
+                    <span class="size-2 rounded-full bg-slate-800"></span>
+                @endif
             </div>
             <div class="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{{ fmt_num($totalCount) }}</div>
-        </div>
+        </a>
 
-        <div class="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/80 shadow-xs">
-            <div class="text-xs font-bold text-emerald-800 mb-1 flex items-center gap-1.5">
-                <span class="size-2 rounded-full bg-emerald-500"></span>
-                <span>تەواوکراو و ڕادەستکراو</span>
+        {{-- ٢. تەواوکراو و ڕادەستکراو --}}
+        <a href="{{ route('reports.show', ['report' => 'workshop_production', 'from' => $from, 'to' => $to, 'status' => 'delivered']) }}"
+           class="rounded-2xl p-4 border transition-all hover:shadow-md cursor-pointer block {{ $currentStatus === 'delivered' ? 'bg-emerald-100/80 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs' : 'bg-emerald-50/70 border-emerald-200/80 shadow-2xs hover:border-emerald-400' }}">
+            <div class="text-xs font-bold text-emerald-800 mb-1 flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                    <span>ڕادەستکراو</span>
+                </span>
+                @if($currentStatus === 'delivered')
+                    <span class="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.2 rounded">دیاریکراو</span>
+                @endif
             </div>
             <div class="text-2xl sm:text-3xl font-black text-emerald-900 font-mono">{{ fmt_num($deliveredCount) }}</div>
-        </div>
+        </a>
 
-        <div class="bg-indigo-50/70 rounded-2xl p-4 border border-indigo-200/80 shadow-xs">
-            <div class="text-xs font-bold text-indigo-800 mb-1 flex items-center gap-1.5">
-                <span class="size-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                <span>لە ژێر دروستکردندا</span>
+        {{-- ٣. لە ژێر دروستکردندا --}}
+        <a href="{{ route('reports.show', ['report' => 'workshop_production', 'from' => $from, 'to' => $to, 'status' => 'in_production']) }}"
+           class="rounded-2xl p-4 border transition-all hover:shadow-md cursor-pointer block {{ $currentStatus === 'in_production' ? 'bg-indigo-100/80 border-indigo-500 ring-2 ring-indigo-500/20 shadow-xs' : 'bg-indigo-50/70 border-indigo-200/80 shadow-2xs hover:border-indigo-400' }}">
+            <div class="text-xs font-bold text-indigo-800 mb-1 flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                    <span class="size-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <span>لە دروستکردندا</span>
+                </span>
+                @if($currentStatus === 'in_production')
+                    <span class="text-[10px] font-bold bg-indigo-600 text-white px-1.5 py-0.2 rounded">دیاریکراو</span>
+                @endif
             </div>
             <div class="text-2xl sm:text-3xl font-black text-indigo-900 font-mono">{{ fmt_num($inProductionCount) }}</div>
-        </div>
+        </a>
 
-        <div class="bg-amber-50/70 rounded-2xl p-4 border border-amber-200/80 shadow-xs">
-            <div class="text-xs font-bold text-amber-800 mb-1 flex items-center gap-1.5">
-                <span>⏳</span>
-                <span>چاوەڕوانکراو / ئامادە</span>
+        {{-- ٤. ئامادەکراو بۆ ڕادەستکردن --}}
+        <a href="{{ route('reports.show', ['report' => 'workshop_production', 'from' => $from, 'to' => $to, 'status' => 'ready']) }}"
+           class="rounded-2xl p-4 border transition-all hover:shadow-md cursor-pointer block {{ $currentStatus === 'ready' ? 'bg-amber-100/80 border-amber-500 ring-2 ring-amber-500/20 shadow-xs' : 'bg-amber-50/70 border-amber-200/80 shadow-2xs hover:border-amber-400' }}">
+            <div class="text-xs font-bold text-amber-800 mb-1 flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                    <span>✅</span>
+                    <span>ئامادەی ڕادەستکردن</span>
+                </span>
+                @if($currentStatus === 'ready')
+                    <span class="text-[10px] font-bold bg-amber-600 text-white px-1.5 py-0.2 rounded">دیاریکراو</span>
+                @endif
             </div>
-            <div class="text-2xl sm:text-3xl font-black text-amber-900 font-mono">{{ fmt_num($pendingCount + $readyCount) }}</div>
-        </div>
+            <div class="text-2xl sm:text-3xl font-black text-amber-900 font-mono">{{ fmt_num($readyCount) }}</div>
+        </a>
     </div>
 
     {{-- ٣. خشتەی سەرەکی وەسڵەکان --}}
@@ -75,11 +103,30 @@
         <div class="p-4 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="text-base">📋</span>
-                <h3 class="font-black text-sm text-slate-800">لیستی وەسڵەکان و دۆخی دروستکردن</h3>
+                <h3 class="font-black text-sm text-slate-800">
+                    لیستی وەسڵەکان
+                    @if($currentStatus === 'ready')
+                        <span class="text-amber-800 text-xs font-bold font-sans">(تەنها: ئامادەی ڕادەستکردن)</span>
+                    @elseif($currentStatus === 'in_production')
+                        <span class="text-indigo-800 text-xs font-bold font-sans">(تەنها: لە دروستکردندا)</span>
+                    @elseif($currentStatus === 'delivered')
+                        <span class="text-emerald-800 text-xs font-bold font-sans">(تەنها: ڕادەستکراوەکان)</span>
+                    @endif
+                </h3>
             </div>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700 font-mono">
-                کۆی گشتی: {{ fmt_num($totalCount) }} وەسڵ
-            </span>
+
+            <div class="flex items-center gap-2">
+                @if($currentStatus)
+                    <a href="{{ route('reports.show', ['report' => 'workshop_production', 'from' => $from, 'to' => $to]) }}"
+                       class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                        پیشاندانی هەموو وەسڵەکان ({{ fmt_num($totalCount) }})
+                    </a>
+                @else
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700 font-mono">
+                        کۆی گشتی: {{ fmt_num($totalCount) }} وەسڵ
+                    </span>
+                @endif
+            </div>
         </div>
 
         <div class="overflow-x-auto">

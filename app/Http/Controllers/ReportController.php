@@ -187,12 +187,12 @@ class ReportController extends Controller
 
     private function workshopProduction(string $from, string $to): array
     {
-        $query = Order::with(['customer', 'items.item'])
+        $baseQuery = Order::with(['customer', 'items.item'])
             ->whereNotIn('status', ['draft', 'cancelled'])
             ->whereBetween('order_date', [$from, $to])
             ->orderByDesc('order_date');
 
-        $allOrders = (clone $query)->get();
+        $allOrders = (clone $baseQuery)->get();
 
         $deliveredOrders = $allOrders->where('status', 'delivered');
         $inProductionOrders = $allOrders->where('status', 'in_production');
@@ -209,10 +209,21 @@ class ReportController extends Controller
             ])
             ->values();
 
-        $orders = $query->paginate(5)->withQueryString();
+        $currentStatus = request('status');
+        $filteredQuery = clone $baseQuery;
+        if ($currentStatus && in_array($currentStatus, ['delivered', 'in_production', 'ready', 'confirmed', 'pending'])) {
+            if ($currentStatus === 'pending') {
+                $filteredQuery->where('status', 'confirmed');
+            } else {
+                $filteredQuery->where('status', $currentStatus);
+            }
+        }
+
+        $orders = $filteredQuery->paginate(5)->withQueryString();
 
         return [
             'orders' => $orders,
+            'currentStatus' => $currentStatus,
             'totalCount' => $allOrders->count(),
             'deliveredCount' => $deliveredOrders->count(),
             'inProductionCount' => $inProductionOrders->count(),

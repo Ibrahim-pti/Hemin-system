@@ -107,7 +107,7 @@
                         {{ $ordersInProduction->count() }} وەسڵ
                     </span>
                 </div>
-                <a href="{{ route('reports.show', 'workshop_production') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                <a href="{{ route('reports.show', ['report' => 'workshop_production', 'status' => 'in_production']) }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
                     هەموو کارەکان ←
                 </a>
             </div>
@@ -178,7 +178,7 @@
                         {{ $ordersReady->count() }} وەسڵ
                     </span>
                 </div>
-                <a href="{{ route('reports.show', 'workshop_production') }}" class="text-xs font-bold text-emerald-700 hover:text-emerald-900">
+                <a href="{{ route('reports.show', ['report' => 'workshop_production', 'status' => 'ready']) }}" class="text-xs font-bold text-emerald-700 hover:text-emerald-900">
                     هەموو وەسڵەکان ←
                 </a>
             </div>
