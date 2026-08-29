@@ -33,7 +33,7 @@
                                 {{ $label }}
                             </option>
                         @endforeach
-                        <option value="__NEW__" class="font-bold text-indigo-600">✍️ + پیشەی نوێ (بە دەست بنووسە...)</option>
+                        <option value="__NEW__" class="font-bold text-indigo-600">+ زیادکردنی پیشەی نوێ</option>
                     </select>
                 </div>
                 <div x-show="isCustomJob" class="space-y-1.5" x-cloak>

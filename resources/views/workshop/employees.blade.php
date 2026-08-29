@@ -452,7 +452,7 @@
                                 <option value="بۆیاغچی">بۆیاغچی</option>
                                 <option value="لەحیمچی">لەحیمچی</option>
                                 <option value="other">هیتر</option>
-                                <option value="__NEW__" class="font-bold text-indigo-600">✍️ + پیشەی تر (بە دەست بنووسە...)</option>
+                                <option value="__NEW__" class="font-bold text-indigo-600">+ زیادکردنی پیشەی نوێ</option>
                             </select>
                         </div>
                         <div x-show="newEmployeeCustomJob" x-cloak class="flex gap-1">
@@ -532,7 +532,7 @@
                                 <option value="بۆیاغچی">بۆیاغچی</option>
                                 <option value="لەحیمچی">لەحیمچی</option>
                                 <option value="other">هیتر</option>
-                                <option value="__NEW__" class="font-bold text-indigo-600">✍️ + پیشەی تر (بە دەست بنووسە...)</option>
+                                <option value="__NEW__" class="font-bold text-indigo-600">+ زیادکردنی پیشەی نوێ</option>
                             </select>
                         </div>
                         <div x-show="editWageCustomJob" x-cloak class="flex gap-1">
