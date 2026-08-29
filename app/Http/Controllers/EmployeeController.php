@@ -8,11 +8,51 @@ use Illuminate\View\View;
 
 class EmployeeController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        return view('employees.index', [
-            'employees' => Employee::withCount('attendances')->orderBy('name')->paginate(30),
-        ]);
+        $search = $request->input('search');
+        $status = $request->input('status', 'all');
+        $jobTitle = $request->input('job_title', 'all');
+
+        $query = Employee::query()
+            ->withCount('attendances')
+            ->when($search, function ($q, $s) {
+                $q->where(function ($sub) use ($s) {
+                    $sub->where('name', 'like', "%{$s}%")
+                        ->orWhere('phone', 'like', "%{$s}%")
+                        ->orWhere('job_title', 'like', "%{$s}%");
+                });
+            })
+            ->when($status !== 'all', function ($q) use ($status) {
+                $q->where('is_active', $status === 'active');
+            })
+            ->when($jobTitle !== 'all', function ($q) use ($jobTitle) {
+                $q->where('job_title', $jobTitle);
+            })
+            ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
+            ->orderBy('name');
+
+        $employees = $query->paginate(30)->withQueryString();
+
+        $allEmployees = Employee::all();
+        $totalCount = $allEmployees->count();
+        $activeCount = $allEmployees->where('is_active', true)->count();
+        $mastersCount = $allEmployees->where('is_active', true)->where('job_title', 'master')->count();
+        $portersCount = $allEmployees->where('is_active', true)->whereIn('job_title', ['porter', 'helper'])->count();
+
+        $jobTitles = Employee::select('job_title')->distinct()->pluck('job_title')->all();
+
+        return view('employees.index', compact(
+            'employees',
+            'totalCount',
+            'activeCount',
+            'mastersCount',
+            'portersCount',
+            'jobTitles',
+            'search',
+            'status',
+            'jobTitle'
+        ));
     }
 
     public function create(): View
