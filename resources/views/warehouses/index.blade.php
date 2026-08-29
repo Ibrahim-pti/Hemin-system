@@ -238,49 +238,6 @@
         </div>
     </div>
 
-    {{-- ٥. کارتی تایبەتی مەعمەلی دروستکردن --}}
-    <div class="bg-linear-to-br from-white via-indigo-50/20 to-blue-50/30 rounded-3xl p-5 sm:p-6 border-2 border-indigo-200 shadow-xs">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <div class="size-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-3xl shadow-md shadow-indigo-600/30 shrink-0">
-                    🏭
-                </div>
-                <div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <h2 class="text-base sm:text-lg font-black text-slate-900">{{ $workshopWarehouse?->name ?: 'شوێنی دروستکردن' }}</h2>
-                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
-                            مەعمەلی پیشەسازی و مەوادی خاو
-                        </span>
-                    </div>
-                    <div class="flex items-center gap-4 text-xs text-slate-500 font-medium mt-1">
-                        <span>📍 {{ $workshopWarehouse?->location ?: 'شەقامی ١٠٠ مەتری - نزیک نەخۆشخانەی ڕزگاری' }}</span>
-                        <span>•</span>
-                        <span class="font-mono font-bold text-indigo-700">{{ fmt_num($workshopWarehouse?->movements_count ?? 0) }} جوڵەی مەواد</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2 flex-wrap">
-                <a href="{{ route('employees.index') }}"
-                   class="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all">
-                    <span>👷</span>
-                    <span>بینینی کارمەندان و وەستاکان</span>
-                </a>
-
-                <a href="{{ route('reports.show', 'workshop_production') }}"
-                   class="px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
-                    <span>⚙️</span>
-                    <span>ڕاپۆرتی دروستکردن</span>
-                </a>
-
-                <a href="{{ route('reports.show', 'workshop_materials') }}"
-                   class="px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
-                    <span>🧱</span>
-                    <span>ڕاپۆرتی مەوادی خاو</span>
-                </a>
-            </div>
-        </div>
-    </div>
 
     {{-- ٦. خشتەی کەلوپەل و مەوادە بەردەستەکانی کۆگا --}}
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden"
