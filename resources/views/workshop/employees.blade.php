@@ -470,19 +470,14 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە *</label>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە (دیناری عێراقی) *</label>
+                    <div class="relative">
                         <input type="number" step="any" min="0" x-model="newEmployeeForm.daily_wage" required placeholder="بڕی مووچەی ڕۆژانە..."
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-mono font-bold">
-                    </div>
-
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">دراو</label>
-                        <select x-model="newEmployeeForm.wage_currency" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-bold">
-                            <option value="IQD">دیناری عێراقی (IQD)</option>
-                            <option value="USD">دۆلاری ئەمریکی (USD)</option>
-                        </select>
+                               class="w-full px-3 py-2 pl-14 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-mono font-bold">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
+                            د.ع
+                        </span>
                     </div>
                 </div>
 
@@ -549,19 +544,14 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە *</label>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە (دیناری عێراقی) *</label>
+                    <div class="relative">
                         <input type="number" step="any" min="0" x-model="editWageForm.daily_wage" required
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-black text-indigo-700">
-                    </div>
-
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">دراو</label>
-                        <select x-model="editWageForm.wage_currency" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold">
-                            <option value="IQD">دیناری عێراقی (IQD)</option>
-                            <option value="USD">دۆلاری ئەمریکی (USD)</option>
-                        </select>
+                               class="w-full px-3 py-2 pl-14 rounded-xl border border-slate-200 font-mono font-black text-indigo-700">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
+                            د.ع
+                        </span>
                     </div>
                 </div>
 
