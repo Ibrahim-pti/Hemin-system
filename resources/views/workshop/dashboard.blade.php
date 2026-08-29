@@ -4,7 +4,7 @@
 @section('content')
 <div class="space-y-4 sm:space-y-6">
 
-    {{-- ١. هێڵی سەرەوەی داشبۆرد: بەخێرهاتن و کاتژمێری ڕاستەوخۆ --}}
+    {{-- ١. هێڵی سەرەوەی داشبۆرد: بەخێرهاتن و دوگمە خێراکان --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
             <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
@@ -23,20 +23,20 @@
             </div>
         </div>
 
-        {{-- دوگمە و بەستەرە خێراکان --}}
+        {{-- بەتنە خێراکان بە چوارچێوەی ڕێک و جیاواز --}}
         <div class="flex items-center gap-2 flex-wrap">
             <a href="{{ route('workshop.orders') }}"
-               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 transition-all">
+               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 transition-all border border-blue-700">
                 <span>⚙️</span>
                 <span>داواکارییەکان</span>
             </a>
             <a href="{{ route('workshop.materials') }}"
-               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 flex items-center gap-1.5 transition-all">
+               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1.5 transition-all shadow-2xs">
                 <span>📦</span>
                 <span>مەخزەن</span>
             </a>
             <a href="{{ route('workshop.employees') }}"
-               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 flex items-center gap-1.5 transition-all">
+               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1.5 transition-all shadow-2xs">
                 <span>👷</span>
                 <span>وەستاکان</span>
             </a>
@@ -93,30 +93,47 @@
         </a>
     </div>
 
-    {{-- ٣. ئاگاداری کەمی مەواد (بە شێوازێکی زۆر پاک و ڕێک) --}}
+    {{-- ٣. ئاگاداری کەمی مەواد (بە بۆکسی ڕێک و مۆدێرن) --}}
     @if ($lowStockMaterials->isNotEmpty())
-        <div class="bg-rose-50/70 rounded-2xl p-3.5 sm:p-4 border border-rose-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <span class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-lg shrink-0">⚠️</span>
-                <div>
-                    <div class="text-xs sm:text-sm font-black text-rose-900 flex items-center gap-2 flex-wrap">
-                        <span>ئاگاداری: ({{ $lowStockMaterials->count() }}) جۆر مەواد لە مەخزەن کەم بووەتەوە</span>
-                    </div>
-                    <div class="text-[11px] text-rose-700 font-medium mt-0.5 flex items-center gap-1.5 flex-wrap">
-                        @foreach ($lowStockMaterials->take(4) as $lowMat)
-                            <span class="bg-white/80 px-2 py-0.5 rounded-md border border-rose-200 font-bold">
-                                {{ $lowMat->name }}: <b class="text-rose-800 font-mono">{{ fmt_num($lowMat->stock_qty) }} {{ $lowMat->unit?->name }}</b>
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-rose-200 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-rose-100 mb-3.5">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-base shrink-0">
+                        ⚠️
+                    </span>
+                    <div>
+                        <h3 class="font-black text-xs sm:text-sm text-rose-900 flex items-center gap-2 flex-wrap">
+                            <span>ئاگاداری: مەوادە کەمبووەکانی مەخزەن</span>
+                            <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-black border border-rose-200">
+                                {{ $lowStockMaterials->count() }} جۆر مەواد
                             </span>
-                        @endforeach
+                        </h3>
+                        <p class="text-[11px] text-slate-500 font-medium mt-0.5">ئەم مەوادانە لە مەخزەنی کارگە کەم بوونەتەوە و پێویستیان بە پڕکردنەوەیە</p>
                     </div>
                 </div>
+
+                <a href="{{ route('workshop.materials') }}"
+                   class="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shrink-0 self-end sm:self-center transition-all flex items-center gap-1 shadow-xs">
+                    <span>زیادکردن لە مەخزەن</span>
+                    <span>←</span>
+                </a>
             </div>
 
-            <a href="{{ route('workshop.materials') }}"
-               class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shrink-0 self-end sm:self-center transition-all flex items-center gap-1">
-                <span>زیادکردنی مەواد</span>
-                <span>←</span>
-            </a>
+            {{-- بۆکسە ڕێکەکانی مەوادەکان --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                @foreach ($lowStockMaterials as $lowMat)
+                    <div class="bg-rose-50/50 rounded-xl p-3 border border-rose-200/80 hover:bg-rose-50 transition-all flex flex-col justify-between">
+                        <div class="flex items-start justify-between gap-1.5">
+                            <span class="font-black text-xs text-slate-900 truncate">{{ $lowMat->name }}</span>
+                            <span class="px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-100 text-rose-700 border border-rose-200 shrink-0">کەمە</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-rose-100 text-xs">
+                            <span class="text-[11px] text-slate-500">بڕی ماوە:</span>
+                            <span class="font-mono font-black text-rose-700">{{ fmt_num($lowMat->stock_qty) }} {{ $lowMat->unit?->name }}</span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         </div>
     @endif
 
@@ -167,10 +184,14 @@
                                         @endif
                                     </div>
 
-                                    <div class="text-[11px] text-slate-500 mt-1 flex flex-wrap gap-1.5">
+                                    {{-- کەلوپەلەکان بە ناو و قیاس --}}
+                                    <div class="text-[11px] text-slate-600 mt-1.5 flex flex-wrap gap-1.5">
                                         @foreach ($order->items->take(3) as $it)
-                                            <span class="bg-slate-100 px-2 py-0.5 rounded-md text-slate-700 font-medium">
+                                            <span class="bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md text-slate-800 font-medium">
                                                 {{ $it->item_name }} ({{ fmt_num($it->qty) }} {{ $it->unit_name }})
+                                                @if ($it->measurement_label && $it->measurement_label !== '—')
+                                                    <b class="text-indigo-600 mr-1 font-mono text-[10px]">[{{ $it->measurement_label }}]</b>
+                                                @endif
                                             </span>
                                         @endforeach
                                         @if ($order->items->count() > 3)

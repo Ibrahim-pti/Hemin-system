@@ -78,7 +78,16 @@ class OrderItem extends Model
         return self::MODE_UNITS[$this->pricing_mode] ?? '';
     }
 
-    /** پیشاندانی قیاس بۆ چاپ — بۆ نموونە «١٫٢٠ × ٢٫١٠ م». */
+    public function getItemNameAttribute(): string
+    {
+        return $this->description ?: ($this->item?->name ?? 'کەلوپەل');
+    }
+
+    public function getUnitNameAttribute(): string
+    {
+        return $this->mode_unit ?: ($this->item?->unit?->name ?? 'دانە');
+    }
+
     public function getMeasurementLabelAttribute(): string
     {
         return match ($this->pricing_mode) {
