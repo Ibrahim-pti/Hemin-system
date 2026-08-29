@@ -47,6 +47,19 @@
         </div>
     </div>
 
+    @if($isFriday)
+        {{-- ئاگاداری پشووی هەینی --}}
+        <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3 text-xs text-amber-950 shadow-2xs">
+            <span class="text-2xl shrink-0">☕</span>
+            <div class="space-y-0.5">
+                <div class="font-black text-amber-900 text-xs sm:text-sm">ئەمڕۆ ڕۆژی هەینییە (پشووی فەرمی هەفتانەی کارگە)</div>
+                <div class="text-amber-800 text-[11px] sm:text-xs">
+                    ئەم ڕۆژە وەک نەهاتوو هەژمار ناکرێت. بەڵام ئەگەر هەر وەستایەک بە کاتی زیادە یان دەوام کاری کردبێت، دەتوانیت هاتن و دەرچوونی بۆ تۆمار بکەیت.
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- ٢. کارتەکانی ئامار و خولاسەی ئەمڕۆ --}}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
         {{-- کۆی گشتی کارمەندان --}}

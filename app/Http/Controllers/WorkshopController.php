@@ -219,11 +219,13 @@ class WorkshopController extends Controller
         $notRecordedCount = $employees->filter(fn ($e) => !$e->attendances->first() || !$e->attendances->first()?->status)->count();
         $totalOvertime = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->overtime_hours ?? 0));
         $totalFuel = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->fuel_expense ?? 0));
+        $isFriday = now()->isFriday();
 
         return view('workshop.employees', compact(
             'employees',
             'employeesData',
             'date',
+            'isFriday',
             'presentCount',
             'leaveCount',
             'absentCount',
