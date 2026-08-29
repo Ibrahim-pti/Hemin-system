@@ -72,15 +72,21 @@ class EmployeeController extends Controller
 
     private function validated(Request $request): array
     {
+        $jobTitle = $request->input('job_title');
+        if ($jobTitle === '__NEW__' || !empty($request->input('custom_job_title'))) {
+            $jobTitle = trim($request->input('custom_job_title') ?: $jobTitle);
+        }
+        $request->merge(['job_title' => $jobTitle ?: 'other']);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'job_title' => ['required', 'in:'.implode(',', array_keys(Employee::JOB_TITLES))],
+            'job_title' => ['required', 'string', 'max:100'],
             'daily_wage' => ['nullable', 'numeric', 'min:0'],
             'wage_currency' => ['required', 'in:IQD,USD'],
             'hire_date' => ['nullable', 'date'],
             'note' => ['nullable', 'string'],
-        ], [], ['name' => 'ناو']);
+        ], [], ['name' => 'ناو', 'job_title' => 'پیشە']);
 
         $data['daily_wage'] = $data['daily_wage'] ?? 0;
         $data['is_active'] = $request->boolean('is_active');

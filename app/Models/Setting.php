@@ -45,5 +45,10 @@ class Setting extends Model
         'company_address' => 'هەولێر — ١٠٠م بەرامبەر گۆرستانی شێخ ئەحمەد',
         'invoice_footer' => 'هەڵە دەگەڕێتەوە بۆ هەردوو لا',
         'low_stock_alert' => '1',
+        'workshop_work_start' => '08:00',
+        'workshop_work_end' => '17:00',
+        'workshop_work_hours' => '8',
+        'workshop_weekly_holiday' => 'friday',
+        'workshop_overtime_multiplier' => '1.0',
     ];
 }

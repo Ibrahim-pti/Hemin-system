@@ -60,14 +60,22 @@ class Attendance extends Model
         return self::STATUSES[$this->status] ?? $this->status;
     }
 
-    /** ئایا ئەم ڕۆژە هەینییە؟ (پشووی هەفتانەی کارگە) */
+    /** ئایا ئەم ڕۆژە پشووی هەفتانەی کارگەیە؟ (داینامیک لە ڕێکخستنەکان) */
     public static function isWeeklyHoliday(string|CarbonInterface $date): bool
     {
-        return Carbon::parse($date)->isFriday();
+        $holidaySetting = Setting::get('workshop_weekly_holiday', 'friday');
+        if ($holidaySetting === 'none' || empty($holidaySetting)) {
+            return false;
+        }
+
+        $dayOfWeek = strtolower(Carbon::parse($date)->format('l'));
+        $holidays = array_map('trim', explode(',', strtolower($holidaySetting)));
+
+        return in_array($dayOfWeek, $holidays, true);
     }
 
     /**
-     * حیسابی کاتژمێر لە هاتن و چوونەوە.
+     * حیسابی کاتژمێر لە هاتن و چوونەوە بەپێی کاتژمێری دیاریکراوی کارگە.
      * ئەگەر چوون پێش هاتن بێت، وەک ڕۆژی دواتر دادەنرێت (شەوکار).
      */
     public static function calculateHours(?string $checkIn, ?string $checkOut): array
@@ -83,8 +91,9 @@ class Attendance extends Model
             $out->addDay();
         }
 
+        $standardHours = (float) Setting::get('workshop_work_hours', self::STANDARD_HOURS);
         $hours = round($in->floatDiffInHours($out), 2);
-        $overtime = max(0, round($hours - self::STANDARD_HOURS, 2));
+        $overtime = max(0, round($hours - $standardHours, 2));
 
         return ['hours' => $hours, 'overtime' => $overtime];
     }

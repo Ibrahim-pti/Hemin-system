@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Item;
 use App\Models\ItemCategory;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Models\Unit;
 use App\Models\Warehouse;
 use App\Services\StockService;
@@ -192,7 +194,16 @@ class WorkshopController extends Controller
     /** لاپەڕەی جیاکراوەی وەستا و حەمەڵەکان بە سیستەمی ئامادەبوون */
     public function employees(Request $request): View
     {
-        $date = now()->toDateString();
+        $date = $request->date('date')?->toDateString() ?? now()->toDateString();
+        $isHoliday = Attendance::isWeeklyHoliday($date);
+
+        $shiftSettings = [
+            'work_start' => Setting::get('workshop_work_start', '08:00'),
+            'work_end' => Setting::get('workshop_work_end', '17:00'),
+            'work_hours' => (float) Setting::get('workshop_work_hours', 8),
+            'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
+            'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
+        ];
 
         $employees = Employee::query()
             ->active()
@@ -212,6 +223,7 @@ class WorkshopController extends Controller
                 'daily_wage' => (float) $emp->daily_wage,
                 'wage_currency' => $emp->wage_currency,
                 'hire_date' => $emp->hire_date?->format('Y/m/d'),
+                'is_active' => (bool) $emp->is_active,
                 'note' => $emp->note,
                 'attendance' => $att ? [
                     'id' => $att->id,
@@ -236,13 +248,15 @@ class WorkshopController extends Controller
         $notRecordedCount = $employees->filter(fn ($e) => !$e->attendances->first() || !$e->attendances->first()?->status)->count();
         $totalOvertime = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->overtime_hours ?? 0));
         $totalFuel = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->fuel_expense ?? 0));
-        $isFriday = now()->isFriday();
+        $isFriday = $isHoliday;
 
         return view('workshop.employees', compact(
             'employees',
             'employeesData',
             'date',
             'isFriday',
+            'isHoliday',
+            'shiftSettings',
             'presentCount',
             'leaveCount',
             'absentCount',
@@ -437,5 +451,120 @@ class WorkshopController extends Controller
         );
 
         return back()->with('ok', 'بەکارهێنانی مەواد تۆمارکرا.');
+    }
+
+    /** نوێکردنەوەی ڕێکخستنەکانی دەوام و پشوو و کاتی زیادە */
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'workshop_work_start' => ['required', 'string'],
+            'workshop_work_end' => ['required', 'string'],
+            'workshop_work_hours' => ['required', 'numeric', 'min:1', 'max:24'],
+            'workshop_weekly_holiday' => ['required', 'string'],
+            'workshop_overtime_multiplier' => ['required', 'numeric', 'min:0.5', 'max:5'],
+        ]);
+
+        foreach ($validated as $key => $value) {
+            Setting::put($key, (string) $value);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['ok' => true, 'message' => 'ڕێکخستنەکانی دەوام بە سەرکەوتوویی پاشەکەوتکران.']);
+        }
+
+        return back()->with('ok', 'ڕێکخستنەکانی دەوام بە سەرکەوتوویی پاشەکەوتکران.');
+    }
+
+    /** زیادکردنی خێرای وەستا و حەمەڵ */
+    public function quickStoreEmployee(Request $request)
+    {
+        $jobTitle = $request->input('job_title');
+        if ($jobTitle === '__NEW__' || !empty($request->input('custom_job_title'))) {
+            $jobTitle = trim($request->input('custom_job_title') ?: $jobTitle);
+        }
+        $request->merge(['job_title' => $jobTitle ?: 'master']);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'job_title' => ['required', 'string', 'max:100'],
+            'daily_wage' => ['nullable', 'numeric', 'min:0'],
+            'wage_currency' => ['required', 'in:IQD,USD'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ], [], ['name' => 'ناو', 'job_title' => 'پیشە']);
+
+        $employee = Employee::create([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'] ?? null,
+            'job_title' => $validated['job_title'],
+            'daily_wage' => $validated['daily_wage'] ?? 0,
+            'wage_currency' => $validated['wage_currency'],
+            'hire_date' => now()->toDateString(),
+            'is_active' => true,
+            'note' => $validated['note'] ?? null,
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => "وەستا / کارمەند {$employee->name} زیادکرا.",
+                'employee' => [
+                    'id' => $employee->id,
+                    'name' => $employee->name,
+                    'phone' => $employee->phone,
+                    'job_title' => $employee->job_title,
+                    'job_title_label' => $employee->job_title_label,
+                    'daily_wage' => (float) $employee->daily_wage,
+                    'wage_currency' => $employee->wage_currency,
+                    'hire_date' => $employee->hire_date?->format('Y/m/d'),
+                    'is_active' => true,
+                    'note' => $employee->note,
+                    'attendance' => null,
+                ]
+            ]);
+        }
+
+        return back()->with('ok', "وەستا / کارمەند {$employee->name} بە سەرکەوتوویی زیادکرا.");
+    }
+
+    /** دەستکاری مووچە و زانیاری وەستا لەلایەن بەڕێوەبەرەوە */
+    public function updateEmployeeWage(Request $request, Employee $employee)
+    {
+        $jobTitle = $request->input('job_title');
+        if ($jobTitle === '__NEW__' || !empty($request->input('custom_job_title'))) {
+            $jobTitle = trim($request->input('custom_job_title') ?: $jobTitle);
+        }
+        $request->merge(['job_title' => $jobTitle ?: $employee->job_title]);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'job_title' => ['required', 'string', 'max:100'],
+            'daily_wage' => ['required', 'numeric', 'min:0'],
+            'wage_currency' => ['required', 'in:IQD,USD'],
+            'is_active' => ['nullable', 'boolean'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ], [], ['name' => 'ناو', 'job_title' => 'پیشە']);
+
+        $employee->update([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'] ?? null,
+            'job_title' => $validated['job_title'],
+            'daily_wage' => $validated['daily_wage'],
+            'wage_currency' => $validated['wage_currency'],
+            'is_active' => $request->has('is_active') ? $request->boolean('is_active') : $employee->is_active,
+            'note' => $validated['note'] ?? null,
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => "زانیاری و مووچەی {$employee->name} نوێکرایەوە.",
+                'job_title' => $employee->job_title,
+                'job_title_label' => $employee->job_title_label,
+            ]);
+        }
+
+        return back()->with('ok', "زانیاری و مووچەی {$employee->name} بە سەرکەوتوویی نوێکرایەوە.");
     }
 }

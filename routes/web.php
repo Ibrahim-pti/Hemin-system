@@ -132,6 +132,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/quick-check-in', [AttendanceController::class, 'quickCheckIn'])->name('attendance.quick-check-in');
     Route::post('/attendance/quick-check-out', [AttendanceController::class, 'quickCheckOut'])->name('attendance.quick-check-out');
     Route::post('/attendance/record-single', [AttendanceController::class, 'recordSingle'])->name('attendance.record-single');
+    Route::post('/workshop/settings', [WorkshopController::class, 'updateSettings'])->name('workshop.settings');
+    Route::post('/workshop/employees/quick-store', [WorkshopController::class, 'quickStoreEmployee'])->name('workshop.employees.quick-store');
+    Route::post('/workshop/employees/{employee}/update-wage', [WorkshopController::class, 'updateEmployeeWage'])->name('workshop.employees.update-wage');
 
     Route::middleware('can:manage_external_jobs')->group(function () {
         Route::resource('external-jobs', ExternalJobController::class)->parameters(['external-jobs' => 'job']);

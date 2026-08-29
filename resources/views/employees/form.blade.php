@@ -19,15 +19,37 @@
                 @error('name') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
             </div>
 
-            <div>
+            @php
+                $currentJob = old('job_title', $employee->job_title);
+                $isStandardJob = array_key_exists($currentJob, \App\Models\Employee::JOB_TITLES);
+            @endphp
+            <div x-data="{ isCustomJob: {{ (!$isStandardJob && !empty($currentJob)) || old('job_title') === '__NEW__' ? 'true' : 'false' }} }">
                 <label class="label" for="job_title">پیشە</label>
-                <select id="job_title" name="job_title" class="field">
-                    @foreach (\App\Models\Employee::JOB_TITLES as $value => $label)
-                        <option value="{{ $value }}" @selected(old('job_title', $employee->job_title) === $value)>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
+                <div x-show="!isCustomJob" class="space-y-1.5">
+                    <select id="job_title" name="job_title" class="field"
+                            @change="if($event.target.value === '__NEW__') { isCustomJob = true; $nextTick(() => $refs.customJobInput.focus()); }">
+                        @foreach (\App\Models\Employee::JOB_TITLES as $value => $label)
+                            <option value="{{ $value }}" @selected($currentJob === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                        <option value="__NEW__" class="font-bold text-indigo-600">✍️ + پیشەی نوێ (بە دەست بنووسە...)</option>
+                    </select>
+                </div>
+                <div x-show="isCustomJob" class="space-y-1.5" x-cloak>
+                    <div class="flex gap-1.5">
+                        <input x-ref="customJobInput" type="text" name="custom_job_title"
+                               placeholder="ناوی پیشەی نوێ بنووسە (بۆ نموونە: بۆیاغچی)..."
+                               value="{{ !$isStandardJob ? $currentJob : old('custom_job_title') }}"
+                               class="field flex-1 font-bold">
+                        <button type="button" @click="isCustomJob = false; document.getElementById('job_title').value = 'master';"
+                                class="btn btn-ghost !text-xs !py-1 !px-2.5 text-slate-500">
+                            گەڕانەوە
+                        </button>
+                    </div>
+                    <span class="text-[11px] text-[--color-ink-soft]">دەتوانیت هەر پیشەیەک بە دەست بنووسیت.</span>
+                </div>
+                @error('job_title') <p class="mt-1 text-xs text-[--color-danger]">{{ $message }}</p> @enderror
             </div>
 
             <div>
