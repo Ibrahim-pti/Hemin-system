@@ -18,14 +18,8 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            <button type="button" @click="showStockInModal = true" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 cursor-pointer flex-1 sm:flex-initial text-center justify-center">
-                📥 هاتنی مەواد
-            </button>
-            <button type="button" @click="showStockOutModal = true" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 cursor-pointer flex-1 sm:flex-initial text-center justify-center">
-                📤 بەکارهێنان
-            </button>
-            <button type="button" @click="showNewMaterialModal = true" class="btn btn-primary !py-1.5 !px-3.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-xs w-full sm:w-auto text-center justify-center">
+        <div class="flex items-center gap-2">
+            <button type="button" @click="showNewMaterialModal = true" class="btn btn-primary !py-2 !px-4 text-xs font-bold bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-xs">
                 + مەوادی نوێ
             </button>
         </div>
