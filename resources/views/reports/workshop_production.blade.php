@@ -241,12 +241,14 @@
                     {{-- ژمارەی پەڕەکان --}}
                     @foreach ($orders->getUrlRange(1, $orders->lastPage()) as $page => $url)
                         @if ($page == $orders->currentPage())
-                            <span class="size-8 rounded-xl bg-indigo-600 text-white font-mono font-black text-xs flex items-center justify-center shadow-xs">
+                            <span style="min-width: 34px; height: 34px;"
+                                  class="px-2.5 py-1 rounded-xl bg-blue-600 text-white font-mono font-black text-xs inline-flex items-center justify-center shadow-xs">
                                 {{ $page }}
                             </span>
                         @else
                             <a href="{{ $url }}"
-                               class="size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-mono font-bold text-xs border border-slate-200 flex items-center justify-center transition-all">
+                               style="min-width: 34px; height: 34px;"
+                               class="px-2.5 py-1 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-mono font-bold text-xs border border-slate-300 inline-flex items-center justify-center transition-all">
                                 {{ $page }}
                             </a>
                         @endif
