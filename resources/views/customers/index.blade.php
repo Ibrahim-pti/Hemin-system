@@ -29,15 +29,15 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2.5 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap">
             <a href="{{ route('orders.create') }}"
-               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all">
+               class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 inline-flex items-center gap-1.5 transition-all">
                 <span>➕</span>
                 <span>وەسڵی نوێ</span>
             </a>
 
             <a href="{{ route('customers.create') }}"
-               class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 transition-all">
+               class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-1.5 transition-all shadow-sm">
                 <span>+</span>
                 <span>زیادکردنی کڕیار</span>
             </a>
@@ -79,24 +79,25 @@
     {{-- ٣. خشتەی کڕیاران --}}
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         {{-- شریتی سەرەوەی خشتە و گەڕان --}}
-        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/60">
             <div class="flex items-center gap-2">
                 <span class="text-base">📋</span>
-                <h3 class="font-black text-sm text-slate-800">تۆماری هەموو کڕیاران</h3>
-                <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-200/70 text-slate-700">
+                <h3 class="font-black text-sm text-slate-800">تۆماری کڕیاران</h3>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700 font-mono">
                     {{ $customers->total() }} کڕیار
                 </span>
             </div>
 
             {{-- خانەی گەڕان --}}
             <form method="GET" class="flex items-center gap-2">
-                <div class="relative w-full sm:w-72">
-                    <input type="search" name="q" value="{{ request('q') }}"
-                           class="w-full text-xs pr-3.5 pl-8 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium"
-                           placeholder="🔍 گەڕان بە ناو، مۆبایل، ناونیشان...">
+                <div class="relative w-full sm:w-80">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">🔍</span>
+                    <input type="text" name="q" value="{{ request('q') }}"
+                           class="w-full text-xs pr-8 pl-8 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium placeholder:text-slate-400"
+                           placeholder="گەڕان بە ناو، مۆبایل، ناونیشان...">
                     @if(request('q'))
                         <a href="{{ route('customers.index') }}"
-                           class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-600">
+                           class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full size-4 flex items-center justify-center">
                             ✕
                         </a>
                     @endif
@@ -131,19 +132,12 @@
 
                             {{-- ناو --}}
                             <td class="p-3.5">
-                                <div class="flex items-center gap-2.5">
-                                    <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 font-black flex items-center justify-center text-xs shrink-0 border border-blue-100">
-                                        {{ mb_substr($customer->name, 0, 1) }}
-                                    </div>
-                                    <div>
-                                        <a href="{{ route('customers.show', $customer) }}" class="font-black text-slate-900 text-xs hover:text-blue-600 transition-colors block">
-                                            {{ $customer->name }}
-                                        </a>
-                                        @if ($customer->note)
-                                            <span class="text-[11px] text-slate-400 font-normal block truncate max-w-xs">{{ $customer->note }}</span>
-                                        @endif
-                                    </div>
-                                </div>
+                                <a href="{{ route('customers.show', $customer) }}" class="font-black text-slate-900 text-xs hover:text-blue-600 transition-colors block">
+                                    {{ $customer->name }}
+                                </a>
+                                @if ($customer->note)
+                                    <span class="text-[11px] text-slate-400 font-normal block truncate max-w-xs mt-0.5">{{ $customer->note }}</span>
+                                @endif
                             </td>
 
                             {{-- مۆبایل --}}
