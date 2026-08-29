@@ -124,7 +124,6 @@
                     <tr>
                         <th class="p-3.5 font-bold">کۆد</th>
                         <th class="p-3.5 font-bold">ناوی مەواد</th>
-                        <th class="p-3.5 font-bold">جۆر (بەش)</th>
                         <th class="p-3.5 font-bold text-center">بڕی بەردەست</th>
                         <th class="p-3.5 font-bold text-center">کەمترین بڕ</th>
                         <th class="p-3.5 font-bold text-center">دۆخ</th>
@@ -136,7 +135,6 @@
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="p-3.5 font-mono text-slate-500 font-medium" x-text="mat.code"></td>
                             <td class="p-3.5 font-bold text-slate-900" x-text="mat.name"></td>
-                            <td class="p-3.5 text-slate-500" x-text="mat.category_name || '—'"></td>
                             <td class="p-3.5 text-center font-black text-sm num"
                                 :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'">
                                 <span x-text="mat.stock_qty"></span> <span class="text-xs font-normal text-slate-500" x-text="mat.unit_name"></span>
@@ -186,11 +184,8 @@
 
             <form method="POST" action="{{ route('workshop.store-material') }}" class="space-y-3.5"
                   x-data="{
-                      catMode: 'select',
                       unitMode: 'select',
-                      selectedCat: '',
                       selectedUnit: '{{ $units->first()?->id ?? '' }}',
-                      newCatName: '',
                       newUnitName: '',
                   }">
                 @csrf
@@ -202,88 +197,45 @@
                            class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {{-- جۆر / پۆل --}}
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="block text-xs font-bold text-slate-700">جۆر / پۆل</label>
-                            <button type="button" 
-                                    x-show="catMode === 'select'" 
-                                    @click="catMode = 'new'; selectedCat = ''; $nextTick(() => $refs.newCatInput?.focus())"
-                                    class="text-[11px] font-bold text-blue-600 hover:underline cursor-pointer">
-                                + نوێ
-                            </button>
-                            <button type="button" 
-                                    x-show="catMode === 'new'" 
-                                    @click="catMode = 'select'; newCatName = ''"
-                                    class="text-[11px] font-bold text-slate-500 hover:underline cursor-pointer">
-                                هەڵبژاردن لە لیست
-                            </button>
-                        </div>
-
-                        <div x-show="catMode === 'select'">
-                            <select name="item_category_id" 
-                                    x-model="selectedCat"
-                                    @change="if($event.target.value === '__NEW__') { catMode = 'new'; selectedCat = ''; $nextTick(() => $refs.newCatInput?.focus()); }"
-                                    class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 bg-white">
-                                <option value="">هەڵبژێرە...</option>
-                                @foreach ($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                @endforeach
-                                <option value="__NEW__" class="font-black text-blue-600 bg-blue-50">➕ + نووسینی پۆلی نوێ...</option>
-                            </select>
-                        </div>
-
-                        <div x-show="catMode === 'new'" x-cloak class="relative">
-                            <input type="text" 
-                                   name="new_category_name" 
-                                   x-ref="newCatInput"
-                                   x-model="newCatName" 
-                                   placeholder="ناوی پۆل بنووسە..."
-                                   class="w-full text-xs px-3 py-2 rounded-xl border border-blue-400 bg-blue-50/30 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-500 font-medium">
-                        </div>
+                {{-- یەکە --}}
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold text-slate-700">یەکە <span class="text-rose-500">*</span></label>
+                        <button type="button" 
+                                x-show="unitMode === 'select'" 
+                                @click="unitMode = 'new'; selectedUnit = ''; $nextTick(() => $refs.newUnitInput?.focus())"
+                                class="text-[11px] font-bold text-blue-600 hover:underline cursor-pointer">
+                            + نوێ
+                        </button>
+                        <button type="button" 
+                                x-show="unitMode === 'new'" 
+                                @click="unitMode = 'select'; newUnitName = ''; selectedUnit = '{{ $units->first()?->id ?? '' }}'"
+                                class="text-[11px] font-bold text-slate-500 hover:underline cursor-pointer">
+                            هەڵبژاردن لە لیست
+                        </button>
                     </div>
 
-                    {{-- یەکە --}}
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="block text-xs font-bold text-slate-700">یەکە <span class="text-rose-500">*</span></label>
-                            <button type="button" 
-                                    x-show="unitMode === 'select'" 
-                                    @click="unitMode = 'new'; selectedUnit = ''; $nextTick(() => $refs.newUnitInput?.focus())"
-                                    class="text-[11px] font-bold text-blue-600 hover:underline cursor-pointer">
-                                + نوێ
-                            </button>
-                            <button type="button" 
-                                    x-show="unitMode === 'new'" 
-                                    @click="unitMode = 'select'; newUnitName = ''; selectedUnit = '{{ $units->first()?->id ?? '' }}'"
-                                    class="text-[11px] font-bold text-slate-500 hover:underline cursor-pointer">
-                                هەڵبژاردن لە لیست
-                            </button>
-                        </div>
+                    <div x-show="unitMode === 'select'">
+                        <select name="unit_id" 
+                                x-model="selectedUnit"
+                                :required="unitMode === 'select'"
+                                @change="if($event.target.value === '__NEW__') { unitMode = 'new'; selectedUnit = ''; $nextTick(() => $refs.newUnitInput?.focus()); }"
+                                class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 bg-white">
+                            @foreach ($units as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            @endforeach
+                            <option value="__NEW__" class="font-black text-blue-600 bg-blue-50">➕ + نووسینی یەکەی نوێ...</option>
+                        </select>
+                    </div>
 
-                        <div x-show="unitMode === 'select'">
-                            <select name="unit_id" 
-                                    x-model="selectedUnit"
-                                    :required="unitMode === 'select'"
-                                    @change="if($event.target.value === '__NEW__') { unitMode = 'new'; selectedUnit = ''; $nextTick(() => $refs.newUnitInput?.focus()); }"
-                                    class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 bg-white">
-                                @foreach ($units as $u)
-                                    <option value="{{ $u->id }}">{{ $u->name }}</option>
-                                @endforeach
-                                <option value="__NEW__" class="font-black text-blue-600 bg-blue-50">➕ + نووسینی یەکەی نوێ...</option>
-                            </select>
-                        </div>
-
-                        <div x-show="unitMode === 'new'" x-cloak class="relative">
-                            <input type="text" 
-                                   name="new_unit_name" 
-                                   x-ref="newUnitInput"
-                                   x-model="newUnitName" 
-                                   :required="unitMode === 'new'"
-                                   placeholder="ناوی یەکە بنووسە..."
-                                   class="w-full text-xs px-3 py-2 rounded-xl border border-blue-400 bg-blue-50/30 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-500 font-medium">
-                        </div>
+                    <div x-show="unitMode === 'new'" x-cloak class="relative">
+                        <input type="text" 
+                               name="new_unit_name" 
+                               x-ref="newUnitInput"
+                               x-model="newUnitName" 
+                               :required="unitMode === 'new'"
+                               placeholder="ناوی یەکە بنووسە..."
+                               class="w-full text-xs px-3 py-2 rounded-xl border border-blue-400 bg-blue-50/30 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-500 font-medium">
                     </div>
                 </div>
 
