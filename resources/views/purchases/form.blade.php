@@ -45,7 +45,7 @@
         <a href="{{ route('purchases.index') }}"
            class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all inline-flex items-center gap-1.5">
             <span>←</span>
-            <span>گەڕانەوە بۆ پسوولەکان</span>
+            <span>گەڕانەوە بۆ کڕینەکان</span>
         </a>
     </div>
 

@@ -1,228 +1,327 @@
 @extends('layouts.app')
-@section('title', 'پسوولەکانی کڕین')
+@section('title', 'کڕینەکان')
+
+@section('actions')
+    <a href="{{ route('purchases.create') }}"
+       class="btn btn-primary !py-2 !px-4 text-xs font-bold gap-1.5 shadow-sm bg-blue-600 hover:bg-blue-700">
+        <span>+</span>
+        <span>کڕینی نوێ</span>
+    </a>
+@endsection
 
 @section('content')
-<div class="space-y-4 sm:space-y-6">
 
-    {{-- ١. هێڵی سەرەوە: ناونیشان و دوگمەی دروستکردنی پسوولەی نوێ --}}
-    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-3.5">
-            <div class="size-12 rounded-2xl bg-linear-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center text-2xl shadow-md shadow-emerald-500/20 shrink-0">
-                🛒
-            </div>
-            <div>
-                <div class="flex items-center gap-2 flex-wrap">
-                    <h1 class="text-lg sm:text-xl font-black text-slate-900">پسوولەکانی کڕین</h1>
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200/80">
-                        مەواد و کەلوپەلی هاتوو
-                    </span>
-                </div>
-                <p class="text-xs text-slate-500 mt-1 font-medium">
-                    تۆمارکردنی کڕینی کەلوپەل لە فرۆشیاران، پسوولەکان و هاتنی مەواد بۆ کۆگا
-                </p>
-            </div>
+{{-- ١. کارتەکانی ئاماری سەرەوە (هاوشێوەی بەشی فرۆشتن) --}}
+<div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+    {{-- کۆی کڕینەکان --}}
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-blue-500 relative flex items-center justify-between overflow-hidden">
+        <div>
+            <div class="text-3xl font-black text-slate-800 num tracking-tight">{{ fmt_num($totalPurchasesCount) }}</div>
+            <div class="text-xs font-bold text-slate-500 mt-1">کۆی پسوولەکانی کڕین</div>
         </div>
-
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-            <a href="{{ route('purchases.create') }}"
-               class="px-4 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 inline-flex items-center gap-1.5 transition-all cursor-pointer">
-                <span>➕</span>
-                <span>پسوولەی کڕینی نوێ</span>
-            </a>
+        <div class="size-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0">
+            🛒
         </div>
     </div>
 
-    {{-- ٢. کارتە ئامارییەکان --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
-            <div class="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1.5">
-                <span>📋</span>
-                <span>کۆی پسوولەکانی کڕین</span>
-            </div>
-            <div class="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{{ fmt_num($totalPurchasesCount) }}</div>
+    {{-- کۆی پارەی کڕین --}}
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-emerald-500 relative flex items-center justify-between overflow-hidden">
+        <div>
+            <div class="text-2xl font-black text-slate-800 num tracking-tight">{{ fmt_money($totalPurchasesAmount) }}</div>
+            <div class="text-xs font-bold text-slate-500 mt-1">کۆی پارەی کڕین (د.ع)</div>
         </div>
-
-        <div class="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/80 shadow-xs">
-            <div class="text-xs font-bold text-emerald-800 mb-1 flex items-center gap-1.5">
-                <span>💰</span>
-                <span>کۆی پارەی کڕین</span>
-            </div>
-            <div class="text-xl sm:text-2xl font-black text-emerald-900 font-mono">{{ fmt_money($totalPurchasesAmount) }}</div>
-        </div>
-
-        <div class="bg-rose-50/70 rounded-2xl p-4 border border-rose-200/80 shadow-xs">
-            <div class="text-xs font-bold text-rose-800 mb-1 flex items-center gap-1.5">
-                <span>⏳</span>
-                <span>قەرز / پارەی ماوە</span>
-            </div>
-            <div class="text-xl sm:text-2xl font-black text-rose-800 font-mono">{{ fmt_money($totalRemainingDebt) }}</div>
-        </div>
-
-        <div class="bg-amber-50/70 rounded-2xl p-4 border border-amber-200/80 shadow-xs">
-            <div class="text-xs font-bold text-amber-800 mb-1 flex items-center gap-1.5">
-                <span>📝</span>
-                <span>ڕەشنووس / چاوەڕوان</span>
-            </div>
-            <div class="text-2xl sm:text-3xl font-black text-amber-900 font-mono">{{ fmt_num($draftCount) }}</div>
+        <div class="size-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+            💵
         </div>
     </div>
 
-    {{-- ٣. فلتەر و گەڕان --}}
-    <form method="GET" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-end">
-            <div class="lg:col-span-2">
-                <label class="block font-bold text-xs text-slate-600 mb-1.5">🔍 گەڕان</label>
-                <input type="search" name="q" value="{{ request('q') }}"
-                       class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 w-full font-medium placeholder:text-slate-400 placeholder:font-normal"
-                       placeholder="ژمارەی پسوولە یان ناوی فرۆشیار...">
-            </div>
-
-            <div>
-                <label class="block font-bold text-xs text-slate-600 mb-1.5">دۆخی پسوولە</label>
-                <select name="status" class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 w-full font-bold text-slate-700 cursor-pointer">
-                    <option value="">هەموو دۆخەکان</option>
-                    @foreach (\App\Models\Purchase::STATUSES as $key => $label)
-                        <option value="{{ $key }}" @selected(request('status') === $key)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label class="block font-bold text-xs text-slate-600 mb-1.5">لە بەرواری</label>
-                <input type="date" name="from" value="{{ request('from') }}"
-                       class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 w-full font-mono font-bold text-slate-800 cursor-pointer">
-            </div>
-
-            <div>
-                <label class="block font-bold text-xs text-slate-600 mb-1.5">تا بەرواری</label>
-                <div class="flex items-center gap-2">
-                    <input type="date" name="to" value="{{ request('to') }}"
-                           class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 flex-1 font-mono font-bold text-slate-800 cursor-pointer">
-                    <button type="submit"
-                            class="px-4 py-2.5 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition-all cursor-pointer shrink-0">
-                        پاڵاوتن
-                    </button>
-                    @if(request()->anyFilled(['q', 'status', 'from', 'to']))
-                        <a href="{{ route('purchases.index') }}"
-                           class="p-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition-all shrink-0"
-                           title="سڕینەوەی فلتەر">
-                            ✕
-                        </a>
-                    @endif
-                </div>
-            </div>
+    {{-- پارەی دراو بە فرۆشیاران --}}
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-teal-500 relative flex items-center justify-between overflow-hidden">
+        <div>
+            <div class="text-2xl font-black text-teal-700 num tracking-tight">{{ fmt_money($totalPurchasesPaid) }}</div>
+            <div class="text-xs font-bold text-slate-500 mt-1">پارەی دراو بە فرۆشیاران (د.ع)</div>
         </div>
-    </form>
+        <div class="size-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl shrink-0">
+            💳
+        </div>
+    </div>
 
-    {{-- ٤. خشتەی پسوولەکانی کڕین --}}
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div class="p-4 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="text-base">📋</span>
-                <h3 class="font-black text-sm text-slate-800">لیستی پسوولەکانی کڕین</h3>
+    {{-- قەرزی ماوە بۆ کۆمپانیاکان --}}
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-rose-500 relative flex items-center justify-between overflow-hidden">
+        <div>
+            <div class="text-2xl font-black text-rose-600 num tracking-tight">{{ fmt_money($totalCompanyDebt > 0 ? $totalCompanyDebt : $totalRemainingDebt) }}</div>
+            <div class="text-xs font-bold text-slate-500 mt-1">قەرزی ماوە بۆ کۆمپانیاکان (د.ع)</div>
+        </div>
+        <div class="size-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0">
+            ⚠️
+        </div>
+    </div>
+</div>
+
+<div x-data="{ tab: '{{ request('tab', 'suppliers') }}' }">
+    {{-- ٢. سویچەری نێوان تابەکان --}}
+    <div class="flex items-center gap-2 mb-4">
+        <button @click="tab = 'suppliers'"
+                :class="tab === 'suppliers' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                class="px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
+            <span>🏢 کۆمپانیا و فرۆشیارەکان</span>
+            <span :class="tab === 'suppliers' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'"
+                  class="px-2 py-0.5 rounded-full text-xs font-mono font-bold">{{ $totalSuppliersCount }}</span>
+        </button>
+
+        <button @click="tab = 'invoices'"
+                :class="tab === 'invoices' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                class="px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
+            <span>🧾 هەموو پسوولەکانی کڕین</span>
+            <span :class="tab === 'invoices' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'"
+                  class="px-2 py-0.5 rounded-full text-xs font-mono font-bold">{{ $totalPurchasesCount }}</span>
+        </button>
+    </div>
+
+    {{-- ٣. تابی یەکەم: کۆمپانیا و فرۆشیارەکان و قەرزەکانیان --}}
+    <div x-show="tab === 'suppliers'" class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <span>🏢</span>
+                <span>کۆمپانیا و فرۆشیارەکان و قەرزەکانیان</span>
             </div>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700 font-mono">
-                {{ fmt_num($purchases->total()) }} پسوولە
-            </span>
+
+            {{-- فۆرمی گەڕان لە کۆمپانیاکان --}}
+            <form method="GET" class="w-full sm:w-72">
+                <input type="hidden" name="tab" value="suppliers">
+                <div class="relative">
+                    <input type="search" name="q" value="{{ request('tab') === 'suppliers' ? request('q') : '' }}"
+                           class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50"
+                           placeholder="گەڕان لە کۆمپانیا و فرۆشیاران...">
+                    <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                </div>
+            </form>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full text-right text-xs">
-                <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-black">
-                    <tr>
-                        <th class="p-3.5 text-center w-28">ژمارەی پسوولە</th>
-                        <th class="p-3.5 w-32">بەروار</th>
-                        <th class="p-3.5">فرۆشیار / کۆمپانیا</th>
-                        <th class="p-3.5">کۆگای وەرگر</th>
-                        <th class="p-3.5 text-left w-36">کۆی گشتی</th>
-                        <th class="p-3.5 text-left w-36">بڕی ماوە (قەرز)</th>
-                        <th class="p-3.5 text-center w-28">دۆخ</th>
-                        <th class="p-3.5 text-center w-20">کردار</th>
+            <table class="table w-full text-right">
+                <thead>
+                    <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
+                        <th class="py-3 px-4 w-12 text-center">#</th>
+                        <th class="py-3 px-4">کۆمپانیا / فرۆشیار</th>
+                        <th class="py-3 px-4 text-center">تەلەفۆن</th>
+                        <th class="py-3 px-4 text-center">ژمارەی کڕین</th>
+                        <th class="py-3 px-4 text-center">کۆی کڕین</th>
+                        <th class="py-3 px-4 text-center">دراوە</th>
+                        <th class="py-3 px-4 text-center">قەرزی ماوە</th>
+                        <th class="py-3 px-4 text-center">دوایین کڕین</th>
+                        <th class="py-3 px-4 text-center w-24">کردار</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @forelse ($purchases as $purchase)
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    @forelse ($suppliersSummary as $index => $sup)
+                        @php
+                            $firstLetter = mb_substr($sup->name, 0, 1, 'UTF-8');
+                        @endphp
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            {{-- # --}}
+                            <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
+                                {{ $index + 1 }}
+                            </td>
+
+                            {{-- ناوی فرۆشیار --}}
+                            <td class="py-3.5 px-4">
+                                <a href="{{ route('suppliers.show', $sup->id) }}" class="flex items-center gap-2.5 group">
+                                    <span class="size-7 rounded-full bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                        {{ $firstLetter }}
+                                    </span>
+                                    <span class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                                        {{ $sup->name }}
+                                    </span>
+                                </a>
+                            </td>
+
+                            {{-- تەلەفۆن --}}
+                            <td class="py-3.5 px-4 text-center num text-xs text-slate-600" dir="ltr">
+                                @if ($sup->phone)
+                                    <span>{{ $sup->phone }}</span> <span class="text-slate-400">📞</span>
+                                @else
+                                    <span class="text-slate-300">-</span>
+                                @endif
+                            </td>
+
+                            {{-- ژمارەی کڕین --}}
+                            <td class="py-3.5 px-4 text-center">
+                                <a href="{{ route('purchases.index', ['tab' => 'invoices', 'supplier_id' => $sup->id]) }}"
+                                   class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
+                                    {{ fmt_num($sup->purchases_count) }} پسوولە
+                                </a>
+                            </td>
+
+                            {{-- کۆی کڕین --}}
+                            <td class="py-3.5 px-4 text-center num font-bold text-slate-800">
+                                {{ fmt_money($sup->total_purchases) }}
+                            </td>
+
+                            {{-- دراوە --}}
+                            <td class="py-3.5 px-4 text-center num font-semibold text-emerald-700">
+                                <span class="inline-block size-1.5 rounded-full bg-emerald-500 ml-1"></span>
+                                {{ fmt_money($sup->total_paid) }}
+                            </td>
+
+                            {{-- قەرزی ماوە --}}
+                            <td class="py-3.5 px-4 text-center">
+                                @if ($sup->balance <= 0)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <span>✓</span> <span>بێ قەرز</span>
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 num">
+                                        <span>{{ fmt_money($sup->balance) }}</span>
+                                    </span>
+                                @endif
+                            </td>
+
+                            {{-- دوایین کڕین --}}
+                            <td class="py-3.5 px-4 text-center num text-xs text-slate-500">
+                                {{ $sup->last_purchase_date ? fmt_date($sup->last_purchase_date) : '-' }}
+                            </td>
+
+                            {{-- کردار --}}
+                            <td class="py-3.5 px-4 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <a href="{{ route('suppliers.show', $sup->id) }}"
+                                       class="size-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 inline-flex items-center justify-center transition-colors shadow-2xs"
+                                       title="پڕۆفایل و کەشف حیساب">
+                                        👁️
+                                    </a>
+
+                                    @if ($sup->balance > 0)
+                                        <a href="{{ route('payments.create', ['type' => 'out', 'supplier' => $sup->id]) }}"
+                                           class="size-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 inline-flex items-center justify-center transition-colors shadow-2xs"
+                                           title="تۆمارکردنی حەقدی و پارەدان">
+                                            💳
+                                        </a>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="py-10 text-center text-slate-400 text-sm font-medium">
+                                هیچ فرۆشیار یان کۆمپانیایەک نەدۆزرایەوە.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- ٤. تابی دووەم: هەموو پسوولەکانی کڕین --}}
+    <div x-show="tab === 'invoices'" class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <span>🧾</span>
+                <span>هەموو پسوولەکانی کڕین</span>
+            </div>
+
+            {{-- فۆرمی گەڕان و فلتەر --}}
+            <form method="GET" class="w-full sm:w-72">
+                <input type="hidden" name="tab" value="invoices">
+                <div class="relative">
+                    <input type="search" name="q" value="{{ request('tab') === 'invoices' ? request('q') : '' }}"
+                           class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50"
+                           placeholder="ژمارەی پسوولە یان فرۆشیار...">
+                    <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                </div>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="table w-full text-right">
+                <thead>
+                    <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
+                        <th class="py-3 px-4 w-12 text-center">#</th>
+                        <th class="py-3 px-4 text-center">پسوولە</th>
+                        <th class="py-3 px-4">کۆمپانیا / فرۆشیار</th>
+                        <th class="py-3 px-4 text-center">کۆگا</th>
+                        <th class="py-3 px-4 text-center">بەروار</th>
+                        <th class="py-3 px-4 text-center">کۆی گشتی</th>
+                        <th class="py-3 px-4 text-center">دراوە</th>
+                        <th class="py-3 px-4 text-center">ماوە (قەرز)</th>
+                        <th class="py-3 px-4 text-center w-24">کردار</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    @forelse ($purchases as $index => $purchase)
                         @php
                             $remaining = $purchase->remaining();
+                            $paid = $purchase->paidTotal();
                         @endphp
-                        <tr class="hover:bg-slate-50/80 transition-colors">
-                            {{-- ژمارەی پسوولە --}}
-                            <td class="p-3.5 text-center font-mono font-black">
+                        <tr class="hover:bg-blue-50/40 transition-colors cursor-pointer"
+                            onclick="if (!event.target.closest('a')) window.location.href='{{ route('purchases.show', $purchase) }}'">
+                            {{-- # --}}
+                            <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
+                                {{ $purchases->firstItem() + $index }}
+                            </td>
+
+                            {{-- پسوولە --}}
+                            <td class="py-3.5 px-4 text-center">
                                 <a href="{{ route('purchases.show', $purchase) }}"
-                                   class="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 inline-block transition-colors shadow-2xs font-bold">
+                                   class="inline-flex items-center justify-center min-w-8 px-3 py-1 rounded-lg text-xs font-mono font-bold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer">
                                     {{ $purchase->invoice_no }}
                                 </a>
                             </td>
 
-                            {{-- بەروار --}}
-                            <td class="p-3.5 font-mono text-slate-600 whitespace-nowrap">
-                                {{ fmt_date($purchase->purchase_date) }}
-                            </td>
-
-                            {{-- فرۆشیار --}}
-                            <td class="p-3.5">
-                                <div class="font-black text-slate-900">
-                                    {{ $purchase->supplier?->name ?: 'فرۆشیاری نەناسراو' }}
-                                </div>
-                                @if($purchase->supplier?->phone)
-                                    <div class="text-[11px] text-slate-500 font-mono mt-0.5">
-                                        {{ $purchase->supplier->phone }}
-                                    </div>
+                            {{-- کۆمپانیا / فرۆشیار --}}
+                            <td class="py-3.5 px-4">
+                                @if ($purchase->supplier)
+                                    <a href="{{ route('suppliers.show', $purchase->supplier) }}" class="font-bold text-slate-800 hover:text-blue-600 transition-colors">
+                                        {{ $purchase->supplier->name }}
+                                    </a>
+                                    @if ($purchase->supplier->phone)
+                                        <span class="num block text-xs text-slate-400" dir="ltr">{{ $purchase->supplier->phone }}</span>
+                                    @endif
+                                @else
+                                    <span class="text-slate-400">—</span>
                                 @endif
                             </td>
 
                             {{-- کۆگا --}}
-                            <td class="p-3.5 text-slate-600 font-medium">
-                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold inline-flex items-center gap-1">
-                                    <span>🏬</span>
-                                    <span>{{ $purchase->warehouse?->name ?: 'کۆگای سەرەکی' }}</span>
+                            <td class="py-3.5 px-4 text-center text-xs text-slate-600">
+                                <span class="px-2 py-0.5 rounded-md bg-slate-100 font-medium">
+                                    {{ $purchase->warehouse?->name ?: 'سەرەکی' }}
                                 </span>
                             </td>
 
+                            {{-- بەروار --}}
+                            <td class="py-3.5 px-4 text-center num text-xs text-slate-600">
+                                {{ fmt_date($purchase->purchase_date) }}
+                            </td>
+
                             {{-- کۆی گشتی --}}
-                            <td class="p-3.5 text-left font-mono font-black text-slate-900">
+                            <td class="py-3.5 px-4 text-center num font-bold text-slate-900">
                                 {{ fmt_money($purchase->total, $purchase->currency) }}
                             </td>
 
-                            {{-- ماوە --}}
-                            <td class="p-3.5 text-left font-mono font-black">
-                                @if($remaining > 0)
-                                    <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
-                                        {{ fmt_money($remaining, $purchase->currency) }}
-                                    </span>
-                                @else
-                                    <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                                        تەواو دراوە ✔️
-                                    </span>
-                                @endif
+                            {{-- دراوە --}}
+                            <td class="py-3.5 px-4 text-center num font-semibold text-emerald-700">
+                                {{ fmt_money($paid, $purchase->currency) }}
                             </td>
 
-                            {{-- دۆخ --}}
-                            <td class="p-3.5 text-center">
-                                @if($purchase->status === 'confirmed')
-                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                        پەسەندکراو ✔️
-                                    </span>
-                                @else
-                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                                        ڕەشنووس ⏳
-                                    </span>
-                                @endif
+                            {{-- ماوە --}}
+                            <td class="py-3.5 px-4 text-center num font-bold {{ $remaining > 0 ? 'text-rose-600' : 'text-slate-400' }}">
+                                {{ $remaining > 0 ? fmt_money($remaining, $purchase->currency) : '-' }}
                             </td>
 
                             {{-- کردار --}}
-                            <td class="p-3.5 text-center">
+                            <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                 <a href="{{ route('purchases.show', $purchase) }}"
-                                   class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 border border-slate-200 transition-all inline-block">
-                                    بینین 👁️
+                                   class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
+                                    بینین
                                 </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-12 text-center text-xs text-slate-400 font-medium">
-                                <div class="text-3xl mb-2">🛒</div>
-                                <div>هیچ پسوولەیەکی کڕین نەدۆزرایەوە.</div>
+                            <td colspan="9" class="py-10 text-center text-slate-400 text-sm font-medium">
+                                هیچ پسوولەیەکی کڕین نەدۆزرایەوە.
                             </td>
                         </tr>
                     @endforelse
@@ -230,57 +329,12 @@
             </table>
         </div>
 
-        {{-- بەشی پەڕەبەندی (Pagination) --}}
         @if ($purchases->hasPages())
-            <div class="p-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div class="font-bold text-slate-600">
-                    پێشاندانی <span class="font-mono text-slate-900 font-black">{{ $purchases->firstItem() ?? 0 }}</span> تا <span class="font-mono text-slate-900 font-black">{{ $purchases->lastItem() ?? 0 }}</span> لە کۆی <span class="font-mono text-teal-700 font-black">{{ $purchases->total() }}</span> پسوولە
-                </div>
-
-                <div class="flex items-center gap-1.5 self-center sm:self-auto">
-                    {{-- پەڕەی پێشوو --}}
-                    @if ($purchases->onFirstPage())
-                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed">
-                            → پێشوو
-                        </span>
-                    @else
-                        <a href="{{ $purchases->previousPageUrl() }}"
-                           class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all shadow-2xs">
-                            → پێشوو
-                        </a>
-                    @endif
-
-                    {{-- ژمارەی پەڕەکان --}}
-                    @foreach ($purchases->getUrlRange(1, $purchases->lastPage()) as $page => $url)
-                        @if ($page == $purchases->currentPage())
-                            <span style="min-width: 34px; height: 34px;"
-                                  class="px-2.5 py-1 rounded-xl bg-blue-600 text-white font-mono font-black text-xs inline-flex items-center justify-center shadow-xs">
-                                {{ $page }}
-                            </span>
-                        @else
-                            <a href="{{ $url }}"
-                               style="min-width: 34px; height: 34px;"
-                               class="px-2.5 py-1 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-mono font-bold text-xs border border-slate-300 inline-flex items-center justify-center transition-all">
-                                {{ $page }}
-                            </a>
-                        @endif
-                    @endforeach
-
-                    {{-- پەڕەی دواتر --}}
-                    @if ($purchases->hasMorePages())
-                        <a href="{{ $purchases->nextPageUrl() }}"
-                           class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all shadow-2xs">
-                            دواتر ←
-                        </a>
-                    @else
-                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed">
-                            دواتر ←
-                        </span>
-                    @endif
-                </div>
+            <div class="p-4 border-t border-slate-100">
+                {{ $purchases->links() }}
             </div>
         @endif
     </div>
-
 </div>
+
 @endsection

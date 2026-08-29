@@ -24,9 +24,12 @@ class PurchaseController extends Controller
     public function index(Request $request): View
     {
         $query = Purchase::query()
-            ->with(['supplier', 'warehouse', 'items'])
+            ->with(['supplier', 'warehouse', 'items.item.unit'])
             ->search($request->string('q')->toString())
+            ->when($request->filled('supplier_id'), fn ($q) => $q->where('supplier_id', $request->input('supplier_id')))
             ->when($request->string('status')->toString(), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->string('payment_status')->toString() === 'debt', fn ($q) => $q->where('status', 'confirmed')->whereRaw('total > paid_amount'))
+            ->when($request->string('payment_status')->toString() === 'paid', fn ($q) => $q->where('status', 'confirmed')->whereRaw('total <= paid_amount'))
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
             ->when($request->date('to'), fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d))
             ->latest('purchase_date')
@@ -34,10 +37,40 @@ class PurchaseController extends Controller
 
         $totalPurchasesCount = Purchase::count();
         $confirmedPurchases = Purchase::where('status', 'confirmed')->get();
-        $totalPurchasesAmount = $confirmedPurchases->sum('total');
-        $totalPurchasesPaid = $confirmedPurchases->sum('paid_amount');
+        $totalPurchasesAmount = (float) $confirmedPurchases->sum('total');
+        $totalPurchasesPaid = (float) $confirmedPurchases->sum('paid_amount');
         $totalRemainingDebt = max(0, $totalPurchasesAmount - $totalPurchasesPaid);
         $draftCount = Purchase::where('status', 'draft')->count();
+
+        // پوختەی کۆمپانیا و فرۆشیارەکان و قەرزەکانیان
+        $allSuppliers = Supplier::active()
+            ->when($request->input('tab') === 'suppliers' && $request->filled('q'), fn ($q) => $q->search($request->string('q')->toString()))
+            ->withCount(['purchases' => fn ($q) => $q->where('status', 'confirmed')])
+            ->get();
+
+        $suppliersSummary = $allSuppliers->map(function ($supplier) {
+            $totalPurchases = (float) $supplier->totalPurchases();
+            $totalPaid = (float) $supplier->totalPaid();
+            $balance = (float) $supplier->balance();
+            $lastPurchase = $supplier->purchases()->latest('purchase_date')->first();
+
+            return (object) [
+                'id' => $supplier->id,
+                'name' => $supplier->name,
+                'phone' => $supplier->phone,
+                'address' => $supplier->address,
+                'purchases_count' => $supplier->purchases_count,
+                'total_purchases' => $totalPurchases,
+                'total_paid' => $totalPaid,
+                'balance' => $balance,
+                'last_purchase_date' => $lastPurchase?->purchase_date,
+            ];
+        })->sortByDesc('balance')->values();
+
+        $totalSuppliersCount = $allSuppliers->count();
+        $totalSuppliersWithDebtCount = $suppliersSummary->where('balance', '>', 0)->count();
+        $totalCompanyDebt = $suppliersSummary->where('balance', '>', 0)->sum('balance');
+        $suppliersList = Supplier::active()->orderBy('name')->get();
 
         $purchases = (clone $query)->paginate(15)->withQueryString();
 
@@ -45,8 +78,14 @@ class PurchaseController extends Controller
             'purchases',
             'totalPurchasesCount',
             'totalPurchasesAmount',
+            'totalPurchasesPaid',
             'totalRemainingDebt',
-            'draftCount'
+            'draftCount',
+            'suppliersSummary',
+            'totalSuppliersCount',
+            'totalSuppliersWithDebtCount',
+            'totalCompanyDebt',
+            'suppliersList'
         ));
     }
 
