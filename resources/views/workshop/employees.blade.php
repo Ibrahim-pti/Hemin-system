@@ -23,19 +23,13 @@
             </div>
         </div>
 
-        {{-- بەرواری ئەمڕۆ و کاتژمێری ڕاستەوخۆ (بە شێوەی ئۆتۆماتیکی و قفڵکراو بۆ ڕێگری لە دەستکاری) --}}
+        {{-- بەرواری ئەمڕۆ و کاتژمێری ڕاستەوخۆ --}}
         <div class="flex items-center gap-3 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shrink-0">
             <div class="size-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg shadow-2xs">
                 📅
             </div>
             <div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-black text-slate-800 font-mono">{{ now()->format('Y/m/d') }}</span>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                        <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>ئەمڕۆ (خۆکار)</span>
-                    </span>
-                </div>
+                <div class="text-xs font-black text-slate-800 font-mono">{{ now()->format('Y/m/d') }}</div>
                 <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
                     <span>کاتی ئێستا:</span>
                     <span class="font-mono font-bold text-slate-800" x-text="currentTime"></span>
