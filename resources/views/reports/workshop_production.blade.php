@@ -219,14 +219,53 @@
         </div>
 
         {{-- بەشی پەڕەبەندی (Pagination) --}}
-        <div class="p-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div class="font-bold text-slate-500">
-                پێشاندانی <span class="font-mono text-slate-900 font-black">{{ $orders->firstItem() ?? 0 }}</span> تا <span class="font-mono text-slate-900 font-black">{{ $orders->lastItem() ?? 0 }}</span> لە کۆی <span class="font-mono text-indigo-700 font-black">{{ $orders->total() }}</span> وەسڵ
+        @if ($orders->hasPages())
+            <div class="p-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div class="font-bold text-slate-600">
+                    پێشاندانی <span class="font-mono text-slate-900 font-black">{{ $orders->firstItem() ?? 0 }}</span> تا <span class="font-mono text-slate-900 font-black">{{ $orders->lastItem() ?? 0 }}</span> لە کۆی <span class="font-mono text-indigo-700 font-black">{{ $orders->total() }}</span> وەسڵ
+                </div>
+
+                <div class="flex items-center gap-1.5 self-center sm:self-auto">
+                    {{-- پەڕەی پێشوو --}}
+                    @if ($orders->onFirstPage())
+                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed">
+                            → پێشوو
+                        </span>
+                    @else
+                        <a href="{{ $orders->previousPageUrl() }}"
+                           class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all shadow-2xs">
+                            → پێشوو
+                        </a>
+                    @endif
+
+                    {{-- ژمارەی پەڕەکان --}}
+                    @foreach ($orders->getUrlRange(1, $orders->lastPage()) as $page => $url)
+                        @if ($page == $orders->currentPage())
+                            <span class="size-8 rounded-xl bg-indigo-600 text-white font-mono font-black text-xs flex items-center justify-center shadow-xs">
+                                {{ $page }}
+                            </span>
+                        @else
+                            <a href="{{ $url }}"
+                               class="size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-mono font-bold text-xs border border-slate-200 flex items-center justify-center transition-all">
+                                {{ $page }}
+                            </a>
+                        @endif
+                    @endforeach
+
+                    {{-- پەڕەی دواتر --}}
+                    @if ($orders->hasMorePages())
+                        <a href="{{ $orders->nextPageUrl() }}"
+                           class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all shadow-2xs">
+                            دواتر ←
+                        </a>
+                    @else
+                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 cursor-not-allowed">
+                            دواتر ←
+                        </span>
+                    @endif
+                </div>
             </div>
-            <div>
-                {{ $orders->links() }}
-            </div>
-        </div>
+        @endif
     </div>
 
 </div>
