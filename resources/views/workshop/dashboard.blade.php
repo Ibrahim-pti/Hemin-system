@@ -94,18 +94,18 @@
         </a>
     </div>
 
-    {{-- ٣. ئاگاداری کەمی مەواد (تەواو هاوشێوەی کۆنتەینەری سەرەوە بە دیزاینی سپی و ڕێک) --}}
+    {{-- ٣. ئاگاداری کەمی مەواد (تەواو هاوشێوەی کۆنتەینەری سەرەوە بە دوگمەی سوور) --}}
     @if ($lowStockMaterials->isNotEmpty())
         <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-center gap-3.5">
                 <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px;"
-                     class="rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                     class="rounded-2xl bg-rose-600 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
                     ⚠️
                 </div>
                 <div>
                     <div class="flex items-center gap-2 flex-wrap">
                         <h2 class="text-base sm:text-lg font-black text-slate-900">ئاگاداری: مەوادە کەمبووەکانی مەخزەن</h2>
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200">
                             {{ $lowStockMaterials->count() }} جۆر مەواد
                         </span>
                     </div>
@@ -117,7 +117,7 @@
 
             <div class="flex items-center gap-2.5 flex-wrap shrink-0">
                 <a href="{{ route('workshop.materials') }}?filter=low"
-                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition-all border border-amber-700">
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-all border border-rose-700">
                     <span>📦</span>
                     <span>بینینی مەوادە کەمبووەکان</span>
                     <span>←</span>
