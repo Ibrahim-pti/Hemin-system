@@ -248,13 +248,15 @@ class WorkshopController extends Controller
         return back()->with('ok', $messages[$validated['status']] ?? 'دۆخی وەسڵ گۆڕدرا.');
     }
 
-    /** زیادکردنی خێرای مەوادی خاو نوێ بۆ شوێنی دروستکردن */
+    /** زیادکردنی خێرای مەوادی نوێ بۆ مەخزەن و شوێنی دروستکردن */
     public function storeRawMaterial(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'item_category_id' => ['nullable', 'exists:item_categories,id'],
-            'unit_id' => ['required', 'exists:units,id'],
+            'item_category_id' => ['nullable'],
+            'new_category_name' => ['nullable', 'string', 'max:255'],
+            'unit_id' => ['nullable'],
+            'new_unit_name' => ['nullable', 'string', 'max:255'],
             'warehouse_id' => ['required', 'exists:warehouses,id'],
             'initial_qty' => ['nullable', 'numeric', 'min:0'],
             'min_qty' => ['nullable', 'numeric', 'min:0'],
@@ -262,15 +264,46 @@ class WorkshopController extends Controller
         ], [], [
             'name' => 'ناوی مەواد',
             'unit_id' => 'یەکە',
+            'new_unit_name' => 'یەکەی نوێ',
             'warehouse_id' => 'کۆگا',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        // جۆر یان پۆل
+        $categoryId = null;
+        if (!empty($validated['new_category_name'])) {
+            $cat = ItemCategory::firstOrCreate([
+                'name' => trim($validated['new_category_name']),
+            ]);
+            $categoryId = $cat->id;
+        } elseif (!empty($validated['item_category_id']) && $validated['item_category_id'] !== '__NEW__') {
+            $categoryId = (int) $validated['item_category_id'];
+        }
+
+        // یەکە
+        $unitId = null;
+        if (!empty($validated['new_unit_name'])) {
+            $unit = Unit::firstOrCreate([
+                'name' => trim($validated['new_unit_name']),
+            ], [
+                'type' => 'count',
+                'is_active' => true,
+            ]);
+            $unitId = $unit->id;
+        } elseif (!empty($validated['unit_id']) && $validated['unit_id'] !== '__NEW__') {
+            $unitId = (int) $validated['unit_id'];
+        }
+
+        if (!$unitId) {
+            $defaultUnit = Unit::first();
+            $unitId = $defaultUnit?->id;
+        }
+
+        DB::transaction(function () use ($validated, $categoryId, $unitId) {
             $item = Item::create([
                 'code' => Item::nextCode(),
                 'name' => $validated['name'],
-                'item_category_id' => $validated['item_category_id'] ?? null,
-                'unit_id' => $validated['unit_id'],
+                'item_category_id' => $categoryId,
+                'unit_id' => $unitId,
                 'min_qty' => $validated['min_qty'] ?? 0,
                 'is_for_sale' => false,
                 'is_active' => true,
@@ -293,7 +326,7 @@ class WorkshopController extends Controller
             }
         });
 
-        return back()->with('ok', 'مەوادی نوێ زیادکرا بۆ شوێنی دروستکردن.');
+        return back()->with('ok', 'مەوادی نوێ زیادکرا بۆ مەخزەن.');
     }
 
     /** زیادکردنی بڕ بۆ مەوادێکی هەبوو لە شوێنی دروستکردن (Stock In) */
