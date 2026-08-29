@@ -114,39 +114,48 @@
 
             <div class="p-4 space-y-3 flex-1 overflow-y-auto max-h-[380px]">
                 @forelse($ordersInProduction as $order)
-                    <div class="p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/20 hover:bg-indigo-50/50 transition-colors flex flex-col gap-2">
+                    <div class="p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/20 hover:bg-indigo-50/50 transition-colors flex flex-col gap-2.5">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('orders.show', $order) }}"
-                                   class="font-mono font-black text-xs text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200 shadow-2xs hover:bg-indigo-50 transition-colors">
+                                <span class="font-mono font-black text-xs text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
                                     #{{ $order->id }}
-                                </a>
+                                </span>
                                 <span class="font-black text-xs text-slate-900">{{ $order->customer?->name ?: 'کڕیاری گشتی' }}</span>
                             </div>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 animate-pulse">
                                 ⚙️ ژێر کارکردن
                             </span>
                         </div>
 
-                        {{-- بڕگەکانی دروستکردن --}}
-                        <div class="text-xs text-slate-600 space-y-1 bg-white p-2 rounded-lg border border-slate-100">
+                        {{-- بڕگەکانی دروستکردن بە وێنە و قیاس --}}
+                        <div class="space-y-1.5 bg-white p-2.5 rounded-xl border border-slate-100 shadow-2xs">
                             @foreach($order->items as $item)
-                                <div class="flex items-center justify-between">
-                                    <span class="font-medium text-slate-800">• {{ $item->item_name }}</span>
-                                    <span class="font-mono font-bold text-slate-500 text-[11px]">
-                                        {{ fmt_num($item->quantity) }} {{ $item->unit_label }}
-                                        @if($item->width && $item->height)
-                                            [{{ $item->width }} × {{ $item->height }}]
+                                @php $imgUrl = $item->imageUrl(); @endphp
+                                <div class="flex items-center justify-between gap-2 text-xs">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        @if($imgUrl)
+                                            <img src="{{ $imgUrl }}" class="size-8 rounded-lg object-cover border border-slate-200 shrink-0">
+                                        @else
+                                            <div class="size-8 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center text-xs shrink-0">🖼️</div>
                                         @endif
-                                    </span>
+                                        <span class="font-bold text-slate-800 truncate">{{ $item->item_name }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 shrink-0 font-mono text-[11px]">
+                                        @if($item->width && $item->height)
+                                            <span class="text-indigo-600 font-bold">[{{ $item->width }} × {{ $item->height }}]</span>
+                                        @endif
+                                        <span class="font-black text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                                            {{ fmt_num($item->qty ?? $item->quantity) }} {{ $item->unit_label ?: $item->unit_name ?: 'دانە' }}
+                                        </span>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
 
-                        <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium pt-1">
-                            <span>بەرواری داواکاری: {{ fmt_date($order->order_date) }}</span>
+                        <div class="flex items-center justify-between text-[11px] text-slate-500 font-medium pt-1 border-t border-indigo-100/60">
+                            <span>📅 داواکاری: <b class="font-mono text-slate-700">{{ fmt_date($order->order_date) }}</b></span>
                             @if($order->delivery_date)
-                                <span class="text-indigo-600 font-bold">گەیاندن: {{ fmt_date($order->delivery_date) }}</span>
+                                <span class="text-indigo-700 font-bold font-mono">گەیاندن: {{ fmt_date($order->delivery_date) }}</span>
                             @endif
                         </div>
                     </div>
@@ -176,13 +185,12 @@
 
             <div class="p-4 space-y-3 flex-1 overflow-y-auto max-h-[380px]">
                 @forelse($ordersReady as $order)
-                    <div class="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/20 hover:bg-emerald-50/50 transition-colors flex flex-col gap-2">
+                    <div class="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/20 hover:bg-emerald-50/50 transition-colors flex flex-col gap-2.5">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('orders.show', $order) }}"
-                                   class="font-mono font-black text-xs text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs hover:bg-emerald-50 transition-colors">
+                                <span class="font-mono font-black text-xs text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
                                     #{{ $order->id }}
-                                </a>
+                                </span>
                                 <span class="font-black text-xs text-slate-900">{{ $order->customer?->name ?: 'کڕیاری گشتی' }}</span>
                             </div>
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -190,21 +198,34 @@
                             </span>
                         </div>
 
-                        {{-- بڕگەکان --}}
-                        <div class="text-xs text-slate-600 space-y-1 bg-white p-2 rounded-lg border border-slate-100">
+                        {{-- بڕگەکان بە وێنە و قیاس --}}
+                        <div class="space-y-1.5 bg-white p-2.5 rounded-xl border border-slate-100 shadow-2xs">
                             @foreach($order->items as $item)
-                                <div class="flex items-center justify-between">
-                                    <span class="font-medium text-slate-800">• {{ $item->item_name }}</span>
-                                    <span class="font-mono font-bold text-slate-500 text-[11px]">
-                                        {{ fmt_num($item->quantity) }} {{ $item->unit_label }}
-                                    </span>
+                                @php $imgUrl = $item->imageUrl(); @endphp
+                                <div class="flex items-center justify-between gap-2 text-xs">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        @if($imgUrl)
+                                            <img src="{{ $imgUrl }}" class="size-8 rounded-lg object-cover border border-slate-200 shrink-0">
+                                        @else
+                                            <div class="size-8 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center text-xs shrink-0">🖼️</div>
+                                        @endif
+                                        <span class="font-bold text-slate-800 truncate">{{ $item->item_name }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 shrink-0 font-mono text-[11px]">
+                                        @if($item->width && $item->height)
+                                            <span class="text-indigo-600 font-bold">[{{ $item->width }} × {{ $item->height }}]</span>
+                                        @endif
+                                        <span class="font-black text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                                            {{ fmt_num($item->qty ?? $item->quantity) }} {{ $item->unit_label ?: $item->unit_name ?: 'دانە' }}
+                                        </span>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
 
-                        <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium pt-1">
-                            <span>کڕیار: {{ $order->customer?->phone ?: '—' }}</span>
-                            <span class="text-emerald-700 font-bold">ئامادەی بەستن یان وەرگرتنە</span>
+                        <div class="flex items-center justify-between text-[11px] text-slate-500 font-medium pt-1 border-t border-emerald-100/60">
+                            <span>📞 <span class="font-mono">{{ $order->customer?->phone ?: 'بێ ژمارە' }}</span></span>
+                            <span class="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/70">ئامادەی ڕادەستکردنە</span>
                         </div>
                     </div>
                 @empty
