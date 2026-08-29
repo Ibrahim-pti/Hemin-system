@@ -1,18 +1,18 @@
 @extends('layouts.app')
-@section('title', 'ناوەندی کۆگاکان و دروستکردن')
+@section('title', 'کۆگا')
 
 @section('content')
 <div class="space-y-5 sm:space-y-6">
 
-    {{-- ١. هێڵی سەرەوە: ناونیشان و دوگمەکانی کردار --}}
-    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    {{-- ١. هێڵی سەرەوە: ناونیشان --}}
+    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
             <div class="size-12 rounded-2xl bg-linear-to-br from-amber-500 via-orange-500 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-md shadow-orange-500/20 shrink-0">
                 🏭
             </div>
             <div>
                 <div class="flex items-center gap-2 flex-wrap">
-                    <h1 class="text-lg sm:text-xl font-black text-slate-900">ناوەندی کۆگاکان و دروستکردن</h1>
+                    <h1 class="text-lg sm:text-xl font-black text-slate-900">کۆگا</h1>
                     <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
                         مەعمەل و کۆگا
                     </span>
@@ -21,26 +21,6 @@
                     بینینی ڕاستەوخۆی مەوادی خاو، وەسڵەکانی ژێر کارکردن، تەواوکراوەکان، و کەلوپەلی بەردەست
                 </p>
             </div>
-        </div>
-
-        <div class="flex items-center gap-2.5 flex-wrap">
-            <a href="{{ route('workshop.employees') }}"
-               class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
-                <span>👷</span>
-                <span>وەستا و حەمەڵەکان</span>
-            </a>
-
-            <a href="{{ route('counts.index') }}"
-               class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 inline-flex items-center gap-1.5 transition-all">
-                <span>📋</span>
-                <span>جەردی کۆگا</span>
-            </a>
-
-            <a href="{{ route('orders.create') }}"
-               class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-1.5 transition-all shadow-sm">
-                <span>➕</span>
-                <span>وەسڵی نوێ</span>
-            </a>
         </div>
     </div>
 
@@ -83,39 +63,34 @@
         </div>
     </div>
 
-    {{-- ٣. کەرتی ئاگاداری مەوادی کەمبووەوە (ئەگەر کەمبوون هەبێت) --}}
-    @if($lowStockItems->isNotEmpty())
-        <div class="bg-linear-to-r from-rose-50 via-amber-50/60 to-white rounded-2xl p-4 sm:p-5 border-2 border-rose-200 shadow-xs">
-            <div class="flex items-center justify-between gap-3 mb-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">⚠️</span>
-                    <h3 class="font-black text-sm text-rose-900">ئاگاداری مەوادی کەمبووەوە لە مەعمەل و کۆگا</h3>
-                    <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-600 text-white font-mono">
-                        {{ $lowStockItems->count() }} مەواد
-                    </span>
+    {{-- ٣. ئاگاداری کەمی مەواد (هاوشێوەی داشبۆردی کارگە) --}}
+    @if ($lowStockItems->isNotEmpty())
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px;"
+                     class="rounded-2xl bg-rose-600 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                    ⚠️
                 </div>
-                <a href="{{ route('reports.show', 'workshop_materials') }}" class="text-xs font-bold text-rose-700 hover:text-rose-900 underline">
-                    ڕاپۆرتی مەوادەکان ←
-                </a>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 class="text-base sm:text-lg font-black text-slate-900">ئاگاداری: مەوادە کەمبووەکانی مەخزەن و کۆگا</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 font-mono">
+                            {{ $lowStockItems->count() }} جۆر مەواد
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5 font-medium">
+                        بڕی هەندێک مەواد لە مەخزەندا لە سنووری کەمترین پێویست کەمتریان ماوە و پێویستیان بە پڕکردنەوەیە.
+                    </p>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                @foreach($lowStockItems as $lowItem)
-                    <div class="bg-white rounded-xl p-3 border border-rose-200 flex items-center justify-between shadow-2xs">
-                        <div>
-                            <div class="font-black text-xs text-slate-900">{{ $lowItem->name }}</div>
-                            <div class="text-[11px] text-slate-500 mt-0.5">
-                                جۆر: {{ $lowItem->category?->name ?: 'گشتی' }}
-                            </div>
-                        </div>
-                        <div class="text-left">
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-black text-rose-700 bg-rose-50 border border-rose-200 block">
-                                {{ fmt_num($lowItem->current_stock) }} {{ $lowItem->unit?->name ?: 'دانە' }}
-                            </span>
-                            <span class="text-[10px] text-rose-500 font-bold block mt-0.5">کەمتر لە ئاستی پێویست</span>
-                        </div>
-                    </div>
-                @endforeach
+            <div class="flex items-center gap-2.5 flex-wrap shrink-0">
+                <a href="{{ route('reports.show', 'workshop_materials') }}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-all border border-rose-700">
+                    <span>📦</span>
+                    <span>بینینی مەوادە کەمبووەکان</span>
+                    <span>←</span>
+                </a>
             </div>
         </div>
     @endif
