@@ -11,6 +11,8 @@
         'profit' => ['reports', 'icon-chip-ok'],
         'stock' => ['items', ''],
         'cash' => ['cash', ''],
+        'workshop_production' => ['orders', 'icon-chip-brand'],
+        'workshop_materials' => ['items', 'icon-chip-warn'],
     ];
 @endphp
 

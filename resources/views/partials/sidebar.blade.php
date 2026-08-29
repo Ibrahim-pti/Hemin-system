@@ -63,11 +63,11 @@
                     'activeText' => '#818cf8',
                     'activeIconBg' => 'rgba(99, 102, 241, 0.2)',
                     'activeIconColor' => '#a5b4fc',
-                    'items' => [
-                        ['route' => 'workshop.orders', 'href' => route('workshop.orders'), 'label' => 'داواکارییەکانی کارگە', 'icon' => 'orders', 'can' => 'view_workshop'],
-                        ['route' => 'workshop.materials', 'href' => route('workshop.materials'), 'label' => 'مەخزەن', 'icon' => 'items', 'can' => 'view_workshop'],
+                    'items' => array_values(array_filter([
+                        $isWasta ? ['route' => 'workshop.orders', 'href' => route('workshop.orders'), 'label' => 'داواکارییەکانی کارگە', 'icon' => 'orders', 'can' => 'view_workshop'] : null,
+                        $isWasta ? ['route' => 'workshop.materials', 'href' => route('workshop.materials'), 'label' => 'مەخزەن', 'icon' => 'items', 'can' => 'view_workshop'] : null,
                         ['route' => 'workshop.employees', 'href' => route('workshop.employees'), 'label' => 'وەستا و حەمەڵەکان', 'icon' => 'employees', 'can' => 'view_workshop'],
-                    ],
+                    ])),
                 ],
                 [
                     'title' => 'کۆگا و لایەنەکان',

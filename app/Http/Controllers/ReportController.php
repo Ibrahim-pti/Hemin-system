@@ -7,8 +7,11 @@ use App\Models\CashTransaction;
 use App\Models\ExternalJob;
 use App\Models\Item;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Purchase;
+use App\Models\StockMovement;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -21,6 +24,8 @@ class ReportController extends Controller
         'profit' => ['قازانج', 'فرۆشتن دوای دەرکردنی کڕین و ئیشی خاریجی'],
         'stock' => ['مەخزەن', 'باڵانسی هەموو کاڵایەک و نرخی کۆگا'],
         'cash' => ['قاسە', 'داهات و خەرجی بەپێی بابەت'],
+        'workshop_production' => ['ڕاپۆرتی دروستکردن و کارگە', 'وەسڵە دروستکراوەکان، قۆناغەکانی کار، و قیاسات بەپێی بەروار'],
+        'workshop_materials' => ['ڕاپۆرتی سەرفیاتی مەخزەنی کارگە', 'جووڵەی مەوادی خاو و سەرفیات بۆ وەسڵەکان بەپێی بەروار'],
     ];
 
     public function index(): View
@@ -41,6 +46,8 @@ class ReportController extends Controller
             'profit' => $this->profit($from, $to),
             'stock' => $this->stock(),
             'cash' => $this->cash($from, $to),
+            'workshop_production' => $this->workshopProduction($from, $to),
+            'workshop_materials' => $this->workshopMaterials($from, $to),
         };
 
         return view("reports.{$report}", $data + [
@@ -175,6 +182,85 @@ class ReportController extends Controller
                 ->values(),
             'totalIn' => $transactions->where('direction', 'in')->sum('amount'),
             'totalOut' => $transactions->where('direction', 'out')->sum('amount'),
+        ];
+    }
+
+    private function workshopProduction(string $from, string $to): array
+    {
+        $orders = Order::with(['customer', 'items.item'])
+            ->whereNotIn('status', ['draft', 'cancelled'])
+            ->whereBetween('order_date', [$from, $to])
+            ->orderByDesc('order_date')
+            ->get();
+
+        $deliveredOrders = $orders->where('status', 'delivered');
+        $inProductionOrders = $orders->where('status', 'in_production');
+        $readyOrders = $orders->where('status', 'ready');
+        $pendingOrders = $orders->where('status', 'confirmed');
+
+        $itemsBreakdown = $orders->flatMap->items
+            ->groupBy(fn (OrderItem $item) => $item->item_name)
+            ->map(fn ($group, $name) => [
+                'name' => $name,
+                'count' => $group->count(),
+                'qty' => $group->sum('qty'),
+                'unit' => $group->first()->unit_name,
+            ])
+            ->values();
+
+        return [
+            'orders' => $orders,
+            'totalCount' => $orders->count(),
+            'deliveredCount' => $deliveredOrders->count(),
+            'inProductionCount' => $inProductionOrders->count(),
+            'readyCount' => $readyOrders->count(),
+            'pendingCount' => $pendingOrders->count(),
+            'itemsBreakdown' => $itemsBreakdown,
+        ];
+    }
+
+    private function workshopMaterials(string $from, string $to): array
+    {
+        $workshopWarehouse = Warehouse::where('type', 'workshop')->first()
+            ?? Warehouse::first();
+        $warehouseId = $workshopWarehouse?->id;
+
+        $movements = StockMovement::query()
+            ->with(['item.unit', 'order.customer'])
+            ->when($warehouseId, fn ($q) => $q->where('warehouse_id', $warehouseId))
+            ->whereBetween('moved_at', [$from, $to])
+            ->latest('moved_at')
+            ->latest('id')
+            ->get();
+
+        $materials = Item::query()
+            ->active()
+            ->withStock($warehouseId)
+            ->with(['unit', 'category'])
+            ->orderBy('name')
+            ->get();
+
+        $consumedMovements = $movements->where('direction', 'out');
+        $receivedMovements = $movements->where('direction', 'in');
+
+        $consumedByMaterial = $consumedMovements->groupBy('item_id')
+            ->map(fn ($group) => [
+                'item_name' => $group->first()->item?->name ?? 'نەناسراو',
+                'unit_name' => $group->first()->item?->unit?->name ?? 'دانە',
+                'qty' => $group->sum('qty'),
+                'count' => $group->count(),
+            ])
+            ->values();
+
+        return [
+            'workshopWarehouse' => $workshopWarehouse,
+            'movements' => $movements,
+            'materials' => $materials,
+            'consumedCount' => $consumedMovements->count(),
+            'consumedQty' => $consumedMovements->sum('qty'),
+            'receivedCount' => $receivedMovements->count(),
+            'receivedQty' => $receivedMovements->sum('qty'),
+            'consumedByMaterial' => $consumedByMaterial,
         ];
     }
 }
