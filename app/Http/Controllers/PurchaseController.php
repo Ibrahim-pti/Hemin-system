@@ -226,6 +226,22 @@ class PurchaseController extends Controller
 
     private function validated(Request $request): array
     {
+        $input = $request->all();
+        if (isset($input['discount_amount'])) {
+            $input['discount_amount'] = str_replace(',', '', (string) $input['discount_amount']);
+        }
+        if (isset($input['paid_amount'])) {
+            $input['paid_amount'] = str_replace(',', '', (string) $input['paid_amount']);
+        }
+        if (isset($input['lines']) && is_array($input['lines'])) {
+            foreach ($input['lines'] as $k => $l) {
+                if (isset($l['unit_price'])) {
+                    $input['lines'][$k]['unit_price'] = str_replace(',', '', (string) $l['unit_price']);
+                }
+            }
+        }
+        $request->merge($input);
+
         return $request->validate([
             'supplier_name' => ['nullable', 'string', 'max:255'],
             'supplier_id' => ['nullable'],
