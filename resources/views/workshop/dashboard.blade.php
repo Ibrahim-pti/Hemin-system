@@ -132,67 +132,97 @@
         {{-- وەسڵە کاراکان (لە دروستکردندا و چاوەڕوانی) --}}
         <div class="lg:col-span-2 space-y-4">
             <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-                <div class="p-3.5 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <div class="flex items-center gap-2">
-                        <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">
+                <div class="p-4 sm:p-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
                             ⚙️
-                        </span>
+                        </div>
                         <div>
-                            <h3 class="font-black text-xs sm:text-sm text-slate-800">دوایین وەسڵە کاراکانی کارگە</h3>
-                            <p class="text-[11px] text-slate-400 font-medium">ئەو داواکارییانەی پێویستیان بە دروستکردن هەیە</p>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-black text-sm text-slate-900">دوایین وەسڵە کاراکانی کارگە</h3>
+                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 font-mono">
+                                    {{ $activeOrders->count() }} وەسڵ
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 font-medium mt-0.5">ئەو داواکارییانەی پێویستیان بە دروستکردن هەیە لە ناو کارگە</p>
                         </div>
                     </div>
-                    <a href="{{ route('workshop.orders') }}" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                    <a href="{{ route('workshop.orders') }}"
+                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-all">
                         <span>هەموو وەسڵەکان</span>
                         <span>←</span>
                     </a>
                 </div>
 
                 @if ($activeOrders->isEmpty())
-                    <div class="p-10 text-center text-slate-400 text-xs font-medium">
+                    <div class="p-12 text-center text-slate-400 text-xs font-medium">
                         <div class="text-3xl mb-2">🎉</div>
                         هیچ وەسڵێکی چاوەڕوانکراو یان لە کاردا نییە.
                     </div>
                 @else
                     <div class="divide-y divide-slate-100">
                         @foreach ($activeOrders as $order)
-                            <div class="p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="p-4 hover:bg-slate-50/90 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3.5 group">
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="font-black text-sm text-slate-900 font-mono">وەسڵی #{{ $order->invoice_no }}</span>
-                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $order->status === 'in_production' ? 'bg-blue-100 text-blue-800 border border-blue-200' : ($order->status === 'ready' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200') }}">
-                                            {{ $order->status_label }}
+                                    {{-- دێڕی سەرەوە: ژمارەی وەسڵ و دۆخ و بەروار --}}
+                                    <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                                        <span class="font-black text-sm text-slate-900 font-mono tracking-tight bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
+                                            #{{ $order->invoice_no }}
                                         </span>
-                                    </div>
 
-                                    <div class="text-xs text-slate-600 font-medium mt-1 flex items-center gap-2 flex-wrap">
-                                        <span>کڕیار: <b class="text-slate-900">{{ $order->customer?->name ?? 'نەناسراو' }}</b></span>
+                                        @if($order->status === 'in_production')
+                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1">
+                                                <span>⚙️</span>
+                                                <span>لە دروستکردندا</span>
+                                            </span>
+                                        @elseif($order->status === 'ready')
+                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                                                <span>✅</span>
+                                                <span>ئامادەیە</span>
+                                            </span>
+                                        @else
+                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                                                <span>⏳</span>
+                                                <span>چاوەڕوانە</span>
+                                            </span>
+                                        @endif
+
+                                        <span class="text-slate-300">•</span>
+                                        <span class="text-xs text-slate-600 font-medium">
+                                            کڕیار: <b class="text-slate-900 font-bold">{{ $order->customer?->name ?? 'نەناسراو' }}</b>
+                                        </span>
+
                                         @if ($order->delivery_date)
                                             <span class="text-slate-300">•</span>
-                                            <span class="text-rose-600 font-bold font-mono text-[11px]">گەیاندن: {{ $order->delivery_date->format('Y/m/d') }}</span>
+                                            <span class="text-rose-600 font-bold font-mono text-[11px] flex items-center gap-1">
+                                                <span>📅</span>
+                                                <span>گەیاندن: {{ $order->delivery_date->format('Y/m/d') }}</span>
+                                            </span>
                                         @endif
                                     </div>
 
-                                    {{-- کەلوپەلەکان بە ناو و قیاس --}}
-                                    <div class="text-[11px] text-slate-600 mt-1.5 flex flex-wrap gap-1.5">
-                                        @foreach ($order->items->take(3) as $it)
-                                            <span class="bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md text-slate-800 font-medium">
-                                                {{ $it->item_name }} ({{ fmt_num($it->qty) }} {{ $it->unit_name }})
+                                    {{-- کەلوپەلەکان بە شێوازی بۆکسی ڕێک و قیاسی تایبەت --}}
+                                    <div class="flex flex-wrap gap-1.5 mt-2">
+                                        @foreach ($order->items as $it)
+                                            <div class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-800 shadow-2xs">
+                                                <span class="text-slate-500">▫️</span>
+                                                <span class="font-bold text-slate-900">{{ $it->item_name }}</span>
+                                                <span class="text-blue-700 font-mono font-bold">({{ fmt_num($it->qty) }} {{ $it->unit_name }})</span>
                                                 @if ($it->measurement_label && $it->measurement_label !== '—')
-                                                    <b class="text-indigo-600 mr-1 font-mono text-[10px]">[{{ $it->measurement_label }}]</b>
+                                                    <span class="text-indigo-600 font-mono text-[11px] bg-indigo-50 border border-indigo-100 px-1 rounded">
+                                                        {{ $it->measurement_label }}
+                                                    </span>
                                                 @endif
-                                            </span>
+                                            </div>
                                         @endforeach
-                                        @if ($order->items->count() > 3)
-                                            <span class="text-slate-400 text-[10px] self-center">+{{ $order->items->count() - 3 }} دانەی تر</span>
-                                        @endif
                                     </div>
                                 </div>
 
-                                <div class="self-end sm:self-center shrink-0">
+                                {{-- دوگمەی وردەکاری و دەستپێکردن --}}
+                                <div class="self-end md:self-center shrink-0">
                                     <a href="{{ route('workshop.orders') }}"
-                                       class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs transition-all flex items-center gap-1">
-                                        <span>وردەکاری</span>
+                                       class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white group-hover:bg-blue-600 text-slate-700 group-hover:text-white border border-slate-200 group-hover:border-blue-700 shadow-2xs transition-all">
+                                        <span>وردەکاری و کارکردن</span>
                                         <span>←</span>
                                     </a>
                                 </div>
@@ -206,17 +236,18 @@
         {{-- وەستاکانی ئەمڕۆ --}}
         <div class="space-y-4">
             <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-                <div class="p-3.5 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <div class="flex items-center gap-2">
-                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">
+                <div class="p-4 sm:p-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
                             👷
-                        </span>
+                        </div>
                         <div>
-                            <h3 class="font-black text-xs sm:text-sm text-slate-800">وەستاکانی ئەمڕۆ</h3>
-                            <p class="text-[11px] text-slate-400 font-medium">دۆخی ئامادەبوون</p>
+                            <h3 class="font-black text-sm text-slate-900">وەستاکانی کارگە</h3>
+                            <p class="text-[11px] text-slate-400 font-medium">ئامادەبوونی ئەمڕۆ</p>
                         </div>
                     </div>
-                    <a href="{{ route('workshop.employees') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                    <a href="{{ route('workshop.employees') }}"
+                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-all">
                         <span>ئامادەبوون</span>
                         <span>←</span>
                     </a>
@@ -228,27 +259,35 @@
                     </div>
                 @else
                     <div class="divide-y divide-slate-100">
-                        @foreach ($employees->take(5) as $emp)
+                        @foreach ($employees->take(6) as $emp)
                             @php
                                 $todayAtt = $emp->attendances->first();
                             @endphp
-                            <div class="p-3 sm:p-3.5 hover:bg-slate-50 transition-colors flex items-center justify-between gap-2">
-                                <div class="min-w-0">
-                                    <div class="font-bold text-xs text-slate-900 truncate">{{ $emp->name }}</div>
-                                    <div class="text-[11px] text-slate-400 font-medium mt-0.5">{{ $emp->job_title_label }}</div>
+                            <div class="p-3.5 hover:bg-slate-50 transition-colors flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <div class="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-slate-700 text-xs shrink-0">
+                                        {{ mb_substr($emp->name, 0, 1) }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-xs text-slate-900 truncate">{{ $emp->name }}</div>
+                                        <div class="text-[11px] text-slate-400 font-medium">{{ $emp->job_title_label }}</div>
+                                    </div>
                                 </div>
                                 <div class="shrink-0">
                                     @if ($todayAtt && $todayAtt->status === 'present')
-                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                            ئامادەیە ✔️
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                                            <span>●</span>
+                                            <span>ئامادەیە</span>
                                         </span>
                                     @elseif ($todayAtt && $todayAtt->status === 'leave')
-                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                                            ئیجازە 🏖️
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                                            <span>🏖️</span>
+                                            <span>ئیجازە</span>
                                         </span>
                                     @elseif ($todayAtt && $todayAtt->status === 'absent')
-                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
-                                            نەهاتووە ❌
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1">
+                                            <span>✕</span>
+                                            <span>نەهاتووە</span>
                                         </span>
                                     @else
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
