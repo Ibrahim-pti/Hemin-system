@@ -23,18 +23,31 @@ class PurchaseController extends Controller
 
     public function index(Request $request): View
     {
-        $purchases = Purchase::query()
-            ->with(['supplier', 'warehouse'])
+        $query = Purchase::query()
+            ->with(['supplier', 'warehouse', 'items'])
             ->search($request->string('q')->toString())
             ->when($request->string('status')->toString(), fn ($q, $s) => $q->where('status', $s))
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
             ->when($request->date('to'), fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d))
             ->latest('purchase_date')
-            ->latest('id')
-            ->paginate(25)
-            ->withQueryString();
+            ->latest('id');
 
-        return view('purchases.index', compact('purchases'));
+        $totalPurchasesCount = Purchase::count();
+        $confirmedPurchases = Purchase::where('status', 'confirmed')->get();
+        $totalPurchasesAmount = $confirmedPurchases->sum('total');
+        $totalPurchasesPaid = $confirmedPurchases->sum('paid_amount');
+        $totalRemainingDebt = max(0, $totalPurchasesAmount - $totalPurchasesPaid);
+        $draftCount = Purchase::where('status', 'draft')->count();
+
+        $purchases = (clone $query)->paginate(15)->withQueryString();
+
+        return view('purchases.index', compact(
+            'purchases',
+            'totalPurchasesCount',
+            'totalPurchasesAmount',
+            'totalRemainingDebt',
+            'draftCount'
+        ));
     }
 
     public function create(): View
