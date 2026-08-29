@@ -33,21 +33,37 @@
 
     {{-- ٢. ئاگاداری مەوادە کەمبووەکان --}}
     @if ($lowStockMaterials->isNotEmpty())
-        <div class="bg-rose-50 rounded-2xl p-3.5 sm:p-4 border border-rose-200 shadow-xs">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="size-6 sm:size-7 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold text-xs shrink-0">⚠️</span>
-                <h3 class="font-black text-xs sm:text-sm text-rose-900">
-                    مەوادە کەمبووەکان ({{ $lowStockMaterials->count() }} جۆر کەمترە لە کەمترین بڕ)
-                </h3>
+        <div class="bg-gradient-to-r from-rose-50 via-rose-50/70 to-amber-50/50 rounded-2xl p-4 sm:p-4.5 border border-rose-200/90 shadow-xs">
+            <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex size-7 sm:size-8 items-center justify-center rounded-xl bg-rose-600 text-white font-bold text-xs sm:text-sm shadow-xs shrink-0">
+                        ⚠️
+                    </span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="font-black text-xs sm:text-sm text-rose-900">مەوادە کەمبووەکان</h3>
+                        <span class="px-2 py-0.5 rounded-full bg-rose-200/70 text-rose-900 text-[11px] font-black">
+                            {{ $lowStockMaterials->count() }} مەواد
+                        </span>
+                    </div>
+                </div>
             </div>
-            <div class="flex flex-wrap gap-2">
+
+            <div class="flex flex-wrap gap-2.5">
                 @foreach ($lowStockMaterials as $lm)
-                    <div class="bg-white px-2.5 sm:px-3 py-1.5 rounded-xl border border-rose-200 text-xs flex items-center gap-2 shadow-2xs">
-                        <span class="font-black text-slate-800">{{ $lm->name }}:</span>
-                        <span class="font-bold text-rose-600">{{ fmt_num($lm->stock_qty) }} {{ $lm->unit?->name }}</span>
-                        <span class="text-slate-400 text-[10px]">(کەمترین: {{ fmt_num($lm->min_qty) }})</span>
-                        <button type="button" @click="openStockInModalFor('{{ $lm->id }}')" class="text-blue-600 hover:underline font-bold text-[11px] mr-1 cursor-pointer">
-                            + هاتن
+                    <div class="bg-white px-3 py-2 rounded-xl border border-rose-200/80 flex items-center gap-2.5 shadow-2xs hover:border-rose-300 transition-all">
+                        <span class="font-black text-xs text-slate-800">{{ $lm->name }}</span>
+                        
+                        <div class="flex items-center gap-1">
+                            <span class="font-black text-xs font-mono text-rose-600 num">{{ fmt_num($lm->stock_qty) }}</span>
+                            @if($lm->unit?->name)
+                                <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md">{{ $lm->unit->name }}</span>
+                            @endif
+                        </div>
+
+                        <button type="button" @click="openStockInModalFor('{{ $lm->id }}')" 
+                                class="px-2 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 cursor-pointer flex items-center gap-0.5">
+                            <span>+</span>
+                            <span>هاتن</span>
                         </button>
                     </div>
                 @endforeach
