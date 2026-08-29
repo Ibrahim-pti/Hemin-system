@@ -52,11 +52,15 @@ class PurchaseController extends Controller
 
     public function create(): View
     {
+        $workshopWarehouse = Warehouse::where('name', 'like', '%دروستکردن%')->first()
+            ?? Warehouse::where('is_default', false)->first()
+            ?? Warehouse::first();
+
         return view('purchases.form', [
             'purchase' => new Purchase([
                 'currency' => 'IQD',
                 'purchase_date' => now()->toDateString(),
-                'warehouse_id' => Warehouse::defaultId(),
+                'warehouse_id' => $workshopWarehouse?->id ?? Warehouse::defaultId(),
             ]),
             'suppliers' => Supplier::active()->orderBy('name')->get(),
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
@@ -70,7 +74,9 @@ class PurchaseController extends Controller
         $data = $this->validated($request);
 
         $purchase = DB::transaction(function () use ($data, $request) {
-            $purchase = Purchase::create($this->header($data) + [
+            $headerData = $this->header($data);
+
+            $purchase = Purchase::create($headerData + [
                 'invoice_no' => Purchase::nextInvoiceNo(),
                 'status' => 'draft',
                 'user_id' => auth()->id(),
@@ -83,13 +89,13 @@ class PurchaseController extends Controller
             }
 
             // پارەی دراو لە کاتی کڕین وەک حەقدییەکی جیا تۆمار دەکرێت.
-            if (($data['paid_amount'] ?? 0) > 0) {
+            if (($headerData['paid_amount'] ?? 0) > 0) {
                 $this->payments->record([
                     'direction' => 'out',
-                    'amount' => $data['paid_amount'],
-                    'currency' => $data['currency'],
-                    'paid_at' => $data['purchase_date'],
-                    'party' => Supplier::find($data['supplier_id']),
+                    'amount' => $headerData['paid_amount'],
+                    'currency' => $headerData['currency'],
+                    'paid_at' => $headerData['purchase_date'],
+                    'party' => Supplier::find($headerData['supplier_id']),
                     'purchase_id' => $purchase->id,
                     'category' => 'supplier_payment',
                     'note' => 'پارەدان لەگەڵ پسوولەی کڕینی '.$purchase->invoice_no,
@@ -115,7 +121,7 @@ class PurchaseController extends Controller
             abort(403, 'پسوولەی پەسەندکراو ناگۆڕدرێت — سەرەتا هەڵیبوەشێنەوە.');
         }
 
-        $purchase->load('items');
+        $purchase->load('items.item');
 
         return view('purchases.form', [
             'purchase' => $purchase,
@@ -144,7 +150,7 @@ class PurchaseController extends Controller
             }
         });
 
-        return redirect()->route('purchases.show', $purchase)->with('ok', 'نوێکرایەوە.');
+        return redirect()->route('purchases.show', $purchase)->with('ok', 'پسوولەی کڕین نوێکرایەوە.');
     }
 
     /** پەسەندکردن — کاڵاکان دەچنە مەخزەنەوە. */
@@ -170,13 +176,11 @@ class PurchaseController extends Controller
     public function destroy(Purchase $purchase)
     {
         if ($purchase->status === 'confirmed') {
-            return back()->with('err', 'سەرەتا پسوولەکە هەڵبوەشێنەوە.');
+            return back()->with('err', 'پسوولەی پەسەندکراو ناسڕدرێتەوە.');
         }
 
-        DB::transaction(function () use ($purchase) {
-            $purchase->items()->delete();
-            $purchase->delete();
-        });
+        $purchase->items()->delete();
+        $purchase->delete();
 
         return redirect()->route('purchases.index')->with('ok', 'سڕدرایەوە.');
     }
@@ -184,16 +188,18 @@ class PurchaseController extends Controller
     private function validated(Request $request): array
     {
         return $request->validate([
-            'supplier_id' => ['required', 'exists:suppliers,id'],
+            'supplier_name' => ['nullable', 'string', 'max:255'],
+            'supplier_id' => ['nullable'],
             'warehouse_id' => ['required', 'exists:warehouses,id'],
             'purchase_date' => ['required', 'date'],
-            'currency' => ['required', 'in:IQD,USD'],
+            'currency' => ['nullable', 'in:IQD,USD'],
             'exchange_rate' => ['nullable', 'numeric', 'min:0'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
-            'lines.*.item_id' => ['required', 'exists:items,id'],
+            'lines.*.item_name' => ['nullable', 'string', 'max:255'],
+            'lines.*.item_id' => ['nullable'],
             'lines.*.qty' => ['required', 'numeric', 'gt:0'],
             'lines.*.unit_price' => ['required', 'numeric', 'min:0'],
             'lines.*.note' => ['nullable', 'string', 'max:255'],
@@ -206,18 +212,34 @@ class PurchaseController extends Controller
     /** خانەکانی سەرەوەی پسوولە — کۆکان لە دێڕەکانەوە دەردەچن. */
     private function header(array $data): array
     {
+        $supplierName = trim($data['supplier_name'] ?? $data['supplier_id'] ?? '');
+        if (empty($supplierName)) {
+            $supplierName = 'فرۆشیاری گشتی';
+        }
+
+        if (is_numeric($supplierName) && $existingSupplier = Supplier::find($supplierName)) {
+            $supplierId = $existingSupplier->id;
+        } else {
+            $supplier = Supplier::firstOrCreate(
+                ['name' => $supplierName],
+                ['is_active' => true]
+            );
+            $supplierId = $supplier->id;
+        }
+
         $subtotal = collect($data['lines'])
             ->sum(fn ($line) => (float) $line['qty'] * (float) $line['unit_price']);
 
         $discount = (float) ($data['discount_amount'] ?? 0);
+        $currency = $data['currency'] ?? 'IQD';
 
         return [
-            'supplier_id' => $data['supplier_id'],
+            'supplier_id' => $supplierId,
             'warehouse_id' => $data['warehouse_id'],
             'purchase_date' => $data['purchase_date'],
-            'currency' => $data['currency'],
-            'exchange_rate' => $data['currency'] === 'USD'
-                ? ($data['exchange_rate'] ?: ExchangeRate::forDate($data['purchase_date']))
+            'currency' => $currency,
+            'exchange_rate' => $currency === 'USD'
+                ? ($data['exchange_rate'] ?? ExchangeRate::forDate($data['purchase_date']))
                 : null,
             'subtotal' => $subtotal,
             'discount_amount' => $discount,
@@ -229,10 +251,35 @@ class PurchaseController extends Controller
 
     private function syncLines(Purchase $purchase, array $lines): void
     {
+        $defaultUnitId = Unit::first()?->id ?? 1;
+
         foreach ($lines as $line) {
+            $itemName = trim($line['item_name'] ?? $line['item_id'] ?? '');
+            if (empty($itemName)) {
+                continue;
+            }
+
+            if (is_numeric($itemName) && $existingItem = Item::find($itemName)) {
+                $item = $existingItem;
+            } else {
+                $item = Item::where('name', $itemName)->first() ?? Item::create([
+                    'name' => $itemName,
+                    'unit_id' => $defaultUnitId,
+                    'is_active' => true,
+                    'last_cost' => $line['unit_price'],
+                    'cost_currency' => $purchase->currency ?? 'IQD',
+                ]);
+            }
+
+            $item->update([
+                'last_cost' => $line['unit_price'],
+                'cost_currency' => $purchase->currency ?? 'IQD',
+                'purchase_date' => $purchase->purchase_date,
+            ]);
+
             PurchaseItem::create([
                 'purchase_id' => $purchase->id,
-                'item_id' => $line['item_id'],
+                'item_id' => $item->id,
                 'qty' => $line['qty'],
                 'unit_price' => $line['unit_price'],
                 'line_total' => (float) $line['qty'] * (float) $line['unit_price'],
