@@ -62,23 +62,18 @@
                 کۆی گشتی: <span class="text-slate-900 font-black" x-text="materialsList.length"></span> جۆر مەواد
             </div>
             <div class="w-full sm:w-auto">
-                <input type="text" x-model="materialSearch" placeholder="گەڕانی خێرا بە ناوی مەواد یان کۆد..."
+                <input type="text" x-model="materialSearch" placeholder="گەڕانی خێرا بە ناوی مەواد..."
                        class="text-xs px-3 py-2 rounded-xl border border-slate-200 w-full sm:w-64 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 sm:bg-white">
             </div>
         </div>
 
         {{-- ١. پێشاندانی کارتی مۆبایل (بۆ شاشەی بچووک بێ سکرۆڵی ئاسۆیی) --}}
         <div class="block md:hidden divide-y divide-slate-100">
-            <template x-for="mat in filteredMaterials" :key="mat.id">
+            <template x-for="mat in paginatedMaterials" :key="mat.id">
                 <div class="p-3.5 space-y-2.5 hover:bg-slate-50/80 transition-colors">
                     <div class="flex items-start justify-between gap-2">
                         <div>
                             <div class="font-black text-sm text-slate-900" x-text="mat.name"></div>
-                            <div class="text-[11px] text-slate-400 font-mono mt-0.5">
-                                <span x-text="mat.code"></span>
-                                <span x-show="mat.category_name" class="text-slate-300 mx-1">•</span>
-                                <span x-show="mat.category_name" class="text-slate-500 font-sans" x-text="mat.category_name"></span>
-                            </div>
                         </div>
                         <div>
                             <span x-show="mat.is_low" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
@@ -115,6 +110,9 @@
                     </div>
                 </div>
             </template>
+            <div x-show="filteredMaterials.length === 0" class="p-8 text-center text-slate-400 text-xs font-bold">
+                هیچ مەوادێک نەدۆزرایەوە
+            </div>
         </div>
 
         {{-- ٢. خشتەی دیسکتۆپ و تابلێت (شاشەی گەورە) --}}
@@ -122,7 +120,6 @@
             <table class="w-full text-right text-xs">
                 <thead class="bg-slate-50 text-slate-500 border-b border-slate-200">
                     <tr>
-                        <th class="p-3.5 font-bold">کۆد</th>
                         <th class="p-3.5 font-bold">ناوی مەواد</th>
                         <th class="p-3.5 font-bold text-center">بڕی بەردەست</th>
                         <th class="p-3.5 font-bold text-center">کەمترین بڕ</th>
@@ -131,9 +128,8 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    <template x-for="mat in filteredMaterials" :key="mat.id">
+                    <template x-for="mat in paginatedMaterials" :key="mat.id">
                         <tr class="hover:bg-slate-50/80 transition-colors">
-                            <td class="p-3.5 font-mono text-slate-500 font-medium" x-text="mat.code"></td>
                             <td class="p-3.5 font-bold text-slate-900" x-text="mat.name"></td>
                             <td class="p-3.5 text-center font-black text-sm num"
                                 :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'">
@@ -162,8 +158,66 @@
                             </td>
                         </tr>
                     </template>
+                    <tr x-show="filteredMaterials.length === 0">
+                        <td colspan="5" class="p-8 text-center text-slate-400 font-bold">هیچ مەوادێک نەدۆزرایەوە</td>
+                    </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    {{-- ٣. پەیجینەیشن (Pagination) --}}
+    <div x-show="filteredMaterials.length > perPage" class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-1.5 text-slate-500 font-medium text-[11px] sm:text-xs">
+            <span>نیشاندانی</span>
+            <span class="font-bold text-slate-800 font-mono" x-text="((currentPage - 1) * perPage) + 1"></span>
+            <span>تا</span>
+            <span class="font-bold text-slate-800 font-mono" x-text="Math.min(currentPage * perPage, filteredMaterials.length)"></span>
+            <span>لە کۆی</span>
+            <span class="font-bold text-blue-600 font-mono" x-text="filteredMaterials.length"></span>
+            <span>مەواد</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap justify-center">
+            {{-- دوگمەی پێشتر --}}
+            <button type="button" @click="prevPage" :disabled="currentPage === 1"
+                    :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer'"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1">
+                <span>←</span>
+                <span>پێشتر</span>
+            </button>
+
+            {{-- ژمارەی لاپەڕەکان --}}
+            <div class="flex items-center gap-1">
+                <template x-for="p in totalPages" :key="p">
+                    <button type="button" @click="goToPage(p)"
+                            x-show="totalPages <= 7 || Math.abs(p - currentPage) <= 1 || p === 1 || p === totalPages"
+                            :class="p === currentPage ? 'bg-blue-600 text-white font-black shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'"
+                            class="size-8 sm:size-8.5 rounded-xl font-bold font-mono text-xs flex items-center justify-center cursor-pointer transition-all"
+                            x-text="p">
+                    </button>
+                </template>
+            </div>
+
+            {{-- دوگمەی دواتر --}}
+            <button type="button" @click="nextPage" :disabled="currentPage === totalPages"
+                    :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer'"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1">
+                <span>دواتر</span>
+                <span>→</span>
+            </button>
+
+            {{-- هەڵبژاردنی ژمارەی دێڕ لە هەر لاپەڕەیەک --}}
+            <div class="flex items-center gap-1 mr-2 border-r border-slate-200 pr-2">
+                <span class="text-[11px] text-slate-400">ژمارە:</span>
+                <select x-model.number="perPage" @change="currentPage = 1"
+                        class="text-xs px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 font-bold font-mono focus:outline-hidden focus:border-blue-500">
+                    <option :value="5">5</option>
+                    <option :value="10">10</option>
+                    <option :value="20">20</option>
+                    <option :value="50">50</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -355,14 +409,42 @@ function workshopMaterialsApp() {
         showStockOutModal: false,
         selectedItemId: '',
         materialsList: @json($materialsData),
+        currentPage: 1,
+        perPage: 10,
+
+        init() {
+            this.$watch('materialSearch', () => { this.currentPage = 1; });
+        },
 
         get filteredMaterials() {
             const q = this.materialSearch.trim().toLowerCase();
             if (!q) return this.materialsList;
             return this.materialsList.filter(m => 
-                (m.name && m.name.toLowerCase().includes(q)) || 
-                (m.code && m.code.toLowerCase().includes(q))
+                (m.name && m.name.toLowerCase().includes(q))
             );
+        },
+
+        get totalPages() {
+            return Math.ceil(this.filteredMaterials.length / this.perPage) || 1;
+        },
+
+        get paginatedMaterials() {
+            const start = (this.currentPage - 1) * this.perPage;
+            return this.filteredMaterials.slice(start, start + this.perPage);
+        },
+
+        goToPage(p) {
+            if (p >= 1 && p <= this.totalPages) {
+                this.currentPage = p;
+            }
+        },
+
+        nextPage() {
+            this.goToPage(this.currentPage + 1);
+        },
+
+        prevPage() {
+            this.goToPage(this.currentPage - 1);
         },
 
         openStockInModalFor(itemId) {
