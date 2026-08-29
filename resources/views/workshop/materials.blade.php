@@ -179,7 +179,7 @@
                     <span class="size-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">📦</span>
                     <h3 class="font-black text-slate-800 text-sm sm:text-base">زیادکردنی مەوادی نوێ بۆ مەخزەن</h3>
                 </div>
-                <button type="button" @click="showNewMaterialModal = false" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">✕</button>
+                <button type="button" @click="showNewMaterialModal = false" class="size-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center text-sm cursor-pointer transition-colors">✕</button>
             </div>
 
             <form method="POST" action="{{ route('workshop.store-material') }}" class="space-y-3.5"
@@ -214,19 +214,20 @@
                         </select>
                     </div>
 
-                    <div x-show="unitMode === 'new'" x-cloak class="relative flex items-center">
+                    <div x-show="unitMode === 'new'" x-cloak class="flex items-center gap-2">
                         <input type="text" 
                                name="new_unit_name" 
                                x-ref="newUnitInput"
                                x-model="newUnitName" 
                                :required="unitMode === 'new'"
-                               placeholder="ناوی یەکەی نوێ لێرە بنووسە..."
-                               class="w-full text-xs px-3 py-2 pl-8 rounded-xl border border-blue-400 bg-blue-50/30 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-500 font-medium">
+                               placeholder="ناوی یەکەی نوێ بنووسە..."
+                               class="flex-1 text-xs px-3 py-2 rounded-xl border border-blue-400 bg-blue-50/40 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-500 font-medium">
                         <button type="button" 
                                 @click="unitMode = 'select'; newUnitName = ''; selectedUnit = '{{ $units->first()?->id ?? '' }}'"
-                                title="پەشیمانبوونەوە و هەڵبژاردن لە لیست"
-                                class="absolute left-2 text-slate-400 hover:text-slate-600 p-1 text-xs cursor-pointer">
-                            ✕
+                                title="گەڕانەوە بۆ لیستی یەکەکان"
+                                class="px-2.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 shrink-0 cursor-pointer flex items-center gap-1 transition-colors">
+                            <span>✕</span>
+                            <span class="text-[11px]">لیست</span>
                         </button>
                     </div>
                 </div>
