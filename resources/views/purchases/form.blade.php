@@ -15,7 +15,7 @@
             'unit_price' => $l->unit_price !== null ? number_format((float)$l->unit_price) : '',
             'note' => $l->note ?? '',
           ])->all()
-        : [['item_name' => '', 'qty' => '1', 'unit_price' => '', 'note' => '']]);
+        : [['item_name' => '', 'qty' => '', 'unit_price' => '', 'note' => '']]);
 
     $initialDiscount = old('discount_amount', $purchase->discount_amount ? number_format((float)$purchase->discount_amount) : '');
     $initialPaid = old('paid_amount', $purchase->paid_amount ? number_format((float)$purchase->paid_amount) : '');
@@ -148,7 +148,7 @@
                                        x-model="line.qty"
                                        @input="formatQty($event, line)"
                                        class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white"
-                                       placeholder="1">
+                                       placeholder="0">
                             </td>
 
                             {{-- نرخی یەکە بە فاریزە --}}
@@ -286,7 +286,7 @@ function purchaseForm(initialLines, initialDiscount, initialPaid) {
         paid: initialPaid || '',
 
         addLine() {
-            this.lines.push({ item_name: '', qty: 1, unit_price: '', note: '' });
+            this.lines.push({ item_name: '', qty: '', unit_price: '', note: '' });
         },
 
         removeLine(index) {
