@@ -103,14 +103,15 @@
                 {{-- حەقدەستی ڕۆژانە بە دینار --}}
                 <div>
                     <label class="block font-bold text-xs text-slate-700 mb-1.5" for="daily_wage">
-                        حەقدەستی ڕۆژانە (دیناری عێراقی)
+                        حەقدەستی ڕۆژانە (دینار)
                     </label>
-                    <div class="relative">
+                    <div class="flex items-center rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 bg-white overflow-hidden shadow-2xs">
                         <input id="daily_wage" name="daily_wage" type="number" step="any" min="0"
                                value="{{ old('daily_wage', $employee->daily_wage) }}"
                                placeholder="25000"
-                               class="w-full text-xs px-3.5 py-2.5 pl-14 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-mono font-bold text-slate-900">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
+                               dir="ltr"
+                               class="w-full text-xs px-3.5 py-2.5 border-0 focus:outline-hidden font-mono font-bold text-slate-900 bg-transparent text-left">
+                        <span class="px-3.5 py-2.5 text-xs font-bold text-slate-600 bg-slate-100 border-s border-slate-200 flex items-center font-mono select-none shrink-0">
                             د.ع
                         </span>
                     </div>
@@ -145,7 +146,7 @@
                 پاشگەزبوونەوە
             </a>
             <button type="submit"
-                    class="px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all cursor-pointer">
+                    class="px-6 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all cursor-pointer">
                 {{ $employee->exists ? 'نوێکردنەوەی زانیاری' : 'پاشەکەوتکردن' }}
             </button>
         </div>

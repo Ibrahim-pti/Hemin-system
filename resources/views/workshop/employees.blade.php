@@ -471,11 +471,12 @@
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە (دیناری عێراقی) *</label>
-                    <div class="relative">
-                        <input type="number" step="any" min="0" x-model="newEmployeeForm.daily_wage" required placeholder="بڕی مووچەی ڕۆژانە..."
-                               class="w-full px-3 py-2 pl-14 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-mono font-bold">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
+                    <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە (دینار) *</label>
+                    <div class="flex items-center rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 bg-white overflow-hidden shadow-2xs">
+                        <input type="number" step="any" min="0" x-model="newEmployeeForm.daily_wage" required placeholder="25000"
+                               dir="ltr"
+                               class="w-full px-3 py-2 border-0 focus:outline-hidden font-mono font-bold text-slate-900 bg-transparent text-left">
+                        <span class="px-3.5 py-2 text-xs font-bold text-slate-600 bg-slate-100 border-s border-slate-200 flex items-center font-mono select-none shrink-0">
                             د.ع
                         </span>
                     </div>
@@ -545,11 +546,12 @@
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە (دیناری عێراقی) *</label>
-                    <div class="relative">
-                        <input type="number" step="any" min="0" x-model="editWageForm.daily_wage" required
-                               class="w-full px-3 py-2 pl-14 rounded-xl border border-slate-200 font-mono font-black text-indigo-700">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
+                    <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە (دینار) *</label>
+                    <div class="flex items-center rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 bg-white overflow-hidden shadow-2xs">
+                        <input type="number" step="any" min="0" x-model="editWageForm.daily_wage" required placeholder="25000"
+                               dir="ltr"
+                               class="w-full px-3 py-2 border-0 focus:outline-hidden font-mono font-black text-indigo-700 bg-transparent text-left">
+                        <span class="px-3.5 py-2 text-xs font-bold text-slate-600 bg-slate-100 border-s border-slate-200 flex items-center font-mono select-none shrink-0">
                             د.ع
                         </span>
                     </div>
