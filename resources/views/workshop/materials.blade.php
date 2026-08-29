@@ -72,25 +72,9 @@
             <template x-for="mat in paginatedMaterials" :key="mat.id">
                 <div class="p-3.5 space-y-2.5 hover:bg-slate-50/80 transition-colors">
                     <div class="flex items-start justify-between gap-2">
-                        <div>
-                            <div class="font-black text-sm text-slate-900" x-text="mat.name"></div>
-                        </div>
-                        <div>
-                            <span x-show="mat.is_low" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
-                                کەمە ⚠️
-                            </span>
-                            <span x-show="!mat.is_low" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
-                                بەردەستە ✔️
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <div>
-                            <span class="text-slate-500 text-[11px]">بڕی بەردەست:</span>
-                            <span class="font-black text-sm num mr-1" :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'">
-                                <span x-text="mat.stock_qty"></span> <span class="text-xs font-normal text-slate-500" x-text="mat.unit_name"></span>
-                            </span>
+                        <div class="font-black text-sm text-slate-900" x-text="mat.name"></div>
+                        <div class="font-black text-sm num" :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'">
+                            <span x-text="mat.stock_qty"></span> <span class="text-xs font-normal text-slate-500" x-text="mat.unit_name"></span>
                         </div>
                     </div>
 
@@ -118,7 +102,6 @@
                     <tr>
                         <th class="p-3.5 font-bold">ناوی مەواد</th>
                         <th class="p-3.5 font-bold text-center">بڕی بەردەست</th>
-                        <th class="p-3.5 font-bold text-center">دۆخ</th>
                         <th class="p-3.5 font-bold text-center">کردار</th>
                     </tr>
                 </thead>
@@ -129,14 +112,6 @@
                             <td class="p-3.5 text-center font-black text-sm num"
                                 :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'">
                                 <span x-text="mat.stock_qty"></span> <span class="text-xs font-normal text-slate-500" x-text="mat.unit_name"></span>
-                            </td>
-                            <td class="p-3.5 text-center">
-                                <span x-show="mat.is_low" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
-                                    کەمە ⚠️
-                                </span>
-                                <span x-show="!mat.is_low" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
-                                    بەردەستە ✔️
-                                </span>
                             </td>
                             <td class="p-3.5 text-center">
                                 <div class="inline-flex items-center gap-1.5">
@@ -153,7 +128,7 @@
                         </tr>
                     </template>
                     <tr x-show="filteredMaterials.length === 0">
-                        <td colspan="4" class="p-8 text-center text-slate-400 font-bold">هیچ مەوادێک نەدۆزرایەوە</td>
+                        <td colspan="3" class="p-8 text-center text-slate-400 font-bold">هیچ مەوادێک نەدۆزرایەوە</td>
                     </tr>
                 </tbody>
             </table>
