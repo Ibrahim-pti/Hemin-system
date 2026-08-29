@@ -143,6 +143,12 @@ class WorkshopController extends Controller
         $lowStockMaterials = $rawMaterials->filter(fn ($item) => $item->is_low);
         $categories = ItemCategory::orderBy('name')->get();
         $units = Unit::orderBy('name')->get();
+        $orders = Order::query()
+            ->with('customer')
+            ->whereIn('status', ['confirmed', 'in_production', 'ready'])
+            ->latest('id')
+            ->take(50)
+            ->get();
 
         $materialsData = $rawMaterials->map(fn ($m) => [
             'id' => $m->id,
@@ -161,7 +167,8 @@ class WorkshopController extends Controller
             'materialsData',
             'lowStockMaterials',
             'categories',
-            'units'
+            'units',
+            'orders'
         ));
     }
 
@@ -364,11 +371,23 @@ class WorkshopController extends Controller
             'item_id' => ['required', 'exists:items,id'],
             'warehouse_id' => ['required', 'exists:warehouses,id'],
             'qty' => ['required', 'numeric', 'min:0.01'],
+            'order_id' => ['nullable', 'exists:orders,id'],
             'note' => ['nullable', 'string', 'max:255'],
         ], [], [
             'item_id' => 'مەواد',
             'qty' => 'بڕ',
         ]);
+
+        $note = $validated['note'] ?? '';
+        $order = null;
+
+        if (!empty($validated['order_id'])) {
+            $order = Order::with('customer')->find($validated['order_id']);
+            if ($order) {
+                $orderLabel = "بۆ وەسڵی #" . ($order->invoice_no ?: $order->id) . ($order->customer ? " ({$order->customer->name})" : "");
+                $note = $note ? "{$orderLabel} - {$note}" : $orderLabel;
+            }
+        }
 
         $this->stockService->record(
             itemId: (int) $validated['item_id'],
@@ -376,8 +395,9 @@ class WorkshopController extends Controller
             direction: 'out',
             qty: (float) $validated['qty'],
             reason: 'production',
+            reference: $order,
             extra: [
-                'note' => $validated['note'] ?: 'بەکارهێنان لە دروستکردندا',
+                'note' => $note ?: 'بەکارهێنان لە دروستکردندا',
                 'moved_at' => now()->toDateString(),
             ]
         );

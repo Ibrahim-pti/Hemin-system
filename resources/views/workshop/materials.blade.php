@@ -305,19 +305,20 @@
                     <select name="item_id" x-model="selectedItemId" required class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
                         <option value="">مەوادەکە دیاری بکە...</option>
                         @foreach ($rawMaterials as $mat)
-                            <option value="{{ $mat->id }}">{{ $mat->name }} (ماوە: {{ fmt_num($mat->stock_qty) }} {{ $mat->unit?->name }})</option>
+                            <option value="{{ $mat->id }}">{{ $mat->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">بڕی زیادکراو *</label>
-                    <input type="number" step="any" min="0.01" name="qty" required placeholder="چەند دانە یان مەتر..."
+                    <input type="number" step="any" min="0.01" name="qty" required 
+                           :placeholder="selectedUnitName ? 'بڕ بە (' + selectedUnitName + ') بنووسە...' : 'بڕی زیادکراو...'"
                            class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">تێبینی یان هۆکار</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">تێبینی یان هۆکار (ئارەزوومەندانە)</label>
                     <input type="text" name="note" placeholder="وەک: هات لە مەخزەنی سەرەکی..."
                            class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
                 </div>
@@ -350,20 +351,35 @@
                     <select name="item_id" x-model="selectedItemId" required class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
                         <option value="">مەوادەکە دیاری بکە...</option>
                         @foreach ($rawMaterials as $mat)
-                            <option value="{{ $mat->id }}">{{ $mat->name }} (بەردەست: {{ fmt_num($mat->stock_qty) }} {{ $mat->unit?->name }})</option>
+                            <option value="{{ $mat->id }}">{{ $mat->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">بڕی بەکارهاتوو *</label>
-                    <input type="number" step="any" min="0.01" name="qty" required placeholder="بڕی سەرفکراو..."
+                    <input type="number" step="any" min="0.01" name="qty" required 
+                           :placeholder="selectedUnitName ? 'بڕ بە (' + selectedUnitName + ') بنووسە...' : 'بڕی سەرفکراو...'"
                            class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">تێبینی (بۆچی بەکارهات)</label>
-                    <input type="text" name="note" placeholder="وەک: بۆ وەسڵی #12..."
+                    <label class="block text-xs font-bold text-slate-700 mb-1">بۆ کامە وەسڵ / داواکاری بەکارهات؟</label>
+                    <select name="order_id" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 bg-slate-50/50">
+                        <option value="">(دیاری نەکراوە / بەکارهێنانی گشتی)</option>
+                        @if(isset($orders))
+                            @foreach ($orders as $ord)
+                                <option value="{{ $ord->id }}">
+                                    وەسڵی #{{ $ord->invoice_no ?: $ord->id }} — {{ $ord->customer?->name ?? 'کڕیار' }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">تێبینی زیادە (ئارەزوومەندانە)</label>
+                    <input type="text" name="note" placeholder="ئەگەر تێبینییەکت هەیە بنووسە..."
                            class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
                 </div>
 
@@ -393,6 +409,15 @@ function workshopMaterialsApp() {
         init() {
             this.$watch('materialSearch', () => { this.currentPage = 1; });
             this.$watch('stockFilter', () => { this.currentPage = 1; });
+        },
+
+        get selectedMaterial() {
+            if (!this.selectedItemId) return null;
+            return this.materialsList.find(m => m.id == this.selectedItemId) || null;
+        },
+
+        get selectedUnitName() {
+            return this.selectedMaterial ? (this.selectedMaterial.unit_name || '') : '';
         },
 
         get lowStockCount() {
