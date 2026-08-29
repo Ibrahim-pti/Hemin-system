@@ -144,10 +144,12 @@
 
                             {{-- بڕ --}}
                             <td style="padding: 6px 12px;">
-                                <input type="number" step="0.001" min="0.001" required
+                                <input type="text" inputmode="decimal" required
                                        :name="`lines[${index}][qty]`"
-                                       x-model.number="line.qty"
-                                       class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white">
+                                       x-model="line.qty"
+                                       @input="formatQty($event, line)"
+                                       class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white"
+                                       placeholder="1">
                             </td>
 
                             {{-- نرخی یەکە بە فاریزە --}}
@@ -292,6 +294,13 @@ function purchaseForm(initialLines, initialDiscount, initialPaid) {
             if (this.lines.length > 1) {
                 this.lines.splice(index, 1);
             }
+        },
+
+        formatQty(e, line) {
+            let clean = e.target.value.replace(/[^0-9.]/g, '');
+            let parts = clean.split('.');
+            if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+            line.qty = clean ? parts.join('.') : '';
         },
 
         formatLinePrice(e, line) {

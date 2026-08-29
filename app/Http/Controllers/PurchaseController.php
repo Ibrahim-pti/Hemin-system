@@ -238,6 +238,9 @@ class PurchaseController extends Controller
                 if (isset($l['unit_price'])) {
                     $input['lines'][$k]['unit_price'] = str_replace(',', '', (string) $l['unit_price']);
                 }
+                if (isset($l['qty'])) {
+                    $input['lines'][$k]['qty'] = str_replace(',', '', (string) $l['qty']);
+                }
             }
         }
         $request->merge($input);
