@@ -73,8 +73,13 @@
                 <div class="p-3.5 space-y-2.5 hover:bg-slate-50/80 transition-colors">
                     <div class="flex items-start justify-between gap-2">
                         <div class="font-black text-sm text-slate-900" x-text="mat.name"></div>
-                        <div class="font-black text-sm num" :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'">
-                            <span x-text="mat.stock_qty"></span> <span class="text-xs font-normal text-slate-500" x-text="mat.unit_name"></span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-black text-sm num font-mono"
+                                  :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'"
+                                  x-text="mat.stock_qty"></span>
+                            <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"
+                                  x-show="mat.unit_name"
+                                  x-text="mat.unit_name"></span>
                         </div>
                     </div>
 
@@ -109,9 +114,15 @@
                     <template x-for="mat in paginatedMaterials" :key="mat.id">
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="p-3.5 font-bold text-slate-900" x-text="mat.name"></td>
-                            <td class="p-3.5 text-center font-black text-sm num"
-                                :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'">
-                                <span x-text="mat.stock_qty"></span> <span class="text-xs font-normal text-slate-500" x-text="mat.unit_name"></span>
+                            <td class="p-3.5 text-center">
+                                <div class="inline-flex items-center justify-center gap-1.5">
+                                    <span class="font-black text-sm num font-mono"
+                                          :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'"
+                                          x-text="mat.stock_qty"></span>
+                                    <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"
+                                          x-show="mat.unit_name"
+                                          x-text="mat.unit_name"></span>
+                                </div>
                             </td>
                             <td class="p-3.5 text-center">
                                 <div class="inline-flex items-center gap-1.5">
