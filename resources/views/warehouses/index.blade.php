@@ -23,15 +23,15 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-2.5 flex-wrap">
             <a href="{{ route('workshop.employees') }}"
-               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
+               class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
                 <span>👷</span>
                 <span>وەستا و حەمەڵەکان</span>
             </a>
 
             <a href="{{ route('counts.index') }}"
-               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 inline-flex items-center gap-1.5 transition-all">
+               class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 inline-flex items-center gap-1.5 transition-all">
                 <span>📋</span>
                 <span>جەردی کۆگا</span>
             </a>
@@ -240,119 +240,49 @@
         </div>
     </div>
 
-    {{-- ٥. دوو کارتی سەرەکی شوێنەکان (مەعمەلی دروستکردن + کۆگای فرۆشتن) --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {{-- کارتی مەعمەلی دروستکردن --}}
-        <div class="bg-linear-to-br from-white via-indigo-50/20 to-blue-50/30 rounded-3xl p-5 sm:p-6 border-2 border-indigo-200/80 shadow-xs flex flex-col justify-between">
-            <div class="space-y-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="size-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-3xl shadow-md shadow-indigo-600/30 shrink-0">
-                            🏭
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h2 class="text-base sm:text-lg font-black text-slate-900">{{ $workshopWarehouse?->name ?: 'مەعمەلی دروستکردن' }}</h2>
-                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
-                                    مەعمەلی پیشەسازی
-                                </span>
-                            </div>
-                            <p class="text-xs text-slate-500 font-medium mt-0.5">شوێنی کارکردن، بڕین، لەحیم و مەوادی خاو</p>
-                        </div>
-                    </div>
-
-                    @if($workshopWarehouse)
-                        <a href="{{ route('warehouses.edit', $workshopWarehouse) }}"
-                           class="size-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 transition-colors shadow-2xs"
-                           title="دەستکاری ناونیشان">
-                            ✏️
-                        </a>
-                    @endif
+    {{-- ٥. کارتی تایبەتی مەعمەلی دروستکردن --}}
+    <div class="bg-linear-to-br from-white via-indigo-50/20 to-blue-50/30 rounded-3xl p-5 sm:p-6 border-2 border-indigo-200 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="size-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-3xl shadow-md shadow-indigo-600/30 shrink-0">
+                    🏭
                 </div>
-
-                <div class="bg-white/90 rounded-2xl p-4 border border-indigo-100 space-y-2">
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-slate-500">ناونیشان:</span>
-                        <span class="font-bold text-slate-800 text-left">{{ $workshopWarehouse?->location ?: 'شەقامی ١٠٠ مەتری - نزیک نەخۆشخانەی ڕزگاری' }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
-                        <span class="font-bold text-slate-500">جوڵەی مەوادەکان:</span>
-                        <span class="font-mono font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/60">
-                            {{ fmt_num($workshopWarehouse?->movements_count ?? 0) }} جوڵە
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 class="text-base sm:text-lg font-black text-slate-900">{{ $workshopWarehouse?->name ?: 'شوێنی دروستکردن' }}</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                            مەعمەلی پیشەسازی و مەوادی خاو
                         </span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs text-slate-500 font-medium mt-1">
+                        <span>📍 {{ $workshopWarehouse?->location ?: 'شەقامی ١٠٠ مەتری - نزیک نەخۆشخانەی ڕزگاری' }}</span>
+                        <span>•</span>
+                        <span class="font-mono font-bold text-indigo-700">{{ fmt_num($workshopWarehouse?->movements_count ?? 0) }} جوڵەی مەواد</span>
                     </div>
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-indigo-100/60 mt-4 flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-2 flex-wrap">
                 <a href="{{ route('workshop.employees') }}"
-                   class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all">
+                   class="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all">
                     <span>👷</span>
                     <span>وەستا و حەمەڵەکان</span>
                 </a>
 
                 <a href="{{ route('reports.show', 'workshop_materials') }}"
-                   class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
+                   class="px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1.5 transition-all">
                     <span>🧱</span>
                     <span>مەوادی خاو و کۆگا</span>
                 </a>
-            </div>
-        </div>
 
-        {{-- کارتی کۆگای سەرەکی و فرۆشتن --}}
-        <div class="bg-linear-to-br from-white via-emerald-50/20 to-teal-50/30 rounded-3xl p-5 sm:p-6 border-2 border-emerald-200/80 shadow-xs flex flex-col justify-between">
-            <div class="space-y-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="size-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-3xl shadow-md shadow-emerald-600/30 shrink-0">
-                            🏬
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h2 class="text-base sm:text-lg font-black text-slate-900">{{ $salesWarehouse?->name ?: 'کۆگای سەرەکی' }}</h2>
-                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                    کۆگای بنەڕەت ⭐
-                                </span>
-                            </div>
-                            <p class="text-xs text-slate-500 font-medium mt-0.5">شوێنی هەڵگرتنی کاڵای ئامادە، کەلوپەل و فرۆشتن</p>
-                        </div>
-                    </div>
-
-                    @if($salesWarehouse)
-                        <a href="{{ route('warehouses.edit', $salesWarehouse) }}"
-                           class="size-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 transition-colors shadow-2xs"
-                           title="دەستکاری ناونیشان">
-                            ✏️
-                        </a>
-                    @endif
-                </div>
-
-                <div class="bg-white/90 rounded-2xl p-4 border border-emerald-100 space-y-2">
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-slate-500">ناونیشان:</span>
-                        <span class="font-bold text-slate-800 text-left">{{ $salesWarehouse?->location ?: 'پێشانگای سەرەکی' }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
-                        <span class="font-bold text-slate-500">جوڵەی فرۆشتن و کڕین:</span>
-                        <span class="font-mono font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
-                            {{ fmt_num($salesWarehouse?->movements_count ?? 0) }} جوڵە
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-4 border-t border-emerald-100/60 mt-4 flex items-center gap-2 flex-wrap">
-                <a href="{{ route('counts.index') }}"
-                   class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all">
-                    <span>📊</span>
-                    <span>جەردی کەلوپەلەکان</span>
-                </a>
-
-                <a href="{{ route('orders.index') }}"
-                   class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5 transition-all">
-                    <span>🛒</span>
-                    <span>وەسڵەکانی فرۆشتن</span>
-                </a>
+                @if($workshopWarehouse)
+                    <a href="{{ route('warehouses.edit', $workshopWarehouse) }}"
+                       class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 inline-flex items-center gap-1.5 transition-all"
+                       title="دەستکاری ناونیشان">
+                        <span>✏️</span>
+                        <span>دەستکاری شوێن</span>
+                    </a>
+                @endif
             </div>
         </div>
     </div>
