@@ -1,12 +1,6 @@
 @extends('layouts.app')
 @section('title', 'کڕیاران')
 
-@section('actions')
-    <a href="{{ route('customers.create') }}" class="btn btn-primary">
-        + کڕیاری نوێ
-    </a>
-@endsection
-
 @section('content')
 <div class="space-y-4 sm:space-y-6">
 
