@@ -101,8 +101,8 @@
                 <thead class="bg-slate-50 text-slate-500 border-b border-slate-200">
                     <tr>
                         <th class="p-3.5 font-bold">ناوی مەواد</th>
-                        <th class="p-3.5 font-bold text-center">بەروار</th>
                         <th class="p-3.5 font-bold text-center">بڕی بەردەست</th>
+                        <th class="p-3.5 font-bold text-center">بەروار</th>
                         <th class="p-3.5 font-bold text-center">کردار</th>
                     </tr>
                 </thead>
@@ -110,7 +110,6 @@
                     <template x-for="mat in paginatedMaterials" :key="mat.id">
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="p-3.5 font-bold text-slate-900" x-text="mat.name"></td>
-                            <td class="p-3.5 text-center text-slate-500 font-mono text-xs font-bold" x-text="mat.date || '—'"></td>
                             <td class="p-3.5 text-center">
                                 <div class="inline-flex items-center justify-center gap-2">
                                     <span class="font-black text-sm num font-mono"
@@ -126,6 +125,7 @@
                                     </span>
                                 </div>
                             </td>
+                            <td class="p-3.5 text-center text-slate-500 font-mono text-xs font-bold" x-text="mat.date || '—'"></td>
                             <td class="p-3.5 text-center">
                                 <div class="inline-flex items-center gap-1.5">
                                     <button type="button" @click="openStockInModalFor(mat.id)"
