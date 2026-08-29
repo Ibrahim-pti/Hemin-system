@@ -304,7 +304,7 @@ class WorkshopController extends Controller
                 'name' => $validated['name'],
                 'item_category_id' => $categoryId,
                 'unit_id' => $unitId,
-                'min_qty' => $validated['min_qty'] ?? 0,
+                'min_qty' => !empty($validated['min_qty']) ? (float) $validated['min_qty'] : 5,
                 'is_for_sale' => false,
                 'is_active' => true,
                 'note' => $validated['note'] ?? null,

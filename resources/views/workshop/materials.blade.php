@@ -231,17 +231,12 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">بڕی سەرەتایی</label>
-                        <input type="number" step="any" name="initial_qty" value="0"
-                               class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">کەمترین بڕ (ئاگاداری)</label>
-                        <input type="number" step="any" name="min_qty" value="5"
-                               class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
-                    </div>
+                <input type="hidden" name="min_qty" value="5">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">بڕ</label>
+                    <input type="number" step="any" min="0" name="initial_qty" placeholder="0"
+                           class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
                 </div>
 
                 <div>
