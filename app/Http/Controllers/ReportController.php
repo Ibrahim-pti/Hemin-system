@@ -209,7 +209,7 @@ class ReportController extends Controller
             ])
             ->values();
 
-        $orders = $query->paginate(10)->withQueryString();
+        $orders = $query->paginate(5)->withQueryString();
 
         return [
             'orders' => $orders,

@@ -218,12 +218,15 @@
             </table>
         </div>
 
-        {{-- پەیجینەیشن (Pagination) --}}
-        @if ($orders->hasPages())
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        {{-- بەشی پەڕەبەندی (Pagination) --}}
+        <div class="p-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div class="font-bold text-slate-500">
+                پێشاندانی <span class="font-mono text-slate-900 font-black">{{ $orders->firstItem() ?? 0 }}</span> تا <span class="font-mono text-slate-900 font-black">{{ $orders->lastItem() ?? 0 }}</span> لە کۆی <span class="font-mono text-indigo-700 font-black">{{ $orders->total() }}</span> وەسڵ
+            </div>
+            <div>
                 {{ $orders->links() }}
             </div>
-        @endif
+        </div>
     </div>
 
 </div>
