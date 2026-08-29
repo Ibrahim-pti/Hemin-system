@@ -78,7 +78,7 @@
                     <div class="flex items-center gap-2 pt-1">
                         <button type="button" @click="openStockInModalFor(mat.id)"
                                 class="flex-1 py-1.5 px-3 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center gap-1 cursor-pointer">
-                            <span>📥</span><span>+ هاتن</span>
+                            <span>📥</span><span>+ زیادکردن</span>
                         </button>
                         <button type="button" @click="openStockOutModalFor(mat.id)"
                                 class="flex-1 py-1.5 px-3 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 flex items-center justify-center gap-1 cursor-pointer">
@@ -125,7 +125,7 @@
                                 <div class="inline-flex items-center gap-1.5">
                                     <button type="button" @click="openStockInModalFor(mat.id)"
                                             class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 cursor-pointer">
-                                        + هاتن
+                                        + زیادکردن
                                     </button>
                                     <button type="button" @click="openStockOutModalFor(mat.id)"
                                             class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 cursor-pointer">
@@ -285,13 +285,13 @@
         </div>
     </div>
 
-    {{-- مۆداڵی هاتنی مەواد (Stock In) --}}
+    {{-- مۆداڵی زیادکردنی بڕی مەواد (Stock In) --}}
     <div x-show="showStockInModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3.5 sm:p-4">
         <div class="relative w-full max-w-md bg-white rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto scrollbar-none" @click.outside="showStockInModal = false">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3.5 mb-4">
                 <div class="flex items-center gap-2">
                     <span class="size-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0">📥</span>
-                    <h3 class="font-black text-slate-800 text-sm sm:text-base">هاتنی مەواد بۆ کارگە (+ بڕ)</h3>
+                    <h3 class="font-black text-slate-800 text-sm sm:text-base">زیادکردنی بڕی مەواد (+ بڕ)</h3>
                 </div>
                 <button type="button" @click="showStockInModal = false" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">✕</button>
             </div>
@@ -311,7 +311,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">بڕی هاتوو *</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">بڕی زیادکراو *</label>
                     <input type="number" step="any" min="0.01" name="qty" required placeholder="چەند دانە یان مەتر..."
                            class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
                 </div>
@@ -324,7 +324,7 @@
 
                 <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                     <button type="button" @click="showStockInModal = false" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold">داخستن</button>
-                    <button type="submit" class="btn btn-primary !py-1.5 !px-4 text-xs font-bold bg-emerald-600 hover:bg-emerald-700">تۆمارکردنی هاتن</button>
+                    <button type="submit" class="btn btn-primary !py-1.5 !px-4 text-xs font-bold bg-emerald-600 hover:bg-emerald-700">تۆمارکردنی زیادکردن</button>
                 </div>
             </form>
         </div>
