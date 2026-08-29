@@ -10,9 +10,11 @@ class WarehouseController extends Controller
 {
     public function index(): View
     {
-        return view('warehouses.index', [
-            'warehouses' => Warehouse::withCount('movements')->orderBy('name')->get(),
-        ]);
+        $warehouses = Warehouse::withCount('movements')->orderByDesc('is_default')->orderBy('id')->get();
+        $totalMovements = \App\Models\StockMovement::count();
+        $activeCount = $warehouses->where('is_active', true)->count();
+
+        return view('warehouses.index', compact('warehouses', 'totalMovements', 'activeCount'));
     }
 
     public function create(): View
