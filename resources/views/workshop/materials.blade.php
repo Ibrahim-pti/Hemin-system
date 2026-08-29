@@ -357,10 +357,25 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">بڕی بەکارهاتوو *</label>
-                    <input type="number" step="any" min="0.01" name="qty" required 
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold text-slate-700">بڕی بەکارهاتوو *</label>
+                        <div x-show="selectedMaterial" class="text-[11px] font-bold text-slate-500">
+                            بەردەست: <span class="num text-slate-800 font-mono" x-text="selectedMaterial?.stock_qty"></span> <span x-text="selectedUnitName"></span>
+                        </div>
+                    </div>
+
+                    <input type="number" step="any" min="0.01" 
+                           :max="selectedMaterial ? selectedMaterial.stock_qty : null"
+                           name="qty" x-model="stockOutQty" required 
                            :placeholder="selectedUnitName ? 'بڕ بە (' + selectedUnitName + ') بنووسە...' : 'بڕی سەرفکراو...'"
-                           class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
+                           class="w-full text-xs px-3 py-2 rounded-xl border transition-colors focus:outline-hidden"
+                           :class="isStockOutExceeded ? 'border-rose-500 focus:border-rose-500 bg-rose-50/40 text-rose-700' : 'border-slate-200 focus:border-blue-500'">
+
+                    {{-- ئاگاداری ئەگەر بڕەکە لە بەردەست زیاتر بوو --}}
+                    <div x-show="isStockOutExceeded" x-cloak class="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-rose-600">
+                        <span>⚠️</span>
+                        <span>بڕی داواکراو لە بڕی بەردەست (<span x-text="selectedMaterial?.stock_qty"></span> <span x-text="selectedUnitName"></span>) زیاترە و ناتوانیت زیاتر کەمبکەیتەوە!</span>
+                    </div>
                 </div>
 
                 <div>
@@ -385,7 +400,10 @@
 
                 <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                     <button type="button" @click="showStockOutModal = false" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold">داخستن</button>
-                    <button type="submit" class="btn btn-primary !py-1.5 !px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700">تۆمارکردنی بەکارهێنان</button>
+                    <button type="submit" 
+                            :disabled="isStockOutExceeded"
+                            :class="isStockOutExceeded ? 'opacity-50 cursor-not-allowed bg-slate-400' : 'bg-amber-600 hover:bg-amber-700'"
+                            class="btn btn-primary !py-1.5 !px-4 text-xs font-bold transition-all">تۆمارکردنی بەکارهێنان</button>
                 </div>
             </form>
         </div>
@@ -402,6 +420,7 @@ function workshopMaterialsApp() {
         showStockInModal: false,
         showStockOutModal: false,
         selectedItemId: '',
+        stockOutQty: '',
         materialsList: @json($materialsData),
         currentPage: 1,
         perPage: 10,
@@ -418,6 +437,12 @@ function workshopMaterialsApp() {
 
         get selectedUnitName() {
             return this.selectedMaterial ? (this.selectedMaterial.unit_name || '') : '';
+        },
+
+        get isStockOutExceeded() {
+            if (!this.selectedMaterial) return false;
+            const q = parseFloat(this.stockOutQty);
+            return !isNaN(q) && q > this.selectedMaterial.stock_qty;
         },
 
         get lowStockCount() {
@@ -463,6 +488,7 @@ function workshopMaterialsApp() {
 
         openStockOutModalFor(itemId) {
             this.selectedItemId = itemId;
+            this.stockOutQty = '';
             this.showStockOutModal = true;
         }
     };

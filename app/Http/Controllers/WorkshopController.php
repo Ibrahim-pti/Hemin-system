@@ -378,6 +378,12 @@ class WorkshopController extends Controller
             'qty' => 'بڕ',
         ]);
 
+        $item = Item::query()->withStock($validated['warehouse_id'])->findOrFail($validated['item_id']);
+        if ((float) $validated['qty'] > (float) $item->stock_qty) {
+            $unitName = $item->unit?->name ?? '';
+            return back()->withInput()->with('error', "بڕی بەردەست تەنها ({$item->stock_qty} {$unitName}) یە، ناتوانیت زیاتر لەوە کەم بکەیتەوە.");
+        }
+
         $note = $validated['note'] ?? '';
         $order = null;
 
