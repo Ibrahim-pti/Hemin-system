@@ -92,10 +92,6 @@
                                 <span x-text="mat.stock_qty"></span> <span class="text-xs font-normal text-slate-500" x-text="mat.unit_name"></span>
                             </span>
                         </div>
-                        <div>
-                            <span class="text-slate-400 text-[11px]">کەمترین:</span>
-                            <span class="font-bold text-slate-600 num mr-1" x-text="mat.min_qty + ' ' + (mat.unit_name || '')"></span>
-                        </div>
                     </div>
 
                     <div class="flex items-center gap-2 pt-1">
@@ -122,7 +118,6 @@
                     <tr>
                         <th class="p-3.5 font-bold">ناوی مەواد</th>
                         <th class="p-3.5 font-bold text-center">بڕی بەردەست</th>
-                        <th class="p-3.5 font-bold text-center">کەمترین بڕ</th>
                         <th class="p-3.5 font-bold text-center">دۆخ</th>
                         <th class="p-3.5 font-bold text-center">کردار</th>
                     </tr>
@@ -135,7 +130,6 @@
                                 :class="mat.is_low ? 'text-rose-600' : 'text-slate-800'">
                                 <span x-text="mat.stock_qty"></span> <span class="text-xs font-normal text-slate-500" x-text="mat.unit_name"></span>
                             </td>
-                            <td class="p-3.5 text-center font-medium text-slate-500 num" x-text="mat.min_qty + ' ' + (mat.unit_name || '')"></td>
                             <td class="p-3.5 text-center">
                                 <span x-show="mat.is_low" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
                                     کەمە ⚠️
@@ -159,7 +153,7 @@
                         </tr>
                     </template>
                     <tr x-show="filteredMaterials.length === 0">
-                        <td colspan="5" class="p-8 text-center text-slate-400 font-bold">هیچ مەوادێک نەدۆزرایەوە</td>
+                        <td colspan="4" class="p-8 text-center text-slate-400 font-bold">هیچ مەوادێک نەدۆزرایەوە</td>
                     </tr>
                 </tbody>
             </table>
