@@ -107,7 +107,7 @@
                         {{ $ordersInProduction->count() }} وەسڵ
                     </span>
                 </div>
-                <a href="{{ route('workshop.orders') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                <a href="{{ route('reports.show', 'workshop_production') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
                     هەموو کارەکان ←
                 </a>
             </div>
@@ -117,9 +117,10 @@
                     <div class="p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/20 hover:bg-indigo-50/50 transition-colors flex flex-col gap-2">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="font-mono font-black text-xs text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
+                                <a href="{{ route('orders.show', $order) }}"
+                                   class="font-mono font-black text-xs text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200 shadow-2xs hover:bg-indigo-50 transition-colors">
                                     #{{ $order->id }}
-                                </span>
+                                </a>
                                 <span class="font-black text-xs text-slate-900">{{ $order->customer?->name ?: 'کڕیاری گشتی' }}</span>
                             </div>
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
@@ -168,7 +169,7 @@
                         {{ $ordersReady->count() }} وەسڵ
                     </span>
                 </div>
-                <a href="{{ route('workshop.orders') }}" class="text-xs font-bold text-emerald-700 hover:text-emerald-900">
+                <a href="{{ route('reports.show', 'workshop_production') }}" class="text-xs font-bold text-emerald-700 hover:text-emerald-900">
                     هەموو وەسڵەکان ←
                 </a>
             </div>
@@ -178,9 +179,10 @@
                     <div class="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/20 hover:bg-emerald-50/50 transition-colors flex flex-col gap-2">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="font-mono font-black text-xs text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                                <a href="{{ route('orders.show', $order) }}"
+                                   class="font-mono font-black text-xs text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs hover:bg-emerald-50 transition-colors">
                                     #{{ $order->id }}
-                                </span>
+                                </a>
                                 <span class="font-black text-xs text-slate-900">{{ $order->customer?->name ?: 'کڕیاری گشتی' }}</span>
                             </div>
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -238,10 +240,10 @@
             </div>
 
             <div class="flex items-center gap-2 flex-wrap">
-                <a href="{{ route('workshop.employees') }}"
+                <a href="{{ route('employees.index') }}"
                    class="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all">
                     <span>👷</span>
-                    <span>بینینی وەستاکان</span>
+                    <span>بینینی کارمەندان و وەستاکان</span>
                 </a>
 
                 <a href="{{ route('reports.show', 'workshop_production') }}"
