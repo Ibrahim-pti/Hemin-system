@@ -73,13 +73,13 @@
             <div class="lg:col-span-2">
                 <label class="block font-bold text-xs text-slate-600 mb-1.5">🔍 گەڕان</label>
                 <input type="search" name="q" value="{{ request('q') }}"
-                       class="text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 w-full font-medium"
+                       class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 w-full font-medium placeholder:text-slate-400 placeholder:font-normal"
                        placeholder="ژمارەی پسوولە یان ناوی فرۆشیار...">
             </div>
 
             <div>
                 <label class="block font-bold text-xs text-slate-600 mb-1.5">دۆخی پسوولە</label>
-                <select name="status" class="text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 w-full font-bold text-slate-700">
+                <select name="status" class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 w-full font-bold text-slate-700 cursor-pointer">
                     <option value="">هەموو دۆخەکان</option>
                     @foreach (\App\Models\Purchase::STATUSES as $key => $label)
                         <option value="{{ $key }}" @selected(request('status') === $key)>{{ $label }}</option>
@@ -90,16 +90,16 @@
             <div>
                 <label class="block font-bold text-xs text-slate-600 mb-1.5">لە بەرواری</label>
                 <input type="date" name="from" value="{{ request('from') }}"
-                       class="text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 w-full font-mono font-bold text-slate-800">
+                       class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 w-full font-mono font-bold text-slate-800 cursor-pointer">
             </div>
 
             <div>
                 <label class="block font-bold text-xs text-slate-600 mb-1.5">تا بەرواری</label>
                 <div class="flex items-center gap-2">
                     <input type="date" name="to" value="{{ request('to') }}"
-                           class="text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 flex-1 font-mono font-bold text-slate-800">
+                           class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 flex-1 font-mono font-bold text-slate-800 cursor-pointer">
                     <button type="submit"
-                            class="px-4 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all cursor-pointer shrink-0">
+                            class="px-4 py-2.5 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition-all cursor-pointer shrink-0">
                         پاڵاوتن
                     </button>
                     @if(request()->anyFilled(['q', 'status', 'from', 'to']))

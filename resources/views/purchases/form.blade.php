@@ -85,7 +85,7 @@
                         ناوی فرۆشیار / کۆمپانیا <span class="text-rose-500">*</span>
                     </label>
                     <input id="supplier_name" name="supplier_name" type="text" list="suppliers_list"
-                           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-black text-slate-900"
+                           class="w-full text-xs px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal"
                            value="{{ old('supplier_name', $purchase->supplier?->name) }}"
                            placeholder="ناوی فرۆشیار بنووسە یان لە لیستەکە هەڵیبژێرە..." required autocomplete="off">
                     <datalist id="suppliers_list">
@@ -103,7 +103,7 @@
                         کۆگای وەرگرتن <span class="text-rose-500">*</span>
                     </label>
                     <select id="warehouse_id" name="warehouse_id"
-                            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-bold text-slate-800" required>
+                            class="w-full text-xs px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-bold text-slate-800 cursor-pointer" required>
                         @foreach ($warehouses as $warehouse)
                             <option value="{{ $warehouse->id }}" @selected(old('warehouse_id', $purchase->warehouse_id ?? $workshopWarehouse?->id) == $warehouse->id)>
                                 {{ $warehouse->name }}
@@ -118,7 +118,7 @@
                         بەرواری کڕین <span class="text-rose-500">*</span>
                     </label>
                     <input id="purchase_date" name="purchase_date" type="date"
-                           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-mono font-bold text-slate-800" required
+                           class="w-full text-xs px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-mono font-bold text-slate-800 cursor-pointer" required
                            value="{{ old('purchase_date', $purchase->purchase_date?->toDateString() ?? now()->toDateString()) }}">
                 </div>
 
@@ -126,7 +126,7 @@
                 <div class="sm:col-span-2 lg:col-span-4">
                     <label class="block font-bold text-xs text-slate-700 mb-1.5" for="note">تێبینی پسوولە</label>
                     <input id="note" name="note" type="text"
-                           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-slate-800"
+                           class="w-full text-xs px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-medium text-slate-800 placeholder:text-slate-400 placeholder:font-normal"
                            placeholder="تێبینی، ژمارەی پسوولەی فرۆشیار یان مەرجەکان بنووسە..."
                            value="{{ old('note', $purchase->note) }}">
                 </div>
@@ -141,7 +141,7 @@
                     <h3 class="font-black text-sm text-slate-800">کاڵا و مەوادە کڕدراوەکان</h3>
                 </div>
                 <button type="button" @click="addLine()"
-                        class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-all cursor-pointer inline-flex items-center gap-1">
+                        class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-all cursor-pointer inline-flex items-center gap-1.5 active:scale-95">
                     <span>➕</span>
                     <span>زیادکردنی دێڕ</span>
                 </button>
@@ -180,7 +180,7 @@
                                            :name="`lines[${index}][item_name]`"
                                            x-model="line.item_name"
                                            @input="fillPrice(line)"
-                                           class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-bold text-slate-900"
+                                           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal"
                                            placeholder="ناوی کاڵا یان مەواد بنووسە..." required autocomplete="off">
                                 </td>
 
@@ -189,7 +189,7 @@
                                     <input type="number" step="0.001" min="0.001" required
                                            :name="`lines[${index}][qty]`"
                                            x-model.number="line.qty"
-                                           class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-mono font-bold text-slate-800 text-center">
+                                           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-mono font-bold text-slate-800 text-center placeholder:text-slate-400">
                                 </td>
 
                                 {{-- نرخی یەکە --}}
@@ -197,7 +197,7 @@
                                     <input type="number" step="1" min="0" required
                                            :name="`lines[${index}][unit_price]`"
                                            x-model.number="line.unit_price"
-                                           class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-mono font-bold text-slate-800 text-left">
+                                           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-mono font-bold text-slate-800 text-left placeholder:text-slate-400">
                                 </td>
 
                                 {{-- کۆی دێڕ --}}
@@ -207,14 +207,14 @@
                                 <td class="p-3">
                                     <input type="text" :name="`lines[${index}][note]`"
                                            x-model="line.note"
-                                           class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-slate-700"
+                                           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-medium text-slate-700 placeholder:text-slate-400 placeholder:font-normal"
                                            placeholder="تێبینی...">
                                 </td>
 
                                 {{-- سڕینەوە --}}
                                 <td class="p-3 text-center">
                                     <button type="button" @click="removeLine(index)"
-                                            class="text-rose-500 hover:text-rose-700 font-bold text-base p-1"
+                                            class="text-rose-500 hover:text-rose-700 font-bold text-base p-1 cursor-pointer transition-colors"
                                             x-show="lines.length > 1" title="سڕینەوەی دێڕ">
                                         ✕
                                     </button>
@@ -236,7 +236,7 @@
                             داشکاندن (د.ع)
                         </label>
                         <input id="discount_amount" name="discount_amount" type="number" step="1" min="0"
-                               class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-mono font-bold text-slate-800"
+                               class="w-full text-xs px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-mono font-bold text-slate-800 placeholder:text-slate-400"
                                x-model.number="discount" placeholder="0">
                     </div>
 
@@ -245,7 +245,7 @@
                             پارەی دراو ئێستا (د.ع)
                         </label>
                         <input id="paid_amount" name="paid_amount" type="number" step="1" min="0"
-                               class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-mono font-bold text-emerald-800"
+                               class="w-full text-xs px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 font-mono font-bold text-emerald-800 placeholder:text-slate-400"
                                value="{{ old('paid_amount', $purchase->paid_amount ?: 0) }}" placeholder="0">
                         <p class="text-[10px] text-slate-400 mt-1 font-medium">ئەگەر پارە بدەیت، تۆماری پارەدان و حەقدی دروست دەبێت.</p>
                     </div>
@@ -253,9 +253,9 @@
 
                 {{-- پەسەندکردن --}}
                 <div class="pt-3 border-t border-slate-100 flex items-center gap-3">
-                    <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800">
+                    <label class="inline-flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-800 select-none">
                         <input type="checkbox" name="confirm" value="1"
-                               class="size-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                               class="size-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
                                @checked($purchase->status === 'confirmed')>
                         <span>پەسەندکردن و زیادکردنی مەوادەکان بۆ کۆگا و مەخزەن</span>
                     </label>
@@ -263,32 +263,42 @@
             </div>
 
             {{-- پوختەی پارە --}}
-            <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-md flex flex-col justify-between space-y-4">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs flex flex-col justify-between space-y-4">
                 <div class="space-y-3">
-                    <div class="text-xs font-bold text-slate-400 border-b border-slate-800 pb-2">
-                        پوختەی کۆی گشتی
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                        <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                            <span>📊</span>
+                            <span>پوختەی کۆی گشتی</span>
+                        </span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200/70">
+                            کۆتایی پسوولە
+                        </span>
                     </div>
-                    <div class="flex items-center justify-between text-xs text-slate-300">
-                        <span>کۆی دێڕەکان:</span>
-                        <span class="font-mono font-bold" x-text="money(subtotal())"></span>
+
+                    <div class="flex items-center justify-between text-xs text-slate-600">
+                        <span class="font-medium">کۆی دێڕەکان:</span>
+                        <span class="font-mono font-bold text-slate-900 text-sm" x-text="money(subtotal())">0 د.ع</span>
                     </div>
-                    <div class="flex items-center justify-between text-xs text-slate-300">
-                        <span>داشکاندن:</span>
-                        <span class="font-mono font-bold text-amber-400" x-text="money(discount || 0)"></span>
+
+                    <div class="flex items-center justify-between text-xs text-slate-600" x-show="discount > 0">
+                        <span class="font-medium text-amber-700">داشکاندن:</span>
+                        <span class="font-mono font-bold text-amber-600" x-text="'- ' + money(discount || 0)">0 د.ع</span>
                     </div>
                 </div>
 
-                <div class="pt-3 border-t border-slate-800">
+                {{-- بۆکسی دیاریکراوی کۆی گشتی بە رەنگێکی گونجاو و ئارام --}}
+                <div class="bg-linear-to-br from-emerald-500/10 via-teal-500/5 to-slate-50 border border-emerald-200/80 rounded-xl p-3.5">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-bold text-slate-300">کۆی گشتی:</span>
-                        <span class="text-xl sm:text-2xl font-black font-mono text-emerald-400" x-text="money(total())"></span>
+                        <span class="text-xs font-black text-emerald-950">کۆی گشتی:</span>
+                        <span class="text-xl sm:text-2xl font-black font-mono text-emerald-700" x-text="money(total())">0 د.ع</span>
                     </div>
                 </div>
 
-                <div class="pt-2 flex gap-2">
+                <div class="pt-1">
                     <button type="submit"
-                            class="w-full py-3 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md transition-all cursor-pointer text-center">
-                        💾 {{ $purchase->exists ? 'نوێکردنەوەی پسوولە' : 'تۆمارکردنی پسوولەی کڕین' }}
+                            class="w-full py-3 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition-all cursor-pointer text-center flex items-center justify-center gap-2 active:scale-[0.99]">
+                        <span>💾</span>
+                        <span>{{ $purchase->exists ? 'نوێکردنەوەی پسوولە' : 'تۆمارکردنی پسوولەی کڕین' }}</span>
                     </button>
                 </div>
             </div>
