@@ -172,10 +172,10 @@ class WorkshopController extends Controller
         ));
     }
 
-    /** لاپەڕەی جیاکراوەی وەستا و حەمەڵەکان بە سیستەمی چیک ئین و ئامادەبوون */
+    /** لاپەڕەی جیاکراوەی وەستا و حەمەڵەکان بە سیستەمی ئامادەبوون */
     public function employees(Request $request): View
     {
-        $date = $request->date('date')?->toDateString() ?? now()->toDateString();
+        $date = now()->toDateString();
 
         $employees = Employee::query()
             ->active()
@@ -220,18 +220,10 @@ class WorkshopController extends Controller
         $totalOvertime = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->overtime_hours ?? 0));
         $totalFuel = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->fuel_expense ?? 0));
 
-        $carbonDate = \Illuminate\Support\Carbon::parse($date);
-        $prevDate = $carbonDate->copy()->subDay()->toDateString();
-        $nextDate = $carbonDate->copy()->addDay()->toDateString();
-        $isToday = $date === now()->toDateString();
-
         return view('workshop.employees', compact(
             'employees',
             'employeesData',
             'date',
-            'prevDate',
-            'nextDate',
-            'isToday',
             'presentCount',
             'leaveCount',
             'absentCount',

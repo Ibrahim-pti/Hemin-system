@@ -1,10 +1,10 @@
 @extends('layouts.menu')
-@section('title', 'تۆماری ئامادەبوونی کارگە')
+@section('title', 'تۆماری ئامادەبوونی ئەمڕۆ')
 
 @section('content')
-<div x-data="workshopEmployeesApp()" class="space-y-4 sm:space-y-6">
+<div x-data="workshopEmployeesApp()" x-init="initClock()" class="space-y-4 sm:space-y-6">
 
-    {{-- ١. هێڵی سەرەوە: ناونیشان و ڕێکخستنی بەروار --}}
+    {{-- ١. هێڵی سەرەوە: ناونیشان و بەرواری ئەمڕۆ بە شێوەی خۆکار و قفڵکراو --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
             <div class="size-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-2xl shadow-md shadow-indigo-500/20 shrink-0">
@@ -23,38 +23,28 @@
             </div>
         </div>
 
-        {{-- بەشی هەڵبژاردن و گۆڕینی خێرای بەروار --}}
-        <div class="flex items-center gap-2 flex-wrap bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
-            <a href="{{ route('workshop.employees', ['date' => $prevDate]) }}"
-               title="ڕۆژی پێشوو"
-               class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-slate-200 shadow-2xs transition-all flex items-center gap-1">
-                <span>◀</span>
-                <span class="hidden sm:inline">ڕۆژی پێشوو</span>
-            </a>
-
-            @if(!$isToday)
-                <a href="{{ route('workshop.employees', ['date' => now()->toDateString()]) }}"
-                   title="گەڕانەوە بۆ ئەمڕۆ"
-                   class="px-2.5 py-1.5 rounded-xl text-xs font-black bg-indigo-600 text-white hover:bg-indigo-700 shadow-2xs transition-all">
-                    ئەمڕۆ 📅
-                </a>
-            @endif
-
-            <form method="GET" action="{{ route('workshop.employees') }}" class="flex items-center gap-1.5">
-                <input type="date" name="date" value="{{ $date }}" onchange="this.form.submit()"
-                       class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-indigo-500 bg-white shadow-2xs text-slate-800">
-            </form>
-
-            <a href="{{ route('workshop.employees', ['date' => $nextDate]) }}"
-               title="ڕۆژی دواتر"
-               class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-slate-200 shadow-2xs transition-all flex items-center gap-1">
-                <span class="hidden sm:inline">ڕۆژی دواتر</span>
-                <span>▶</span>
-            </a>
+        {{-- بەرواری ئەمڕۆ و کاتژمێری ڕاستەوخۆ (بە شێوەی ئۆتۆماتیکی و قفڵکراو بۆ ڕێگری لە دەستکاری) --}}
+        <div class="flex items-center gap-3 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shrink-0">
+            <div class="size-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg shadow-2xs">
+                📅
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-black text-slate-800 font-mono">{{ now()->format('Y/m/d') }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                        <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>ئەمڕۆ (خۆکار)</span>
+                    </span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
+                    <span>کاتی ئێستا:</span>
+                    <span class="font-mono font-bold text-slate-800" x-text="currentTime"></span>
+                </div>
+            </div>
         </div>
     </div>
 
-    {{-- ٢. کارتەکانی ئامار و خولاسەی ڕۆژانە --}}
+    {{-- ٢. کارتەکانی ئامار و خولاسەی ئەمڕۆ --}}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
         {{-- کۆی گشتی کارمەندان --}}
         <div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-xs">
@@ -517,7 +507,7 @@
                     </div>
                     <div class="min-w-0">
                         <h3 class="font-black text-slate-800 text-sm sm:text-base truncate" x-text="'تۆماری ئامادەبوون: ' + (selectedEmployee ? selectedEmployee.name : '')"></h3>
-                        <p class="text-xs text-slate-400 font-medium font-mono" x-text="'بەرواری کار: {{ $date }}'"></p>
+                        <p class="text-xs text-slate-400 font-medium font-mono" x-text="'بەروار: {{ now()->format('Y/m/d') }} (ئەمڕۆ)'"></p>
                     </div>
                 </div>
                 <button type="button" @click="showModal = false" class="size-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 text-lg flex items-center justify-center cursor-pointer">✕</button>
@@ -526,7 +516,7 @@
             <form @submit.prevent="saveAttendance" class="space-y-4 text-xs">
                 {{-- دۆخی ئامادەبوون --}}
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1.5">دۆخی ئامادەبوونی ڕۆژانە *</label>
+                    <label class="block font-bold text-slate-700 mb-1.5">دۆخی ئامادەبوونی ئەمڕۆ *</label>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <button type="button" @click="form.status = 'present'"
                                 :class="form.status === 'present' ? 'bg-emerald-600 text-white font-black shadow-xs ring-2 ring-emerald-600/30' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 font-bold'"
@@ -667,6 +657,7 @@ function workshopEmployeesApp() {
         viewMode: 'table',
         loadingId: null,
         isSaving: false,
+        currentTime: '',
         toast: {
             show: false,
             message: '',
@@ -675,7 +666,7 @@ function workshopEmployeesApp() {
         },
         form: {
             employee_id: '',
-            work_date: '{{ $date }}',
+            work_date: '{{ now()->toDateString() }}',
             status: 'present',
             check_in: '',
             check_out: '',
@@ -685,6 +676,21 @@ function workshopEmployeesApp() {
             fuel_expense: 0,
             trip_destination: '',
             note: ''
+        },
+
+        initClock() {
+            this.updateClock();
+            setInterval(() => this.updateClock(), 1000);
+        },
+
+        updateClock() {
+            const now = new Date();
+            this.currentTime = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
         },
 
         showToast(msg, icon = '✅') {
@@ -736,7 +742,7 @@ function workshopEmployeesApp() {
             const att = emp.attendance;
             this.form = {
                 employee_id: emp.id,
-                work_date: '{{ $date }}',
+                work_date: '{{ now()->toDateString() }}',
                 status: att ? att.status : 'present',
                 check_in: att ? att.check_in : '',
                 check_out: att ? att.check_out : '',
@@ -762,7 +768,7 @@ function workshopEmployeesApp() {
                     },
                     body: JSON.stringify({
                         employee_id: employeeId,
-                        work_date: '{{ $date }}'
+                        work_date: '{{ now()->toDateString() }}'
                     })
                 });
                 const data = await res.json();
@@ -802,7 +808,7 @@ function workshopEmployeesApp() {
                     },
                     body: JSON.stringify({
                         employee_id: employeeId,
-                        work_date: '{{ $date }}'
+                        work_date: '{{ now()->toDateString() }}'
                     })
                 });
                 const data = await res.json();
