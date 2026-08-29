@@ -77,7 +77,6 @@
                     'activeIconBg' => 'rgba(14, 165, 233, 0.2)',
                     'activeIconColor' => '#7dd3fc',
                     'items' => [
-                        ['route' => 'items.*', 'href' => route('items.index'), 'label' => 'دۆخی کۆگا', 'icon' => 'items', 'can' => 'view_stock'],
                         ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_settings'],
                         ['route' => 'warehouses.*', 'href' => route('warehouses.index'), 'label' => 'کۆگاکان', 'icon' => 'warehouses', 'can' => 'manage_settings'],
                         ['route' => 'suppliers.*', 'href' => route('suppliers.index'), 'label' => 'فرۆشیارەکان', 'icon' => 'suppliers', 'can' => 'manage_suppliers'],

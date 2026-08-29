@@ -4,7 +4,7 @@
 @section('content')
 <div x-data="workshopEmployeesApp()" x-init="initClock()" class="space-y-4 sm:space-y-6">
 
-    {{-- ١. هێڵی سەرەوە: ناونیشان و بەرواری ئەمڕۆ و بەستەری ڕاپۆرت --}}
+    {{-- ١. هێڵی سەرەوە: ناونیشان و بەرواری ئەمڕۆ --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
             <div class="size-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-2xl shadow-md shadow-indigo-500/20 shrink-0">
@@ -23,25 +23,16 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2.5 flex-wrap">
-            {{-- بەستەری ڕاپۆرتی مانگانەی بەڕێوەبەر --}}
-            <a href="{{ route('attendance.wages') }}"
-               class="px-3.5 py-2.5 rounded-2xl text-xs font-black bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer">
-                <span>📊</span>
-                <span>ڕاپۆرتی مانگانە و حەقدەست</span>
-            </a>
-
-            {{-- بەرواری ئەمڕۆ و کاتژمێری ڕاستەوخۆ --}}
-            <div class="flex items-center gap-3 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shrink-0">
-                <div class="size-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base shadow-2xs">
-                    📅
-                </div>
-                <div>
-                    <div class="text-xs font-black text-slate-800 font-mono">{{ now()->format('Y/m/d') }}</div>
-                    <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
-                        <span>کاتی ئێستا:</span>
-                        <span class="font-mono font-bold text-slate-800" x-text="currentTime"></span>
-                    </div>
+        {{-- بەرواری ئەمڕۆ و کاتژمێری ڕاستەوخۆ --}}
+        <div class="flex items-center gap-3 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shrink-0">
+            <div class="size-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base shadow-2xs">
+                📅
+            </div>
+            <div>
+                <div class="text-xs font-black text-slate-800 font-mono">{{ now()->format('Y/m/d') }}</div>
+                <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
+                    <span>کاتی ئێستا:</span>
+                    <span class="font-mono font-bold text-slate-800" x-text="currentTime"></span>
                 </div>
             </div>
         </div>
