@@ -317,7 +317,7 @@ class WorkshopController extends Controller
                     warehouseId: (int) $validated['warehouse_id'],
                     direction: 'in',
                     qty: $qty,
-                    reason: 'initial',
+                    reason: 'opening',
                     extra: [
                         'note' => 'مەوادی سەرەتایی دروستکردن',
                         'moved_at' => now()->toDateString(),
@@ -347,7 +347,7 @@ class WorkshopController extends Controller
             warehouseId: (int) $validated['warehouse_id'],
             direction: 'in',
             qty: (float) $validated['qty'],
-            reason: 'manual',
+            reason: 'adjustment',
             extra: [
                 'note' => $validated['note'] ?: 'زیادکردنی مەواد بۆ کارگە',
                 'moved_at' => now()->toDateString(),

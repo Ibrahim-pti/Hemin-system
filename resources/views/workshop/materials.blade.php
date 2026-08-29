@@ -199,21 +199,7 @@
 
                 {{-- یەکە --}}
                 <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-bold text-slate-700">یەکە <span class="text-rose-500">*</span></label>
-                        <button type="button" 
-                                x-show="unitMode === 'select'" 
-                                @click="unitMode = 'new'; selectedUnit = ''; $nextTick(() => $refs.newUnitInput?.focus())"
-                                class="text-[11px] font-bold text-blue-600 hover:underline cursor-pointer">
-                            + نوێ
-                        </button>
-                        <button type="button" 
-                                x-show="unitMode === 'new'" 
-                                @click="unitMode = 'select'; newUnitName = ''; selectedUnit = '{{ $units->first()?->id ?? '' }}'"
-                                class="text-[11px] font-bold text-slate-500 hover:underline cursor-pointer">
-                            هەڵبژاردن لە لیست
-                        </button>
-                    </div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">یەکە <span class="text-rose-500">*</span></label>
 
                     <div x-show="unitMode === 'select'">
                         <select name="unit_id" 
@@ -224,18 +210,24 @@
                             @foreach ($units as $u)
                                 <option value="{{ $u->id }}">{{ $u->name }}</option>
                             @endforeach
-                            <option value="__NEW__" class="font-black text-blue-600 bg-blue-50">➕ + نووسینی یەکەی نوێ...</option>
+                            <option value="__NEW__" class="font-black text-blue-600 bg-blue-50">➕ + زیادکردنی یەکەی نوێ...</option>
                         </select>
                     </div>
 
-                    <div x-show="unitMode === 'new'" x-cloak class="relative">
+                    <div x-show="unitMode === 'new'" x-cloak class="relative flex items-center">
                         <input type="text" 
                                name="new_unit_name" 
                                x-ref="newUnitInput"
                                x-model="newUnitName" 
                                :required="unitMode === 'new'"
-                               placeholder="ناوی یەکە بنووسە..."
-                               class="w-full text-xs px-3 py-2 rounded-xl border border-blue-400 bg-blue-50/30 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-500 font-medium">
+                               placeholder="ناوی یەکەی نوێ لێرە بنووسە..."
+                               class="w-full text-xs px-3 py-2 pl-8 rounded-xl border border-blue-400 bg-blue-50/30 focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-500 font-medium">
+                        <button type="button" 
+                                @click="unitMode = 'select'; newUnitName = ''; selectedUnit = '{{ $units->first()?->id ?? '' }}'"
+                                title="پەشیمانبوونەوە و هەڵبژاردن لە لیست"
+                                class="absolute left-2 text-slate-400 hover:text-slate-600 p-1 text-xs cursor-pointer">
+                            ✕
+                        </button>
                     </div>
                 </div>
 
