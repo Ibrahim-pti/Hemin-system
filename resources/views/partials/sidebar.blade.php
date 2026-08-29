@@ -65,7 +65,7 @@
                     'activeIconColor' => '#a5b4fc',
                     'items' => [
                         ['route' => 'workshop.orders', 'href' => route('workshop.orders'), 'label' => 'داواکارییەکانی کارگە', 'icon' => 'orders', 'can' => 'view_workshop'],
-                        ['route' => 'workshop.materials', 'href' => route('workshop.materials'), 'label' => 'مەوادی خاو', 'icon' => 'items', 'can' => 'view_workshop'],
+                        ['route' => 'workshop.materials', 'href' => route('workshop.materials'), 'label' => 'مەخزەن', 'icon' => 'items', 'can' => 'view_workshop'],
                         ['route' => 'workshop.employees', 'href' => route('workshop.employees'), 'label' => 'وەستا و حەمەڵەکان', 'icon' => 'employees', 'can' => 'view_workshop'],
                     ],
                 ],

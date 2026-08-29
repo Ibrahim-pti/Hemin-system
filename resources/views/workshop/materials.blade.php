@@ -1,5 +1,5 @@
 @extends('layouts.menu')
-@section('title', 'مەوادی خاوی کارگە')
+@section('title', 'مەخزەن')
 
 @section('content')
 <div x-data="workshopMaterialsApp()" class="space-y-4 sm:space-y-6">
@@ -11,7 +11,7 @@
                 📦
             </div>
             <div>
-                <h1 class="text-lg sm:text-xl font-black text-slate-800">مەوادی خاو و کەرەستەی دروستکردن</h1>
+                <h1 class="text-lg sm:text-xl font-black text-slate-800">مەخزەن و کەرەستەی دروستکردن</h1>
                 <p class="text-xs text-slate-500 mt-0.5 font-medium">
                     کەرەستەی بەردەست لە شوێنی دروستکردن ({{ $workshopWarehouse?->name ?? 'کۆگای کارگە' }})
                 </p>
