@@ -94,28 +94,36 @@ class WorkshopController extends Controller
             ->latest('order_date')
             ->get();
 
-        $ordersData = $orders->map(fn ($o) => [
-            'id' => $o->id,
-            'invoice_no' => $o->invoice_no,
-            'status' => $o->status,
-            'status_label' => $o->status_label,
-            'customer_name' => $o->customer?->name ?? 'نەناسراو',
-            'customer_phone' => $o->customer?->phone ?? '',
-            'order_date' => $o->order_date?->format('Y/m/d') ?? '',
-            'delivery_date' => $o->delivery_date?->format('Y/m/d') ?? '',
-            'notes' => $o->notes ?? '',
-            'items' => $o->items->map(fn ($it) => [
-                'id' => $it->id,
-                'item_name' => $it->description ?: ($it->item?->name ?? 'کەلوپەل'),
-                'qty' => (float) $it->qty,
-                'unit_name' => $it->mode_unit ?: ($it->unit_name ?? 'دانە'),
-                'width' => $it->width,
-                'height' => $it->height,
-                'measurement' => $it->measurement_label,
-                'note' => $it->note,
-                'image' => $it->imageUrl(),
-            ])->values()->all(),
-        ])->values()->all();
+        $ordersData = $orders->map(function ($o) {
+            $today = now()->toDateString();
+            $isUrgent = !empty($o->delivery_date) && $o->status !== 'delivered' && $o->delivery_date->toDateString() <= $today;
+
+            return [
+                'id' => $o->id,
+                'invoice_no' => $o->invoice_no,
+                'status' => $o->status,
+                'status_label' => $o->status_label,
+                'customer_name' => $o->customer?->name ?? 'نەناسراو',
+                'customer_phone' => $o->customer?->phone ?? '',
+                'order_date' => $o->order_date?->format('Y/m/d') ?? '',
+                'delivery_date' => $o->delivery_date?->format('Y/m/d') ?? '',
+                'is_urgent' => $isUrgent,
+                'notes' => $o->notes ?? '',
+                'print_url' => route('orders.print', $o->id),
+                'items_count' => $o->items->count(),
+                'items' => $o->items->map(fn ($it) => [
+                    'id' => $it->id,
+                    'item_name' => $it->description ?: ($it->item?->name ?? 'کەلوپەل'),
+                    'qty' => (float) $it->qty,
+                    'unit_name' => $it->mode_unit ?: ($it->unit_name ?? 'دانە'),
+                    'width' => $it->width,
+                    'height' => $it->height,
+                    'measurement' => $it->measurement_label,
+                    'note' => $it->note,
+                    'image' => $it->imageUrl(),
+                ])->values()->all(),
+            ];
+        })->values()->all();
 
         return view('workshop.orders', compact(
             'orders',
