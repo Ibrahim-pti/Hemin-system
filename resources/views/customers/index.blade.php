@@ -90,18 +90,15 @@
 
             {{-- خانەی گەڕان --}}
             <form method="GET" class="flex items-center gap-2">
-                <div class="relative w-full sm:w-80">
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">🔍</span>
-                    <input type="text" name="q" value="{{ request('q') }}"
-                           class="w-full text-xs pr-8 pl-8 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium placeholder:text-slate-400"
-                           placeholder="گەڕان بە ناو، مۆبایل، ناونیشان...">
-                    @if(request('q'))
-                        <a href="{{ route('customers.index') }}"
-                           class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full size-4 flex items-center justify-center">
-                            ✕
-                        </a>
-                    @endif
-                </div>
+                <input type="text" name="q" value="{{ request('q') }}"
+                       class="text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-right w-full sm:w-72"
+                       placeholder=" 🔍 گەڕان بە ناو، مۆبایل، ناونیشان...">
+                @if(request('q'))
+                    <a href="{{ route('customers.index') }}"
+                       class="px-2.5 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 rounded-xl bg-slate-100">
+                        ✕
+                    </a>
+                @endif
             </form>
         </div>
 
