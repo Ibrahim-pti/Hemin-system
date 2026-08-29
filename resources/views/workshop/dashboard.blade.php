@@ -94,9 +94,9 @@
         </a>
     </div>
 
-    {{-- ٣. ئاگاداری کەمی مەواد (بە دیزاینی نوێ و ڕێک) --}}
+    {{-- ٣. ئاگاداری کەمی مەواد (بە سیستەمی زیرەک و کۆنتڕۆڵی ژمارەی زۆر) --}}
     @if ($lowStockMaterials->isNotEmpty())
-        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs">
+        <div x-data="{ showAllLowStock: false }" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 mb-4">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-lg shrink-0">
@@ -123,8 +123,10 @@
 
             {{-- بۆکسە ڕێکەکانی مەوادە کەمبووەکان --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                @foreach ($lowStockMaterials as $lowMat)
-                    <div class="bg-slate-50 hover:bg-rose-50/40 rounded-xl p-3.5 border border-slate-200 hover:border-rose-300 transition-all flex flex-col justify-between shadow-2xs">
+                @foreach ($lowStockMaterials as $index => $lowMat)
+                    <div x-show="showAllLowStock || {{ $index }} < 4"
+                         x-cloak
+                         class="bg-slate-50 hover:bg-rose-50/40 rounded-xl p-3.5 border border-slate-200 hover:border-rose-300 transition-all flex flex-col justify-between shadow-2xs">
                         <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
                                 <div class="font-black text-xs text-slate-900 truncate">{{ $lowMat->name }}</div>
@@ -147,6 +149,21 @@
                     </div>
                 @endforeach
             </div>
+
+            {{-- ئەگەر زیاتر لە ٤ مەواد کەم بێت: دوگمەی درێژکردنەوە و پیشاندانی هەمووان --}}
+            @if ($lowStockMaterials->count() > 4)
+                <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
+                    <button type="button" @click="showAllLowStock = !showAllLowStock"
+                            class="font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer transition-colors">
+                        <span x-show="!showAllLowStock">👇 پیشاندانی تەواوی مەوادە کەمبووەکان (+{{ $lowStockMaterials->count() - 4 }} دانەی تر)</span>
+                        <span x-show="showAllLowStock">🔼 کورتکردنەوە بۆ ٤ مەواد</span>
+                    </button>
+
+                    <a href="{{ route('workshop.materials') }}" class="font-bold text-blue-600 hover:text-blue-800">
+                        بینین لە مەخزەن ←
+                    </a>
+                </div>
+            @endif
         </div>
     @endif
 
