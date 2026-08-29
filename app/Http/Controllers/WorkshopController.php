@@ -275,6 +275,7 @@ class WorkshopController extends Controller
             'warehouse_id' => ['required', 'exists:warehouses,id'],
             'initial_qty' => ['nullable', 'numeric', 'min:0'],
             'min_qty' => ['nullable', 'numeric', 'min:0'],
+            'date' => ['nullable', 'date'],
             'note' => ['nullable', 'string'],
         ], [], [
             'name' => 'ناوی مەواد',
@@ -335,7 +336,7 @@ class WorkshopController extends Controller
                     reason: 'opening',
                     extra: [
                         'note' => 'مەوادی سەرەتایی دروستکردن',
-                        'moved_at' => now()->toDateString(),
+                        'moved_at' => $validated['date'] ?? now()->toDateString(),
                     ]
                 );
             }
@@ -351,6 +352,7 @@ class WorkshopController extends Controller
             'item_id' => ['required', 'exists:items,id'],
             'warehouse_id' => ['required', 'exists:warehouses,id'],
             'qty' => ['required', 'numeric', 'min:0.01'],
+            'date' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:255'],
         ], [], [
             'item_id' => 'مەواد',
@@ -365,7 +367,7 @@ class WorkshopController extends Controller
             reason: 'adjustment',
             extra: [
                 'note' => $validated['note'] ?: 'زیادکردنی مەواد بۆ کارگە',
-                'moved_at' => now()->toDateString(),
+                'moved_at' => $validated['date'] ?? now()->toDateString(),
             ]
         );
 
@@ -379,6 +381,7 @@ class WorkshopController extends Controller
             'item_id' => ['required', 'exists:items,id'],
             'warehouse_id' => ['required', 'exists:warehouses,id'],
             'qty' => ['required', 'numeric', 'min:0.01'],
+            'date' => ['nullable', 'date'],
             'order_id' => ['nullable', 'exists:orders,id'],
             'note' => ['nullable', 'string', 'max:255'],
         ], [], [
@@ -412,7 +415,7 @@ class WorkshopController extends Controller
             reference: $order,
             extra: [
                 'note' => $note ?: 'بەکارهێنان لە دروستکردندا',
-                'moved_at' => now()->toDateString(),
+                'moved_at' => $validated['date'] ?? now()->toDateString(),
             ]
         );
 

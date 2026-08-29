@@ -265,10 +265,17 @@
 
                 <input type="hidden" name="min_qty" value="5">
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">بڕ</label>
-                    <input type="number" step="any" min="0" name="initial_qty" placeholder="0"
-                           class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">بڕی سەرەتایی</label>
+                        <input type="number" step="any" min="0" name="initial_qty" placeholder="0"
+                               class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">بەرواری زیادکردن</label>
+                        <input type="date" name="date" value="{{ now()->toDateString() }}"
+                               class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 bg-white font-mono font-bold">
+                    </div>
                 </div>
 
                 <div>
@@ -310,11 +317,18 @@
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">بڕی زیادکراو *</label>
-                    <input type="number" step="any" min="0.01" name="qty" required 
-                           :placeholder="selectedUnitName ? 'بڕ بە (' + selectedUnitName + ') بنووسە...' : 'بڕی زیادکراو...'"
-                           class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">بڕی زیادکراو *</label>
+                        <input type="number" step="any" min="0.01" name="qty" required 
+                               :placeholder="selectedUnitName ? 'بڕ بە (' + selectedUnitName + ') بنووسە...' : 'بڕی زیادکراو...'"
+                               class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">بەرواری هاتن *</label>
+                        <input type="date" name="date" value="{{ now()->toDateString() }}" required
+                               class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-emerald-500 bg-white font-mono font-bold">
+                    </div>
                 </div>
 
                 <div>
@@ -358,18 +372,26 @@
 
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-bold text-slate-700">بڕی بەکارهاتوو *</label>
+                        <label class="block text-xs font-bold text-slate-700">بڕی بەکارهاتوو و بەروار *</label>
                         <div x-show="selectedMaterial" class="text-[11px] font-bold text-slate-500">
                             بەردەست: <span class="num text-slate-800 font-mono" x-text="selectedMaterial?.stock_qty"></span> <span x-text="selectedUnitName"></span>
                         </div>
                     </div>
 
-                    <input type="number" step="any" min="0.01" 
-                           :max="selectedMaterial ? selectedMaterial.stock_qty : null"
-                           name="qty" x-model="stockOutQty" required 
-                           :placeholder="selectedUnitName ? 'بڕ بە (' + selectedUnitName + ') بنووسە...' : 'بڕی سەرفکراو...'"
-                           class="w-full text-xs px-3 py-2 rounded-xl border transition-colors focus:outline-hidden"
-                           :class="isStockOutExceeded ? 'border-rose-500 focus:border-rose-500 bg-rose-50/40 text-rose-700' : 'border-slate-200 focus:border-blue-500'">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <input type="number" step="any" min="0.01" 
+                                   :max="selectedMaterial ? selectedMaterial.stock_qty : null"
+                                   name="qty" x-model="stockOutQty" required 
+                                   :placeholder="selectedUnitName ? 'بڕ بە (' + selectedUnitName + ') بنووسە...' : 'بڕی سەرفکراو...'"
+                                   class="w-full text-xs px-3 py-2 rounded-xl border transition-colors focus:outline-hidden"
+                                   :class="isStockOutExceeded ? 'border-rose-500 focus:border-rose-500 bg-rose-50/40 text-rose-700' : 'border-slate-200 focus:border-blue-500'">
+                        </div>
+                        <div>
+                            <input type="date" name="date" value="{{ now()->toDateString() }}" required
+                                   class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-amber-500 bg-white font-mono font-bold">
+                        </div>
+                    </div>
 
                     {{-- ئاگاداری ئەگەر بڕەکە لە بەردەست زیاتر بوو --}}
                     <div x-show="isStockOutExceeded" x-cloak class="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-rose-600">
