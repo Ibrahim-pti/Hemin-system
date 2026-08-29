@@ -33,7 +33,7 @@
 
     {{-- ٢. ئاگاداری مەوادە کەمبووەکان --}}
     @if ($lowStockMaterials->isNotEmpty())
-        <div class="bg-gradient-to-r from-rose-50 via-rose-50/70 to-amber-50/50 rounded-2xl p-4 sm:p-4.5 border border-rose-200/90 shadow-xs">
+        <div class="bg-rose-50/80 rounded-2xl p-4 sm:p-4.5 shadow-xs">
             <div class="flex items-center justify-between gap-3 mb-3">
                 <div class="flex items-center gap-2.5">
                     <span class="flex size-7 sm:size-8 items-center justify-center rounded-xl bg-rose-600 text-white font-bold text-xs sm:text-sm shadow-xs shrink-0">
@@ -41,16 +41,18 @@
                     </span>
                     <div class="flex items-center gap-2 flex-wrap">
                         <h3 class="font-black text-xs sm:text-sm text-rose-900">مەوادە کەمبووەکان</h3>
-                        <span class="px-2 py-0.5 rounded-full bg-rose-200/70 text-rose-900 text-[11px] font-black">
+                        <span class="px-2 py-0.5 rounded-full bg-rose-200/60 text-rose-800 text-[11px] font-black">
                             {{ $lowStockMaterials->count() }} مەواد
                         </span>
                     </div>
                 </div>
+                <span class="text-[11px] font-medium text-rose-600 hidden sm:inline-block">پێویستیان بە هاتنی مەوادە</span>
             </div>
 
-            <div class="flex flex-wrap gap-2.5">
+            {{-- لیستی مەوادەکان بە بەرزی دیاریکراو و سکرۆڵی ئۆتۆماتیکی ئەگەر داتا زۆر بوو --}}
+            <div class="flex flex-wrap gap-2.5 max-h-36 overflow-y-auto pr-1">
                 @foreach ($lowStockMaterials as $lm)
-                    <div class="bg-white px-3 py-2 rounded-xl border border-rose-200/80 flex items-center gap-2.5 shadow-2xs hover:border-rose-300 transition-all">
+                    <div class="bg-white px-3 py-2 rounded-xl flex items-center gap-2.5 shadow-xs shrink-0">
                         <span class="font-black text-xs text-slate-800">{{ $lm->name }}</span>
                         
                         <div class="flex items-center gap-1">
