@@ -99,9 +99,8 @@
 
     {{-- ٢. خشتەی کاڵا و مەوادەکان --}}
     <div class="card">
-        <div class="card-head flex items-center justify-between">
+        <div class="card-head">
             <span class="font-bold text-slate-800 text-sm">کاڵا و مەوادە کڕدراوەکان</span>
-            <span class="text-xs text-slate-500 font-medium">نرخەکان بە دینار (د.ع)</span>
         </div>
 
         {{-- لیستی کاڵاکان بۆ autocomplete --}}
