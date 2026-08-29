@@ -40,7 +40,7 @@
         <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
             <div class="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1.5">
                 <span>📋</span>
-                <span>کۆی وەسڵەکانی کارگە</span>
+                <span>کۆی وەسڵەکانی ئەم ماوەیە</span>
             </div>
             <div class="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{{ fmt_num($totalCount) }}</div>
         </div>
@@ -78,13 +78,14 @@
                 <h3 class="font-black text-sm text-slate-800">لیستی وەسڵەکان و دۆخی دروستکردن</h3>
             </div>
             <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700 font-mono">
-                کۆی گشتی: {{ fmt_num($orders->count()) }} وەسڵ
+                کۆی گشتی: {{ fmt_num($totalCount) }} وەسڵ
             </span>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-right text-xs">
                 <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-black">
+                    <tr>
                         <th class="p-3.5 text-center w-16"># وەسڵ</th>
                         <th class="p-3.5 w-48">کڕیار</th>
                         <th class="p-3.5">کەلوپەل و قیاساتی دروستکردن</th>
@@ -95,12 +96,11 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($orders as $order)
                         <tr class="hover:bg-slate-50/80 transition-colors align-top">
-                            {{-- ژمارەی وەسڵ --}}
+                            {{-- ژمارەی وەسڵ بە شێوەی ڕوون و سادە --}}
                             <td class="p-3.5 text-center font-mono font-black pt-4">
-                                <a href="{{ route('orders.show', $order) }}"
-                                   class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-mono font-bold text-xs border border-indigo-200 inline-block shadow-2xs">
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-mono font-bold text-xs border border-slate-200 inline-block shadow-2xs">
                                     #{{ $order->id }}
-                                </a>
+                                </span>
                             </td>
 
                             {{-- کڕیار --}}
@@ -217,6 +217,13 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- پەیجینەیشن (Pagination) --}}
+        @if ($orders->hasPages())
+            <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                {{ $orders->links() }}
+            </div>
+        @endif
     </div>
 
 </div>

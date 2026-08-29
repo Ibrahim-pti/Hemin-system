@@ -187,18 +187,19 @@ class ReportController extends Controller
 
     private function workshopProduction(string $from, string $to): array
     {
-        $orders = Order::with(['customer', 'items.item'])
+        $query = Order::with(['customer', 'items.item'])
             ->whereNotIn('status', ['draft', 'cancelled'])
             ->whereBetween('order_date', [$from, $to])
-            ->orderByDesc('order_date')
-            ->get();
+            ->orderByDesc('order_date');
 
-        $deliveredOrders = $orders->where('status', 'delivered');
-        $inProductionOrders = $orders->where('status', 'in_production');
-        $readyOrders = $orders->where('status', 'ready');
-        $pendingOrders = $orders->where('status', 'confirmed');
+        $allOrders = (clone $query)->get();
 
-        $itemsBreakdown = $orders->flatMap->items
+        $deliveredOrders = $allOrders->where('status', 'delivered');
+        $inProductionOrders = $allOrders->where('status', 'in_production');
+        $readyOrders = $allOrders->where('status', 'ready');
+        $pendingOrders = $allOrders->where('status', 'confirmed');
+
+        $itemsBreakdown = $allOrders->flatMap->items
             ->groupBy(fn (OrderItem $item) => $item->item_name)
             ->map(fn ($group, $name) => [
                 'name' => $name,
@@ -208,9 +209,11 @@ class ReportController extends Controller
             ])
             ->values();
 
+        $orders = $query->paginate(10)->withQueryString();
+
         return [
             'orders' => $orders,
-            'totalCount' => $orders->count(),
+            'totalCount' => $allOrders->count(),
             'deliveredCount' => $deliveredOrders->count(),
             'inProductionCount' => $inProductionOrders->count(),
             'readyCount' => $readyOrders->count(),
