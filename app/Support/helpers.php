@@ -2,11 +2,12 @@
 
 if (! function_exists('fmt_money')) {
     /** پیشاندانی پارە — دینار بێ کەسر، دۆلار بە دوو خاڵ. */
-    function fmt_money(float|string|null $amount, string $currency = 'IQD'): string
+    function fmt_money(float|string|null $amount, ?string $currency = 'IQD'): string
     {
         $amount = (float) $amount;
+        $curr = $currency ?: 'IQD';
 
-        return $currency === 'USD'
+        return $curr === 'USD'
             ? '$'.number_format($amount, 2)
             : number_format($amount, 0).' د.ع';
     }

@@ -14,7 +14,64 @@ class WarehouseController extends Controller
         $totalMovements = \App\Models\StockMovement::count();
         $activeCount = $warehouses->where('is_active', true)->count();
 
-        return view('warehouses.index', compact('warehouses', 'totalMovements', 'activeCount'));
+        $salesWarehouse = Warehouse::where('is_default', true)->first() ?? $warehouses->first();
+        $workshopWarehouse = Warehouse::where('name', 'like', '%دروستکردن%')->first()
+            ?? $warehouses->where('is_default', false)->first()
+            ?? $warehouses->first();
+
+        // سەرجەم کەلوپەل و مەوادەکان لەگەڵ بڕی بەردەست
+        $allItems = \App\Models\Item::query()
+            ->active()
+            ->withStock()
+            ->with(['unit', 'category'])
+            ->orderBy('name')
+            ->get();
+
+        $totalItemsCount = $allItems->count();
+        $lowStockItems = $allItems->filter(fn ($item) => $item->is_low);
+
+        // وەسڵەکانی کارگە (چ ئیشێک دەکرێت و چ تەواو کراوە)
+        $ordersInProduction = \App\Models\Order::query()
+            ->with(['customer', 'items'])
+            ->where('status', 'in_production')
+            ->latest('order_date')
+            ->get();
+
+        $ordersReady = \App\Models\Order::query()
+            ->with(['customer', 'items'])
+            ->where('status', 'ready')
+            ->latest('order_date')
+            ->get();
+
+        $ordersConfirmed = \App\Models\Order::query()
+            ->with(['customer', 'items'])
+            ->where('status', 'confirmed')
+            ->latest('order_date')
+            ->take(5)
+            ->get();
+
+        $inProductionCount = $ordersInProduction->count();
+        $readyCount = $ordersReady->count();
+        $confirmedCount = \App\Models\Order::where('status', 'confirmed')->count();
+        $deliveredTodayCount = \App\Models\Order::where('status', 'delivered')->whereDate('updated_at', now()->toDateString())->count();
+
+        return view('warehouses.index', compact(
+            'warehouses',
+            'salesWarehouse',
+            'workshopWarehouse',
+            'totalMovements',
+            'activeCount',
+            'totalItemsCount',
+            'allItems',
+            'lowStockItems',
+            'ordersInProduction',
+            'ordersReady',
+            'ordersConfirmed',
+            'inProductionCount',
+            'readyCount',
+            'confirmedCount',
+            'deliveredTodayCount'
+        ));
     }
 
     public function create(): View

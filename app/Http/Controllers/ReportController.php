@@ -221,12 +221,13 @@ class ReportController extends Controller
 
     private function workshopMaterials(string $from, string $to): array
     {
-        $workshopWarehouse = Warehouse::where('type', 'workshop')->first()
+        $workshopWarehouse = Warehouse::where('name', 'like', '%دروستکردن%')->first()
+            ?? Warehouse::where('is_default', false)->first()
             ?? Warehouse::first();
         $warehouseId = $workshopWarehouse?->id;
 
         $movements = StockMovement::query()
-            ->with(['item.unit', 'order.customer'])
+            ->with(['item.unit', 'reference'])
             ->when($warehouseId, fn ($q) => $q->where('warehouse_id', $warehouseId))
             ->whereBetween('moved_at', [$from, $to])
             ->latest('moved_at')

@@ -77,9 +77,12 @@
                             {{ $m->direction === 'out' ? '-' : '+' }}{{ fmt_num($m->qty) }} {{ $m->item?->unit?->name }}
                         </td>
                         <td>
-                            @if($m->order)
-                                <a href="{{ route('orders.show', $m->order) }}" class="text-[--color-brand-700] hover:underline font-mono text-xs">
-                                    وەسڵی #{{ $m->order->invoice_no }} ({{ $m->order->customer?->name }})
+                            @php
+                                $refOrder = $m->reference instanceof \App\Models\Order ? $m->reference : null;
+                            @endphp
+                            @if($refOrder)
+                                <a href="{{ route('orders.show', $refOrder) }}" class="text-[--color-brand-700] hover:underline font-mono text-xs">
+                                    وەسڵی #{{ $refOrder->id }} ({{ $refOrder->customer?->name ?: 'کڕیار' }})
                                 </a>
                             @else
                                 <span class="text-slate-400">—</span>
