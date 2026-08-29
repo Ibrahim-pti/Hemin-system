@@ -34,9 +34,26 @@
     {{-- ٢. بەشی سەرەکی مەوادەکان --}}
     <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div class="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="text-xs font-bold text-slate-600">
-                کۆی گشتی: <span class="text-slate-900 font-black" x-text="materialsList.length"></span> جۆر مەواد
+            {{-- فلتەری خێرا: هەموو مەوادەکان یان کەمبووەکان --}}
+            <div class="flex items-center gap-2">
+                <button type="button" 
+                        @click="stockFilter = 'all'" 
+                        :class="stockFilter === 'all' ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer">
+                    هەموو (<span x-text="materialsList.length"></span>)
+                </button>
+
+                <button type="button" 
+                        @click="stockFilter = 'low'" 
+                        :class="stockFilter === 'low' ? 'bg-rose-600 text-white shadow-xs' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'"
+                        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                    <span>⚠️ کەمبووەکان</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black"
+                          :class="stockFilter === 'low' ? 'bg-white/20 text-white' : 'bg-rose-200 text-rose-800'"
+                          x-text="lowStockCount"></span>
+                </button>
             </div>
+
             <div class="w-full sm:w-auto">
                 <input type="text" x-model="materialSearch" placeholder="گەڕانی خێرا بە ناوی مەواد..."
                        class="text-xs px-3 py-2 rounded-xl border border-slate-200 w-full sm:w-64 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 sm:bg-white">
@@ -370,6 +387,7 @@
 function workshopMaterialsApp() {
     return {
         materialSearch: '',
+        stockFilter: 'all',
         showNewMaterialModal: false,
         showStockInModal: false,
         showStockOutModal: false,
@@ -380,14 +398,20 @@ function workshopMaterialsApp() {
 
         init() {
             this.$watch('materialSearch', () => { this.currentPage = 1; });
+            this.$watch('stockFilter', () => { this.currentPage = 1; });
+        },
+
+        get lowStockCount() {
+            return this.materialsList.filter(m => m.is_low).length;
         },
 
         get filteredMaterials() {
-            const q = this.materialSearch.trim().toLowerCase();
-            if (!q) return this.materialsList;
-            return this.materialsList.filter(m => 
-                (m.name && m.name.toLowerCase().includes(q))
-            );
+            return this.materialsList.filter(m => {
+                const matchFilter = this.stockFilter === 'all' || (this.stockFilter === 'low' && m.is_low);
+                const q = this.materialSearch.trim().toLowerCase();
+                const matchSearch = !q || (m.name && m.name.toLowerCase().includes(q));
+                return matchFilter && matchSearch;
+            });
         },
 
         get totalPages() {
