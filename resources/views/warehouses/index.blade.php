@@ -246,16 +246,13 @@
             <div class="flex items-center gap-2">
                 <span class="text-base">📦</span>
                 <h3 class="font-black text-sm text-slate-800">کەلوپەل و مەوادە بەردەستەکان لە کۆگا</h3>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700 font-mono">
-                    {{ $totalItemsCount }} ماددە
-                </span>
             </div>
 
             <div class="flex items-center gap-2 flex-wrap">
                 <input type="text" x-model="search"
                        class="text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-right w-full sm:w-64"
-                       placeholder="🔍 گەڕان بە ناو، ...">
-            </div
+                       placeholder="🔍 گەڕان بە ناو...">
+            </div>
         </div>
 
         <div class="overflow-x-auto">
