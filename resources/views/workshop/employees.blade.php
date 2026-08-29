@@ -140,13 +140,9 @@
 
             {{-- گەڕان و گۆڕینی شێوازی بینین (خشتە / کارت) --}}
             <div class="flex items-center gap-2.5">
-                {{-- بۆکسی گەڕان لەگەڵ ئایکۆنی ڕێککراو لە ناوەوە --}}
-                <div class="relative w-full sm:w-64">
-                    <input type="text" x-model="searchQuery" @input="currentPage = 1" placeholder="گەڕان بە ناوی وەستا یان ژمارە..."
-                           class="w-full text-xs pr-8 pl-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 bg-white font-medium transition-all text-right">
-                    <div class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none flex items-center">
-                        🔍
-                    </div>
+                <div class="w-full sm:w-64">
+                    <input type="text" x-model="searchQuery" @input="currentPage = 1" placeholder="🔍 گەڕان بە ناوی وەستا یان مۆبایل..."
+                           class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white font-medium text-right shadow-2xs">
                 </div>
 
                 {{-- گۆڕینی شێوازی بینین --}}
