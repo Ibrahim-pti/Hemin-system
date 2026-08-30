@@ -87,9 +87,6 @@
                 گەڕانەوە بۆ پسوولە
             </a>
         </div>
-        <div class="text-xs text-slate-500 font-medium">
-            دەتوانیت ڕاستەوخۆ بە قەبارەی A4 چاپ بکەیت
-        </div>
     </div>
 
     <div class="receipt-sheet">
