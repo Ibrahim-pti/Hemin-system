@@ -132,46 +132,40 @@
         {{-- هێڵی سەرەوەی جەدوەل --}}
         <div class="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-50/50">
             {{-- فلتەری دۆخی ئامادەبوون --}}
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-1.5 flex-wrap">
                 <button type="button" @click="statusFilter = 'all'"
-                        :class="statusFilter === 'all' ? 'bg-slate-900 text-white font-black shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 font-bold'"
-                        class="px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer">
+                        :class="statusFilter === 'all' ? 'bg-slate-900 text-white font-black shadow-xs' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 font-bold'"
+                        class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     هەموو (<span x-text="employeesList.length"></span>)
                 </button>
                 <button type="button" @click="statusFilter = 'present'"
-                        :class="statusFilter === 'present' ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-white text-emerald-700 hover:bg-emerald-50 border border-emerald-200 font-bold'"
-                        class="px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer">
+                        :class="statusFilter === 'present' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-white text-emerald-700 hover:bg-emerald-50 border border-emerald-200 font-bold'"
+                        class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     ئامادەبووان (<span x-text="countByStatus('present')"></span>)
                 </button>
                 <button type="button" @click="statusFilter = 'absent'"
-                        :class="statusFilter === 'absent' ? 'bg-rose-600 text-white font-black shadow-sm' : 'bg-white text-rose-700 hover:bg-rose-50 border border-rose-200 font-bold'"
-                        class="px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer">
+                        :class="statusFilter === 'absent' ? 'bg-rose-600 text-white font-black shadow-xs' : 'bg-white text-rose-700 hover:bg-rose-50 border border-rose-200 font-bold'"
+                        class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     نەهاتووان (<span x-text="countByStatus('absent')"></span>)
                 </button>
                 <button type="button" @click="statusFilter = 'leave'"
-                        :class="statusFilter === 'leave' ? 'bg-amber-500 text-white font-black shadow-sm' : 'bg-white text-amber-800 hover:bg-amber-50 border border-amber-200 font-bold'"
-                        class="px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer">
+                        :class="statusFilter === 'leave' ? 'bg-amber-500 text-white font-black shadow-xs' : 'bg-white text-amber-800 hover:bg-amber-50 border border-amber-200 font-bold'"
+                        class="px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer">
                     ئیجازە (<span x-text="countByStatus('leave')"></span>)
                 </button>
             </div>
 
             {{-- گەڕان و گۆڕینی شێوازی بینین --}}
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5">
                 <div class="w-full sm:w-64">
                     <input type="text" x-model="searchQuery" placeholder="🔍 گەڕان بە ناوی وەستا یان مۆبایل..."
-                           class="w-full text-xs px-4 py-2 rounded-full border border-slate-200 focus:outline-hidden focus:border-indigo-500 bg-white font-medium text-right shadow-2xs">
+                           class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 bg-white font-medium text-right shadow-2xs">
                 </div>
 
-                <button type="button" @click="showNewEmployeeModal = true"
-                        class="px-4 py-2 rounded-full text-xs font-black bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-md shadow-emerald-600/25 flex items-center gap-2 transition-all cursor-pointer border border-emerald-500 shrink-0">
-                    <span class="text-base font-black leading-none">+</span>
-                    <span>زیادکردنی وەستا</span>
-                </button>
-
-                <div class="flex items-center p-1 bg-slate-200/80 rounded-full border border-slate-200 shrink-0">
+                <div class="flex items-center p-1 bg-slate-200/80 rounded-xl border border-slate-200 shrink-0">
                     <button type="button" @click="viewMode = 'table'"
                             :class="viewMode === 'table' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-                            class="px-3 py-1 rounded-full text-xs transition-all cursor-pointer flex items-center gap-1.5">
+                            class="px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-1">
                         <span>📊</span>
                         <span class="hidden sm:inline">جەدوەل</span>
                     </button>
