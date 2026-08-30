@@ -155,6 +155,14 @@ class PurchaseController extends Controller
         return view('purchases.show', compact('purchase'));
     }
 
+    public function print(Purchase $purchase): View
+    {
+        $purchase->load(['supplier', 'warehouse', 'items.item.unit', 'payments.user', 'user']);
+        $settings = \App\Models\Setting::all_();
+
+        return view('purchases.print', compact('purchase', 'settings'));
+    }
+
     public function edit(Purchase $purchase): View
     {
         if ($purchase->status === 'confirmed') {

@@ -36,6 +36,11 @@ class Setting extends Model
         );
     }
 
+    public static function allKeyValue(): array
+    {
+        return static::all_();
+    }
+
     /** بەهای بنەڕەت — لە Seederـدا دادەنرێت. */
     public const DEFAULTS = [
         'company_name' => 'کارگەی ئاسنگەری هێمن',

@@ -33,6 +33,12 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
+            <a href="{{ route('purchases.print', $purchase) }}" target="_blank"
+               class="px-4 py-2 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all cursor-pointer">
+                <span>🖨️</span>
+                <span>چاپکردنی پسوولە</span>
+            </a>
+
             @if ($purchase->status === 'draft')
                 <button type="submit" form="confirm-purchase"
                         class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all cursor-pointer">
@@ -139,8 +145,8 @@
                                         <td class="p-3.5 font-mono text-slate-600">{{ fmt_date($payment->paid_at) }}</td>
                                         <td class="p-3.5 text-left font-mono font-black text-emerald-700">{{ fmt_money($payment->amount, $payment->currency) }}</td>
                                         <td class="p-3.5 text-center">
-                                            <a href="{{ route('payments.print', $payment) }}" class="text-xs font-bold text-blue-600 hover:underline">
-                                                🖨️ چاپ
+                                            <a href="{{ route('payments.print', $payment) }}" target="_blank" class="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1 rounded-md inline-flex items-center gap-1 transition-colors">
+                                                🖨️ سەنەدی حەقدی
                                             </a>
                                         </td>
                                     </tr>

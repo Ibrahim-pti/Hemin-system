@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('can:manage_purchases')->group(function () {
         Route::resource('purchases', PurchaseController::class);
+        Route::get('/purchases/{purchase}/print', [PurchaseController::class, 'print'])->name('purchases.print');
         Route::post('/purchases/{purchase}/confirm', [PurchaseController::class, 'confirm'])->name('purchases.confirm');
         Route::post('/purchases/{purchase}/unconfirm', [PurchaseController::class, 'unconfirm'])->name('purchases.unconfirm');
     });
