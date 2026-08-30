@@ -22,18 +22,14 @@
         .receipt-sheet {
             width: 148mm;
             max-width: 100%;
-            min-height: 180mm;
             margin: 0 auto;
             background: #ffffff;
             border: 2px solid #1e3a5f;
             border-radius: 4px;
-            padding: 12px 14px;
+            padding: 10px 12px;
             position: relative;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
 
         .inv-table {
@@ -45,8 +41,8 @@
 
         .inv-table th, .inv-table td {
             border: 1px solid #1e3a5f;
-            padding: 4px 6px;
-            font-size: 12px;
+            padding: 3px 5px;
+            font-size: 11.5px;
         }
 
         .inv-table th {
@@ -54,7 +50,7 @@
             font-weight: 700;
             color: #1e3a5f;
             text-align: center;
-            padding: 6px 4px;
+            padding: 5px 4px;
         }
 
         .dotted-line {
@@ -74,11 +70,10 @@
             }
             .receipt-sheet {
                 width: 100% !important;
-                min-height: 180mm !important;
                 box-shadow: none !important;
                 border: 2px solid #1e3a5f !important;
                 margin: 0 !important;
-                padding: 8px 12px !important;
+                padding: 8px 10px !important;
             }
         }
     </style>
@@ -181,13 +176,13 @@
                 <tbody>
                     @php
                         $filledRows = $order->items->count();
-                        $minRows = 10;
+                        $minRows = 14;
                         $remaining = $order->remaining();
                         $paid = $order->paidAmount();
                     @endphp
 
                     @foreach ($order->items as $line)
-                        <tr style="height: 28px;">
+                        <tr style="height: 25px;">
                             {{-- بڕی پارە --}}
                             <td class="num text-center font-bold text-slate-900 text-xs">
                                 {{ fmt_num($line->line_total) }}
@@ -220,7 +215,7 @@
 
                     {{-- دێڕی بەتاڵ بۆ پڕکردنەوەی وەسڵەکە وەک دەفتەری وەسڵ --}}
                     @for ($i = $filledRows; $i < $minRows; $i++)
-                        <tr style="height: 26px;">
+                        <tr style="height: 24px;">
                             <td>&nbsp;</td>
                             <td></td>
                             <td></td>
@@ -229,14 +224,14 @@
                     @endfor
 
                     {{-- کۆی گشتی بە شێوازی دەفتەری وەسڵ --}}
-                    <tr class="bg-[#f7ede2]/40 border-t-2 border-[#1e3a5f]">
-                        <td colspan="4" class="py-1.5 px-3">
+                    <tr class="border-t-2 border-[#1e3a5f]">
+                        <td colspan="4" class="py-1 px-3">
                             <div class="flex items-center justify-between gap-2 text-slate-900">
-                                <span class="text-sm font-black text-[#1e3a5f] shrink-0">کۆی گشتی:</span>
+                                <span class="text-xs font-black text-[#1e3a5f] shrink-0">کۆی گشتی:</span>
                                 <div class="flex-1 border-b border-dotted border-slate-400 mx-1"></div>
-                                <div class="shrink-0 flex items-baseline gap-1 font-black text-sm text-slate-900">
-                                    <span class="num text-base">{{ fmt_num($order->total) }}</span>
-                                    <span class="text-xs font-bold text-slate-700">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                <div class="shrink-0 flex items-baseline gap-1 font-black text-xs text-slate-900">
+                                    <span class="num text-sm">{{ fmt_num($order->total) }}</span>
+                                    <span class="text-[11px] font-bold text-slate-700">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                                 </div>
                             </div>
                         </td>
@@ -291,23 +286,23 @@
             </table>
 
             @if ($order->delivery_date)
-                <div class="mt-1.5 flex items-center justify-end text-[11px]">
+                <div class="mt-1 flex items-center justify-end text-[10px]">
                     <div class="flex items-baseline gap-1 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
                         <span class="text-slate-600 font-medium">بەرواری گەیاندن:</span>
                         <span class="num font-bold text-slate-800">{{ fmt_date($order->delivery_date) }}</span>
                     </div>
                 </div>
             @endif
-        </div>
 
-        {{-- ژێرەوەی وەسڵ: تەواو هاوشێوەی دەفتەری وەسڵ بەبێ هیچ هێڵ و خەتێک --}}
-        <div class="mt-8 mb-2 flex items-center justify-between text-xs px-2">
-            <div class="font-bold text-slate-900 text-xs">
-                {{ $settings['invoice_footer'] ?? 'هەڵە دەگەڕێتەوە بۆ هەردوو لا' }}
-            </div>
+            {{-- ژێرەوەی وەسڵ: تەواو هاوشێوەی دەفتەری وەسڵ لەژێر خشتەکە بە مەسافەی کەم --}}
+            <div class="mt-2 flex items-center justify-between text-[11px] px-1">
+                <div class="font-bold text-slate-800">
+                    {{ $settings['invoice_footer'] ?? 'هەڵە دەگەڕێتەوە بۆ هەردوو لا' }}
+                </div>
 
-            <div class="font-bold text-slate-900 text-xs">
-                ئیمزا
+                <div class="font-bold text-slate-800">
+                    ئیمزا
+                </div>
             </div>
         </div>
     </div>
