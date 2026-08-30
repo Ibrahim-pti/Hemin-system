@@ -135,7 +135,6 @@
                                     <th class="p-3.5">ژمارەی وەسڵ</th>
                                     <th class="p-3.5">بەروار</th>
                                     <th class="p-3.5 text-left">بڕی پارە</th>
-                                    <th class="p-3.5 text-center w-20">چاپ</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -144,11 +143,6 @@
                                         <td class="p-3.5 font-mono font-bold text-slate-800">{{ $payment->voucher_no }}</td>
                                         <td class="p-3.5 font-mono text-slate-600">{{ fmt_date($payment->paid_at) }}</td>
                                         <td class="p-3.5 text-left font-mono font-black text-emerald-700">{{ fmt_money($payment->amount, $payment->currency) }}</td>
-                                        <td class="p-3.5 text-center">
-                                            <a href="{{ route('payments.print', $payment) }}" target="_blank" class="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1 rounded-md inline-flex items-center gap-1 transition-colors">
-                                                🖨️ سەنەدی حەقدی
-                                            </a>
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
