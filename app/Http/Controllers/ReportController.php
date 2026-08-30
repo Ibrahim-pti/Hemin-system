@@ -30,15 +30,63 @@ class ReportController extends Controller
 
     public function index(): View
     {
-        return view('reports.index', ['reports' => self::REPORTS]);
+        $totalSales = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->sum(Order::totalIqdExpression());
+        $totalPurchases = (float) Purchase::where('status', 'confirmed')->sum(Purchase::totalIqdExpression());
+        $totalJobs = (float) ExternalJob::where('status', '!=', 'cancelled')->sum(ExternalJob::costIqdExpression());
+        $totalWages = (float) CashTransaction::where('category', 'wage')->sum('amount');
+        $totalExpenses = (float) CashTransaction::where('category', 'expense')->sum('amount');
+        $netProfit = $totalSales - $totalPurchases - $totalJobs - $totalWages - $totalExpenses;
+
+        $stockItems = Item::query()->withStock()->get();
+        $stockValue = $stockItems->sum(function (Item $item) {
+            $cost = (float) $item->last_cost;
+            if ($item->cost_currency === 'USD') {
+                $cost *= \App\Models\ExchangeRate::current();
+            }
+            return $item->stock_qty * $cost;
+        });
+
+        $customerDebts = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->get()->sum(fn (Order $o) => $o->remaining());
+        $totalOrdersCount = Order::whereNotIn('status', ['draft', 'cancelled'])->count();
+
+        return view('reports.index', [
+            'reports' => self::REPORTS,
+            'stats' => [
+                'sales' => $totalSales,
+                'purchases' => $totalPurchases,
+                'profit' => $netProfit,
+                'stock_value' => $stockValue,
+                'debts' => $customerDebts,
+                'orders_count' => $totalOrdersCount,
+            ],
+        ]);
     }
 
     public function show(string $report, Request $request): View
     {
         abort_unless(isset(self::REPORTS[$report]), 404);
 
-        $from = $request->date('from')?->toDateString() ?? now()->startOfMonth()->toDateString();
-        $to = $request->date('to')?->toDateString() ?? now()->toDateString();
+        $period = $request->query('period');
+
+        if ($period === 'today') {
+            $from = now()->toDateString();
+            $to = now()->toDateString();
+        } elseif ($period === 'this_month') {
+            $from = now()->startOfMonth()->toDateString();
+            $to = now()->endOfMonth()->toDateString();
+        } elseif ($period === 'last_month') {
+            $from = now()->subMonth()->startOfMonth()->toDateString();
+            $to = now()->subMonth()->endOfMonth()->toDateString();
+        } elseif ($period === 'this_year') {
+            $from = now()->startOfYear()->toDateString();
+            $to = now()->endOfYear()->toDateString();
+        } elseif ($period === 'all') {
+            $from = null;
+            $to = null;
+        } else {
+            $from = $request->filled('from') ? $request->date('from')?->toDateString() : null;
+            $to = $request->filled('to') ? $request->date('to')?->toDateString() : null;
+        }
 
         $data = match ($report) {
             'sales' => $this->sales($from, $to),
@@ -57,24 +105,28 @@ class ReportController extends Controller
         ]);
     }
 
-    private function sales(string $from, string $to): array
+    private function sales(?string $from, ?string $to): array
     {
         $orders = Order::with('customer')
             ->whereNotIn('status', ['draft', 'cancelled'])
-            ->whereBetween('order_date', [$from, $to])
-            ->orderBy('order_date')
+            ->when($from, fn ($q) => $q->where('order_date', '>=', $from))
+            ->when($to, fn ($q) => $q->where('order_date', '<=', $to))
+            ->orderByDesc('order_date')
             ->get();
+
+        $paid = (float) Payment::where('direction', 'in')
+            ->when($from, fn ($q) => $q->where('paid_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('paid_at', '<=', $to))
+            ->sum('amount_iqd');
 
         return [
             'orders' => $orders,
             'total' => $orders->sum(fn (Order $o) => $o->total_iqd),
-            'paid' => (float) Payment::where('direction', 'in')
-                ->whereBetween('paid_at', [$from, $to])
-                ->sum('amount_iqd'),
-            // فرۆشتن بەپێی کڕیار — بۆ زانینی باشترین کڕیارەکان.
+            'paid' => $paid,
+            // فرۆشتن بەپێی کڕیار
             'byCustomer' => $orders->groupBy('customer_id')
                 ->map(fn ($group) => [
-                    'name' => $group->first()->customer->name,
+                    'name' => $group->first()->customer?->name ?? 'نەناسراو',
                     'count' => $group->count(),
                     'total' => $group->sum(fn (Order $o) => $o->total_iqd),
                 ])
@@ -83,12 +135,13 @@ class ReportController extends Controller
         ];
     }
 
-    private function purchases(string $from, string $to): array
+    private function purchases(?string $from, ?string $to): array
     {
         $purchases = Purchase::with('supplier')
             ->where('status', 'confirmed')
-            ->whereBetween('purchase_date', [$from, $to])
-            ->orderBy('purchase_date')
+            ->when($from, fn ($q) => $q->where('purchase_date', '>=', $from))
+            ->when($to, fn ($q) => $q->where('purchase_date', '<=', $to))
+            ->orderByDesc('purchase_date')
             ->get();
 
         return [
@@ -96,7 +149,7 @@ class ReportController extends Controller
             'total' => $purchases->sum(fn (Purchase $p) => $p->total_iqd),
             'bySupplier' => $purchases->groupBy('supplier_id')
                 ->map(fn ($group) => [
-                    'name' => $group->first()->supplier->name,
+                    'name' => $group->first()->supplier?->name ?? 'نەناسراو',
                     'count' => $group->count(),
                     'total' => $group->sum(fn (Purchase $p) => $p->total_iqd),
                 ])
@@ -107,28 +160,32 @@ class ReportController extends Controller
 
     /**
      * قازانجی سادە: فرۆشتن − (کڕین + ئیشی خاریجی + حەقدەست + خەرجی).
-     * ئەمە قازانجی کارگەیە بۆ ماوەکە، نەک قازانجی هەر وەسڵێک بە جیا.
      */
-    private function profit(string $from, string $to): array
+    private function profit(?string $from, ?string $to): array
     {
         $sales = (float) Order::whereNotIn('status', ['draft', 'cancelled'])
-            ->whereBetween('order_date', [$from, $to])
+            ->when($from, fn ($q) => $q->where('order_date', '>=', $from))
+            ->when($to, fn ($q) => $q->where('order_date', '<=', $to))
             ->sum(Order::totalIqdExpression());
 
         $purchases = (float) Purchase::where('status', 'confirmed')
-            ->whereBetween('purchase_date', [$from, $to])
+            ->when($from, fn ($q) => $q->where('purchase_date', '>=', $from))
+            ->when($to, fn ($q) => $q->where('purchase_date', '<=', $to))
             ->sum(Purchase::totalIqdExpression());
 
         $jobs = (float) ExternalJob::where('status', '!=', 'cancelled')
-            ->whereBetween('started_at', [$from, $to])
+            ->when($from, fn ($q) => $q->where('started_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('started_at', '<=', $to))
             ->sum(ExternalJob::costIqdExpression());
 
         $wages = (float) CashTransaction::where('category', 'wage')
-            ->whereBetween('occurred_at', [$from, $to])
+            ->when($from, fn ($q) => $q->where('occurred_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('occurred_at', '<=', $to))
             ->sum('amount');
 
         $expenses = (float) CashTransaction::where('category', 'expense')
-            ->whereBetween('occurred_at', [$from, $to])
+            ->when($from, fn ($q) => $q->where('occurred_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('occurred_at', '<=', $to))
             ->sum('amount');
 
         return [
@@ -165,10 +222,12 @@ class ReportController extends Controller
         ];
     }
 
-    private function cash(string $from, string $to): array
+    private function cash(?string $from, ?string $to): array
     {
         $transactions = CashTransaction::with('cashBox')
-            ->whereBetween('occurred_at', [$from, $to])
+            ->when($from, fn ($q) => $q->where('occurred_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('occurred_at', '<=', $to))
+            ->orderByDesc('occurred_at')
             ->get();
 
         return [
@@ -185,11 +244,12 @@ class ReportController extends Controller
         ];
     }
 
-    private function workshopProduction(string $from, string $to): array
+    private function workshopProduction(?string $from, ?string $to): array
     {
         $baseQuery = Order::with(['customer', 'items.item'])
             ->whereNotIn('status', ['draft', 'cancelled'])
-            ->whereBetween('order_date', [$from, $to])
+            ->when($from, fn ($q) => $q->where('order_date', '>=', $from))
+            ->when($to, fn ($q) => $q->where('order_date', '<=', $to))
             ->orderByDesc('order_date');
 
         $allOrders = (clone $baseQuery)->get();
@@ -219,7 +279,7 @@ class ReportController extends Controller
             }
         }
 
-        $orders = $filteredQuery->paginate(5)->withQueryString();
+        $orders = $filteredQuery->paginate(50)->withQueryString();
 
         return [
             'orders' => $orders,
@@ -233,7 +293,7 @@ class ReportController extends Controller
         ];
     }
 
-    private function workshopMaterials(string $from, string $to): array
+    private function workshopMaterials(?string $from, ?string $to): array
     {
         $workshopWarehouse = Warehouse::where('name', 'like', '%دروستکردن%')->first()
             ?? Warehouse::where('is_default', false)->first()
@@ -243,7 +303,8 @@ class ReportController extends Controller
         $movements = StockMovement::query()
             ->with(['item.unit', 'reference'])
             ->when($warehouseId, fn ($q) => $q->where('warehouse_id', $warehouseId))
-            ->whereBetween('moved_at', [$from, $to])
+            ->when($from, fn ($q) => $q->where('moved_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('moved_at', '<=', $to))
             ->latest('moved_at')
             ->latest('id')
             ->get();
