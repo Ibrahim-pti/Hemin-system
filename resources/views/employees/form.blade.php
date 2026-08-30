@@ -98,10 +98,24 @@
                            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-mono text-left text-slate-800">
                 </div>
 
-                {{-- حەقدەستی ڕۆژانە بە دینار --}}
+                {{-- شێوازی پارەدان --}}
+                <div>
+                    <label class="block font-bold text-xs text-slate-700 mb-1.5" for="salary_type">
+                        شێوازی پارەدان <span class="text-rose-500">*</span>
+                    </label>
+                    <select id="salary_type" name="salary_type" required
+                            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 bg-white font-bold text-slate-800">
+                        <option value="daily" @selected(old('salary_type', $employee->salary_type ?? 'daily') === 'daily')>📅 ڕۆژانە</option>
+                        <option value="weekly" @selected(old('salary_type', $employee->salary_type) === 'weekly')>🗓️ حەفتانە</option>
+                        <option value="monthly" @selected(old('salary_type', $employee->salary_type) === 'monthly')>📆 مانگانە</option>
+                    </select>
+                    @error('salary_type') <p class="mt-1 text-[11px] text-rose-600 font-bold">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- بڕی مووچە / حەقدەست بە دینار --}}
                 <div>
                     <label class="block font-bold text-xs text-slate-700 mb-1.5" for="daily_wage">
-                        حەقدەستی ڕۆژانە (بە دیناری عێراقی - د.ع)
+                        بڕی مووچە / حەقدەست (د.ع)
                     </label>
                     <input id="daily_wage" name="daily_wage" type="number" step="any" min="0"
                            value="{{ old('daily_wage', $employee->daily_wage) }}"

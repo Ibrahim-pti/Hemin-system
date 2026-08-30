@@ -190,7 +190,7 @@
                 <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-black">
                     <tr>
                         <th class="p-3.5">وەستا / کارمەند</th>
-                        <th class="p-3.5">مووچەی ڕۆژانە</th>
+                        <th class="p-3.5">مووچە / حەقدەست</th>
                         <th class="p-3.5">دۆخی ئامادەبوون</th>
                         <th class="p-3.5 text-center">کاتی هاتن</th>
                         <th class="p-3.5 text-center">کاتی دەرچوون</th>
@@ -213,10 +213,13 @@
                                 </div>
                             </td>
 
-                            {{-- مووچەی ڕۆژانە لەگەڵ دوگمەی دەستکاری خێرا --}}
+                            {{-- مووچە بەپێی شێوازی پارەدان (ڕۆژانە / حەفتانە / مانگانە) لەگەڵ دوگمەی دەستکاری خێرا --}}
                             <td class="p-3.5">
-                                <div class="flex items-center gap-1.5">
+                                <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="font-mono font-bold text-slate-900" x-text="formatNumber(emp.daily_wage) + ' ' + emp.wage_currency"></span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold"
+                                          :class="emp.salary_type === 'monthly' ? 'bg-purple-50 text-purple-700 border border-purple-200' : (emp.salary_type === 'weekly' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')"
+                                          x-text="emp.salary_type_label || 'ڕۆژانە'"></span>
                                     <button type="button" @click="openEditWageModal(emp)"
                                             class="text-indigo-600 hover:text-indigo-800 p-1 rounded hover:bg-indigo-50 transition-colors"
                                             title="دەستکاری مووچە">✏️</button>
@@ -327,8 +330,13 @@
 
                         <div class="bg-slate-50 rounded-xl p-2.5 mb-3 border border-slate-100 text-xs space-y-1.5">
                             <div class="flex items-center justify-between">
-                                <span class="text-slate-500">مووچەی ڕۆژانە:</span>
-                                <span class="font-mono font-black text-slate-800" x-text="formatNumber(emp.daily_wage) + ' ' + emp.wage_currency"></span>
+                                <span class="text-slate-500">مووچە / حەقدەست:</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-mono font-black text-slate-800" x-text="formatNumber(emp.daily_wage) + ' ' + emp.wage_currency"></span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-md font-bold"
+                                          :class="emp.salary_type === 'monthly' ? 'bg-purple-100 text-purple-700' : (emp.salary_type === 'weekly' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700')"
+                                          x-text="emp.salary_type_label || 'ڕۆژانە'"></span>
+                                </div>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-slate-500">دۆخی ئامادەبوون:</span>
@@ -476,8 +484,32 @@
                     </div>
                 </div>
 
+                {{-- شێوازی پارەدان: ڕۆژانە / حەفتانە / مانگانە --}}
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە (دینار) *</label>
+                    <label class="block font-bold text-slate-700 mb-1">شێوازی پارەدان *</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
+                               :class="newEmployeeForm.salary_type === 'daily' ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                            <input type="radio" value="daily" x-model="newEmployeeForm.salary_type" class="sr-only">
+                            <span>📅 ڕۆژانە</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
+                               :class="newEmployeeForm.salary_type === 'weekly' ? 'bg-blue-50 border-blue-500 text-blue-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                            <input type="radio" value="weekly" x-model="newEmployeeForm.salary_type" class="sr-only">
+                            <span>🗓️ حەفتانە</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
+                               :class="newEmployeeForm.salary_type === 'monthly' ? 'bg-purple-50 border-purple-500 text-purple-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                            <input type="radio" value="monthly" x-model="newEmployeeForm.salary_type" class="sr-only">
+                            <span>📆 مانگانە</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        <span x-text="newEmployeeForm.salary_type === 'monthly' ? 'مووچەی مانگانە (دینار) *' : (newEmployeeForm.salary_type === 'weekly' ? 'مووچەی حەفتانە (دینار) *' : 'حەقدەستی ڕۆژانە (دینار) *')"></span>
+                    </label>
                     <div class="flex items-center rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 bg-white overflow-hidden shadow-2xs">
                         <input type="number" step="any" min="0" x-model="newEmployeeForm.daily_wage" required placeholder="25000"
                                dir="ltr"
@@ -509,7 +541,7 @@
             <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4 bg-slate-50">
                 <div class="flex items-center gap-2">
                     <span class="text-lg">✏️</span>
-                    <h3 class="font-black text-sm text-slate-800">دەستکاری مووچە و پیشەی وەستا</h3>
+                    <h3 class="font-black text-sm text-slate-800">دەستکاری مووچە و شێوازی پارەدان</h3>
                 </div>
                 <button type="button" @click="showEditWageModal = false" class="w-7 h-7 rounded-lg text-slate-400 hover:bg-slate-200 text-sm font-bold">✕</button>
             </div>
@@ -551,8 +583,32 @@
                     </div>
                 </div>
 
+                {{-- شێوازی پارەدان لە دەستکاریدا --}}
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">حەقدەستی ڕۆژانە (دینار) *</label>
+                    <label class="block font-bold text-slate-700 mb-1">شێوازی پارەدان *</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
+                               :class="editWageForm.salary_type === 'daily' ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                            <input type="radio" value="daily" x-model="editWageForm.salary_type" class="sr-only">
+                            <span>📅 ڕۆژانە</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
+                               :class="editWageForm.salary_type === 'weekly' ? 'bg-blue-50 border-blue-500 text-blue-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                            <input type="radio" value="weekly" x-model="editWageForm.salary_type" class="sr-only">
+                            <span>🗓️ حەفتانە</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
+                               :class="editWageForm.salary_type === 'monthly' ? 'bg-purple-50 border-purple-500 text-purple-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                            <input type="radio" value="monthly" x-model="editWageForm.salary_type" class="sr-only">
+                            <span>📆 مانگانە</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        <span x-text="editWageForm.salary_type === 'monthly' ? 'مووچەی مانگانە (دینار) *' : (editWageForm.salary_type === 'weekly' ? 'مووچەی حەفتانە (دینار) *' : 'حەقدەستی ڕۆژانە (دینار) *')"></span>
+                    </label>
                     <div class="flex items-center rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 bg-white overflow-hidden shadow-2xs">
                         <input type="number" step="any" min="0" x-model="editWageForm.daily_wage" required placeholder="25000"
                                dir="ltr"
@@ -698,6 +754,7 @@ function workshopEmployeesApp() {
             name: '',
             phone: '',
             job_title: 'master',
+            salary_type: 'daily',
             daily_wage: '',
             wage_currency: 'IQD',
             note: ''
@@ -708,6 +765,7 @@ function workshopEmployeesApp() {
             name: '',
             phone: '',
             job_title: 'master',
+            salary_type: 'daily',
             daily_wage: '',
             wage_currency: 'IQD'
         },
@@ -785,6 +843,7 @@ function workshopEmployeesApp() {
                 name: emp.name,
                 phone: emp.phone || '',
                 job_title: emp.job_title,
+                salary_type: emp.salary_type || 'daily',
                 daily_wage: emp.daily_wage,
                 wage_currency: emp.wage_currency
             };
@@ -952,6 +1011,8 @@ function workshopEmployeesApp() {
                         emp.phone = this.editWageForm.phone;
                         emp.job_title = data.job_title || this.editWageForm.job_title;
                         emp.job_title_label = data.job_title_label || this.editWageForm.job_title;
+                        emp.salary_type = data.salary_type || this.editWageForm.salary_type;
+                        emp.salary_type_label = data.salary_type_label || (emp.salary_type === 'monthly' ? 'مانگانە' : (emp.salary_type === 'weekly' ? 'حەفتانە' : 'ڕۆژانە'));
                         emp.daily_wage = parseFloat(this.editWageForm.daily_wage);
                         emp.wage_currency = this.editWageForm.wage_currency;
                     }

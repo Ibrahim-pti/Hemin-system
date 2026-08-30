@@ -220,6 +220,8 @@ class WorkshopController extends Controller
                 'phone' => $emp->phone,
                 'job_title' => $emp->job_title,
                 'job_title_label' => $emp->job_title_label,
+                'salary_type' => $emp->salary_type ?? 'daily',
+                'salary_type_label' => $emp->salary_type_label,
                 'daily_wage' => (float) $emp->daily_wage,
                 'wage_currency' => $emp->wage_currency,
                 'hire_date' => $emp->hire_date?->format('Y/m/d'),
@@ -488,15 +490,17 @@ class WorkshopController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'job_title' => ['required', 'string', 'max:100'],
+            'salary_type' => ['required', 'in:daily,weekly,monthly'],
             'daily_wage' => ['nullable', 'numeric', 'min:0'],
             'wage_currency' => ['required', 'in:IQD,USD'],
             'note' => ['nullable', 'string', 'max:255'],
-        ], [], ['name' => 'ناو', 'job_title' => 'پیشە']);
+        ], [], ['name' => 'ناو', 'job_title' => 'پیشە', 'salary_type' => 'شێوازی پارەدان']);
 
         $employee = Employee::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'] ?? null,
             'job_title' => $validated['job_title'],
+            'salary_type' => $validated['salary_type'] ?? 'daily',
             'daily_wage' => $validated['daily_wage'] ?? 0,
             'wage_currency' => $validated['wage_currency'],
             'hire_date' => now()->toDateString(),
@@ -514,6 +518,8 @@ class WorkshopController extends Controller
                     'phone' => $employee->phone,
                     'job_title' => $employee->job_title,
                     'job_title_label' => $employee->job_title_label,
+                    'salary_type' => $employee->salary_type,
+                    'salary_type_label' => $employee->salary_type_label,
                     'daily_wage' => (float) $employee->daily_wage,
                     'wage_currency' => $employee->wage_currency,
                     'hire_date' => $employee->hire_date?->format('Y/m/d'),
@@ -540,16 +546,18 @@ class WorkshopController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'job_title' => ['required', 'string', 'max:100'],
+            'salary_type' => ['required', 'in:daily,weekly,monthly'],
             'daily_wage' => ['required', 'numeric', 'min:0'],
             'wage_currency' => ['required', 'in:IQD,USD'],
             'is_active' => ['nullable', 'boolean'],
             'note' => ['nullable', 'string', 'max:255'],
-        ], [], ['name' => 'ناو', 'job_title' => 'پیشە']);
+        ], [], ['name' => 'ناو', 'job_title' => 'پیشە', 'salary_type' => 'شێوازی پارەدان']);
 
         $employee->update([
             'name' => $validated['name'],
             'phone' => $validated['phone'] ?? null,
             'job_title' => $validated['job_title'],
+            'salary_type' => $validated['salary_type'] ?? 'daily',
             'daily_wage' => $validated['daily_wage'],
             'wage_currency' => $validated['wage_currency'],
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : $employee->is_active,
@@ -562,6 +570,9 @@ class WorkshopController extends Controller
                 'message' => "زانیاری و مووچەی {$employee->name} نوێکرایەوە.",
                 'job_title' => $employee->job_title,
                 'job_title_label' => $employee->job_title_label,
+                'salary_type' => $employee->salary_type,
+                'salary_type_label' => $employee->salary_type_label,
+                'daily_wage' => (float) $employee->daily_wage,
             ]);
         }
 

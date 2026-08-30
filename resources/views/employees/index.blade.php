@@ -130,7 +130,7 @@
                         <th class="p-3.5">ناوی کارمەند / وەستا</th>
                         <th class="p-3.5">پیشە</th>
                         <th class="p-3.5">ژمارەی مۆبایل</th>
-                        <th class="p-3.5">حەقدەستی ڕۆژانە</th>
+                        <th class="p-3.5">مووچە / حەقدەست</th>
                         <th class="p-3.5 text-center">ڕۆژانی ئامادەبوون</th>
                         <th class="p-3.5 text-center">دۆخ</th>
                         <th class="p-3.5 text-center">کردارەکان</th>
@@ -166,9 +166,14 @@
                             </td>
 
                             <td class="p-3.5">
-                                <span class="font-mono font-black text-indigo-700 text-xs">
-                                    {{ fmt_money($employee->daily_wage, $employee->wage_currency) }}
-                                </span>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="font-mono font-black text-indigo-700 text-xs">
+                                        {{ fmt_money($employee->daily_wage, $employee->wage_currency) }}
+                                    </span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold {{ $employee->salary_type === 'monthly' ? 'bg-purple-50 text-purple-700 border border-purple-200' : ($employee->salary_type === 'weekly' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200') }}">
+                                        {{ $employee->salary_type_label }}
+                                    </span>
+                                </div>
                             </td>
 
                             <td class="p-3.5 text-center">
