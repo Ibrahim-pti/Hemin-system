@@ -229,31 +229,35 @@
                     @endfor
 
                     {{-- کۆی گشتی --}}
-                    <tr class="bg-slate-50/50 font-bold border-t-2 border-[#1e3a5f]">
-                        <td class="num text-center text-base font-black text-slate-900 bg-[#f7ede2]">
-                            {{ fmt_num($order->subtotal) }}
-                        </td>
-                        <td colspan="3" class="text-left px-3 text-sm font-bold text-slate-900">
-                            کۆی گشتی:
+                    <tr class="bg-[#f7ede2]/50 border-t-2 border-[#1e3a5f]">
+                        <td colspan="4" class="py-2.5 px-3">
+                            <div class="flex items-center justify-between gap-3 text-slate-900">
+                                <span class="text-base font-black text-[#1e3a5f] shrink-0">کۆی گشتی:</span>
+                                <span class="dotted-line flex-1 text-center font-bold text-slate-900 px-2 text-[13px] border-b-[1.5px] border-dotted border-slate-500">
+                                    {{ \App\Support\KurdishNumber::spell((int) round((float) $order->total)) }}
+                                </span>
+                                <span class="num text-base font-black text-slate-900 shrink-0">
+                                    {{ fmt_num($order->total) }}
+                                    <span class="text-xs font-bold text-slate-700">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                </span>
+                            </div>
                         </td>
                     </tr>
 
                     {{-- داشکاندن ئەگەر هەبێت --}}
                     @if ($order->discount_amount > 0)
-                        <tr>
-                            <td class="num text-center font-semibold text-rose-700">
-                                - {{ fmt_num($order->discount_amount) }}
-                            </td>
-                            <td colspan="3" class="text-left px-3 text-xs font-semibold text-rose-700">
-                                داشکاندن {{ $order->discount_percent > 0 ? '('.fmt_num($order->discount_percent, 2).'٪)' : '' }}:
-                            </td>
-                        </tr>
-                        <tr class="bg-slate-50 font-bold">
-                            <td class="num text-center text-sm font-bold text-slate-900">
-                                {{ fmt_num($order->total) }}
-                            </td>
-                            <td colspan="3" class="text-left px-3 text-xs font-bold text-slate-900">
-                                کۆی گشتی دوای داشکاندن:
+                        <tr class="border-t border-[#1e3a5f]/40 bg-rose-50/30">
+                            <td colspan="4" class="py-1.5 px-3">
+                                <div class="flex items-center justify-between gap-3 text-rose-700">
+                                    <span class="text-xs font-bold shrink-0">
+                                        داشکاندن {{ $order->discount_percent > 0 ? '('.fmt_num($order->discount_percent, 2).'٪)' : '' }}:
+                                    </span>
+                                    <span class="dotted-line flex-1 border-b-[1.5px] border-dotted border-rose-300"></span>
+                                    <span class="num text-sm font-bold shrink-0">
+                                        - {{ fmt_num($order->discount_amount) }}
+                                        <span class="text-xs">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                    </span>
+                                </div>
                             </td>
                         </tr>
                     @endif
@@ -261,43 +265,50 @@
                     {{-- پێشەکی و ماوە --}}
                     @php $paid = $order->paidAmount(); @endphp
                     @if ($paid > 0 || $order->remaining() > 0)
-                        <tr>
-                            <td class="num text-center font-bold text-emerald-700">
-                                {{ fmt_num($paid) }}
-                            </td>
-                            <td colspan="3" class="text-left px-3 text-xs font-semibold text-emerald-700">
-                                پێشەکی / پارەی دراو:
+                        <tr class="border-t border-[#1e3a5f]/40 bg-emerald-50/20">
+                            <td colspan="4" class="py-2 px-3">
+                                <div class="flex items-center justify-between gap-3 text-emerald-800">
+                                    <span class="text-xs font-bold shrink-0">پێشەکی / پارەی دراو:</span>
+                                    <span class="dotted-line flex-1 text-center font-medium text-emerald-900 px-2 text-xs border-b-[1.5px] border-dotted border-emerald-400">
+                                        {{ \App\Support\KurdishNumber::spell((int) round((float) $paid)) }}
+                                    </span>
+                                    <span class="num text-sm font-black text-emerald-800 shrink-0">
+                                        {{ fmt_num($paid) }}
+                                        <span class="text-xs font-bold">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                    </span>
+                                </div>
                             </td>
                         </tr>
-                        <tr class="bg-red-50/30">
-                            <td class="num text-center font-black text-sm {{ $order->remaining() > 0 ? 'text-[#b91c1c]' : 'text-emerald-700' }}">
-                                {{ fmt_num($order->remaining()) }}
-                            </td>
-                            <td colspan="3" class="text-left px-3 text-xs font-bold {{ $order->remaining() > 0 ? 'text-[#b91c1c]' : 'text-emerald-700' }}">
-                                ماوە (قەرز):
+                        <tr class="border-t border-[#1e3a5f]/40 {{ $order->remaining() > 0 ? 'bg-red-50/30' : 'bg-emerald-50/10' }}">
+                            <td colspan="4" class="py-2 px-3">
+                                <div class="flex items-center justify-between gap-3 {{ $order->remaining() > 0 ? 'text-[#b91c1c]' : 'text-emerald-800' }}">
+                                    <span class="text-xs font-bold shrink-0">ماوە (قەرز):</span>
+                                    <span class="dotted-line flex-1 text-center font-medium px-2 text-xs border-b-[1.5px] border-dotted {{ $order->remaining() > 0 ? 'border-red-300 text-red-900' : 'border-emerald-300 text-emerald-900' }}">
+                                        @if ($order->remaining() > 0)
+                                            {{ \App\Support\KurdishNumber::spell((int) round((float) $order->remaining())) }}
+                                        @else
+                                            هیچ ماوە نییە (تەواو دراوە)
+                                        @endif
+                                    </span>
+                                    <span class="num text-sm font-black shrink-0">
+                                        {{ fmt_num($order->remaining()) }}
+                                        <span class="text-xs font-bold">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                    </span>
+                                </div>
                             </td>
                         </tr>
                     @endif
                 </tbody>
             </table>
 
-            {{-- بڕی پارە بە نووسین --}}
-            <div class="mt-3 flex items-center justify-between text-xs sm:text-sm">
-                <div class="flex items-baseline gap-1.5">
-                    <span class="font-bold text-slate-800">کۆی گشتی بە نووسین:</span>
-                    <span class="font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
-                        {{ \App\Support\KurdishNumber::spell((int) round((float) $order->total)) }}
-                        {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
-                    </span>
-                </div>
-
-                @if ($order->delivery_date)
-                    <div class="flex items-baseline gap-1.5">
+            @if ($order->delivery_date)
+                <div class="mt-2.5 flex items-center justify-end text-xs">
+                    <div class="flex items-baseline gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded">
                         <span class="text-slate-600 font-medium">بەرواری گەیاندن:</span>
                         <span class="num font-bold text-slate-800">{{ fmt_date($order->delivery_date) }}</span>
                     </div>
-                @endif
-            </div>
+                </div>
+            @endif
         </div>
 
         {{-- ژێرەوەی وەسڵ: هەڵە دەگەڕێتەوە بۆ هەردوو لا و ئیمزا --}}
