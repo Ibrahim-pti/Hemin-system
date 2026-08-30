@@ -25,6 +25,13 @@
 
         {{-- هەڵبژاردنی بەروار + دوگمەکانی ڕێکخستن و زیادکردن --}}
         <div class="flex items-center gap-2.5 flex-wrap">
+            {{-- دوگمەی زیادکردنی وەستای نوێ --}}
+            <button type="button" @click="showNewEmployeeModal = true"
+                    class="px-4 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25 flex items-center gap-1.5 transition-all cursor-pointer border border-emerald-500">
+                <span class="text-base font-black leading-none">+</span>
+                <span>زیادکردنی وەستا / کارمەند</span>
+            </button>
+
             {{-- بەرواری دیاریکراو --}}
             <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold">
                 <span class="text-slate-400">📅 بەروار:</span>
@@ -37,13 +44,6 @@
                     class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer">
                 <span>⚙️</span>
                 <span>ڕێکخستنی دەوام و پشوو</span>
-            </button>
-
-            {{-- دوگمەی زیادکردنی وەستای نوێ --}}
-            <button type="button" @click="showNewEmployeeModal = true"
-                    class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs flex items-center gap-1.5 transition-all cursor-pointer">
-                <span>+</span>
-                <span>وەستا / حەمەڵی نوێ</span>
             </button>
         </div>
     </div>
@@ -160,6 +160,12 @@
                     <input type="text" x-model="searchQuery" placeholder="🔍 گەڕان بە ناوی وەستا یان مۆبایل..."
                            class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 bg-white font-medium text-right shadow-2xs">
                 </div>
+
+                <button type="button" @click="showNewEmployeeModal = true"
+                        class="px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1 shrink-0 cursor-pointer">
+                    <span>+</span>
+                    <span>زیادکردن</span>
+                </button>
 
                 <div class="flex items-center p-1 bg-slate-200/80 rounded-xl border border-slate-200 shrink-0">
                     <button type="button" @click="viewMode = 'table'"
