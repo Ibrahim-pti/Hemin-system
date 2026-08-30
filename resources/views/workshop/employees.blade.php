@@ -162,9 +162,9 @@
                 </div>
 
                 <button type="button" @click="showNewEmployeeModal = true"
-                        class="px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1 shrink-0 cursor-pointer">
-                    <span>+</span>
-                    <span>زیادکردن</span>
+                        class="px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-md shadow-emerald-600/25 flex items-center gap-1.5 transition-all cursor-pointer border border-emerald-500 shrink-0">
+                    <span class="text-sm font-black leading-none">+</span>
+                    <span>زیادکردنی وەستا</span>
                 </button>
 
                 <div class="flex items-center p-1 bg-slate-200/80 rounded-xl border border-slate-200 shrink-0">
