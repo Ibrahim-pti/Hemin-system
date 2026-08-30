@@ -93,7 +93,6 @@
                         ['route' => 'orders.*', 'href' => route('orders.index'), 'label' => 'فرۆشتن', 'icon' => 'orders', 'can' => 'manage_orders'],
                         ['route' => 'customers.*', 'href' => route('customers.index'), 'label' => 'کڕیاران', 'icon' => 'customers', 'can' => 'manage_customers'],
                         ['route' => 'purchases.*', 'href' => route('purchases.index'), 'label' => 'کڕینەکان', 'icon' => 'purchases', 'can' => 'manage_purchases'],
-                        ['route' => 'external-jobs.*', 'href' => route('external-jobs.index'), 'label' => 'ئیشی خاریجی', 'icon' => 'external-jobs', 'can' => 'manage_external_jobs'],
                         ['route' => 'cash.*', 'href' => route('cash.index'), 'label' => 'قاسە', 'icon' => 'cash', 'can' => 'manage_cash'],
                         ['route' => 'payments.*', 'href' => route('payments.index'), 'label' => 'حەقدی و پارەدان', 'icon' => 'payments', 'can' => 'manage_payments'],
                         ['route' => 'debts.*', 'href' => route('debts.index'), 'label' => 'قەرزەکان', 'icon' => 'debts', 'can' => 'manage_payments'],
