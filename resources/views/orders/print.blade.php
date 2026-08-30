@@ -24,8 +24,7 @@
             max-width: 100%;
             margin: 0 auto;
             background: #ffffff;
-            border: 2px solid #1e3a5f;
-            border-radius: 4px;
+            border: none;
             padding: 10px 12px;
             position: relative;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -71,9 +70,9 @@
             .receipt-sheet {
                 width: 100% !important;
                 box-shadow: none !important;
-                border: 2px solid #1e3a5f !important;
+                border: none !important;
                 margin: 0 !important;
-                padding: 8px 10px !important;
+                padding: 6px 8px !important;
             }
         }
     </style>
