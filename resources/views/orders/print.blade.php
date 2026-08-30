@@ -37,6 +37,7 @@
 
         .inv-table {
             width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
             border: 1.5px solid #1e3a5f;
         }
@@ -58,6 +59,16 @@
             border-bottom: 1.5px dotted #64748b;
             display: inline-block;
             padding-bottom: 1px;
+        }
+
+        .dots-fill {
+            flex: 1;
+            height: 12px;
+            background-image: radial-gradient(circle, #64748b 1.5px, transparent 1.5px);
+            background-size: 8px 100%;
+            background-repeat: repeat-x;
+            background-position: center bottom 2px;
+            min-width: 20px;
         }
 
         @media print {
@@ -155,17 +166,23 @@
 
             {{-- خشتەی سەرەکی وەسڵ (ڕێک وەک دەفتەرە چاپکراوەکە) --}}
             <table class="inv-table mt-3">
+                <colgroup>
+                    <col style="width: 20%;">
+                    <col style="width: 52%;">
+                    <col style="width: 10%;">
+                    <col style="width: 18%;">
+                </colgroup>
                 <thead>
                     <tr>
-                        <th style="width: 20%;" class="leading-snug">
+                        <th class="leading-snug">
                             بڕی پارە<br>
                             <span class="text-[11px] font-normal text-slate-600">
                                 {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
                             </span>
                         </th>
                         <th style="text-align: right; padding-right: 12px;">ناوەڕۆک</th>
-                        <th style="width: 10%;">ژمارە</th>
-                        <th style="width: 18%;" class="leading-snug">
+                        <th>ژمارە</th>
+                        <th class="leading-snug">
                             نرخ<br>
                             <span class="text-[11px] font-normal text-slate-600">
                                 {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
@@ -231,13 +248,14 @@
                     {{-- کۆی گشتی --}}
                     <tr class="bg-[#f7ede2]/50 border-t-2 border-[#1e3a5f]">
                         <td colspan="4" class="py-2.5 px-3">
-                            <div class="flex items-center justify-between gap-3 text-slate-900">
+                            <div class="flex items-center justify-between gap-2 text-slate-900">
                                 <span class="text-base font-black text-[#1e3a5f] shrink-0">کۆی گشتی:</span>
-                                <span class="dotted-line flex-1 border-b-[1.5px] border-dotted border-slate-500"></span>
-                                <span class="num text-base font-black text-slate-900 shrink-0">
+                                <div class="dots-fill mx-2"></div>
+                                <span class="num text-base font-black text-slate-900 px-3 shrink-0">
                                     {{ fmt_num($order->total) }}
-                                    <span class="text-xs font-bold text-slate-700">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                                 </span>
+                                <div class="dots-fill mx-2"></div>
+                                <span class="text-xs font-bold text-slate-700 shrink-0">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                             </div>
                         </td>
                     </tr>
@@ -246,15 +264,16 @@
                     @if ($order->discount_amount > 0)
                         <tr class="border-t border-[#1e3a5f]/40 bg-rose-50/30">
                             <td colspan="4" class="py-1.5 px-3">
-                                <div class="flex items-center justify-between gap-3 text-rose-700">
+                                <div class="flex items-center justify-between gap-2 text-rose-700">
                                     <span class="text-xs font-bold shrink-0">
                                         داشکاندن {{ $order->discount_percent > 0 ? '('.fmt_num($order->discount_percent, 2).'٪)' : '' }}:
                                     </span>
-                                    <span class="dotted-line flex-1 border-b-[1.5px] border-dotted border-rose-300"></span>
-                                    <span class="num text-sm font-bold shrink-0">
+                                    <div class="dots-fill mx-2 opacity-60"></div>
+                                    <span class="num text-sm font-bold shrink-0 px-3">
                                         - {{ fmt_num($order->discount_amount) }}
-                                        <span class="text-xs">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                                     </span>
+                                    <div class="dots-fill mx-2 opacity-60"></div>
+                                    <span class="text-xs font-bold shrink-0">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                                 </div>
                             </td>
                         </tr>
@@ -265,25 +284,27 @@
                     @if ($paid > 0 || $order->remaining() > 0)
                         <tr class="border-t border-[#1e3a5f]/40 bg-emerald-50/20">
                             <td colspan="4" class="py-2 px-3">
-                                <div class="flex items-center justify-between gap-3 text-emerald-800">
+                                <div class="flex items-center justify-between gap-2 text-emerald-800">
                                     <span class="text-xs font-bold shrink-0">پێشەکی / پارەی دراو:</span>
-                                    <span class="dotted-line flex-1 border-b-[1.5px] border-dotted border-emerald-400"></span>
-                                    <span class="num text-sm font-black text-emerald-800 shrink-0">
+                                    <div class="dots-fill mx-2 opacity-70"></div>
+                                    <span class="num text-sm font-black text-emerald-800 px-3 shrink-0">
                                         {{ fmt_num($paid) }}
-                                        <span class="text-xs font-bold">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                                     </span>
+                                    <div class="dots-fill mx-2 opacity-70"></div>
+                                    <span class="text-xs font-bold text-slate-700 shrink-0">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                                 </div>
                             </td>
                         </tr>
                         <tr class="border-t border-[#1e3a5f]/40 {{ $order->remaining() > 0 ? 'bg-red-50/30' : 'bg-emerald-50/10' }}">
                             <td colspan="4" class="py-2 px-3">
-                                <div class="flex items-center justify-between gap-3 {{ $order->remaining() > 0 ? 'text-[#b91c1c]' : 'text-emerald-800' }}">
+                                <div class="flex items-center justify-between gap-2 {{ $order->remaining() > 0 ? 'text-[#b91c1c]' : 'text-emerald-800' }}">
                                     <span class="text-xs font-bold shrink-0">ماوە (قەرز):</span>
-                                    <span class="dotted-line flex-1 border-b-[1.5px] border-dotted {{ $order->remaining() > 0 ? 'border-red-300' : 'border-emerald-300' }}"></span>
-                                    <span class="num text-sm font-black shrink-0">
+                                    <div class="dots-fill mx-2 opacity-70"></div>
+                                    <span class="num text-sm font-black px-3 shrink-0">
                                         {{ fmt_num($order->remaining()) }}
-                                        <span class="text-xs font-bold">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                                     </span>
+                                    <div class="dots-fill mx-2 opacity-70"></div>
+                                    <span class="text-xs font-bold text-slate-700 shrink-0">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
                                 </div>
                             </td>
                         </tr>
