@@ -418,8 +418,8 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" @click="showSettingsModal = false" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold">داخستن</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">پاشەکەوتکردنی ڕێکخستنەکان</button>
+                    <button type="button" @click="showSettingsModal = false" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200">داخستن</button>
+                    <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold" style="background-color: #2563eb !important; color: #ffffff !important;">پاشەکەوتکردنی ڕێکخستنەکان</button>
                 </div>
             </form>
         </div>
@@ -463,7 +463,7 @@
                         </div>
                         <div x-show="newEmployeeCustomJob" x-cloak class="flex gap-1">
                             <input type="text" x-model="newEmployeeForm.job_title" placeholder="پیشە بە دەست بنووسە..."
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-bold">
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-bold">
                             <button type="button" @click="newEmployeeCustomJob = false; newEmployeeForm.job_title = 'master';"
                                     class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold shrink-0">لیست</button>
                         </div>
@@ -495,8 +495,8 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" @click="showNewEmployeeModal = false" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold">داخستن</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">زیادکردنی وەستا</button>
+                    <button type="button" @click="showNewEmployeeModal = false" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200">داخستن</button>
+                    <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold" style="background-color: #059669 !important; color: #ffffff !important;">💾 پاشەکەوتکردن و زیادکردن</button>
                 </div>
             </form>
         </div>
@@ -539,7 +539,7 @@
                         </div>
                         <div x-show="editWageCustomJob" x-cloak class="flex gap-1">
                             <input type="text" x-model="editWageForm.job_title" placeholder="پیشە بە دەست بنووسە..."
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold">
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold">
                             <button type="button" @click="editWageCustomJob = false; editWageForm.job_title = 'master';"
                                     class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold shrink-0">لیست</button>
                         </div>
@@ -564,8 +564,8 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" @click="showEditWageModal = false" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold">داخستن</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">نوێکردنەوەی مووچە</button>
+                    <button type="button" @click="showEditWageModal = false" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200">داخستن</button>
+                    <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold" style="background-color: #2563eb !important; color: #ffffff !important;">نوێکردنەوەی مووچە</button>
                 </div>
             </form>
         </div>
@@ -658,8 +658,8 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" @click="showModal = false" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold">داخستن</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">پاشەکەوتکردن</button>
+                    <button type="button" @click="showModal = false" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200">داخستن</button>
+                    <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold" style="background-color: #2563eb !important; color: #ffffff !important;">پاشەکەوتکردن</button>
                 </div>
             </form>
         </div>
