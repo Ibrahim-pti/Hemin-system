@@ -2,24 +2,26 @@
 @section('title', 'حەقدی و پارەدانەکان')
 
 @section('actions')
-    <div class="flex items-center gap-2">
-        <a href="{{ route('payments.create', ['type' => 'in']) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs">
-            <span>+</span>
+    <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <a href="{{ route('payments.create', ['type' => 'in']) }}"
+           style="background: #10b981; color: #ffffff; padding: 0.6rem 1.25rem; border-radius: 0.65rem; font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);">
+            <span>📥</span>
             <span>وەرگرتنی پارە (حەقدی)</span>
         </a>
-        <a href="{{ route('payments.create', ['type' => 'out']) }}" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold gap-1 border border-slate-200 hover:bg-slate-100 text-slate-700">
-            <span>-</span>
-            <span>دانی پارە</span>
+        <a href="{{ route('payments.create', ['type' => 'out']) }}"
+           style="background: #e11d48; color: #ffffff; padding: 0.6rem 1.25rem; border-radius: 0.65rem; font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);">
+            <span>📤</span>
+            <span>دانی پارە (خەرجی)</span>
         </a>
     </div>
 @endsection
 
 @section('content')
 
-<div x-data="{ showDeleteModal: false, deleteUrl: '' }" class="space-y-4">
+<div x-data="{ showDeleteModal: false, deleteUrl: '' }" style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%;">
 
-    {{-- ١. کارتەکانی کورتە-ئاماری دارایی وەک شێوازی قاسە --}}
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+    {{-- ١. کارتەکانی کورتە-ئاماری دارایی هاوشێوەی بەشی قاسە --}}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
         {{-- ١. کۆی وەرگیراو --}}
         <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
             <div style="color: #16a34a; margin-bottom: 0.15rem;">
@@ -66,45 +68,52 @@
         </div>
     </div>
 
-    {{-- ٢. فۆرمی فلتەر و گەڕان --}}
-    <form method="GET" class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs">
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 items-end">
-            {{-- خانەی گەڕان --}}
-            <div class="lg:col-span-2">
-                <label class="block text-xs font-bold text-slate-600 mb-1.5">گەڕان</label>
-                <div class="relative">
-                    <input type="search" name="q" value="{{ request('q') }}" class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50" placeholder="ژمارەی سەنەد، ناوی لایەن یان تێبینی...">
-                    <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+    {{-- ٢. فۆرمی فلتەر و گەڕان بە دیزاینی خاوێن --}}
+    <form method="GET" style="background: #ffffff; border-radius: 1rem; padding: 1rem 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 0.75rem; align-items: flex-end;">
+            {{-- گەڕان --}}
+            <div style="grid-column: span 2;">
+                <label style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem; display: block;">گەڕان</label>
+                <div style="position: relative;">
+                    <input type="search" name="q" value="{{ request('q') }}" class="field"
+                           style="width: 100%; padding: 0.55rem 2rem 0.55rem 0.75rem; font-size: 0.825rem; border-radius: 0.6rem;"
+                           placeholder="ژمارەی سەنەد، ناوی لایەن یان تێبینی...">
+                    <span style="position: absolute; right: 0.7rem; top: 0.65rem; color: #94a3b8; font-size: 0.85rem;">🔍</span>
                 </div>
             </div>
 
             {{-- جۆری جوڵە --}}
             <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1.5">جۆری جوڵە</label>
-                <select name="direction" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50">
+                <label style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem; display: block;">جۆری جووڵە</label>
+                <select name="direction" class="field" style="width: 100%; font-size: 0.825rem; padding: 0.55rem 0.75rem; border-radius: 0.6rem;">
                     <option value="">هەموو جۆرەکان</option>
-                    <option value="in" @selected(request('direction') === 'in')>📥 وەرگرتنی پارە</option>
-                    <option value="out" @selected(request('direction') === 'out')>📤 دانی پارە</option>
+                    <option value="in" @selected(request('direction') === 'in')>📥 وەرگرتن (داهات)</option>
+                    <option value="out" @selected(request('direction') === 'out')>📤 دان (خەرجی)</option>
                 </select>
             </div>
 
             {{-- لە بەرواری --}}
             <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1.5">لە بەرواری</label>
-                <input type="date" name="from" value="{{ request('from') }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50 num">
+                <label style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem; display: block;">لە بەرواری</label>
+                <input type="date" name="from" value="{{ request('from') }}" class="field num" style="width: 100%; font-size: 0.825rem; padding: 0.55rem 0.75rem; border-radius: 0.6rem;">
             </div>
 
-            {{-- تا بەرواری و دوگمەی پاڵاوتن --}}
-            <div class="flex items-center gap-2">
-                <div class="flex-1">
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">تا بەرواری</label>
-                    <input type="date" name="to" value="{{ request('to') }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50 num">
-                </div>
-                <button type="submit" class="btn !py-2 !px-4 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs shrink-0 cursor-pointer">
+            {{-- تا بەرواری --}}
+            <div>
+                <label style="font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem; display: block;">تا بەرواری</label>
+                <input type="date" name="to" value="{{ request('to') }}" class="field num" style="width: 100%; font-size: 0.825rem; padding: 0.55rem 0.75rem; border-radius: 0.6rem;">
+            </div>
+
+            {{-- دوگمەی پاڵاوتن --}}
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <button type="submit"
+                        style="background: #2563eb; color: #ffffff; padding: 0.58rem 1.25rem; border-radius: 0.6rem; font-weight: 800; font-size: 0.825rem; border: none; cursor: pointer;">
                     پاڵاوتن
                 </button>
                 @if(request()->hasAny(['q', 'direction', 'from', 'to']))
-                    <a href="{{ route('payments.index') }}" class="btn btn-ghost !py-2 !px-2.5 text-xs text-slate-500 hover:bg-slate-100 rounded-xl" title="پاککردنەوەی فلتەر">
+                    <a href="{{ route('payments.index') }}"
+                       style="padding: 0.58rem 0.75rem; border-radius: 0.6rem; background: #f1f5f9; color: #64748b; font-weight: 700; font-size: 0.825rem; text-decoration: none;"
+                       title="پاککردنەوە">
                         ✕
                     </a>
                 @endif
@@ -112,135 +121,126 @@
         </div>
     </form>
 
-    {{-- ٣. خشتەی سەرەکی حەقدییەکان --}}
-    <div class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
-            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <span class="text-blue-600">💳</span>
+    {{-- ٣. خشتەی سەرەکی بە دیزاینی ئارام و خاوێن هاوشێوەی بەشی قاسە --}}
+    <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden;">
+        <div style="padding: 1.1rem 1.5rem; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; color: #1e293b;">
+                <span>💳</span>
                 <span>تۆماری حەقدی و پارەدانەکان</span>
             </div>
-            <span class="text-xs text-slate-400 font-medium num">{{ fmt_num($payments->total()) }} جوڵە دۆزرایەوە</span>
+            <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;" class="num">
+                کۆی گشتی: {{ fmt_num($payments->total()) }} جووڵە
+            </span>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="table w-full text-right">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.875rem;">
                 <thead>
-                    <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
-                        <th class="py-3 px-4 text-center w-12">#</th>
-                        <th class="py-3 px-4 text-center">ژمارەی سەنەد</th>
-                        <th class="py-3 px-4 text-center">بەروار</th>
-                        <th class="py-3 px-4 text-center">جۆر</th>
-                        <th class="py-3 px-4">لایەن / کەس</th>
-                        <th class="py-3 px-4">وەسڵ / پسوولە</th>
-                        <th class="py-3 px-4 text-center">بڕی پارە</th>
-                        <th class="py-3 px-4">قاسە</th>
-                        <th class="py-3 px-4">تێبینی</th>
-                        <th class="py-3 px-4 text-center w-28">کردار</th>
+                    <tr style="border-bottom: 1px solid #f1f5f9; background: #fafcff; color: #64748b; font-size: 0.78rem; font-weight: 700;">
+                        <th style="padding: 0.9rem 1.25rem; text-align: center; width: 4rem;">#</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: center;">ژمارەی سەنەد</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: center;">بەروار</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: center;">جۆری جووڵە</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: right;">کەس / لایەن</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: right;">تێبینی و پەیوەندی</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: center;">بڕی پارە</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: center; width: 7rem;">کردار</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-sm">
+                <tbody>
                     @forelse ($payments as $index => $payment)
-                        <tr class="hover:bg-blue-50/30 transition-colors">
+                        @php
+                            $isIn = $payment->direction === 'in';
+                        @endphp
+                        <tr style="border-bottom: 1px solid #f8fafc; transition: background 0.15s;"
+                            onmouseover="this.style.background='#fbfcfd'"
+                            onmouseout="this.style.background='transparent'">
+
                             {{-- # --}}
-                            <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
+                            <td class="num" style="padding: 0.9rem 1.25rem; text-align: center; color: #94a3b8; font-weight: 600; font-size: 0.8rem;">
                                 {{ $payments->firstItem() + $index }}
                             </td>
 
                             {{-- ژمارەی سەنەد --}}
-                            <td class="py-3.5 px-4 text-center">
+                            <td class="num" style="padding: 0.9rem 1.25rem; text-align: center;">
                                 <a href="{{ route('payments.print', $payment) }}" target="_blank"
-                                   class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-slate-700 bg-slate-100 hover:bg-blue-600 hover:text-white border border-slate-200 transition-colors"
-                                   title="کرتە بکە بۆ چاپی سەنەد">
+                                   style="font-family: monospace; font-weight: 700; color: #334155; text-decoration: none; background: #f1f5f9; padding: 0.2rem 0.55rem; border-radius: 0.4rem; font-size: 0.78rem;"
+                                   title="چاپی سەنەد">
                                     {{ $payment->voucher_no }}
                                 </a>
                             </td>
 
                             {{-- بەروار --}}
-                            <td class="py-3.5 px-4 text-center num text-xs text-slate-600 whitespace-nowrap">
+                            <td class="num" style="padding: 0.9rem 1.25rem; text-align: center; color: #475569; font-weight: 600; font-size: 0.825rem; white-space: nowrap;">
                                 {{ fmt_date($payment->paid_at) }}
                             </td>
 
-                            {{-- جۆری وەرگرتن یان دان --}}
-                            <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                @if ($payment->direction === 'in')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                            {{-- جۆری جووڵە --}}
+                            <td style="padding: 0.9rem 1.25rem; text-align: center; white-space: nowrap;">
+                                @if ($isIn)
+                                    <span style="background: #dcfce7; color: #16a34a; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 0.25rem;">
                                         <span>📥</span>
-                                        <span>وەرگرتن</span>
+                                        <span>وەرگرتن (داهات)</span>
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200">
+                                    <span style="background: #fee2e2; color: #dc2626; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 0.25rem;">
                                         <span>📤</span>
-                                        <span>دان</span>
+                                        <span>دان (خەرجی)</span>
                                     </span>
                                 @endif
                             </td>
 
-                            {{-- لایەن --}}
-                            <td class="py-3.5 px-4">
+                            {{-- کەس / لایەن --}}
+                            <td style="padding: 0.9rem 1.25rem; text-align: right; font-weight: 700; color: #1e293b;">
                                 @if ($payment->party instanceof \App\Models\Customer)
-                                    <a href="{{ route('customers.show', $payment->party) }}" class="font-bold text-slate-800 hover:text-blue-600 transition-colors inline-flex items-center gap-1.5">
-                                        <span class="size-5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold flex items-center justify-center">کڕ</span>
-                                        <span>{{ $payment->party_label }}</span>
+                                    <a href="{{ route('customers.show', $payment->party) }}" style="color: #1e293b; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#1e293b'">
+                                        {{ $payment->party_label }}
                                     </a>
                                 @elseif ($payment->party instanceof \App\Models\Supplier)
-                                    <a href="{{ route('suppliers.show', $payment->party) }}" class="font-bold text-slate-800 hover:text-blue-600 transition-colors inline-flex items-center gap-1.5">
-                                        <span class="size-5 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold flex items-center justify-center">فر</span>
-                                        <span>{{ $payment->party_label }}</span>
+                                    <a href="{{ route('suppliers.show', $payment->party) }}" style="color: #1e293b; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#1e293b'">
+                                        {{ $payment->party_label }}
                                     </a>
                                 @else
-                                    <span class="font-bold text-slate-800">{{ $payment->party_label }}</span>
+                                    <span>{{ $payment->party_label }}</span>
                                 @endif
                             </td>
 
-                            {{-- بەستراوە بە وەسڵ یان پسوولە --}}
-                            <td class="py-3.5 px-4 text-xs">
-                                @if ($payment->order)
-                                    <a href="{{ route('orders.print', $payment->order) }}" target="_blank"
-                                       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100">
-                                        <span>📄</span>
-                                        <span>وەسڵ: {{ $payment->order->invoice_no }}</span>
-                                    </a>
-                                @elseif ($payment->purchase)
-                                    <a href="{{ route('purchases.show', $payment->purchase) }}"
-                                       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100">
-                                        <span>🛒</span>
-                                        <span>پسوولە: {{ $payment->purchase->invoice_no }}</span>
-                                    </a>
-                                @else
-                                    <span class="text-slate-400">—</span>
-                                @endif
+                            {{-- تێبینی و بەستنەوە بە وەسڵ/پسوولە --}}
+                            <td style="padding: 0.9rem 1.25rem; text-align: right; color: #475569; font-size: 0.825rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                    @if ($payment->order)
+                                        <a href="{{ route('orders.print', $payment->order) }}" target="_blank"
+                                           style="font-family: monospace; font-size: 0.72rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; padding: 0.15rem 0.45rem; border-radius: 0.35rem; text-decoration: none; border: 1px solid #bfdbfe;">
+                                            📄 وەسڵی {{ $payment->order->invoice_no }}
+                                        </a>
+                                    @elseif ($payment->purchase)
+                                        <a href="{{ route('purchases.show', $payment->purchase) }}"
+                                           style="font-family: monospace; font-size: 0.72rem; font-weight: 700; background: #faf5ff; color: #7e22ce; padding: 0.15rem 0.45rem; border-radius: 0.35rem; text-decoration: none; border: 1px solid #e9d5ff;">
+                                            🛒 پسوولەی {{ $payment->purchase->invoice_no }}
+                                        </a>
+                                    @endif
+                                    <span>{{ $payment->note ?: '—' }}</span>
+                                </div>
                             </td>
 
                             {{-- بڕی پارە --}}
-                            <td class="py-3.5 px-4 text-center num font-black {{ $payment->direction === 'in' ? 'text-emerald-700' : 'text-amber-700' }}">
-                                {{ fmt_money($payment->amount, $payment->currency) }}
-                            </td>
-
-                            {{-- قاسە --}}
-                            <td class="py-3.5 px-4 text-xs font-medium text-slate-600">
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                                    <span>💰</span>
-                                    <span>{{ $payment->cashBox?->name ?? 'قاسەی سەرەکی' }}</span>
-                                </span>
-                            </td>
-
-                            {{-- تێبینی --}}
-                            <td class="py-3.5 px-4 text-xs text-slate-600 max-w-xs truncate">
-                                {{ $payment->note ?? '—' }}
+                            <td class="num" style="padding: 0.9rem 1.25rem; text-align: center; font-weight: 900; font-size: 1.05rem; color: {{ $isIn ? '#15803d' : '#dc2626' }};">
+                                {{ $isIn ? '+' : '-' }}{{ fmt_money($payment->amount, $payment->currency) }}
                             </td>
 
                             {{-- کردار --}}
-                            <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                <div class="flex items-center justify-center gap-1">
+                            <td style="padding: 0.9rem 1.25rem; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
                                     <a href="{{ route('payments.print', $payment) }}" target="_blank"
-                                       class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                                       style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 0.25rem 0.55rem; border-radius: 0.45rem; font-weight: 700; font-size: 0.75rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.2rem;"
                                        title="چاپکردنی سەنەد">
-                                        🖨️ چاپ
+                                        <span>🖨️</span>
+                                        <span>چاپ</span>
                                     </a>
                                     <button type="button"
                                             @click="showDeleteModal = true; deleteUrl = '{{ route('payments.destroy', $payment) }}'"
-                                            class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-rose-600 hover:bg-rose-50"
-                                            title="سڕینەوەی سەنەد">
+                                            style="background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; padding: 0.25rem 0.5rem; border-radius: 0.45rem; font-weight: 700; font-size: 0.75rem; cursor: pointer;"
+                                            title="سڕینەوە">
                                         🗑️
                                     </button>
                                 </div>
@@ -248,7 +248,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="py-12 text-center text-slate-400 text-sm font-medium">
+                            <td colspan="8" style="padding: 3rem; text-align: center; color: #94a3b8; font-size: 0.875rem; font-weight: 600;">
                                 هیچ حەقدی و پارەدانێک نەدۆزرایەوە.
                             </td>
                         </tr>
@@ -258,34 +258,34 @@
         </div>
 
         @if ($payments->hasPages())
-            <div class="p-4 border-t border-slate-100">
+            <div style="padding: 1rem 1.25rem; border-top: 1px solid #f1f5f9;">
                 {{ $payments->links() }}
             </div>
         @endif
     </div>
 
     {{-- مۆداڵی دڵنیابوونەوە لە سڕینەوە --}}
-    <div x-show="showDeleteModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+    <div x-show="showDeleteModal" x-cloak style="position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(2px);"
          x-transition.opacity>
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center border border-slate-100"
+        <div style="background: #ffffff; border-radius: 1.25rem; max-width: 24rem; width: 100%; padding: 1.5rem; text-align: center; border: 1px solid #f1f5f9; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);"
              @click.away="showDeleteModal = false"
              x-transition.scale>
-            <div class="size-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 text-2xl">
+            <div style="width: 3.5rem; height: 3.5rem; border-radius: 9999px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem auto; font-size: 1.5rem;">
                 ⚠️
             </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">دڵنیایت لە سڕینەوە؟</h3>
-            <p class="text-xs text-slate-500 mb-5 leading-relaxed">
+            <h3 style="font-size: 1rem; font-weight: 800; color: #0f172a; margin-bottom: 0.25rem;">دڵنیایت لە سڕینەوە؟</h3>
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1.25rem; line-height: 1.4;">
                 ئەم حەقدییە و جوڵەی ناو قاسەکەی بە تەواوی دەسڕدرێنەوە.
             </p>
-            <div class="flex items-center justify-center gap-2">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                 <form :action="deleteUrl" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn !py-2 !px-4 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl">
+                    <button type="submit" style="background: #dc2626; color: #ffffff; padding: 0.55rem 1.25rem; border-radius: 0.6rem; font-size: 0.8rem; font-weight: 800; border: none; cursor: pointer;">
                         بەڵێ، بسڕەوە
                     </button>
                 </form>
-                <button type="button" @click="showDeleteModal = false" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600">
+                <button type="button" @click="showDeleteModal = false" style="background: #ffffff; border: 1px solid #cbd5e1; color: #64748b; padding: 0.55rem 1.25rem; border-radius: 0.6rem; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
                     پاشگەزبوونەوە
                 </button>
             </div>
