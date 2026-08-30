@@ -44,12 +44,6 @@
                     <span>✏️</span>
                     <span>دەستکاری</span>
                 </a>
-            @else
-                <a href="{{ route('payments.create', ['type' => 'out', 'supplier' => $purchase->supplier_id, 'purchase' => $purchase->id]) }}"
-                   class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all cursor-pointer">
-                    <span>💳</span>
-                    <span>تۆمارکردنی حەقدی</span>
-                </a>
             @endif
 
             <a href="{{ route('purchases.index') }}"
