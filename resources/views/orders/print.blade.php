@@ -293,13 +293,13 @@
                 </div>
             @endif
 
-            {{-- ژێرەوەی وەسڵ: تەواو هاوشێوەی دەفتەری وەسڵ بە پادینگی ڕێکخراو --}}
-            <div class="mt-3 mb-1.5 flex items-center justify-between text-xs px-2">
+            {{-- ژێرەوەی وەسڵ: هەڵە دەگەڕێتەوە لە دەستەڕاست و ئیمزا پادینگی چەپی دراوەتێ بۆ ئەوەی بێتە لای ڕاست --}}
+            <div class="mt-3 mb-1.5 flex items-center justify-between text-xs px-1">
                 <div class="font-bold text-slate-900 text-xs">
                     {{ $settings['invoice_footer'] ?? 'هەڵە دەگەڕێتەوە بۆ هەردوو لا' }}
                 </div>
 
-                <div class="font-bold text-slate-900 text-xs pl-4 min-w-[60px] text-center">
+                <div class="font-bold text-slate-900 text-xs pl-16 sm:pl-20">
                     ئیمزا
                 </div>
             </div>
