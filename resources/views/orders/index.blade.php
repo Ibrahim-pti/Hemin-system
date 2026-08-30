@@ -170,11 +170,20 @@
                                 {{ $lastOrder ? fmt_date($lastOrder->order_date) : '-' }}
                             </td>
                             <td class="py-3.5 px-4 text-center">
-                                <a href="{{ route('customers.show', $customer) }}"
-                                   class="size-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 inline-flex items-center justify-center transition-colors shadow-2xs"
-                                   title="پڕۆفایلی کڕیار">
-                                    👁️
-                                </a>
+                                <div class="flex items-center justify-center gap-1.5">
+                                    @if ($bal > 0)
+                                        <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $customer->id]) }}"
+                                           class="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold inline-flex items-center gap-0.5 transition-colors"
+                                           title="وەرگرتنی حەقدی">
+                                            + حەقدی
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('customers.show', $customer) }}"
+                                       class="size-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 inline-flex items-center justify-center transition-colors shadow-2xs"
+                                       title="پڕۆفایلی کڕیار">
+                                        👁️
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -272,10 +281,19 @@
                                 {{ $remaining > 0 ? fmt_money($remaining, $order->currency) : '-' }}
                             </td>
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                <a href="{{ route('orders.print', $order) }}" target="_blank"
-                                   class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
-                                    چاپ
-                                </a>
+                                <div class="flex items-center justify-center gap-1.5">
+                                    @if ($remaining > 0)
+                                        <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $order->customer_id, 'order' => $order->id]) }}"
+                                           class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-0.5 transition-colors shadow-2xs"
+                                           title="وەرگرتنی حەقدی بۆ ئەم وەسڵە">
+                                            + حەقدی
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('orders.print', $order) }}" target="_blank"
+                                       class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
+                                        چاپ
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty

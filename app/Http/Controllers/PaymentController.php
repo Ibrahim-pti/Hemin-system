@@ -54,6 +54,7 @@ class PaymentController extends Controller
             'customers' => Customer::active()->orderBy('name')->get(['id', 'name', 'phone']),
             'suppliers' => Supplier::active()->orderBy('name')->get(['id', 'name']),
             'employees' => Employee::active()->orderBy('name')->get(['id', 'name']),
+            'orders' => Order::where('status', '!=', 'cancelled')->latest('id')->limit(150)->get(['id', 'invoice_no', 'customer_id', 'total', 'currency', 'order_date']),
             'cashBoxes' => CashBox::where('is_active', true)->get(),
             'rate' => ExchangeRate::current(),
             'selected' => [
