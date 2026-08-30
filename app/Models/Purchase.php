@@ -93,7 +93,9 @@ class Purchase extends Model
 
     public static function nextInvoiceNo(): string
     {
-        return 'K-'.str_pad((string) ((static::withTrashed()->max('id') ?? 0) + 1), 5, '0', STR_PAD_LEFT);
+        $last = static::withTrashed()->max('id') ?? 0;
+
+        return (string) ($last + 1);
     }
 
     public function scopeSearch(Builder $query, ?string $term): Builder
