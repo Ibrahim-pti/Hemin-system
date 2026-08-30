@@ -16,7 +16,7 @@ class Employee extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'phone', 'job_title', 'daily_wage', 'wage_currency',
+        'name', 'phone', 'job_title', 'salary_type', 'daily_wage', 'wage_currency',
         'hire_date', 'is_active', 'note',
     ];
 
@@ -37,6 +37,12 @@ class Employee extends Model
         'other' => 'هیتر',
     ];
 
+    public const SALARY_TYPES = [
+        'daily' => 'ڕۆژانە',
+        'weekly' => 'حەفتانە',
+        'monthly' => 'مانگانە',
+    ];
+
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
@@ -50,6 +56,28 @@ class Employee extends Model
     public function getJobTitleLabelAttribute(): string
     {
         return self::JOB_TITLES[$this->job_title] ?? $this->job_title;
+    }
+
+    public function getSalaryTypeLabelAttribute(): string
+    {
+        return self::SALARY_TYPES[$this->salary_type ?? 'daily'] ?? 'ڕۆژانە';
+    }
+
+    /** حیسابکردنی حەقدەستی ڕۆژانەی هاوتا بۆ ئامادەبوون */
+    public function getEffectiveDailyWageAttribute(): float
+    {
+        $amount = (float) $this->daily_wage;
+        $type = $this->salary_type ?? 'daily';
+
+        if ($type === 'weekly') {
+            return round($amount / 6, 2); // ٦ ڕۆژ لە هەفتەیەکدا
+        }
+
+        if ($type === 'monthly') {
+            return round($amount / 30, 2); // ٣٠ ڕۆژ لە مانگێکدا
+        }
+
+        return $amount;
     }
 
     /** حەقدەستی کۆکراوەی ماوەیەک (تەنها ڕۆژانی ئامادەبوون). */

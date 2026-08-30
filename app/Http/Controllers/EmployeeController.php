@@ -122,12 +122,14 @@ class EmployeeController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'job_title' => ['required', 'string', 'max:100'],
+            'salary_type' => ['required', 'in:daily,weekly,monthly'],
             'daily_wage' => ['nullable', 'numeric', 'min:0'],
             'wage_currency' => ['nullable', 'in:IQD,USD'],
             'hire_date' => ['nullable', 'date'],
             'note' => ['nullable', 'string'],
-        ], [], ['name' => 'ناو', 'job_title' => 'پیشە']);
+        ], [], ['name' => 'ناو', 'job_title' => 'پیشە', 'salary_type' => 'شێوازی پارەدان']);
 
+        $data['salary_type'] = $data['salary_type'] ?? 'daily';
         $data['daily_wage'] = $data['daily_wage'] ?? 0;
         $data['wage_currency'] = $data['wage_currency'] ?? 'IQD';
         $data['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : true;
