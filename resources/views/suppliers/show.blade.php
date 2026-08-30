@@ -379,7 +379,6 @@
                     <thead>
                         <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
                             <th class="py-3 px-4 text-center w-12">#</th>
-                            <th class="py-3 px-4 text-center">ژمارەی سەنەد</th>
                             <th class="py-3 px-4 text-center">بەروار</th>
                             <th class="py-3 px-4 text-center">بڕی پارە</th>
                             <th class="py-3 px-4">تێبینی</th>
@@ -392,11 +391,6 @@
                             <tr class="hover:bg-emerald-50/30 transition-colors">
                                 <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
                                     {{ $index + 1 }}
-                                </td>
-                                <td class="py-3.5 px-4 text-center">
-                                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-md text-xs font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
-                                        {{ $payment->voucher_no }}
-                                    </span>
                                 </td>
                                 <td class="py-3.5 px-4 text-center num text-xs text-slate-600 whitespace-nowrap">
                                     {{ fmt_date($payment->paid_at) }}
@@ -421,7 +415,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-10 text-center text-slate-400 text-sm font-medium">
+                                <td colspan="6" class="py-10 text-center text-slate-400 text-sm font-medium">
                                     هیچ پارەدانێک بۆ ئەم فرۆشیارە تۆمار نەکراوە.
                                 </td>
                             </tr>
