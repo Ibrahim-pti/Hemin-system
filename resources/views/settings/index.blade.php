@@ -6,8 +6,8 @@
 {{-- سەردێڕی پەڕە --}}
 <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
     <div>
-        <h1 class="text-xl font-black text-slate-900">⚙️ ڕێکخستنەکانی سیستم و باکەپ</h1>
-        <p class="text-xs text-slate-500 font-medium mt-0.5">بەڕێوەبردنی زانیاری کارگە، وەسڵ، کاتەکانی دەوام، نرخی دۆلار و پاراستنی داتابەیس</p>
+        <h1 class="text-xl font-black text-slate-900">⚙️ ڕێکخستنەکانی سیستم و هەژمارەکان</h1>
+        <p class="text-xs text-slate-500 font-medium mt-0.5">بەڕێوەبردنی زانیاری کارگە، وەسڵ، کاتەکانی دەوام، هەژماری بەڕێوەبەر و وەستا، و باکەپی داتابەیس</p>
     </div>
 
     {{-- دوگمەی خاوێنکردنەوەی خێرای کاش --}}
@@ -19,10 +19,10 @@
     </form>
 </div>
 
-<div class="grid gap-6 lg:grid-cols-3">
+<div class="grid gap-6 lg:grid-cols-2">
 
-    {{-- ستوونی ڕاست / سەرەکی: فۆڕمەکانی ڕێکخستن --}}
-    <div class="space-y-6 lg:col-span-2">
+    {{-- ستوونی ڕاست: زانیاری کارگە، وەسڵ و دەوام --}}
+    <div class="space-y-6">
 
         <form method="POST" action="{{ route('settings.update') }}" class="space-y-6">
             @csrf @method('PUT')
@@ -116,7 +116,7 @@
                 <div class="flex items-center gap-2.5 border-b border-slate-100 pb-3 mb-4">
                     <span class="size-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">🏭</span>
                     <div>
-                        <h2 class="font-bold text-slate-900 text-sm">ڕێکخستنی دەوام و کارمەندان</h2>
+                        <h2 class="font-bold text-slate-900 text-sm">ڕێکخستنی دەوام و کارگە</h2>
                         <p class="text-[11px] text-slate-500">پێوەرەکانی دەوام، کاتژمێری ئیشکردن و زیادەکار (Overtime).</p>
                     </div>
                 </div>
@@ -195,28 +195,10 @@
                 </div>
             </div>
 
-            {{-- ٥. بەستنەوەی نرخی دۆلار لە API --}}
-            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs">
-                <div class="flex items-center gap-2.5 border-b border-slate-100 pb-3 mb-4">
-                    <span class="size-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-sm">🌐</span>
-                    <div>
-                        <h2 class="font-bold text-slate-900 text-sm">بەستنەوە بە نرخی زیندوی بازاڕ (Live API)</h2>
-                        <p class="text-[11px] text-slate-500">کلیلی API بۆ وەرگرتنی خۆکاری نرخی ١٠٠ دۆلاری بازاڕەکانی عێراق و هەرێمی کوردستان.</p>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="label" for="xeiqd_api_key">کلیلی تایبەتی API (XE-IQD API Key)</label>
-                    <input id="xeiqd_api_key" name="xeiqd_api_key" type="password" class="field font-mono text-xs"
-                           placeholder="کلیلی API بنووسە لێرە..."
-                           value="{{ old('xeiqd_api_key', $settings['xeiqd_api_key'] ?? '') }}">
-                </div>
-            </div>
-
             {{-- دوگمەی پاشەکەوتکردنی گشتی --}}
-            <div class="flex justify-end pt-2">
+            <div class="flex justify-end pt-1">
                 <button type="submit" class="btn btn-primary !py-2.5 !px-8 text-sm font-black shadow-md cursor-pointer">
-                    💾 پاشەکەوتکردنی هەموو ڕێکخستنەکان
+                    💾 پاشەکەوتکردنی ڕێکخستنەکان
                 </button>
             </div>
         </form>
@@ -224,95 +206,157 @@
     </div>
 
 
-    {{-- ستوونی چەپ: نرخی دۆلار، باکەپەکان و زانیاری سێرڤەر --}}
+    {{-- ستوونی چەپ: هەژماری بەڕێوەبەر، هەژماری وەستا، و باکەپی داتابەیس --}}
     <div class="space-y-6">
 
-        {{-- ١. کارتی نرخی دۆلار --}}
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="size-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">💵</span>
-                    <h3 class="font-bold text-slate-900 text-xs">نرخی دۆلار (USD / IQD)</h3>
+        {{-- ١. هەژماری بەڕێوەبەر (ئیمەیڵ و پاسۆرد) --}}
+        @if ($adminUser)
+            <div class="rounded-2xl border border-blue-200/80 bg-linear-to-br from-blue-50/40 to-white p-5 sm:p-6 shadow-xs">
+                <div class="flex items-center gap-2.5 border-b border-blue-100 pb-3 mb-4">
+                    <span class="size-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">👑</span>
+                    <div>
+                        <h2 class="font-bold text-slate-900 text-sm">هەژماری بەڕێوەبەر (ئیمەیڵ و پاسۆرد)</h2>
+                        <p class="text-[11px] text-slate-500">گۆڕینی ناوی بەکارهێنەر، ئیمەیڵی چوونەژوورەوە، و وشەی نهێنی.</p>
+                    </div>
                 </div>
 
-                <form method="POST" action="{{ route('settings.sync-rate') }}">
-                    @csrf
-                    <button class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all inline-flex items-center gap-1 cursor-pointer" title="وەرگرتنی نرخی ئەمڕۆ لە ئینتەرنێت">
-                        🔄 نوێکردنەوە لە API
-                    </button>
+                <form method="POST" action="{{ route('settings.users.update', $adminUser) }}" class="space-y-4">
+                    @csrf @method('PUT')
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="label text-xs">ناوی بەڕێوەبەر <span class="text-rose-500">*</span></label>
+                            <input name="name" class="field font-bold text-xs" required
+                                   value="{{ old('name', $adminUser->name) }}">
+                        </div>
+
+                        <div>
+                            <label class="label text-xs">ئیمەیڵی چوونەژوورەوە <span class="text-rose-500">*</span></label>
+                            <input name="email" type="email" class="field font-mono text-xs" dir="ltr" required
+                                   value="{{ old('email', $adminUser->email) }}">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="label text-xs">ژمارەی مۆبایل</label>
+                        <input name="phone" class="field num text-xs" dir="ltr"
+                               placeholder="0750xxxxxxx"
+                               value="{{ old('phone', $adminUser->phone) }}">
+                    </div>
+
+                    <div class="border-t border-blue-100/60 pt-3">
+                        <div class="text-[11px] font-bold text-blue-900 mb-2">گۆڕینی وشەی نهێنی (ئەگەر ناتەوێ بیگۆڕی، بە بەتاڵی جێی بهێڵە):</div>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label class="label text-[11px]">وشەی نهێنی نوێ</label>
+                                <input name="password" type="password" class="field text-xs font-mono" dir="ltr"
+                                       placeholder="••••••••">
+                            </div>
+                            <div>
+                                <label class="label text-[11px]">دووپاتکردنەوەی وشەی نهێنی</label>
+                                <input name="password_confirmation" type="password" class="field text-xs font-mono" dir="ltr"
+                                       placeholder="••••••••">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-1">
+                        <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold shadow-xs cursor-pointer">
+                            نوێکردنەوەی هەژماری بەڕێوەبەر
+                        </button>
+                    </div>
                 </form>
             </div>
+        @endif
 
-            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 text-center mb-4">
-                <span class="text-xs text-slate-500 font-bold">نرخی کارای ئێستا:</span>
-                <div class="num text-2xl font-black text-slate-900 mt-1">
-                    {{ fmt_num($currentRate) }} <span class="text-xs font-bold text-slate-600">د.ع بۆ هەر $١</span>
-                </div>
-                <div class="text-[11px] font-bold text-emerald-700 mt-1">
-                    (١٠٠ دۆلار = {{ fmt_num($currentRate * 100) }} دینار)
-                </div>
-            </div>
 
-            {{-- فۆڕمی تۆمارکردنی نرخ بە دەست --}}
-            <form method="POST" action="{{ route('settings.rate') }}" class="space-y-3">
-                @csrf
-                <div>
-                    <label class="label text-[11px]">بەرواری کارابوون</label>
-                    <input type="date" name="effective_date" class="field num text-xs" required
-                           value="{{ now()->toDateString() }}">
+        {{-- ٢. هەژماری وەستا / بەرپرسی کارگە (ئیمەیڵ و پاسۆرد) --}}
+        @if ($workshopUser)
+            <div class="rounded-2xl border border-amber-200/80 bg-linear-to-br from-amber-50/40 to-white p-5 sm:p-6 shadow-xs">
+                <div class="flex items-center gap-2.5 border-b border-amber-100 pb-3 mb-4">
+                    <span class="size-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-sm">👷</span>
+                    <div>
+                        <h2 class="font-bold text-slate-900 text-sm">هەژماری وەستا (ئیمەیڵ و پاسۆرد)</h2>
+                        <p class="text-[11px] text-slate-500">گۆڕینی ئیمەیڵ و وشەی نهێنی بەرپرسی کارگە و مەخزەن.</p>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="label text-[11px]">نرخی ١ دۆلار بە دینار</label>
-                    <input type="number" step="0.01" min="1" name="usd_to_iqd" class="field num font-bold text-xs" required
-                           value="{{ $currentRate }}">
-                </div>
+                <form method="POST" action="{{ route('settings.users.update', $workshopUser) }}" class="space-y-4">
+                    @csrf @method('PUT')
 
-                <button type="submit" class="btn btn-primary w-full !py-2 text-xs font-bold cursor-pointer">
-                    + تۆمارکردنی نرخی ڕۆژ
-                </button>
-            </form>
-
-            {{-- مێژووی نرخەکان --}}
-            <div class="mt-4 border-t border-slate-100 pt-3">
-                <span class="text-[11px] font-bold text-slate-500 block mb-2">مێژووی دوایین نرخەکان:</span>
-                <div class="max-h-40 overflow-y-auto divide-y divide-slate-100 text-xs">
-                    @forelse ($rates as $rate)
-                        <div class="flex items-center justify-between py-1.5">
-                            <span class="num text-slate-600 text-[11px]">{{ fmt_date($rate->effective_date) }}</span>
-                            <span class="num font-bold text-slate-900">{{ fmt_num($rate->usd_to_iqd) }} د.ع</span>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="label text-xs">ناوی وەستا / بەرپرسی کارگە <span class="text-rose-500">*</span></label>
+                            <input name="name" class="field font-bold text-xs" required
+                                   value="{{ old('name', $workshopUser->name) }}">
                         </div>
-                    @empty
-                        <div class="text-center py-2 text-slate-400 text-xs">هیچ نرخێک تۆمار نەکراوە.</div>
-                    @endforelse
-                </div>
+
+                        <div>
+                            <label class="label text-xs">ئیمەیڵی چوونەژوورەوە <span class="text-rose-500">*</span></label>
+                            <input name="email" type="email" class="field font-mono text-xs" dir="ltr" required
+                                   value="{{ old('email', $workshopUser->email) }}">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="label text-xs">ژمارەی مۆبایل</label>
+                        <input name="phone" class="field num text-xs" dir="ltr"
+                               placeholder="0750xxxxxxx"
+                               value="{{ old('phone', $workshopUser->phone) }}">
+                    </div>
+
+                    <div class="border-t border-amber-100/60 pt-3">
+                        <div class="text-[11px] font-bold text-amber-900 mb-2">گۆڕینی وشەی نهێنی (ئەگەر ناتەوێ بیگۆڕی، بە بەتاڵی جێی بهێڵە):</div>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label class="label text-[11px]">وشەی نهێنی نوێ</label>
+                                <input name="password" type="password" class="field text-xs font-mono" dir="ltr"
+                                       placeholder="••••••••">
+                            </div>
+                            <div>
+                                <label class="label text-[11px]">دووپاتکردنەوەی وشەی نهێنی</label>
+                                <input name="password_confirmation" type="password" class="field text-xs font-mono" dir="ltr"
+                                       placeholder="••••••••">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-1">
+                        <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold shadow-xs !bg-amber-600 hover:!bg-amber-700 border-none cursor-pointer">
+                            نوێکردنەوەی هەژماری وەستا
+                        </button>
+                    </div>
+                </form>
             </div>
-        </div>
+        @endif
 
 
-        {{-- ٢. کارتی باکەپ و پاراستنی داتابەیس --}}
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+        {{-- ٣. باکەپی داتابەیس --}}
+        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                 <div class="flex items-center gap-2">
-                    <span class="size-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs">💾</span>
-                    <h3 class="font-bold text-slate-900 text-xs">باکەپی داتابەیس (.sql)</h3>
+                    <span class="size-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">💾</span>
+                    <div>
+                        <h2 class="font-bold text-slate-900 text-sm">باکەپی داتابەیس (.sql)</h2>
+                        <p class="text-[11px] text-slate-500">پاراستنی داتا و دروستکردنی کۆپی یەدەگ.</p>
+                    </div>
                 </div>
 
                 <form method="POST" action="{{ route('settings.backup') }}">
                     @csrf
-                    <button type="submit" class="btn btn-primary !py-1 !px-3 text-xs font-bold cursor-pointer">
-                        + باکەپی نوێ
+                    <button type="submit" class="btn btn-primary !py-1.5 !px-3.5 text-xs font-bold cursor-pointer">
+                        + دروستکردنی باکەپ
                     </button>
                 </form>
             </div>
 
             <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">
-                باکەپەکان لە بوخچەی <code class="font-mono text-slate-800 bg-slate-100 px-1 py-0.5 rounded text-[10px]">storage/app/backups</code> هەڵدەگیرێن.
+                باکەپەکان لە بوخچەی <code class="font-mono text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">storage/app/backups</code> هەڵدەگیرێن.
             </p>
 
-            <div class="space-y-2 max-h-60 overflow-y-auto">
+            <div class="space-y-2 max-h-64 overflow-y-auto">
                 @forelse ($backups as $backup)
-                    <div class="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors text-xs">
+                    <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors text-xs">
                         <div class="min-w-0 flex-1 pl-2">
                             <div class="font-mono text-[11px] font-bold text-slate-900 truncate" title="{{ $backup['name'] }}">
                                 {{ $backup['name'] }}
@@ -326,13 +370,13 @@
 
                         <div class="flex items-center gap-1.5 shrink-0">
                             <a href="{{ route('settings.backup.download', $backup['name']) }}"
-                               class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors">
+                               class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors">
                                 داگرتن
                             </a>
 
                             <form method="POST" action="{{ route('settings.backup.delete', $backup['name']) }}" onsubmit="return confirm('ئایا دڵنیایت لە سڕینەوەی ئەم باکەپە؟')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="p-1 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer" title="سڕینەوە">
+                                <button type="submit" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer" title="سڕینەوە">
                                     🗑️
                                 </button>
                             </form>
@@ -345,43 +389,6 @@
                 @endforelse
             </div>
         </div>
-
-
-        {{-- ٣. کارتی زانیاری و تەندروستی سیستم --}}
-        @if (isset($systemInfo))
-            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-                <div class="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
-                    <span class="size-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">⚡</span>
-                    <h3 class="font-bold text-slate-900 text-xs">تەندروستی و زانیاری سیستم</h3>
-                </div>
-
-                <div class="space-y-2 text-xs">
-                    <div class="flex justify-between py-1 border-b border-slate-50">
-                        <span class="text-slate-500">وەشانی PHP:</span>
-                        <span class="num font-bold text-slate-800">{{ $systemInfo['php_version'] }}</span>
-                    </div>
-                    <div class="flex justify-between py-1 border-b border-slate-50">
-                        <span class="text-slate-500">وەشانی لاڕاڤێڵ:</span>
-                        <span class="num font-bold text-slate-800">Laravel {{ $systemInfo['laravel_version'] }}</span>
-                    </div>
-                    <div class="flex justify-between py-1 border-b border-slate-50">
-                        <span class="text-slate-500">قەبارەی داتابەیس:</span>
-                        <span class="num font-bold text-emerald-700">{{ $systemInfo['db_size'] }}</span>
-                    </div>
-                    <div class="flex justify-between py-1 border-b border-slate-50">
-                        <span class="text-slate-500">کاتی سێرڤەر:</span>
-                        <span class="num font-bold text-slate-800" dir="ltr">{{ $systemInfo['server_time'] }}</span>
-                    </div>
-                    <div class="flex justify-between py-1">
-                        <span class="text-slate-500">دۆخی سێرڤەر:</span>
-                        <span class="font-bold text-emerald-600 inline-flex items-center gap-1">
-                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            چالاک و خێرا
-                        </span>
-                    </div>
-                </div>
-            </div>
-        @endif
 
     </div>
 

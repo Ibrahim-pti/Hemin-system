@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ExchangeRate;
 use App\Models\Setting;
+use App\Models\User;
 use App\Models\Warehouse;
 use App\Services\BackupService;
 use Illuminate\Http\Request;
@@ -17,35 +18,48 @@ class SettingController extends Controller
 
     public function index(): View
     {
-        $dbSize = '—';
-        try {
-            $dbName = config('database.connections.mysql.database');
-            $sizeResult = DB::selectOne("
-                SELECT SUM(data_length + index_length) AS db_size
-                FROM information_schema.tables
-                WHERE table_schema = ?
-            ", [$dbName]);
-            if ($sizeResult && $sizeResult->db_size) {
-                $dbSize = round($sizeResult->db_size / (1024 * 1024), 2).' MB';
-            }
-        } catch (\Throwable) {
-            $dbSize = 'سەرکەوتوو نەبوو';
-        }
+        $users = User::all();
+        $adminUser = $users->firstWhere('id', 1) ?? $users->first();
+        $workshopUser = $users->firstWhere('id', 2) ?? $users->skip(1)->first();
 
         return view('settings.index', [
             'settings' => Setting::all_(),
-            'rates' => ExchangeRate::latest('effective_date')->limit(15)->get(),
-            'currentRate' => ExchangeRate::current(),
             'backups' => $this->backups->list(),
             'warehouses' => Warehouse::orderBy('name')->get(),
-            'systemInfo' => [
-                'php_version' => PHP_VERSION,
-                'laravel_version' => app()->version(),
-                'db_size' => $dbSize,
-                'server_time' => now()->format('Y-m-d H:i:s'),
-                'timezone' => config('app.timezone'),
-            ],
+            'adminUser' => $adminUser,
+            'workshopUser' => $workshopUser,
+            'users' => $users,
         ]);
+    }
+
+    public function updateUser(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+        ], [
+            'email.unique' => 'ئەم ئیمەیڵە پێشتر لەلایەن هەژمارێکی ترەوە بەکارهاتووە.',
+            'password.min' => 'پاسۆرد دەبێت لانی کەم ٦ پیت یان ژمارە بێت.',
+            'password.confirmed' => 'دووپاتکردنەوەی وشەی نهێنی وەک یەک نییە.',
+        ], [
+            'name' => 'ناو',
+            'email' => 'ئیمەیڵ',
+            'password' => 'وشەی نهێنی',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->phone = $validated['phone'] ?? null;
+
+        if (! empty($validated['password'])) {
+            $user->password = bcrypt($validated['password']);
+        }
+
+        $user->save();
+
+        return back()->with('ok', "زانیاری و وشەی نهێنی هەژماری [{$user->name}] بە سەرکەوتوویی نوێکرایەوە.");
     }
 
     public function update(Request $request)

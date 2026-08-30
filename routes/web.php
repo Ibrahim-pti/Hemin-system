@@ -151,6 +151,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::put('/settings/users/{user}', [SettingController::class, 'updateUser'])->name('settings.users.update');
         Route::post('/settings/rate', [SettingController::class, 'storeRate'])->name('settings.rate');
         Route::post('/settings/sync-rate', [SettingController::class, 'syncLiveRate'])->name('settings.sync-rate');
         Route::post('/settings/backup', [SettingController::class, 'backup'])->name('settings.backup');
