@@ -10,7 +10,7 @@
 
 @section('content')
 
-<div class="max-w-2xl mx-auto space-y-4">
+<div class="w-full space-y-4">
 
     @if ($errors->any())
         <div class="bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-4 text-xs font-bold space-y-1">
@@ -58,12 +58,36 @@
           x-data="{
               kind: '{{ old('party_kind', $direction === 'in' ? 'customer' : 'supplier') }}',
               currency: '{{ old('currency', 'IQD') }}',
-              amount: {{ (float) old('amount', $order ? $order->remaining() : ($purchase ? $purchase->remaining() : 0)) }},
-              rate: {{ $rate }},
+              amount: '{{ old('amount', $order ? (float)$order->remaining() : ($purchase ? (float)$purchase->remaining() : '')) }}',
+              exchangeRate: '{{ number_format($rate * 100) }}',
+              fetchingRate: false,
               selectedPartyId: '{{ old('party_id', $selected['customer'] ?? ($selected['supplier'] ?? '')) }}',
               selectedOrderId: '{{ old('order_id', $selected['order'] ?? '') }}',
               selectedPurchaseId: '{{ old('purchase_id', $selected['purchase'] ?? '') }}',
-              get amountIqd() { return this.currency === 'USD' ? this.amount * this.rate : this.amount; }
+              get cleanRate() {
+                  return parseFloat(this.exchangeRate.toString().replace(/[^0-9.]/g, '')) || 0;
+              },
+              get amountIqd() {
+                  const amt = parseFloat(this.amount) || 0;
+                  if (this.currency === 'USD') {
+                      return amt * (this.cleanRate / 100);
+                  }
+                  return amt;
+              },
+              fetchLiveRate() {
+                  this.fetchingRate = true;
+                  fetch('/api/exchange-rate/live')
+                      .then(res => res.json())
+                      .then(data => {
+                          if (data.ok && data.rate_per_100) {
+                              this.exchangeRate = data.rate_per_100.toLocaleString('en-US');
+                          }
+                      })
+                      .catch(() => {})
+                      .finally(() => {
+                          this.fetchingRate = false;
+                      });
+              }
           }"
           class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs space-y-5">
         @csrf
@@ -84,7 +108,7 @@
         {{-- جۆری لایەن --}}
         <div>
             <label class="block text-xs font-bold text-slate-700 mb-2">لایەنی مامەڵە</label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 @php
                     $partyOptions = [
                         'customer' => ['label' => 'کڕیار', 'icon' => '👤'],
@@ -94,12 +118,12 @@
                     ];
                 @endphp
                 @foreach ($partyOptions as $val => $info)
-                    <label class="cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold flex flex-col items-center gap-1 transition-all"
+                    <label class="cursor-pointer rounded-xl border p-3 text-center text-xs font-bold flex flex-col items-center gap-1.5 transition-all"
                            :class="kind === '{{ $val }}'
-                               ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-2xs'
+                               ? 'border-blue-600 bg-blue-50/80 text-blue-700 shadow-2xs'
                                : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100 text-slate-700'">
                         <input type="radio" name="party_kind" value="{{ $val }}" x-model="kind" class="sr-only">
-                        <span class="text-base">{{ $info['icon'] }}</span>
+                        <span class="text-lg">{{ $info['icon'] }}</span>
                         <span>{{ $info['label'] }}</span>
                     </label>
                 @endforeach
@@ -167,29 +191,51 @@
                 </label>
                 <input id="amount" name="amount" type="number" step="any" min="0.01" required
                        class="w-full px-3 py-2.5 text-sm font-black rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50 num"
-                       x-model.number="amount" value="{{ old('amount') }}" placeholder="0">
+                       x-model="amount" placeholder="0">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1.5" for="currency">دراو</label>
                 <select id="currency" name="currency" class="w-full px-3 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50" x-model="currency">
                     <option value="IQD">دیناری عێراقی (د.ع)</option>
-                    <option value="USD">دۆلاری ئەمریکی ($)</option>
+                    <option value="USD">دۆلاری ئەمریکی ($ USD)</option>
                 </select>
             </div>
         </div>
 
-        {{-- گۆڕینەوەی دۆلار ئەگەر USD بێت --}}
-        <div x-show="currency === 'USD'" x-cloak class="p-3 bg-blue-50/50 border border-blue-200 rounded-xl text-xs flex items-center justify-between">
-            <span class="text-blue-900 font-medium">بە نرخی <b class="num" x-text="rate.toLocaleString()"></b> د.ع بۆ هەر 100$:</span>
-            <span class="num font-black text-blue-700 text-sm" x-text="amountIqd.toLocaleString() + ' د.ع'"></span>
+        {{-- گۆڕینەوەی دۆلار و وەرگرتنی نرخی Live لە API وەک بەشی فرۆشتن --}}
+        <div x-show="currency === 'USD'" x-cloak class="p-4 bg-blue-50/60 border border-blue-200/90 rounded-2xl space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-blue-950">نرخی ١٠٠$ دۆلار بە دینار:</span>
+                    <div class="inline-flex items-center gap-1 bg-white rounded-xl border border-blue-200 px-2 py-1 shadow-2xs">
+                        <input id="exchange_rate" name="exchange_rate" type="text"
+                               class="w-28 text-xs font-mono font-bold text-slate-800 border-0 outline-none focus:ring-0 p-0"
+                               x-model="exchangeRate" placeholder="150,000">
+                        <span class="text-2xs text-slate-400 font-bold">د.ع</span>
+                        <button type="button" @click="fetchLiveRate()"
+                                :disabled="fetchingRate"
+                                class="text-slate-400 hover:text-blue-600 p-0.5 rounded transition-all ml-1 cursor-pointer"
+                                title="وەرگرتنی نرخی ئەمڕۆ لە ئینتەرنێت (Live API)">
+                            <svg class="size-4" :class="fetchingRate ? 'animate-spin text-blue-600' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-left">
+                    <span class="text-xs text-slate-500 font-medium">کۆی گشتی بە دینار:</span>
+                    <span class="num font-black text-blue-700 text-sm mr-1.5" x-text="amountIqd.toLocaleString('en-US') + ' د.ع'"></span>
+                </div>
+            </div>
         </div>
 
         {{-- قاسە و بەروار --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1.5" for="cash_box_id">قاسە</label>
-                <select id="cash_box_id" name="cash_box_id" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50">
+                <select id="cash_box_id" name="cash_box_id" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50">
                     <option value="">— خۆکار بەپێی دراو دیاری دەکرێت —</option>
                     @foreach ($cashBoxes as $box)
                         <option value="{{ $box->id }}">{{ $box->name }}</option>
@@ -202,7 +248,7 @@
                     <span>بەروار</span>
                     <span class="text-rose-500">*</span>
                 </label>
-                <input id="paid_at" name="paid_at" type="date" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50 num" required
+                <input id="paid_at" name="paid_at" type="date" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50 num" required
                        value="{{ old('paid_at', now()->toDateString()) }}">
             </div>
         </div>
@@ -210,15 +256,15 @@
         {{-- تێبینی --}}
         <div>
             <label class="block text-xs font-bold text-slate-700 mb-1.5" for="note">تێبینی</label>
-            <input id="note" name="note" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50" value="{{ old('note') }}" placeholder="پێشەکی، قیستی مانگانە، وەرگرتنی کاش...">
+            <input id="note" name="note" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50" value="{{ old('note') }}" placeholder="پێشەکی، قیستی مانگانە، وەرگرتنی کاش...">
         </div>
 
         {{-- دوگمەکان --}}
         <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-            <a href="{{ route('payments.index') }}" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600">
+            <a href="{{ route('payments.index') }}" class="btn btn-ghost !py-2.5 !px-5 text-xs font-bold text-slate-600">
                 پاشگەزبوونەوە
             </a>
-            <button type="submit" class="btn !py-2 !px-6 text-xs font-bold {{ $direction === 'in' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700' }} text-white rounded-xl shadow-xs cursor-pointer">
+            <button type="submit" class="btn !py-2.5 !px-6 text-xs font-bold {{ $direction === 'in' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700' }} text-white rounded-xl shadow-xs cursor-pointer">
                 <span>✓</span>
                 <span>تۆمارکردنی حەقدی و چاپکردن</span>
             </button>
