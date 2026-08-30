@@ -233,9 +233,7 @@
                         <td colspan="4" class="py-2.5 px-3">
                             <div class="flex items-center justify-between gap-3 text-slate-900">
                                 <span class="text-base font-black text-[#1e3a5f] shrink-0">کۆی گشتی:</span>
-                                <span class="dotted-line flex-1 text-center font-bold text-slate-900 px-2 text-[13px] border-b-[1.5px] border-dotted border-slate-500">
-                                    {{ \App\Support\KurdishNumber::spell((int) round((float) $order->total)) }}
-                                </span>
+                                <span class="dotted-line flex-1 border-b-[1.5px] border-dotted border-slate-500"></span>
                                 <span class="num text-base font-black text-slate-900 shrink-0">
                                     {{ fmt_num($order->total) }}
                                     <span class="text-xs font-bold text-slate-700">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
@@ -269,9 +267,7 @@
                             <td colspan="4" class="py-2 px-3">
                                 <div class="flex items-center justify-between gap-3 text-emerald-800">
                                     <span class="text-xs font-bold shrink-0">پێشەکی / پارەی دراو:</span>
-                                    <span class="dotted-line flex-1 text-center font-medium text-emerald-900 px-2 text-xs border-b-[1.5px] border-dotted border-emerald-400">
-                                        {{ \App\Support\KurdishNumber::spell((int) round((float) $paid)) }}
-                                    </span>
+                                    <span class="dotted-line flex-1 border-b-[1.5px] border-dotted border-emerald-400"></span>
                                     <span class="num text-sm font-black text-emerald-800 shrink-0">
                                         {{ fmt_num($paid) }}
                                         <span class="text-xs font-bold">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
@@ -283,13 +279,7 @@
                             <td colspan="4" class="py-2 px-3">
                                 <div class="flex items-center justify-between gap-3 {{ $order->remaining() > 0 ? 'text-[#b91c1c]' : 'text-emerald-800' }}">
                                     <span class="text-xs font-bold shrink-0">ماوە (قەرز):</span>
-                                    <span class="dotted-line flex-1 text-center font-medium px-2 text-xs border-b-[1.5px] border-dotted {{ $order->remaining() > 0 ? 'border-red-300 text-red-900' : 'border-emerald-300 text-emerald-900' }}">
-                                        @if ($order->remaining() > 0)
-                                            {{ \App\Support\KurdishNumber::spell((int) round((float) $order->remaining())) }}
-                                        @else
-                                            هیچ ماوە نییە (تەواو دراوە)
-                                        @endif
-                                    </span>
+                                    <span class="dotted-line flex-1 border-b-[1.5px] border-dotted {{ $order->remaining() > 0 ? 'border-red-300' : 'border-emerald-300' }}"></span>
                                     <span class="num text-sm font-black shrink-0">
                                         {{ fmt_num($order->remaining()) }}
                                         <span class="text-xs font-bold">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
