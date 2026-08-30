@@ -90,13 +90,7 @@
         </div>
 
         {{-- کارتەکانی ئاماری تایبەت بەم فرۆشیارە --}}
-        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6 pt-6 border-t border-slate-100">
-            {{-- پسوولەکانی کڕین --}}
-            <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-100 border-r-4 border-r-blue-500 text-center">
-                <div class="text-2xl font-black text-slate-900 num">{{ fmt_num($purchases->count()) }}</div>
-                <div class="text-xs font-bold text-slate-500 mt-1">پسوولەی کڕین</div>
-            </div>
-
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-3 mt-6 pt-6 border-t border-slate-100">
             {{-- کۆی کڕینەکان --}}
             <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-100 border-r-4 border-r-indigo-500 text-center">
                 <div class="text-2xl font-black text-slate-900 num">{{ fmt_money($totalPurchases) }}</div>
@@ -295,7 +289,6 @@
                     <thead>
                         <tr class="text-xs text-slate-500 border-b border-slate-100 bg-slate-50/40">
                             <th class="py-3 px-4 text-center w-12">#</th>
-                            <th class="py-3 px-4 text-center">ژمارەی پسوولە</th>
                             <th class="py-3 px-4 text-center">بەروار</th>
                             <th class="py-3 px-4">کۆگا</th>
                             <th class="py-3 px-4">کاڵا کڕدراوەکان</th>
@@ -314,12 +307,6 @@
                             <tr class="hover:bg-blue-50/40 transition-colors">
                                 <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
                                     {{ $index + 1 }}
-                                </td>
-                                <td class="py-3.5 px-4 text-center">
-                                    <a href="{{ route('purchases.show', $purchase) }}"
-                                       class="inline-flex items-center justify-center min-w-8 px-3 py-1 rounded-lg text-xs font-mono font-bold text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer">
-                                        {{ $purchase->invoice_no }}
-                                    </a>
                                 </td>
                                 <td class="py-3.5 px-4 text-center num text-xs text-slate-600 whitespace-nowrap">
                                     {{ fmt_date($purchase->purchase_date) }}
@@ -365,7 +352,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="py-10 text-center text-slate-400 text-sm font-medium">
+                                <td colspan="8" class="py-10 text-center text-slate-400 text-sm font-medium">
                                     هیچ پسوولەیەکی کڕین لەم فرۆشیارە تۆمار نەکراوە.
                                 </td>
                             </tr>
