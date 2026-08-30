@@ -78,7 +78,6 @@
                     'activeIconColor' => '#93c5fd',
                     'items' => [
                         ['route' => 'items.*', 'href' => route('items.index'), 'label' => 'ماددە و کەلوپەل', 'icon' => 'items', 'can' => 'manage_items'],
-                        ['route' => 'categories.*', 'href' => route('categories.index'), 'label' => 'جۆرەکان', 'icon' => 'categories', 'can' => 'manage_items'],
                         ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_settings'],
                         ['route' => 'warehouses.*', 'href' => route('warehouses.index'), 'label' => 'کۆگا', 'icon' => 'warehouses', 'can' => 'manage_settings'],
                         ['route' => 'employees.*', 'href' => route('employees.index'), 'label' => 'کارمەندان', 'icon' => 'employees', 'can' => 'manage_employees'],
