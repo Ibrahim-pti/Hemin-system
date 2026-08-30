@@ -100,7 +100,12 @@
     <div class="receipt-sheet">
         <div>
             {{-- بەشی سەرەوە / سەردێڕ بە شێوازی دەفتەری وەسڵ --}}
-            <div class="text-center">
+            <div class="text-center relative">
+                {{-- ژمارەی وەسڵ لە سەرەوە دەستە چەپ --}}
+                <div class="absolute left-0 top-0 border border-[#b91c1c] bg-white px-2.5 py-0.5 rounded text-xs font-black text-[#b91c1c] shadow-2xs">
+                    No. <span class="num">{{ $order->invoice_no }}</span>
+                </div>
+
                 <h1 class="text-2xl font-black text-[#b91c1c] tracking-tight leading-none">
                     {{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}
                 </h1>
@@ -117,13 +122,10 @@
                     <span class="num" dir="ltr">{{ $settings['company_phone2'] ?? '٠٧٥٠١٢٠١١١٠' }}</span>
                 </p>
 
-                {{-- باڕی ناونیشان و ژمارەی وەسڵ بەبێ تێکەڵبوون --}}
-                <div class="mt-1.5 flex items-center justify-between rounded-sm bg-[#1e3a5f]/10 border-y border-[#1e3a5f] py-1 px-2.5 gap-2">
-                    <div class="text-right font-bold text-xs text-[#1e3a5f] flex-1 leading-snug truncate">
+                {{-- باڕی ناونیشان تەواو لە ناوەڕاست وەک وەسڵە ئەسڵیەکە --}}
+                <div class="mt-1.5 rounded-sm bg-[#1e3a5f]/10 border-y border-[#1e3a5f] py-1 px-3 text-center">
+                    <div class="font-bold text-xs text-[#1e3a5f]">
                         {{ $settings['company_address'] ?? 'هەولێر — ١٠٠م بەرامبەر گۆڕستانی شێخ ئەحمەد' }}
-                    </div>
-                    <div class="shrink-0 border border-[#b91c1c] bg-white px-2 py-0.5 rounded text-[11px] font-black text-[#b91c1c] shadow-2xs">
-                        No. <span class="num">{{ $order->invoice_no }}</span>
                     </div>
                 </div>
             </div>
@@ -298,17 +300,14 @@
             @endif
         </div>
 
-        {{-- ژێرەوەی وەسڵ: ئیمزا بە مەجالی واژووکردن و دروشمی خوارەوە --}}
-        <div class="mt-4 pt-2 border-t border-slate-200 flex items-end justify-between text-xs">
-            <div class="font-black text-[#1e3a5f] text-xs pb-1">
+        {{-- ژێرەوەی وەسڵ: تەواو هاوشێوەی دەفتەری وەسڵ بەبێ هیچ هێڵ و خەتێک --}}
+        <div class="mt-8 mb-2 flex items-center justify-between text-xs px-2">
+            <div class="font-bold text-slate-900 text-xs">
                 {{ $settings['invoice_footer'] ?? 'هەڵە دەگەڕێتەوە بۆ هەردوو لا' }}
             </div>
 
-            <div class="flex flex-col items-center min-w-[120px]">
-                <div class="h-10 w-28"></div> {{-- بۆشایی ئیمزا --}}
-                <div class="border-t border-slate-400 w-full pt-1 text-center font-bold text-slate-800 text-xs">
-                    ئیمزا
-                </div>
+            <div class="font-bold text-slate-900 text-xs">
+                ئیمزا
             </div>
         </div>
     </div>
