@@ -2,50 +2,53 @@
 @section('title', 'داشبۆردی سەرەکی')
 
 @section('content')
-<div x-data="liveDashboard()" style="display: flex; flex-direction: column; gap: 1.25rem;">
+<div x-data="liveDashboard()" class="flex flex-col gap-4 sm:gap-5">
 
     {{-- ١. سەردێڕی داشبۆرد و کاتژمێری زیندوو --}}
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {{-- ڕاست: ناونیشانی داشبۆرد --}}
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center;">
-                <svg style="width: 1.35rem; height: 1.35rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="flex items-center gap-2.5">
+            <div class="size-10 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center border border-sky-200/80 shadow-2xs">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <polyline points="12 6 12 12 16 14"/>
                 </svg>
             </div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0;">داشبۆرد</h1>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight">داشبۆردی سەرەکی</h1>
+                <p class="text-xs text-slate-400 font-medium hidden sm:block">پوختەی کارگە، کۆگا، فرۆشتن و دارایی</p>
+            </div>
         </div>
 
         {{-- چەپ: کاتژمێر و بەرواری زیندوو --}}
-        <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #ffffff; padding: 0.5rem 1.25rem; border-radius: 0.85rem; font-weight: 800; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.75rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);">
-            <div class="num" style="direction: ltr; font-size: 0.95rem;" x-text="timeString"></div>
-            <span style="opacity: 0.6;">|</span>
-            <div x-text="dateString" style="font-size: 0.8rem; font-weight: 700;"></div>
-            <svg style="width: 1.1rem; height: 1.1rem; opacity: 0.9;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-            </svg>
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-3.5 py-2 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-between sm:justify-end gap-3 shadow-md shadow-indigo-500/15">
+            <div class="flex items-center gap-2">
+                <svg class="size-4 opacity-90 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <div x-text="dateString" class="text-[11px] sm:text-xs font-bold opacity-95"></div>
+            </div>
+            <span class="opacity-40">|</span>
+            <div class="font-mono font-black text-xs sm:text-sm" dir="ltr" x-text="timeString"></div>
         </div>
     </div>
 
-    {{-- ٢. تابلۆی کارتە ئامارییەکان (٤ ستوون وەک وێنەکە) --}}
-    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
+    {{-- ٢. تابلۆی کارتە ئامارییەکان (٢ ستوون لە مۆبایل، ٤ ستوون لە شاشەی گەورە) --}}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
 
-        {{-- ڕیزی یەکەم --}}
-
-        {{-- کارتی ١ (ڕاست): کۆی وەسڵەکان --}}
-        <div style="background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #bfdbfe; border-right: 4px solid #3b82f6; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        {{-- کارتی ١: کۆی وەسڵەکان --}}
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-blue-100 border-r-4 border-r-blue-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-xl sm:text-2xl text-slate-900 leading-tight truncate">
                     {{ fmt_num($totalOrdersCount ?? $openOrders) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     کۆی وەسڵەکان
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -55,17 +58,17 @@
         </div>
 
         {{-- کارتی ٢: کڕیاران --}}
-        <div style="background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #bae6fd; border-right: 4px solid #0ea5e9; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-sky-100 border-r-4 border-r-sky-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-xl sm:text-2xl text-slate-900 leading-tight truncate">
                     {{ fmt_num($totalCustomersCount ?? 0) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     کڕیاران
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #f0f9ff; color: #0ea5e9; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 border border-sky-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="9" cy="7" r="4"/>
                     <path d="M17 11l3-3m-3 0l3 3m-3-3v6"/>
                     <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
@@ -74,17 +77,17 @@
         </div>
 
         {{-- کارتی ٣: کەلوپەل و مەواد --}}
-        <div style="background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #e9d5ff; border-right: 4px solid #a855f7; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-purple-100 border-r-4 border-r-purple-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-xl sm:text-2xl text-slate-900 leading-tight truncate">
                     {{ fmt_num($itemsCount ?? 0) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     کەلوپەل و مەواد
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #faf5ff; color: #a855f7; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                     <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
                     <line x1="12" y1="22.08" x2="12" y2="12"/>
@@ -93,37 +96,35 @@
         </div>
 
         {{-- کارتی ٤: وەسڵی ئەمڕۆ --}}
-        <div style="background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #fde68a; border-right: 4px solid #f59e0b; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-amber-100 border-r-4 border-r-amber-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-xl sm:text-2xl text-slate-900 leading-tight truncate">
                     {{ fmt_num($todayOrders ?? 0) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     وەسڵی ئەمڕۆ
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #fefce8; color: #f59e0b; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="9"/>
                     <path d="M12 7v5l3 3"/>
                 </svg>
             </div>
         </div>
 
-        {{-- ڕیزی دووەم --}}
-
         {{-- کارتی ٥: وەسڵی لە کاردا --}}
-        <div style="background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #a7f3d0; border-right: 4px solid #10b981; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-emerald-100 border-r-4 border-r-emerald-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-xl sm:text-2xl text-slate-900 leading-tight truncate">
                     {{ fmt_num($openOrders ?? 0) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     وەسڵی لە کاردا
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #f0fdf4; color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                     <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
@@ -131,17 +132,17 @@
         </div>
 
         {{-- کارتی ٦: کارمەندان --}}
-        <div style="background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #c7d2fe; border-right: 4px solid #6366f1; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-indigo-100 border-r-4 border-r-indigo-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-xl sm:text-2xl text-slate-900 leading-tight truncate">
                     {{ fmt_num($totalEmployees ?? 0) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     کارمەندان
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #eef2ff; color: #6366f1; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                     <circle cx="9" cy="7" r="4"/>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -151,17 +152,17 @@
         </div>
 
         {{-- کارتی ٧: فرۆشتنی ئەم مانگە --}}
-        <div style="background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #99f6e4; border-right: 4px solid #14b8a6; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.45rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-teal-100 border-r-4 border-r-teal-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-lg sm:text-xl text-slate-900 leading-tight truncate">
                     {{ fmt_num($monthSales ?? 0) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     فرۆشتنی ئەم مانگە
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #f0fdfa; color: #14b8a6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 border border-teal-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                     <polyline points="17 6 23 6 23 12"/>
                 </svg>
@@ -169,37 +170,35 @@
         </div>
 
         {{-- کارتی ٨: خەرجی ئەم مانگە --}}
-        <div style="background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #fecdd3; border-right: 4px solid #f43f5e; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.45rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-rose-100 border-r-4 border-r-rose-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-lg sm:text-xl text-slate-900 leading-tight truncate">
                     {{ fmt_num($monthExpenses ?? 0) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     خەرجی ئەم مانگە
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #fff1f2; color: #f43f5e; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
                     <polyline points="17 18 23 18 23 12"/>
                 </svg>
             </div>
         </div>
 
-        {{-- ڕیزی سێیەم --}}
-
         {{-- کارتی ٩: کۆی قەرزەکان --}}
-        <div style="grid-column: span 2; background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #fecdd3; border-right: 4px solid #f43f5e; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #dc2626; line-height: 1.2;">
+        <div class="col-span-2 sm:col-span-1 md:col-span-2 bg-white rounded-2xl p-3.5 sm:p-4 border border-rose-100 border-r-4 border-r-rose-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-3">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-xl sm:text-2xl text-rose-600 leading-tight truncate">
                     {{ fmt_num($receivables ?? 0) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     کۆی قەرزەکان (کڕیاران)
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #ffe4e6; color: #f43f5e; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="2" y="5" width="20" height="14" rx="2"/>
                     <line x1="2" y1="10" x2="22" y2="10"/>
                 </svg>
@@ -207,17 +206,17 @@
         </div>
 
         {{-- کارتی ١٠: ئامێر و دەرەوە --}}
-        <div style="grid-column: span 2; background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #fde68a; border-right: 4px solid #f59e0b; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+        <div class="col-span-2 sm:col-span-1 md:col-span-2 bg-white rounded-2xl p-3.5 sm:p-4 border border-amber-100 border-r-4 border-r-amber-500 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-3">
+            <div class="min-w-0">
+                <div class="font-mono font-black text-xl sm:text-2xl text-slate-900 leading-tight truncate">
                     {{ fmt_num(($totalSuppliersCount ?? 0) + ($activeJobsCount ?? 0)) }}
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                <div class="text-[11px] sm:text-xs font-bold text-slate-500 mt-1 truncate">
                     ئامێر و ئیشی خاریجی
                 </div>
             </div>
-            <div style="width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: #fefce8; color: #f59e0b; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg style="width: 1.3rem; height: 1.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-10 sm:size-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
+                <svg class="size-5 sm:size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                 </svg>
             </div>
@@ -225,26 +224,26 @@
 
     </div>
 
-    {{-- ٣. کارتی پوختەی فرۆش و ئەمڕۆ (وەک وێنەکە) --}}
-    <div style="background: #ffffff; border-radius: 1.25rem; padding: 1.25rem 1.5rem; border: 1px solid #fecdd3; border-right: 4px solid #f43f5e; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-        <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; color: #1e293b; margin-bottom: 1rem;">
-            <span>⚠️</span>
+    {{-- ٣. کارتی پوختەی فرۆش و ئەمڕۆ --}}
+    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 border-r-4 border-r-rose-500 shadow-2xs">
+        <div class="flex items-center gap-2 font-black text-sm sm:text-base text-slate-900 mb-3 sm:mb-4">
+            <span class="text-base">⚠️</span>
             <span>دۆخی گشتی و فرۆش</span>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
             {{-- سندوقی فرۆشی ئەمڕۆ --}}
-            <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 0.85rem; padding: 1.25rem; text-align: center;">
-                <div style="font-size: 0.8rem; font-weight: 700; color: #9f1239; margin-bottom: 0.35rem;">فرۆشی ئەمڕۆ</div>
-                <div class="num" style="font-size: 1.75rem; font-weight: 900; color: #e11d48;">
+            <div class="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-3 sm:p-4 text-center">
+                <div class="text-[11px] sm:text-xs font-bold text-rose-800 mb-1">فرۆشی ئەمڕۆ</div>
+                <div class="font-mono font-black text-xl sm:text-3xl text-rose-600">
                     {{ fmt_num($todaySales ?? 0) }}
                 </div>
             </div>
 
             {{-- سندوقی کۆی گشتی فرۆشی مانگ --}}
-            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 0.85rem; padding: 1.25rem; text-align: center;">
-                <div style="font-size: 0.8rem; font-weight: 700; color: #92400e; margin-bottom: 0.35rem;">کۆی فرۆشی ئەم مانگە</div>
-                <div class="num" style="font-size: 1.75rem; font-weight: 900; color: #d97706;">
+            <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-3 sm:p-4 text-center">
+                <div class="text-[11px] sm:text-xs font-bold text-amber-800 mb-1">کۆی فرۆشی ئەم مانگە</div>
+                <div class="font-mono font-black text-xl sm:text-3xl text-amber-600">
                     {{ fmt_num($monthSales ?? 0) }}
                 </div>
             </div>
@@ -252,16 +251,16 @@
     </div>
 
     {{-- ٤. بەشی کردارە خێراکان --}}
-    <div style="background: #ffffff; border-radius: 1.25rem; padding: 1.25rem 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-        <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; color: #1e293b; margin-bottom: 1rem;">
-            <span>⚡</span>
+    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-2xs">
+        <div class="flex items-center gap-2 font-black text-sm sm:text-base text-slate-900 mb-3 sm:mb-4">
+            <span class="text-base text-amber-500">⚡</span>
             <span>کردارە خێراکان</span>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 sm:gap-3">
             @if (auth()->user()->can('manage_orders'))
                 <a href="{{ route('orders.create') }}"
-                   style="background: #2563eb; color: #ffffff; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">
+                   class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-sm shadow-blue-500/20">
                     <span>➕</span>
                     <span>وەسڵی نوێ</span>
                 </a>
@@ -269,7 +268,7 @@
 
             @if (auth()->user()->can('manage_purchases'))
                 <a href="{{ route('purchases.create') }}"
-                   style="background: #0284c7; color: #ffffff; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);">
+                   class="bg-sky-600 hover:bg-sky-700 active:scale-95 text-white py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-sm shadow-sky-500/20">
                     <span>🛒</span>
                     <span>پسوولەی کڕین</span>
                 </a>
@@ -277,20 +276,20 @@
 
             @if (auth()->user()->can('manage_payments'))
                 <a href="{{ route('payments.create') }}"
-                   style="background: #10b981; color: #ffffff; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);">
+                   class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-sm shadow-emerald-500/20">
                     <span>💵</span>
                     <span>تۆماری پارەدان</span>
                 </a>
             @endif
 
             <a href="{{ route('debts.index') }}"
-               style="background: #4f46e5; color: #ffffff; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);">
+               class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-sm shadow-indigo-500/20">
                 <span>💳</span>
                 <span>قەرزەکان</span>
             </a>
 
             <a href="{{ route('statement.index') }}"
-               style="background: #9333ea; color: #ffffff; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(147, 51, 234, 0.25);">
+               class="col-span-2 sm:col-span-1 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-sm shadow-purple-500/20">
                 <span>📑</span>
                 <span>کەشف حیسابی</span>
             </a>
@@ -299,46 +298,46 @@
 
     {{-- ٥. خشتەی دوایین وەسڵەکان و دوایین پارەدانەکان --}}
     @if (isset($recentOrders) && $recentOrders->isNotEmpty())
-        <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 1.25rem; align-items: start;">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
 
             {{-- دوایین وەسڵەکان --}}
-            <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden;">
-                <div style="padding: 1.1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f8fafc;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; color: #1e293b;">
+            <div class="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                <div class="p-3.5 sm:p-4 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+                    <div class="flex items-center gap-2 font-black text-xs sm:text-sm text-slate-900">
                         <span>📋</span>
                         <span>دوایین وەسڵەکان</span>
                     </div>
-                    <a href="{{ route('orders.index') }}" style="font-size: 0.75rem; font-weight: 700; color: #2563eb; text-decoration: none;">
+                    <a href="{{ route('orders.index') }}" class="text-xs font-bold text-blue-600 hover:text-blue-800">
                         هەمووی &larr;
                     </a>
                 </div>
 
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.85rem;">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
                         <thead>
-                            <tr style="border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 0.75rem; font-weight: 700;">
-                                <th style="padding: 0.75rem 1rem; text-align: center;">ژمارە</th>
-                                <th style="padding: 0.75rem 1rem; text-align: right;">کڕیار</th>
-                                <th style="padding: 0.75rem 1rem; text-align: center;">کۆی پارە</th>
-                                <th style="padding: 0.75rem 1rem; text-align: center;">دۆخ</th>
+                            <tr class="border-b border-slate-100 bg-slate-50 text-slate-500 font-bold text-[11px]">
+                                <th class="p-3 text-center">ژمارە</th>
+                                <th class="p-3 text-right">کڕیار</th>
+                                <th class="p-3 text-center">کۆی پارە</th>
+                                <th class="p-3 text-center">دۆخ</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-slate-100">
                             @foreach ($recentOrders as $order)
-                                <tr style="border-bottom: 1px solid #f8fafc;">
-                                    <td class="num" style="padding: 0.75rem 1rem; text-align: center;">
-                                        <a href="{{ route('orders.show', $order) }}" style="color: #e11d48; font-weight: 700; text-decoration: none;">
+                                <tr class="hover:bg-slate-50/80 transition-colors">
+                                    <td class="p-3 text-center font-mono">
+                                        <a href="{{ route('orders.show', $order) }}" class="text-rose-600 font-bold hover:underline">
                                             {{ $order->invoice_no }}
                                         </a>
                                     </td>
-                                    <td style="padding: 0.75rem 1rem; font-weight: 700; color: #1e293b;">
+                                    <td class="p-3 font-bold text-slate-800 truncate max-w-[120px]">
                                         {{ $order->customer?->name ?? '—' }}
                                     </td>
-                                    <td class="num" style="padding: 0.75rem 1rem; text-align: center; font-weight: 700; color: #334155;">
+                                    <td class="p-3 text-center font-mono font-bold text-slate-700">
                                         {{ fmt_num($order->total_iqd) }}
                                     </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        <span style="background: #f1f5f9; color: #475569; padding: 0.2rem 0.6rem; border-radius: 0.4rem; font-size: 0.72rem; font-weight: 700;">
+                                    <td class="p-3 text-center">
+                                        <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md text-[10px] font-bold">
                                             {{ $order->status_label }}
                                         </span>
                                     </td>
@@ -351,39 +350,39 @@
 
             {{-- دوایین پارەدانەکان --}}
             @if (isset($recentPayments) && $recentPayments->isNotEmpty())
-                <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden;">
-                    <div style="padding: 1.1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f8fafc;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; color: #1e293b;">
+                <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                    <div class="p-3.5 sm:p-4 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+                        <div class="flex items-center gap-2 font-black text-xs sm:text-sm text-slate-900">
                             <span>💵</span>
                             <span>دوایین پارەدانەکان</span>
                         </div>
-                        <a href="{{ route('payments.index') }}" style="font-size: 0.75rem; font-weight: 700; color: #2563eb; text-decoration: none;">
+                        <a href="{{ route('payments.index') }}" class="text-xs font-bold text-blue-600 hover:text-blue-800">
                             هەمووی &larr;
                         </a>
                     </div>
 
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.85rem;">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs">
                             <thead>
-                                <tr style="border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 0.75rem; font-weight: 700;">
-                                    <th style="padding: 0.75rem 1rem; text-align: center;">وەسڵ</th>
-                                    <th style="padding: 0.75rem 1rem; text-align: center;">بڕ</th>
-                                    <th style="padding: 0.75rem 1rem; text-align: center;">جۆر</th>
+                                <tr class="border-b border-slate-100 bg-slate-50 text-slate-500 font-bold text-[11px]">
+                                    <th class="p-3 text-center">وەسڵ</th>
+                                    <th class="p-3 text-center">بڕ</th>
+                                    <th class="p-3 text-center">جۆر</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="divide-y divide-slate-100">
                                 @foreach ($recentPayments as $payment)
-                                    <tr style="border-bottom: 1px solid #f8fafc;">
-                                        <td class="num" style="padding: 0.75rem 1rem; text-align: center;">
-                                            <a href="{{ route('payments.print', $payment) }}" style="color: #2563eb; font-weight: 700; text-decoration: none;">
+                                    <tr class="hover:bg-slate-50/80 transition-colors">
+                                        <td class="p-3 text-center font-mono">
+                                            <a href="{{ route('payments.print', $payment) }}" class="text-blue-600 font-bold hover:underline">
                                                 {{ $payment->voucher_no }}
                                             </a>
                                         </td>
-                                        <td class="num" style="padding: 0.75rem 1rem; text-align: center; font-weight: 800; color: #10b981;">
+                                        <td class="p-3 text-center font-mono font-black text-emerald-600">
                                             {{ fmt_num($payment->amount_iqd) }}
                                         </td>
-                                        <td style="padding: 0.75rem 1rem; text-align: center;">
-                                            <span style="background: {{ $payment->direction === 'in' ? '#dcfce7' : '#fee2e2' }}; color: {{ $payment->direction === 'in' ? '#16a34a' : '#dc2626' }}; padding: 0.2rem 0.6rem; border-radius: 0.4rem; font-size: 0.72rem; font-weight: 700;">
+                                        <td class="p-3 text-center">
+                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold {{ $payment->direction === 'in' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
                                                 {{ $payment->direction === 'in' ? 'وەرگرتن' : 'دان' }}
                                             </span>
                                         </td>
