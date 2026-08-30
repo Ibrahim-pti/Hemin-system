@@ -34,7 +34,7 @@
     </div>
 
     {{-- بەشی بەستەرەکانی مێنیو --}}
-    <div class="sidebar-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 1rem;">
+    <div class="sidebar-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 1rem 0.75rem 5rem 0.75rem; display: flex; flex-direction: column; gap: 1rem;">
 
         {{-- سەرەکی / داشبۆرد --}}
         <div>
@@ -50,7 +50,7 @@
                 <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.2); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
                     @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-4.5'])
                 </span>
-                <span x-show="sidebarOpen" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $dashLabel }}</span>
+                <span x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $dashLabel }}</span>
             </a>
         </div>
 
@@ -70,13 +70,15 @@
                     ])),
                 ],
                 [
-                    'title' => 'کۆگا و لایەنەکان',
-                    'activeBg' => 'rgba(14, 165, 233, 0.12)',
-                    'activeBorder' => 'rgba(14, 165, 233, 0.22)',
-                    'activeText' => '#38bdf8',
-                    'activeIconBg' => 'rgba(14, 165, 233, 0.2)',
-                    'activeIconColor' => '#7dd3fc',
+                    'title' => 'کۆگا و ماددەکان',
+                    'activeBg' => 'rgba(59, 130, 246, 0.12)',
+                    'activeBorder' => 'rgba(59, 130, 246, 0.22)',
+                    'activeText' => '#60a5fa',
+                    'activeIconBg' => 'rgba(59, 130, 246, 0.2)',
+                    'activeIconColor' => '#93c5fd',
                     'items' => [
+                        ['route' => 'items.*', 'href' => route('items.index'), 'label' => 'ماددە و کەلوپەل', 'icon' => 'items', 'can' => 'manage_items'],
+                        ['route' => 'categories.*', 'href' => route('categories.index'), 'label' => 'جۆرەکان', 'icon' => 'categories', 'can' => 'manage_items'],
                         ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_settings'],
                         ['route' => 'warehouses.*', 'href' => route('warehouses.index'), 'label' => 'کۆگا', 'icon' => 'warehouses', 'can' => 'manage_settings'],
                         ['route' => 'employees.*', 'href' => route('employees.index'), 'label' => 'کارمەندان', 'icon' => 'employees', 'can' => 'manage_employees'],
@@ -120,7 +122,7 @@
             @endphp
             @if (count($visibleItems) > 0)
                 <div>
-                    <div x-show="sidebarOpen" style="padding: 0 0.625rem; margin-bottom: 0.375rem; font-size: 0.68rem; font-weight: 600; color: #64748b; letter-spacing: 0.04em;">
+                    <div x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="padding: 0 0.625rem; margin-bottom: 0.375rem; font-size: 0.68rem; font-weight: 600; color: #64748b; letter-spacing: 0.04em;">
                         {{ $section['title'] }}
                     </div>
                     <nav style="display: flex; flex-direction: column; gap: 0.125rem;">
@@ -136,7 +138,7 @@
                                 <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isActive ? 'background: ' . $section['activeIconBg'] . '; color: ' . $section['activeIconColor'] . ';' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
                                     @include('partials.icon', ['name' => $item['icon'], 'class' => 'size-4.5'])
                                 </span>
-                                <span x-show="sidebarOpen" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item['label'] }}</span>
+                                <span x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item['label'] }}</span>
                             </a>
                         @endforeach
                     </nav>
