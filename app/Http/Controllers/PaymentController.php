@@ -62,7 +62,7 @@ class PaymentController extends Controller
                 'customer' => $request->integer('customer') ?: null,
                 'supplier' => $request->integer('supplier') ?: null,
                 'order' => $request->integer('order') ?: null,
-                'purchase' => $request->integer('purchase') ?: null,
+                'purchase' => $ ->integer('purchase') ?: null,
             ],
             'order' => $request->integer('order') ? Order::find($request->integer('order')) : null,
             'purchase' => $request->integer('purchase') ? Purchase::find($request->integer('purchase')) : null,

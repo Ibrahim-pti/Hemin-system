@@ -10,7 +10,7 @@
 
 @section('content')
 
-<div class="w-full space-y-4">
+<div class="mx-auto max-w-3xl space-y-4">
 
     @if ($errors->any())
         <div class="bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-4 text-xs font-bold space-y-1">
@@ -24,7 +24,7 @@
 
     {{-- پێشاندان ئەگەر بەستراوە بە وەسڵ یان پسوولەوە --}}
     @if ($order)
-        <div class="bg-blue-50/70 border border-blue-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+        <div class="bg-blue-50/80 border border-blue-200 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-2xs">
             <div class="flex items-center gap-3">
                 <span class="size-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg">📄</span>
                 <div>
@@ -38,7 +38,7 @@
             </div>
         </div>
     @elseif ($purchase)
-        <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+        <div class="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-2xs">
             <div class="flex items-center gap-3">
                 <span class="size-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg">🛒</span>
                 <div>
@@ -65,10 +65,12 @@
               selectedOrderId: '{{ old('order_id', $selected['order'] ?? '') }}',
               selectedPurchaseId: '{{ old('purchase_id', $selected['purchase'] ?? '') }}',
               get cleanRate() {
-                  return parseFloat(this.exchangeRate.toString().replace(/[^0-9.]/g, '')) || 0;
+                  const r = parseFloat(this.exchangeRate.toString().replace(/[^0-9.]/g, ''));
+                  return isNaN(r) ? 0 : r;
               },
               get amountIqd() {
-                  const amt = parseFloat(this.amount) || 0;
+                  const amt = parseFloat(this.amount);
+                  if (isNaN(amt) || amt <= 0) return 0;
                   if (this.currency === 'USD') {
                       return amt * (this.cleanRate / 100);
                   }
@@ -89,182 +91,181 @@
                       });
               }
           }"
-          class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs space-y-5">
+          class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
         @csrf
         <input type="hidden" name="direction" value="{{ $direction }}">
 
-        <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
-            <div class="flex items-center gap-2">
+        {{-- سەردێڕی فۆرم --}}
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
                 <span class="text-xl">{{ $direction === 'in' ? '📥' : '📤' }}</span>
-                <h2 class="text-sm font-black text-slate-900">
-                    {{ $direction === 'in' ? 'تۆمارکردنی حەقدی و وەرگرتنی پارە لە کڕیار' : 'تۆمارکردنی پارەدان بە فرۆشیار یان کارمەند' }}
-                </h2>
+                <div>
+                    <h2 class="text-sm font-black text-slate-900">
+                        {{ $direction === 'in' ? 'تۆمارکردنی حەقدی و وەرگرتنی پارە لە کڕیار' : 'تۆمارکردنی پارەدان بە فرۆشیار یان کارمەند' }}
+                    </h2>
+                    <p class="text-2xs text-slate-500 font-medium">زانیارییەکانی پارەدان لە خوارەوە پڕبکەوە</p>
+                </div>
             </div>
-            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full {{ $direction === 'in' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
-                {{ $direction === 'in' ? 'حەقدی (داهات)' : 'پارەدان (خەرجی)' }}
+            <span class="text-xs font-bold px-3 py-1 rounded-full {{ $direction === 'in' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
+                {{ $direction === 'in' ? 'وەرگرتن (داهات)' : 'پارەدان (خەرجی)' }}
             </span>
         </div>
 
-        {{-- جۆری لایەن --}}
-        <div>
-            <label class="block text-xs font-bold text-slate-700 mb-2">لایەنی مامەڵە</label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                @php
-                    $partyOptions = [
-                        'customer' => ['label' => 'کڕیار', 'icon' => '👤'],
-                        'supplier' => ['label' => 'فرۆشیار', 'icon' => '🏢'],
-                        'employee' => ['label' => 'کارمەند', 'icon' => '👷'],
-                        'other' => ['label' => 'هیتر / گشتی', 'icon' => '🏷️'],
-                    ];
-                @endphp
-                @foreach ($partyOptions as $val => $info)
-                    <label class="cursor-pointer rounded-xl border p-3 text-center text-xs font-bold flex flex-col items-center gap-1.5 transition-all"
-                           :class="kind === '{{ $val }}'
-                               ? 'border-blue-600 bg-blue-50/80 text-blue-700 shadow-2xs'
-                               : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100 text-slate-700'">
-                        <input type="radio" name="party_kind" value="{{ $val }}" x-model="kind" class="sr-only">
-                        <span class="text-lg">{{ $info['icon'] }}</span>
-                        <span>{{ $info['label'] }}</span>
-                    </label>
-                @endforeach
+        <div class="p-6 space-y-5">
+
+            {{-- بەشی ١: جۆری لایەن --}}
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-2">لایەنی مامەڵە</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    @php
+                        $partyOptions = [
+                            'customer' => ['label' => 'کڕیار', 'icon' => '👤'],
+                            'supplier' => ['label' => 'فرۆشیار', 'icon' => '🏢'],
+                            'employee' => ['label' => 'کارمەند', 'icon' => '👷'],
+                            'other' => ['label' => 'هیتر / گشتی', 'icon' => '🏷️'],
+                        ];
+                    @endphp
+                    @foreach ($partyOptions as $val => $info)
+                        <label class="cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold flex flex-col items-center gap-1 transition-all"
+                               :class="kind === '{{ $val }}'
+                                   ? 'border-blue-600 bg-blue-50/90 text-blue-700 shadow-xs ring-1 ring-blue-600'
+                                   : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100 text-slate-600'">
+                            <input type="radio" name="party_kind" value="{{ $val }}" x-model="kind" class="sr-only">
+                            <span class="text-base">{{ $info['icon'] }}</span>
+                            <span>{{ $info['label'] }}</span>
+                        </label>
+                    @endforeach
+                </div>
             </div>
-        </div>
 
-        {{-- ناوی کەس / لایەن --}}
-        <div x-show="kind !== 'other'">
-            <label class="block text-xs font-bold text-slate-700 mb-1.5" for="party_id">
-                <span x-text="kind === 'customer' ? 'ناوی کڕیار' : (kind === 'supplier' ? 'ناوی فرۆشیار' : 'ناوی کارمەند')"></span>
-                <span class="text-rose-500">*</span>
-            </label>
-            <select id="party_id" name="party_id" class="w-full px-3 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50"
-                    x-model="selectedPartyId"
-                    @change="handlePartyChange($event.target.value)">
-                <option value="">— ناو هەڵبژێرە —</option>
-            </select>
-        </div>
-
-        {{-- کاتێک کڕیار هەڵبژێردرا، دیاریکردنی وەسڵی فرۆشتن --}}
-        <div x-show="kind === 'customer'" x-cloak class="p-3.5 bg-blue-50/40 rounded-xl border border-blue-100 space-y-1.5">
-            <label class="block text-xs font-bold text-slate-700" for="order_id">
-                <span>دیاریکردنی وەسڵی فرۆشتن</span>
-                <span class="text-slate-400 font-normal text-[11px]">(ئارەزوومەندانە — بۆ دانەوەی قەرزی وەسڵێکی دیاریکراو)</span>
-            </label>
-            <select id="order_id" name="order_id" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
-                    x-model="selectedOrderId">
-                <option value="">— تەواوی حسابی کڕیار (گشتی) —</option>
-                @foreach ($orders as $ord)
-                    <option value="{{ $ord->id }}" data-customer="{{ $ord->customer_id }}" {{ $selected['order'] == $ord->id ? 'selected' : '' }}>
-                        وەسڵی {{ $ord->invoice_no }} — بڕ: {{ fmt_money($ord->total, $ord->currency) }} ({{ fmt_date($ord->order_date) }})
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        {{-- کاتێک فرۆشیار هەڵبژێردرا، دیاریکردنی پسوولەی کڕین --}}
-        <div x-show="kind === 'supplier'" x-cloak class="p-3.5 bg-indigo-50/40 rounded-xl border border-indigo-100 space-y-1.5">
-            <label class="block text-xs font-bold text-slate-700" for="purchase_id">
-                <span>دیاریکردنی پسوولەی کڕین</span>
-                <span class="text-slate-400 font-normal text-[11px]">(ئارەزوومەندانە — بۆ دانەوەی پسوولەیەکی کڕین)</span>
-            </label>
-            <select id="purchase_id" name="purchase_id" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
-                    x-model="selectedPurchaseId">
-                <option value="">— تەواوی حسابی فرۆشیار (گشتی) —</option>
-                @foreach ($purchases as $pch)
-                    <option value="{{ $pch->id }}" data-supplier="{{ $pch->supplier_id }}" {{ $selected['purchase'] == $pch->id ? 'selected' : '' }}>
-                        پسوولەی {{ $pch->invoice_no }} — بڕ: {{ fmt_money($pch->total, $pch->currency) }} ({{ fmt_date($pch->purchase_date) }})
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div x-show="kind === 'other'" x-cloak>
-            <label class="block text-xs font-bold text-slate-700 mb-1.5" for="party_name">ناوی لایەن / کەس</label>
-            <input id="party_name" name="party_name" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50" value="{{ old('party_name') }}" placeholder="ناوی کەس یان لایەن...">
-        </div>
-
-        {{-- بڕی پارە و دراو --}}
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="sm:col-span-2">
-                <label class="block text-xs font-bold text-slate-700 mb-1.5" for="amount">
-                    <span>بڕی پارە</span>
+            {{-- بەشی ٢: ناوی کەس / لایەن --}}
+            <div x-show="kind !== 'other'">
+                <label class="block text-xs font-bold text-slate-700 mb-1.5" for="party_id">
+                    <span x-text="kind === 'customer' ? 'ناوی کڕیار' : (kind === 'supplier' ? 'ناوی فرۆشیار' : 'ناوی کارمەند')"></span>
                     <span class="text-rose-500">*</span>
                 </label>
-                <input id="amount" name="amount" type="number" step="any" min="0.01" required
-                       class="w-full px-3 py-2.5 text-sm font-black rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50 num"
-                       x-model="amount" placeholder="0">
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1.5" for="currency">دراو</label>
-                <select id="currency" name="currency" class="w-full px-3 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50" x-model="currency">
-                    <option value="IQD">دیناری عێراقی (د.ع)</option>
-                    <option value="USD">دۆلاری ئەمریکی ($ USD)</option>
+                <select id="party_id" name="party_id" class="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/40"
+                        x-model="selectedPartyId"
+                        @change="handlePartyChange($event.target.value)">
+                    <option value="">— ناو هەڵبژێرە —</option>
                 </select>
             </div>
-        </div>
 
-        {{-- گۆڕینەوەی دۆلار و وەرگرتنی نرخی Live لە API وەک بەشی فرۆشتن --}}
-        <div x-show="currency === 'USD'" x-cloak class="p-4 bg-blue-50/60 border border-blue-200/90 rounded-2xl space-y-2">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold text-blue-950">نرخی ١٠٠$ دۆلار بە دینار:</span>
-                    <div class="inline-flex items-center gap-1 bg-white rounded-xl border border-blue-200 px-2 py-1 shadow-2xs">
-                        <input id="exchange_rate" name="exchange_rate" type="text"
-                               class="w-28 text-xs font-mono font-bold text-slate-800 border-0 outline-none focus:ring-0 p-0"
-                               x-model="exchangeRate" placeholder="150,000">
-                        <span class="text-2xs text-slate-400 font-bold">د.ع</span>
-                        <button type="button" @click="fetchLiveRate()"
-                                :disabled="fetchingRate"
-                                class="text-slate-400 hover:text-blue-600 p-0.5 rounded transition-all ml-1 cursor-pointer"
-                                title="وەرگرتنی نرخی ئەمڕۆ لە ئینتەرنێت (Live API)">
-                            <svg class="size-4" :class="fetchingRate ? 'animate-spin text-blue-600' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="text-left">
-                    <span class="text-xs text-slate-500 font-medium">کۆی گشتی بە دینار:</span>
-                    <span class="num font-black text-blue-700 text-sm mr-1.5" x-text="amountIqd.toLocaleString('en-US') + ' د.ع'"></span>
-                </div>
-            </div>
-        </div>
-
-        {{-- قاسە و بەروار --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1.5" for="cash_box_id">قاسە</label>
-                <select id="cash_box_id" name="cash_box_id" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50">
-                    <option value="">— خۆکار بەپێی دراو دیاری دەکرێت —</option>
-                    @foreach ($cashBoxes as $box)
-                        <option value="{{ $box->id }}">{{ $box->name }}</option>
+            {{-- کاتێک کڕیار هەڵبژێردرا، دیاریکردنی وەسڵی فرۆشتن --}}
+            <div x-show="kind === 'customer'" x-cloak class="p-3.5 bg-blue-50/40 rounded-xl border border-blue-100 space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700" for="order_id">
+                    <span>دیاریکردنی وەسڵی فرۆشتن</span>
+                    <span class="text-slate-400 font-normal text-[11px]">(ئارەزوومەندانە — بۆ دانەوەی قەرزی وەسڵێکی دیاریکراو)</span>
+                </label>
+                <select id="order_id" name="order_id" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
+                        x-model="selectedOrderId">
+                    <option value="">— تەواوی حسابی کڕیار (گشتی) —</option>
+                    @foreach ($orders as $ord)
+                        <option value="{{ $ord->id }}" data-customer="{{ $ord->customer_id }}" {{ $selected['order'] == $ord->id ? 'selected' : '' }}>
+                            وەسڵی {{ $ord->invoice_no }} — بڕ: {{ fmt_money($ord->total, $ord->currency) }} ({{ fmt_date($ord->order_date) }})
+                        </option>
                     @endforeach
                 </select>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1.5" for="paid_at">
-                    <span>بەروار</span>
-                    <span class="text-rose-500">*</span>
+            {{-- کاتێک فرۆشیار هەڵبژێردرا، دیاریکردنی پسوولەی کڕین --}}
+            <div x-show="kind === 'supplier'" x-cloak class="p-3.5 bg-indigo-50/40 rounded-xl border border-indigo-100 space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700" for="purchase_id">
+                    <span>دیاریکردنی پسوولەی کڕین</span>
+                    <span class="text-slate-400 font-normal text-[11px]">(ئارەزوومەندانە — بۆ دانەوەی پسوولەیەکی کڕین)</span>
                 </label>
-                <input id="paid_at" name="paid_at" type="date" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50 num" required
-                       value="{{ old('paid_at', now()->toDateString()) }}">
+                <select id="purchase_id" name="purchase_id" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
+                        x-model="selectedPurchaseId">
+                    <option value="">— تەواوی حسابی فرۆشیار (گشتی) —</option>
+                    @foreach ($purchases as $pch)
+                        <option value="{{ $pch->id }}" data-supplier="{{ $pch->supplier_id }}" {{ $selected['purchase'] == $pch->id ? 'selected' : '' }}>
+                            پسوولەی {{ $pch->invoice_no }} — بڕ: {{ fmt_money($pch->total, $pch->currency) }} ({{ fmt_date($pch->purchase_date) }})
+                        </option>
+                    @endforeach
+                </select>
             </div>
+
+            <div x-show="kind === 'other'" x-cloak>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5" for="party_name">ناوی لایەن / کەس</label>
+                <input id="party_name" name="party_name" class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/40" value="{{ old('party_name') }}" placeholder="ناوی کەس یان لایەن...">
+            </div>
+
+            {{-- بەشی ٣: بڕی پارە و دراو --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5" for="amount">
+                        <span>بڕی پارە</span>
+                        <span class="text-rose-500">*</span>
+                    </label>
+                    <input id="amount" name="amount" type="number" step="any" min="0.01" required
+                           class="w-full px-3.5 py-2.5 text-sm font-black rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/40 num"
+                           x-model="amount" placeholder="0">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5" for="currency">دراو</label>
+                    <select id="currency" name="currency" class="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/40" x-model="currency">
+                        <option value="IQD">دیناری عێراقی (د.ع)</option>
+                        <option value="USD">دۆلاری ئەمریکی ($ USD)</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- گۆڕینەوەی دۆلار ئەگەر USD بێت (دیزاینی خاوێن و ڕێک) --}}
+            <div x-show="currency === 'USD'" x-cloak class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                    {{-- خانەی نرخی ١٠٠ دۆلار لەگەڵ دوگمەی API --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1" for="exchange_rate">نرخی ١٠٠$ دۆلار بە دینار</label>
+                        <div class="flex items-center gap-1.5 bg-white rounded-xl border border-slate-200 px-3 py-1.5 shadow-2xs focus-within:border-blue-500">
+                            <input id="exchange_rate" name="exchange_rate" type="text"
+                                   class="w-full text-xs font-mono font-bold text-slate-800 border-0 outline-none focus:ring-0 p-0"
+                                   x-model="exchangeRate" placeholder="150,000">
+                            <span class="text-2xs text-slate-400 font-bold shrink-0">د.ع</span>
+                            <button type="button" @click="fetchLiveRate()"
+                                    :disabled="fetchingRate"
+                                    class="text-slate-400 hover:text-blue-600 p-1 rounded-lg hover:bg-slate-100 transition-all shrink-0 cursor-pointer"
+                                    title="وەرگرتنی نرخی ئەمڕۆ لە ئینتەرنێت (Live API)">
+                                <svg class="size-4" :class="fetchingRate ? 'animate-spin text-blue-600' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- کۆی گشتی بە دینار --}}
+                    <div class="bg-blue-50/80 rounded-xl p-3 border border-blue-100 flex flex-col justify-center">
+                        <div class="text-[11px] font-bold text-blue-900">کۆی گشتی بە دینار:</div>
+                        <div class="text-base font-black text-blue-700 num mt-0.5" x-text="amountIqd ? amountIqd.toLocaleString('en-US') + ' د.ع' : '0 د.ع'"></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- بەشی ٤: بەروار و تێبینی --}}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5" for="paid_at">
+                        <span>بەروار</span>
+                        <span class="text-rose-500">*</span>
+                    </label>
+                    <input id="paid_at" name="paid_at" type="date" class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/40 num" required
+                           value="{{ old('paid_at', now()->toDateString()) }}">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5" for="note">تێبینی</label>
+                    <input id="note" name="note" class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/40" value="{{ old('note') }}" placeholder="پێشەکی، قیستی مانگانە، وەرگرتنی کاش...">
+                </div>
+            </div>
+
         </div>
 
-        {{-- تێبینی --}}
-        <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1.5" for="note">تێبینی</label>
-            <input id="note" name="note" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 bg-slate-50/50" value="{{ old('note') }}" placeholder="پێشەکی، قیستی مانگانە، وەرگرتنی کاش...">
-        </div>
-
-        {{-- دوگمەکان --}}
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-            <a href="{{ route('payments.index') }}" class="btn btn-ghost !py-2.5 !px-5 text-xs font-bold text-slate-600">
+        {{-- بەشی خوارەوە: دوگمەکان --}}
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-2.5">
+            <a href="{{ route('payments.index') }}" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600">
                 پاشگەزبوونەوە
             </a>
-            <button type="submit" class="btn !py-2.5 !px-6 text-xs font-bold {{ $direction === 'in' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700' }} text-white rounded-xl shadow-xs cursor-pointer">
+            <button type="submit" class="btn !py-2 !px-6 text-xs font-bold {{ $direction === 'in' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700' }} text-white rounded-xl shadow-xs cursor-pointer">
                 <span>✓</span>
                 <span>تۆمارکردنی حەقدی و چاپکردن</span>
             </button>
