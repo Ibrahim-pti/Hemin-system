@@ -84,6 +84,18 @@ class BackupService
         return Storage::disk(self::DISK)->path(self::FOLDER.'/'.$safe);
     }
 
+    public function delete(string $filename): bool
+    {
+        $safe = basename($filename);
+        $file = self::FOLDER.'/'.$safe;
+
+        if (Storage::disk(self::DISK)->exists($file)) {
+            return Storage::disk(self::DISK)->delete($file);
+        }
+
+        return false;
+    }
+
     private function findBinary(): string
     {
         foreach (self::DUMP_PATHS as $path) {

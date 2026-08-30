@@ -155,6 +155,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/sync-rate', [SettingController::class, 'syncLiveRate'])->name('settings.sync-rate');
         Route::post('/settings/backup', [SettingController::class, 'backup'])->name('settings.backup');
         Route::get('/settings/backup/{file}', [SettingController::class, 'download'])->name('settings.backup.download');
+        Route::delete('/settings/backup/{file}', [SettingController::class, 'deleteBackup'])->name('settings.backup.delete');
+        Route::post('/settings/clear-cache', [SettingController::class, 'clearCache'])->name('settings.clear-cache');
     });
 
     Route::get('/api/exchange-rate/live', [SettingController::class, 'liveRate'])->name('exchange-rate.live');
