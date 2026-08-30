@@ -18,43 +18,50 @@
 
 <div x-data="{ showDeleteModal: false, deleteUrl: '' }" class="space-y-4">
 
-    {{-- ١. کارتەکانی کورتە-ئاماری دارایی --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-        {{-- کۆی وەرگیراو --}}
-        <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs border-r-4 border-r-emerald-500 flex items-center justify-between">
-            <div>
-                <div class="text-xs font-bold text-slate-500">کۆی گشتی وەرگیراو (داهات)</div>
-                <div class="text-2xl font-black text-emerald-700 num mt-1">{{ fmt_money($totalIn) }}</div>
+    {{-- ١. کارتەکانی کورتە-ئاماری دارایی وەک شێوازی قاسە --}}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        {{-- ١. کۆی وەرگیراو --}}
+        <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+            <div style="color: #16a34a; margin-bottom: 0.15rem;">
+                <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
             </div>
-            <div class="size-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-                📥
-            </div>
-        </div>
-
-        {{-- کۆی دراو --}}
-        <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs border-r-4 border-r-amber-500 flex items-center justify-between">
-            <div>
-                <div class="text-xs font-bold text-slate-500">کۆی پارەی دراو (خەرجی)</div>
-                <div class="text-2xl font-black text-amber-700 num mt-1">{{ fmt_money($totalOut) }}</div>
-            </div>
-            <div class="size-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
-                📤
+            <div style="font-size: 0.8rem; font-weight: 700; color: #166534;">کۆی وەرگیراو (داهات)</div>
+            <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #15803d; line-height: 1.2;">
+                +{{ fmt_money($totalIn) }}
             </div>
         </div>
 
-        {{-- پوختەی جیاوازی --}}
+        {{-- ٢. کۆی دراو --}}
+        <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+            <div style="color: #e11d48; margin-bottom: 0.15rem;">
+                <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="17 14 12 9 7 14"/>
+                    <line x1="12" y1="9" x2="12" y2="21"/>
+                </svg>
+            </div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: #9f1239;">کۆی پارەی دراو (خەرجی)</div>
+            <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #dc2626; line-height: 1.2;">
+                -{{ fmt_money($totalOut) }}
+            </div>
+        </div>
+
+        {{-- ٣. پوختەی جیاوازی --}}
         @php
             $netDiff = $totalIn - $totalOut;
         @endphp
-        <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs border-r-4 {{ $netDiff >= 0 ? 'border-r-blue-500' : 'border-r-rose-500' }} flex items-center justify-between">
-            <div>
-                <div class="text-xs font-bold text-slate-500">پوختەی داهات (جیاوازی)</div>
-                <div class="text-2xl font-black num mt-1 {{ $netDiff >= 0 ? 'text-blue-700' : 'text-rose-600' }}">
-                    {{ fmt_money($netDiff) }}
-                </div>
+        <div style="background: {{ $netDiff >= 0 ? '#f0f9ff' : '#fff1f2' }}; border: 1.5px solid {{ $netDiff >= 0 ? '#7dd3fc' : '#fecdd3' }}; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+            <div style="color: {{ $netDiff >= 0 ? '#0284c7' : '#e11d48' }}; margin-bottom: 0.15rem;">
+                <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v8M8 12h8"/>
+                </svg>
             </div>
-            <div class="size-11 rounded-xl {{ $netDiff >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600' }} flex items-center justify-center text-xl shrink-0">
-                ⚖️
+            <div style="font-size: 0.8rem; font-weight: 700; color: {{ $netDiff >= 0 ? '#075985' : '#9f1239' }};">پوختەی جیاوازی (داهات - خەرجی)</div>
+            <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $netDiff >= 0 ? '#0369a1' : '#dc2626' }}; line-height: 1.2;">
+                {{ fmt_money($netDiff) }}
             </div>
         </div>
     </div>
