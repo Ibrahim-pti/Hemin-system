@@ -60,14 +60,14 @@
               currency: '{{ old('currency', 'IQD') }}',
               amount: {{ (float) old('amount', $order ? $order->remaining() : ($purchase ? $purchase->remaining() : 0)) }},
               rate: {{ $rate }},
-              selectedCustomerId: '{{ old('party_id', $selected['customer'] ?? '') }}',
+              selectedPartyId: '{{ old('party_id', $selected['customer'] ?? ($selected['supplier'] ?? '')) }}',
               selectedOrderId: '{{ old('order_id', $selected['order'] ?? '') }}',
+              selectedPurchaseId: '{{ old('purchase_id', $selected['purchase'] ?? '') }}',
               get amountIqd() { return this.currency === 'USD' ? this.amount * this.rate : this.amount; }
           }"
           class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs space-y-5">
         @csrf
         <input type="hidden" name="direction" value="{{ $direction }}">
-        @if ($selected['purchase']) <input type="hidden" name="purchase_id" value="{{ $selected['purchase'] }}"> @endif
 
         <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -113,24 +113,41 @@
                 <span class="text-rose-500">*</span>
             </label>
             <select id="party_id" name="party_id" class="w-full px-3 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50"
-                    x-model="selectedCustomerId"
-                    @change="updateOrdersForCustomer($event.target.value)">
+                    x-model="selectedPartyId"
+                    @change="handlePartyChange($event.target.value)">
                 <option value="">— ناو هەڵبژێرە —</option>
             </select>
         </div>
 
-        {{-- کاتێک کڕیار هەڵبژێردرا و وەسڵی هەبوو، دیاریکردنی وەسڵ --}}
-        <div x-show="kind === 'customer'" x-cloak class="p-3 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-1.5">
+        {{-- کاتێک کڕیار هەڵبژێردرا، دیاریکردنی وەسڵی فرۆشتن --}}
+        <div x-show="kind === 'customer'" x-cloak class="p-3.5 bg-blue-50/40 rounded-xl border border-blue-100 space-y-1.5">
             <label class="block text-xs font-bold text-slate-700" for="order_id">
-                <span>بەستنەوە بە وەسڵی فرۆشتن</span>
+                <span>دیاریکردنی وەسڵی فرۆشتن</span>
                 <span class="text-slate-400 font-normal text-[11px]">(ئارەزوومەندانە — بۆ دانەوەی قەرزی وەسڵێکی دیاریکراو)</span>
             </label>
-            <select id="order_id" name="order_id" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white font-mono"
+            <select id="order_id" name="order_id" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
                     x-model="selectedOrderId">
                 <option value="">— تەواوی حسابی کڕیار (گشتی) —</option>
                 @foreach ($orders as $ord)
                     <option value="{{ $ord->id }}" data-customer="{{ $ord->customer_id }}" {{ $selected['order'] == $ord->id ? 'selected' : '' }}>
-                        وەسڵی #{{ $ord->invoice_no }} ({{ fmt_money($ord->total, $ord->currency) }}) — {{ fmt_date($ord->order_date) }}
+                        وەسڵی {{ $ord->invoice_no }} — بڕ: {{ fmt_money($ord->total, $ord->currency) }} ({{ fmt_date($ord->order_date) }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- کاتێک فرۆشیار هەڵبژێردرا، دیاریکردنی پسوولەی کڕین --}}
+        <div x-show="kind === 'supplier'" x-cloak class="p-3.5 bg-indigo-50/40 rounded-xl border border-indigo-100 space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700" for="purchase_id">
+                <span>دیاریکردنی پسوولەی کڕین</span>
+                <span class="text-slate-400 font-normal text-[11px]">(ئارەزوومەندانە — بۆ دانەوەی پسوولەیەکی کڕین)</span>
+            </label>
+            <select id="purchase_id" name="purchase_id" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
+                    x-model="selectedPurchaseId">
+                <option value="">— تەواوی حسابی فرۆشیار (گشتی) —</option>
+                @foreach ($purchases as $pch)
+                    <option value="{{ $pch->id }}" data-supplier="{{ $pch->supplier_id }}" {{ $selected['purchase'] == $pch->id ? 'selected' : '' }}>
+                        پسوولەی {{ $pch->invoice_no }} — بڕ: {{ fmt_money($pch->total, $pch->currency) }} ({{ fmt_date($pch->purchase_date) }})
                     </option>
                 @endforeach
             </select>
@@ -221,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const select = document.getElementById('party_id');
     const orderSelect = document.getElementById('order_id');
+    const purchaseSelect = document.getElementById('purchase_id');
     const preselect = {
         customer: @js($selected['customer']),
         supplier: @js($selected['supplier']),
@@ -236,13 +254,20 @@ document.addEventListener('DOMContentLoaded', () => {
             select.add(option);
         });
 
-        if (kind === 'customer' && preselect['customer']) {
-            filterOrders(preselect['customer']);
+        if (kind === 'customer') {
+            filterOrders(select.value || preselect['customer']);
+        } else if (kind === 'supplier') {
+            filterPurchases(select.value || preselect['supplier']);
         }
     };
 
-    window.updateOrdersForCustomer = (custId) => {
-        filterOrders(custId);
+    window.handlePartyChange = (id) => {
+        const activeKind = document.querySelector('input[name="party_kind"]:checked')?.value;
+        if (activeKind === 'customer') {
+            filterOrders(id);
+        } else if (activeKind === 'supplier') {
+            filterPurchases(id);
+        }
     };
 
     function filterOrders(custId) {
@@ -252,6 +277,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!opt.value) return;
             const cId = opt.getAttribute('data-customer');
             if (!custId || cId === String(custId)) {
+                opt.style.display = '';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+    }
+
+    function filterPurchases(suppId) {
+        if (!purchaseSelect) return;
+        const options = purchaseSelect.querySelectorAll('option');
+        options.forEach(opt => {
+            if (!opt.value) return;
+            const sId = opt.getAttribute('data-supplier');
+            if (!suppId || sId === String(suppId)) {
                 opt.style.display = '';
             } else {
                 opt.style.display = 'none';
