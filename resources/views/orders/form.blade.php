@@ -38,142 +38,134 @@
         </div>
     @endif
 
+    {{-- ١. زانیاری سەرەکی کڕیار و بەروار --}}
     <div class="card">
         <div class="card-head flex items-center justify-between">
             <span>زانیاری وەسڵ و کڕیار</span>
             <a href="{{ route('customers.index') }}" class="btn btn-ghost !py-1 text-xs">گەڕانەوە &larr;</a>
         </div>
-        <div class="card-body grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {{-- کڕیار --}}
+        <div class="card-body grid gap-4 sm:grid-cols-3">
+
+            {{-- بەڕێز (کڕیار) --}}
             <div class="sm:col-span-2">
-                <div class="flex items-center justify-between mb-1">
-                    <label class="label !mb-0" for="customer_id">
-                        بەڕێز (کڕیار) <span class="text-[--color-danger]">*</span>
-                    </label>
-                    <button type="button" @click="openCustomerModal()" class="text-xs text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 cursor-pointer">
-                        <span>+</span>
-                        <span>زیادکردنی کڕیاری نوێ</span>
-                    </button>
-                </div>
-                <div class="relative">
-                    <select id="customer_id" name="customer_id" class="field font-bold text-sm" required
-                            x-model="customerId"
-                            @change="onCustomerSelectChange($event)">
-                        <option value="">کڕیار هەڵبژێرە...</option>
-                        <option value="__NEW__" class="font-bold text-blue-600">+ زیادکردنی کڕیاری نوێ...</option>
-                        <template x-for="c in customersList" :key="c.id">
-                            <option :value="c.id" :selected="c.id == customerId" x-text="c.name + (c.phone ? ' — ' + c.phone : '')"></option>
-                        </template>
-                    </select>
-                </div>
+                <label class="label" for="customer_id">بەڕێز (کڕیار) <span class="text-[--color-danger]">*</span></label>
+                <select id="customer_id" name="customer_id" class="field font-bold w-full" required
+                        x-model="customerId" @change="onCustomerSelectChange($event)">
+                    <option value="">— هەڵبژێرە —</option>
+                    <option value="__NEW__" class="font-bold text-blue-600 bg-blue-50">➕ زیادکردنی کڕیاری نوێ</option>
+                    <template x-for="c in customersList" :key="c.id">
+                        <option :value="c.id" x-text="c.name + (c.phone ? ' — ' + c.phone : '')" :selected="c.id == customerId"></option>
+                    </template>
+                </select>
             </div>
 
             {{-- بەروار --}}
-            <div>
-                <label class="label" for="order_date">
-                    بەروار <span class="text-[--color-danger]">*</span>
-                </label>
-                <input id="order_date" name="order_date" type="date" class="field num font-bold" required
+            <div class="sm:col-span-1">
+                <label class="label" for="order_date">بەروار <span class="text-[--color-danger]">*</span></label>
+                <input id="order_date" name="order_date" type="date" class="field num" required
                        value="{{ old('order_date', $order->order_date?->toDateString() ?? now()->toDateString()) }}">
             </div>
 
             {{-- تێبینی --}}
-            <div class="sm:col-span-2 lg:col-span-4">
+            <div class="sm:col-span-3">
                 <label class="label" for="note">تێبینی</label>
-                <input id="note" name="note" type="text" class="field"
-                       placeholder="تێبینی گشتی وەسڵ..."
-                       value="{{ old('note', $order->note) }}">
+                <input id="note" name="note" class="field" value="{{ old('note', $order->note) }}" placeholder="تێبینی گشتی وەسڵ...">
             </div>
         </div>
     </div>
 
-    {{-- ٢. خشتەی شتە داواکراوەکان بە پێکهاتەی وەسڵ --}}
+    {{-- ٢. خشتەی شتەکان (تەنها وێنە، ناوەڕۆک/شتەکە، نرخ) لەگەڵ هەڵبژاردنی دراو لە سەرەوەی خشتەکە --}}
     <div class="card mt-4">
-        <div class="card-head flex items-center justify-between">
-            <span>ناوەڕۆکی شتە داواکراوەکان</span>
+        <div class="card-head flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="font-bold text-slate-800 text-sm">ناوەڕۆکی شتە داواکراوەکان</span>
 
-            {{-- دراو و نرخی گۆڕینەوە --}}
-            <div class="flex items-center gap-2 text-xs">
-                <label class="font-semibold text-slate-700">دراو:</label>
-                <select name="currency" class="field !py-1 !px-2 text-xs font-bold" x-model="currency">
-                    <option value="IQD">دینار (IQD)</option>
-                    <option value="USD">دۆلار ($ USD)</option>
-                </select>
+                {{-- هەڵبژاردنی دراو لە تەنیشت ناوەڕۆک --}}
+                <div class="flex items-center gap-2 bg-slate-100/90 px-3 py-1 rounded-lg border border-slate-200">
+                    <span class="text-xs font-bold text-slate-600">دراو:</span>
+                    <select id="currency" name="currency" class="bg-white border border-slate-300 rounded px-2 py-0.5 text-xs font-bold text-slate-800 cursor-pointer outline-none focus:ring-1 focus:ring-blue-500" x-model="currency">
+                        <option value="IQD">دینار (IQD)</option>
+                        <option value="USD">دۆلار ($ USD)</option>
+                    </select>
 
-                <template x-if="currency === 'USD'">
-                    <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
-                        <span class="text-slate-500 font-medium">نرخی $١٠٠:</span>
-                        <input type="text" name="exchange_rate" x-model="exchangeRate"
-                               class="w-16 text-center font-mono font-bold text-xs bg-white border border-slate-300 rounded px-1 py-0.5 outline-none">
-                        <button type="button" @click="fetchLiveRate()" :disabled="fetchingRate" class="text-blue-600 hover:text-blue-700 cursor-pointer" title="وەرگرتنی نرخی ئەمڕۆ">
-                            <span :class="fetchingRate ? 'animate-spin inline-block' : ''">🔄</span>
-                        </button>
+                    {{-- نرخی دۆلار ئەگەر دۆلار بێت --}}
+                    <div x-show="currency === 'USD'" x-cloak class="flex items-center gap-1.5 mr-2">
+                        <span class="text-xs text-slate-500 font-medium">نرخی ١٠٠$:</span>
+                        <div class="inline-flex items-center gap-1 bg-white rounded border border-slate-300 px-1 py-0.5">
+                            <input id="exchange_rate" name="exchange_rate" type="text" class="field num !py-0 !px-1 w-24 text-xs font-bold border-0 focus:ring-0"
+                                   x-model="exchangeRate" placeholder="150,000">
+                            <button type="button" @click="fetchLiveRate()"
+                                    :disabled="fetchingRate"
+                                    class="text-slate-400 hover:text-blue-600 p-0.5 rounded transition-all cursor-pointer"
+                                    title="وەرگرتنی نرخی ئەمڕۆ لە ئینتەرنێت (Live API)">
+                                <svg class="size-3.5" :class="fetchingRate && 'animate-spin text-blue-600'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                </template>
+                </div>
             </div>
         </div>
 
         <div class="overflow-x-auto">
             <table class="table w-full">
                 <thead>
-                    <tr class="bg-slate-50 text-xs text-slate-600 font-bold border-b border-[--color-line]">
-                        <th style="width: 70px; text-align: center;">وێنە</th>
-                        <th style="text-align: right; padding: 8px 12px;">ناوەڕۆک / شتەکە (وەک: دەرگا، مەحەجەرە...)</th>
-                        <th style="width: 220px; text-align: center;">
-                            نرخ (<span x-text="currency === 'USD' ? '$' : 'د.ع'"></span>)
-                        </th>
-                        <th style="width: 44px; text-align: center;"></th>
+                    <tr class="bg-slate-50/80 text-xs text-slate-700 font-bold border-b border-[--color-line]">
+                        <th style="width: 60px; text-align: center; padding: 10px 6px;">وێنە</th>
+                        <th style="text-align: right; padding: 10px 12px;">ناوەڕۆک / شتەکە (وەک دەرگا، مەحەجەرە...)</th>
+                        <th style="width: 220px; text-align: center; padding: 10px 12px;">نرخ (<span x-text="currency === 'USD' ? '$' : 'د.ع'"></span>)</th>
+                        <th style="width: 44px; text-align: center; padding: 10px 6px;"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="divide-y divide-slate-100 text-sm">
                     <template x-for="(line, index) in lines" :key="index">
-                        <tr class="hover:bg-slate-50/60 transition-colors">
-                            {{-- وێنەی شتەکە --}}
-                            <td style="text-align: center; vertical-align: middle; padding: 6px;">
-                                <div class="relative flex items-center justify-center">
-                                    <template x-if="line.preview">
-                                        <div class="relative size-11 rounded-lg border border-slate-200 overflow-hidden group shadow-2xs">
-                                            <img :src="line.preview" class="size-full object-cover">
-                                            <button type="button" @click="removeImage(line, index)"
-                                                    class="absolute inset-0 bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                                                    title="سڕینەوەی وێنە">✕</button>
-                                        </div>
-                                    </template>
-                                    <template x-if="!line.preview">
-                                        <label :for="`order_line_image_${index}`"
-                                               class="size-11 rounded-lg border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50/70 flex flex-col items-center justify-center cursor-pointer transition-colors text-slate-400 hover:text-blue-600"
-                                               title="وێنە دانێ">
-                                            <span class="text-base leading-none">🖼️</span>
-                                        </label>
-                                    </template>
+                        <tr>
+                            {{-- وێنەی کاڵا / دیزاین --}}
+                            <td style="text-align: center; padding: 4px;">
+                                <div class="flex items-center justify-center">
                                     <input type="file"
-                                           :id="`order_line_image_${index}`"
                                            :name="`lines[${index}][image]`"
+                                           :id="`order_line_image_${index}`"
                                            accept="image/*"
-                                           class="sr-only"
+                                           class="hidden"
                                            @change="onImageChange($event, line)">
                                     <input type="hidden" :name="`lines[${index}][existing_image]`" :value="line.image || ''">
+
+                                    <template x-if="line.preview">
+                                        <div class="relative group size-9 rounded-lg overflow-hidden border border-blue-400 shadow-2xs shrink-0">
+                                            <img :src="line.preview" class="size-full object-cover cursor-pointer"
+                                                 @click="document.getElementById(`order_line_image_${index}`).click()"
+                                                 title="گۆڕینی وێنە">
+                                            <button type="button" @click="removeImage(line, index)"
+                                                    class="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full size-3.5 flex items-center justify-center text-[9px] shadow cursor-pointer"
+                                                    title="لابردنی وێنە">×</button>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="!line.preview">
+                                        <button type="button"
+                                                @click="document.getElementById(`order_line_image_${index}`).click()"
+                                                class="size-9 rounded-lg border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+                                                title="دانانی وێنەی دیزاین">
+                                            <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                                <polyline points="21 15 16 10 5 21"/>
+                                            </svg>
+                                        </button>
+                                    </template>
                                 </div>
                             </td>
 
-                            {{-- ناوەڕۆک و تێبینی --}}
+                            {{-- ناوەڕۆک / ناوی شتەکە --}}
                             <td style="padding: 6px 12px;">
-                                <div>
-                                    <input type="text"
-                                           :name="`lines[${index}][description]`"
-                                           x-model="line.description"
-                                           class="field w-full !py-2 !px-3 text-sm font-bold bg-white"
-                                           placeholder="ناوی شتەکە یان ناوەڕۆک بنووسە..."
-                                           required>
-                                    <input type="text"
-                                           :name="`lines[${index}][note]`"
-                                           x-model="line.note"
-                                           class="field w-full !py-1 !px-2 mt-1 text-xs text-slate-500 bg-white"
-                                           placeholder="تێبینی زیاتر (ئارەزوومەندانە)...">
-                                </div>
+                                <input :name="`lines[${index}][description]`" x-model="line.description" required
+                                       class="field w-full !py-2 !px-3 text-sm bg-white"
+                                       :placeholder="'ناوەڕۆک / شتەکە ' + (index + 1) + ' (وەک: دەرگای ئاسن، مەحەجەرە...)'">
                             </td>
 
-                            {{-- نرخ بە فاریزە --}}
+                            {{-- نرخ --}}
                             <td style="padding: 6px 12px;">
                                 <div class="relative">
                                     <input type="text" inputmode="numeric" required
@@ -209,7 +201,7 @@
     <div class="mt-4 grid gap-4 lg:grid-cols-3">
         <div class="card lg:col-span-2">
             <div class="card-body grid gap-4 sm:grid-cols-2">
-                {{-- داشکاندن --}}
+                {{-- داشکاندن بە ژمارە --}}
                 <div>
                     <label class="label" for="discount_amount">
                         داشکاندن <span class="text-xs font-normal text-slate-500" x-text="'(' + (currency === 'USD' ? 'دۆلار $' : 'دینار د.ع') + ')'"></span>
