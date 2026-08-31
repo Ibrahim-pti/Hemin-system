@@ -19,6 +19,7 @@ use App\Http\Controllers\StockCountController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\WorkshopController;
 use Illuminate\Support\Facades\Route;
 
 // ── چوونەژوورەوە ───────────────────────────────────────────────────
@@ -36,14 +37,14 @@ Route::middleware('auth')->group(function () {
 
     // ── داشبۆردی وەستاکان و دروستکردن ──
     Route::middleware('can:view_workshop')->group(function () {
-        Route::get('/workshop', [\App\Http\Controllers\WorkshopController::class, 'dashboard'])->name('workshop.index');
-        Route::get('/workshop/orders', [\App\Http\Controllers\WorkshopController::class, 'orders'])->name('workshop.orders');
-        Route::get('/workshop/materials', [\App\Http\Controllers\WorkshopController::class, 'materials'])->name('workshop.materials');
-        Route::get('/workshop/employees', [\App\Http\Controllers\WorkshopController::class, 'employees'])->name('workshop.employees');
-        Route::post('/workshop/orders/{order}/status', [\App\Http\Controllers\WorkshopController::class, 'updateStatus'])->name('workshop.status');
-        Route::post('/workshop/materials', [\App\Http\Controllers\WorkshopController::class, 'storeRawMaterial'])->name('workshop.store-material');
-        Route::post('/workshop/stock-in', [\App\Http\Controllers\WorkshopController::class, 'stockIn'])->name('workshop.stock-in');
-        Route::post('/workshop/stock-out', [\App\Http\Controllers\WorkshopController::class, 'stockOut'])->name('workshop.stock-out');
+        Route::get('/workshop', [WorkshopController::class, 'dashboard'])->name('workshop.index');
+        Route::get('/workshop/orders', [WorkshopController::class, 'orders'])->name('workshop.orders');
+        Route::get('/workshop/materials', [WorkshopController::class, 'materials'])->name('workshop.materials');
+        Route::get('/workshop/employees', [WorkshopController::class, 'employees'])->name('workshop.employees');
+        Route::post('/workshop/orders/{order}/status', [WorkshopController::class, 'updateStatus'])->name('workshop.status');
+        Route::post('/workshop/materials', [WorkshopController::class, 'storeRawMaterial'])->name('workshop.store-material');
+        Route::post('/workshop/stock-in', [WorkshopController::class, 'stockIn'])->name('workshop.stock-in');
+        Route::post('/workshop/stock-out', [WorkshopController::class, 'stockOut'])->name('workshop.stock-out');
     });
 
     // ── مەخزەن ──
