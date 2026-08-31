@@ -45,7 +45,7 @@ class WorkshopController extends Controller
         $activeOrders = Order::query()
             ->with(['customer', 'items'])
             ->whereIn('status', ['in_production', 'confirmed', 'ready'])
-            ->orderByRaw("FIELD(status, 'in_production', 'confirmed', 'ready')")
+            ->orderByRaw("CASE status WHEN 'in_production' THEN 1 WHEN 'confirmed' THEN 2 WHEN 'ready' THEN 3 ELSE 4 END")
             ->latest('order_date')
             ->take(6)
             ->get();
@@ -64,7 +64,7 @@ class WorkshopController extends Controller
         $employees = Employee::query()
             ->active()
             ->with(['attendances' => fn ($q) => $q->whereDate('work_date', now()->toDateString())])
-            ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
+            ->orderByRaw("CASE job_title WHEN 'master' THEN 1 WHEN 'porter' THEN 2 WHEN 'helper' THEN 3 WHEN 'driver' THEN 4 WHEN 'other' THEN 5 ELSE 6 END")
             ->orderBy('name')
             ->take(8)
             ->get();
@@ -91,7 +91,7 @@ class WorkshopController extends Controller
         $orders = Order::query()
             ->with(['customer', 'items'])
             ->whereIn('status', ['in_production', 'confirmed', 'ready'])
-            ->orderByRaw("FIELD(status, 'in_production', 'confirmed', 'ready')")
+            ->orderByRaw("CASE status WHEN 'in_production' THEN 1 WHEN 'confirmed' THEN 2 WHEN 'ready' THEN 3 ELSE 4 END")
             ->latest('order_date')
             ->get();
 
@@ -208,7 +208,7 @@ class WorkshopController extends Controller
         $employees = Employee::query()
             ->active()
             ->with(['attendances' => fn ($q) => $q->whereDate('work_date', $date)])
-            ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
+            ->orderByRaw("CASE job_title WHEN 'master' THEN 1 WHEN 'porter' THEN 2 WHEN 'helper' THEN 3 WHEN 'driver' THEN 4 WHEN 'other' THEN 5 ELSE 6 END")
             ->orderBy('name')
             ->get();
 
@@ -399,7 +399,7 @@ class WorkshopController extends Controller
             qty: (float) $validated['qty'],
             reason: 'adjustment',
             extra: [
-                'note' => $validated['note'] ?: 'زیادکردنی مەواد بۆ کارگە',
+                'note' => ($validated['note'] ?? null) ?: 'زیادکردنی مەواد بۆ کارگە',
                 'moved_at' => $validated['date'] ?? now()->toDateString(),
             ]
         );

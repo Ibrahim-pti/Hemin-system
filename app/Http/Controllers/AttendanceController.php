@@ -98,10 +98,16 @@ class AttendanceController extends Controller
         $employee = Employee::findOrFail($validated['employee_id']);
         $currentTime = now()->format('H:i');
 
-        $attendance = Attendance::firstOrNew([
-            'employee_id' => $employee->id,
-            'work_date' => $workDate,
-        ]);
+        $attendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('work_date', $workDate)
+            ->first();
+
+        if (! $attendance) {
+            $attendance = new Attendance([
+                'employee_id' => $employee->id,
+                'work_date' => $workDate,
+            ]);
+        }
 
         $attendance->status = 'present';
         $attendance->check_in = $attendance->check_in ?: $currentTime;
@@ -139,10 +145,16 @@ class AttendanceController extends Controller
         $employee = Employee::findOrFail($validated['employee_id']);
         $currentTime = now()->format('H:i');
 
-        $attendance = Attendance::firstOrNew([
-            'employee_id' => $employee->id,
-            'work_date' => $workDate,
-        ]);
+        $attendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('work_date', $workDate)
+            ->first();
+
+        if (! $attendance) {
+            $attendance = new Attendance([
+                'employee_id' => $employee->id,
+                'work_date' => $workDate,
+            ]);
+        }
 
         $attendance->status = 'present';
         $attendance->check_out = $currentTime;
@@ -192,23 +204,32 @@ class AttendanceController extends Controller
             ? (float) $validated['overtime_hours']
             : $hours['overtime'];
 
-        $attendance = Attendance::updateOrCreate(
-            ['employee_id' => $employee->id, 'work_date' => $validated['work_date']],
-            [
-                'status' => $validated['status'],
-                'check_in' => $validated['check_in'] ?? null,
-                'check_out' => $validated['check_out'] ?? null,
-                'hours' => $hours['hours'],
-                'overtime_hours' => $overtime,
-                'temporary_exit_hours' => (float) ($validated['temporary_exit_hours'] ?? 0),
-                'exit_reason' => $validated['exit_reason'] ?? null,
-                'fuel_expense' => (float) ($validated['fuel_expense'] ?? 0),
-                'trip_destination' => $validated['trip_destination'] ?? null,
-                'wage_snapshot' => $validated['status'] === 'present' ? $employee->daily_wage : 0,
-                'user_id' => auth()->id(),
-                'note' => $validated['note'] ?? null,
-            ]
-        );
+        $attendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('work_date', $validated['work_date'])
+            ->first();
+
+        if (! $attendance) {
+            $attendance = new Attendance([
+                'employee_id' => $employee->id,
+                'work_date' => $validated['work_date'],
+            ]);
+        }
+
+        $attendance->fill([
+            'status' => $validated['status'],
+            'check_in' => $validated['check_in'] ?? null,
+            'check_out' => $validated['check_out'] ?? null,
+            'hours' => $hours['hours'],
+            'overtime_hours' => $overtime,
+            'temporary_exit_hours' => (float) ($validated['temporary_exit_hours'] ?? 0),
+            'exit_reason' => $validated['exit_reason'] ?? null,
+            'fuel_expense' => (float) ($validated['fuel_expense'] ?? 0),
+            'trip_destination' => $validated['trip_destination'] ?? null,
+            'wage_snapshot' => $validated['status'] === 'present' ? $employee->daily_wage : 0,
+            'user_id' => auth()->id(),
+            'note' => $validated['note'] ?? null,
+        ]);
+        $attendance->save();
 
         if ($request->wantsJson()) {
             return response()->json([

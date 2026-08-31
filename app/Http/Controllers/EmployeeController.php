@@ -29,7 +29,7 @@ class EmployeeController extends Controller
             ->when($jobTitle !== 'all', function ($q) use ($jobTitle) {
                 $q->where('job_title', $jobTitle);
             })
-            ->orderByRaw("FIELD(job_title, 'master', 'porter', 'helper', 'driver', 'other')")
+            ->orderByRaw("CASE job_title WHEN 'master' THEN 1 WHEN 'porter' THEN 2 WHEN 'helper' THEN 3 WHEN 'driver' THEN 4 WHEN 'other' THEN 5 ELSE 6 END")
             ->orderBy('name');
 
         $employees = $query->paginate(30)->withQueryString();
