@@ -1,3 +1,9 @@
+@php
+    $gateImgPath = public_path('images/receipt_gate_thumb.jpg');
+    $canopyImgPath = public_path('images/receipt_canopy_thumb.jpg');
+    $gateImg = file_exists($gateImgPath) ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($gateImgPath)) : '';
+    $canopyImg = file_exists($canopyImgPath) ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($canopyImgPath)) : '';
+@endphp
 <!DOCTYPE html>
 <html lang="ckb" dir="rtl">
 <head>
@@ -95,11 +101,15 @@
                     {{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}
                 </h1>
 
-                {{-- وێنەی لای ڕاست، دەقەکانی ناوەڕاست، و وێنەی لای چەپ --}}
+                {{-- وێنەی لای چەپ، دەقەکانی ناوەڕاست، و وێنەی لای ڕاست --}}
                 <div class="flex items-center justify-between gap-2 px-1">
                     {{-- وێنەی لای چەپ: دەرگا و مەحەجەرە --}}
-                    <div class="size-13 rounded-xs overflow-hidden border border-slate-300 shadow-2xs shrink-0 bg-slate-100">
-                        <img src="{{ asset('images/receipt_gate.jpg') }}" alt="دەرگا و مەحەجەرە" class="size-full object-cover">
+                    <div class="size-13 rounded-xs overflow-hidden border border-slate-300 shadow-2xs shrink-0 bg-slate-100 flex items-center justify-center">
+                        @if ($gateImg)
+                            <img src="{{ $gateImg }}" alt="دەرگا و مەحەجەرە" class="size-full object-cover">
+                        @else
+                            <span class="text-[9px] font-bold text-slate-400">دەرگا</span>
+                        @endif
                     </div>
 
                     {{-- دەقەکانی ناوەڕاست --}}
@@ -122,8 +132,12 @@
                     </div>
 
                     {{-- وێنەی لای ڕاست: کەپر و مەسعەد --}}
-                    <div class="size-13 rounded-xs overflow-hidden border border-slate-300 shadow-2xs shrink-0 bg-slate-100">
-                        <img src="{{ asset('images/receipt_canopy.jpg') }}" alt="کەپر و مەسعەد" class="size-full object-cover">
+                    <div class="size-13 rounded-xs overflow-hidden border border-slate-300 shadow-2xs shrink-0 bg-slate-100 flex items-center justify-center">
+                        @if ($canopyImg)
+                            <img src="{{ $canopyImg }}" alt="کەپر و مەسعەد" class="size-full object-cover">
+                        @else
+                            <span class="text-[9px] font-bold text-slate-400">کەپر</span>
+                        @endif
                     </div>
                 </div>
 
@@ -140,31 +154,28 @@
                 </div>
             </div>
 
-            {{-- زانیاری کڕیار، ناونیشان، بەروار بە دۆتی تەواو لە سەنتەری دێڕەکە --}}
-            <div class="mt-2.5 mb-1.5 flex items-center justify-between text-[11px] gap-2 font-bold text-slate-900 leading-none">
-                <div class="flex items-center gap-1 flex-1 min-w-0">
+            {{-- زانیاری کڕیار، ناونیشان، بەروار بە دۆتی تەواو لەسەر هەمان هێڵ --}}
+            <div class="mt-2.5 mb-1.5 flex items-baseline justify-between text-[11px] gap-2 font-bold text-slate-900">
+                <div class="flex items-baseline gap-1 flex-1 min-w-0">
                     <span class="text-slate-900 shrink-0 select-none">بەڕێز :</span>
-                    <div class="flex-1 relative flex items-center min-h-[16px] mx-1">
-                        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b-[1.5px] border-dotted border-black pointer-events-none"></div>
-                        <span class="relative text-slate-900 font-bold truncate leading-none px-1">{{ $order->customer?->name }}</span>
+                    <div class="flex-1 border-b-[1.5px] border-dotted border-black px-1 min-w-0">
+                        <span class="text-slate-900 font-bold truncate">{{ $order->customer?->name }}</span>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-1 flex-1 min-w-0">
+                <div class="flex items-baseline gap-1 flex-1 min-w-0">
                     <span class="text-slate-900 shrink-0 select-none">ناونیشان :</span>
-                    <div class="flex-1 relative flex items-center min-h-[16px] mx-1">
-                        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b-[1.5px] border-dotted border-black pointer-events-none"></div>
-                        <span class="relative text-slate-800 font-bold truncate leading-none px-1">
+                    <div class="flex-1 border-b-[1.5px] border-dotted border-black px-1 min-w-0">
+                        <span class="text-slate-800 font-bold truncate">
                             {{ $order->address_snapshot ?: ($order->customer?->address ?: '') }}
                         </span>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-1 shrink-0 w-36">
+                <div class="flex items-baseline gap-1 shrink-0 w-36">
                     <span class="text-slate-900 shrink-0 select-none">بەروار :</span>
-                    <div class="flex-1 relative flex items-center justify-center min-h-[16px] mx-1">
-                        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b-[1.5px] border-dotted border-black pointer-events-none"></div>
-                        <span class="num relative font-bold text-slate-900 text-center leading-none px-1" dir="ltr">
+                    <div class="flex-1 border-b-[1.5px] border-dotted border-black text-center px-1">
+                        <span class="num font-bold text-slate-900 text-center" dir="ltr">
                             {{ $order->order_date?->format('Y / m / d') }}
                         </span>
                     </div>
@@ -250,47 +261,59 @@
                     {{-- بەشی خوارەوە: کۆی گشتی، داشکاندن، پێشەکی و ماوە لەناو یەک چوارچێوە بە سەنتەری تەواو لەگەڵ دۆتەکان --}}
                     <tr>
                         <td colspan="4" style="padding: 6px 12px; border: 1.5px solid #1e3a5f; background-color: #ffffff;">
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
                                 {{-- کۆی گشتی --}}
-                                <div class="flex items-center justify-between text-xs gap-2 leading-none">
-                                    <span class="font-black text-slate-900 shrink-0 select-none">کۆی گشتی</span>
-                                    <div class="flex-1 relative flex items-center justify-center min-h-[16px] mx-2">
-                                        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b-[1.5px] border-dotted border-black pointer-events-none"></div>
-                                        <span class="num relative font-black text-sm text-black leading-none px-2">{{ fmt_num($order->total) }}</span>
+                                <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px;">
+                                    <span style="font-weight: 900; shrink: 0; color: #0f172a;">کۆی گشتی</span>
+                                    <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center;">
+                                        <span class="num" style="font-weight: 900; font-size: 13px; color: #000000;">
+                                            {{ fmt_num($order->total) }}
+                                        </span>
                                     </div>
-                                    <span class="font-black text-[11px] text-slate-900 shrink-0 select-none">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                    <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
+                                        {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                    </span>
                                 </div>
 
                                 {{-- داشکاندن ئەگەر هەبێت --}}
                                 @if ($order->discount_amount > 0)
-                                    <div class="flex items-center justify-between text-xs gap-2 leading-none">
-                                        <span class="font-black text-rose-700 shrink-0 select-none">داشکاندن</span>
-                                        <div class="flex-1 relative flex items-center justify-center min-h-[16px] mx-2">
-                                            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b-[1.5px] border-dotted border-black pointer-events-none"></div>
-                                            <span class="num relative font-black text-xs text-rose-700 leading-none px-2">- {{ fmt_num($order->discount_amount) }}</span>
+                                    <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px;">
+                                        <span style="font-weight: 900; shrink: 0; color: #b91c1c;">داشکاندن</span>
+                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center;">
+                                            <span class="num" style="font-weight: 900; font-size: 12px; color: #b91c1c;">
+                                                - {{ fmt_num($order->discount_amount) }}
+                                            </span>
                                         </div>
-                                        <span class="font-black text-[11px] text-slate-900 shrink-0 select-none">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                        <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
+                                            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                        </span>
                                     </div>
                                 @endif
 
                                 {{-- پێشەکی و ماوە تەنها کاتێک قەرز هەبێت دێتە دەرەوە --}}
                                 @if ($remaining > 0)
-                                    <div class="flex items-center justify-between text-xs gap-2 leading-none">
-                                        <span class="font-black text-emerald-800 shrink-0 select-none">پێشەکی / پارەی دراو</span>
-                                        <div class="flex-1 relative flex items-center justify-center min-h-[16px] mx-2">
-                                            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b-[1.5px] border-dotted border-black pointer-events-none"></div>
-                                            <span class="num relative font-black text-xs text-emerald-800 leading-none px-2">{{ fmt_num($paid) }}</span>
+                                    <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px;">
+                                        <span style="font-weight: 900; shrink: 0; color: #047857;">پێشەکی / پارەی دراو</span>
+                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center;">
+                                            <span class="num" style="font-weight: 900; font-size: 12px; color: #047857;">
+                                                {{ fmt_num($paid) }}
+                                            </span>
                                         </div>
-                                        <span class="font-black text-[11px] text-slate-900 shrink-0 select-none">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                        <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
+                                            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                        </span>
                                     </div>
 
-                                    <div class="flex items-center justify-between text-xs gap-2 leading-none">
-                                        <span class="font-black text-rose-700 shrink-0 select-none">ماوە (قەرز)</span>
-                                        <div class="flex-1 relative flex items-center justify-center min-h-[16px] mx-2">
-                                            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b-[1.5px] border-dotted border-black pointer-events-none"></div>
-                                            <span class="num relative font-black text-sm text-rose-700 leading-none px-2">{{ fmt_num($remaining) }}</span>
+                                    <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px;">
+                                        <span style="font-weight: 900; shrink: 0; color: #b91c1c;">ماوە (قەرز)</span>
+                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center;">
+                                            <span class="num" style="font-weight: 900; font-size: 13px; color: #b91c1c;">
+                                                {{ fmt_num($remaining) }}
+                                            </span>
                                         </div>
-                                        <span class="font-black text-[11px] text-slate-900 shrink-0 select-none">{{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}</span>
+                                        <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
+                                            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                        </span>
                                     </div>
                                 @endif
                             </div>
