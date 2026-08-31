@@ -89,25 +89,46 @@
     <div class="receipt-sheet">
         <div>
             {{-- بەشی سەرەوە / سەردێڕ ڕێک بەپێی وێنەی دەفتەری وەسڵەکە --}}
-            <div class="text-center">
-                <h1 class="text-2xl font-black text-[#b91c1c] tracking-tight leading-none">
+            <div>
+                {{-- ناوی کارگە لە سەرەوەی هەمووی بە سووری تۆخ --}}
+                <h1 class="text-2xl font-black text-[#b91c1c] tracking-tight leading-none text-center mb-1">
                     {{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}
                 </h1>
-                <p class="text-[11px] font-bold text-slate-800 mt-1 leading-tight">
-                    بۆ دروست کردنی دەرگا و مەحەجەرە و کەپر و مەسعەد
-                </p>
-                <p class="text-[10px] font-semibold text-slate-700 leading-tight">
-                    بە شێوازێکی هەندەسی
-                </p>
-                <p class="text-[11px] font-bold text-slate-900 mt-0.5" dir="rtl">
-                    هێمن :
-                    <span class="num" dir="ltr">{{ $settings['company_phone2'] ?? '٠٧٥٠١٢٠١١١٠' }}</span>
-                    -
-                    <span class="num" dir="ltr">{{ $settings['company_phone'] ?? '٠٧٥٠٤٥٦٨٥٥٦' }}</span>
-                </p>
+
+                {{-- وێنەی لای ڕاست، دەقەکانی ناوەڕاست، و وێنەی لای چەپ --}}
+                <div class="flex items-center justify-between gap-2 px-1">
+                    {{-- وێنەی لای چەپ: دەرگا و مەحەجەرە --}}
+                    <div class="size-13 rounded-xs overflow-hidden border border-slate-300 shadow-2xs shrink-0 bg-slate-100">
+                        <img src="{{ asset('images/receipt_gate.jpg') }}" alt="دەرگا و مەحەجەرە" class="size-full object-cover">
+                    </div>
+
+                    {{-- دەقەکانی ناوەڕاست --}}
+                    <div class="flex-1 text-center min-w-0">
+                        <p class="text-[10.5px] font-bold text-slate-900 leading-tight">
+                            بۆ دروست کردنی دەرگا و مەحەجەرە و
+                        </p>
+                        <p class="text-[10.5px] font-bold text-slate-900 leading-tight">
+                            کەپر و مەسعەد
+                        </p>
+                        <p class="text-[9.5px] font-semibold text-slate-700 leading-tight mt-0.5">
+                            بە شێوازێکی هەندەسی
+                        </p>
+                        <p class="text-[11px] font-bold text-slate-900 mt-0.5" dir="rtl">
+                            هێمن :
+                            <span class="num font-bold" dir="ltr">{{ $settings['company_phone2'] ?? '٠٧٥٠١٢٠١١١٠' }}</span>
+                            -
+                            <span class="num font-bold" dir="ltr">{{ $settings['company_phone'] ?? '٠٧٥٠٤٥٦٨٥٥٦' }}</span>
+                        </p>
+                    </div>
+
+                    {{-- وێنەی لای ڕاست: کەپر و مەسعەد --}}
+                    <div class="size-13 rounded-xs overflow-hidden border border-slate-300 shadow-2xs shrink-0 bg-slate-100">
+                        <img src="{{ asset('images/receipt_canopy.jpg') }}" alt="کەپر و مەسعەد" class="size-full object-cover">
+                    </div>
+                </div>
 
                 {{-- باڕی ناونیشان و ژمارەی وەسڵ لە دەستەچەپ ڕێک وەک دەفتەرەکە --}}
-                <div class="mt-2 flex items-center gap-1.5">
+                <div class="mt-1.5 flex items-center gap-1.5">
                     <div class="border border-[#b91c1c] bg-white text-[#b91c1c] font-black text-xs px-2.5 py-0.5 rounded-xs shrink-0 shadow-2xs">
                         No. <span class="num">{{ $order->invoice_no }}</span>
                     </div>
