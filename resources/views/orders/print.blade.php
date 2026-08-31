@@ -102,80 +102,83 @@
                 </h1>
 
                 {{-- وێنەی لای چەپ، دەقەکانی ناوەڕاست، و وێنەی لای ڕاست --}}
-                <div class="flex items-center justify-between gap-2 px-1">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px;">
                     {{-- وێنەی لای چەپ: دەرگا و مەحەجەرە --}}
-                    <div class="size-13 rounded-xs overflow-hidden border border-slate-300 shadow-2xs shrink-0 bg-slate-100 flex items-center justify-center">
+                    <div style="width: 58px; height: 50px; border-radius: 3px; overflow: hidden; border: 1px solid #cbd5e1; flex-shrink: 0; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center;">
                         @if ($gateImg)
-                            <img src="{{ $gateImg }}" alt="دەرگا و مەحەجەرە" class="size-full object-cover">
+                            <img src="{{ $gateImg }}" alt="دەرگا و مەحەجەرە" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                         @else
-                            <span class="text-[9px] font-bold text-slate-400">دەرگا</span>
+                            <span style="font-size: 9px; font-weight: 700; color: #94a3b8;">دەرگا</span>
                         @endif
                     </div>
 
                     {{-- دەقەکانی ناوەڕاست --}}
-                    <div class="flex-1 text-center min-w-0">
-                        <p class="text-[10.5px] font-bold text-slate-900 leading-tight">
+                    <div style="flex: 1; text-align: center; min-width: 0;">
+                        <p style="font-size: 10.5px; font-weight: 800; color: #0f172a; line-height: 1.2; margin: 0;">
                             بۆ دروست کردنی دەرگا و مەحەجەرە و
                         </p>
-                        <p class="text-[10.5px] font-bold text-slate-900 leading-tight">
+                        <p style="font-size: 10.5px; font-weight: 800; color: #0f172a; line-height: 1.2; margin: 0;">
                             کەپر و مەسعەد
                         </p>
-                        <p class="text-[9.5px] font-semibold text-slate-700 leading-tight mt-0.5">
+                        <p style="font-size: 9.5px; font-weight: 700; color: #334155; line-height: 1.2; margin-top: 2px;">
                             بە شێوازێکی هەندەسی
                         </p>
-                        <p class="text-[11px] font-bold text-slate-900 mt-0.5" dir="rtl">
+                        <p style="font-size: 11px; font-weight: 800; color: #0f172a; margin-top: 2px;" dir="rtl">
                             هێمن :
-                            <span class="num font-bold" dir="ltr">{{ $settings['company_phone2'] ?? '٠٧٥٠١٢٠١١١٠' }}</span>
+                            <span class="num" style="font-weight: 800;" dir="ltr">{{ $settings['company_phone2'] ?? '٠٧٥٠١٢٠١١١٠' }}</span>
                             -
-                            <span class="num font-bold" dir="ltr">{{ $settings['company_phone'] ?? '٠٧٥٠٤٥٦٨٥٥٦' }}</span>
+                            <span class="num" style="font-weight: 800;" dir="ltr">{{ $settings['company_phone'] ?? '٠٧٥٠٤٥٦٨٥٥٦' }}</span>
                         </p>
                     </div>
 
                     {{-- وێنەی لای ڕاست: کەپر و مەسعەد --}}
-                    <div class="size-13 rounded-xs overflow-hidden border border-slate-300 shadow-2xs shrink-0 bg-slate-100 flex items-center justify-center">
+                    <div style="width: 58px; height: 50px; border-radius: 3px; overflow: hidden; border: 1px solid #cbd5e1; flex-shrink: 0; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center;">
                         @if ($canopyImg)
-                            <img src="{{ $canopyImg }}" alt="کەپر و مەسعەد" class="size-full object-cover">
+                            <img src="{{ $canopyImg }}" alt="کەپر و مەسعەد" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                         @else
-                            <span class="text-[9px] font-bold text-slate-400">کەپر</span>
+                            <span style="font-size: 9px; font-weight: 700; color: #94a3b8;">کەپر</span>
                         @endif
                     </div>
                 </div>
 
                 {{-- باڕی ناونیشان و ژمارەی وەسڵ لە دەستەچەپ ڕێک وەک دەفتەرەکە --}}
-                <div class="mt-1.5 flex items-center gap-1.5">
-                    <div class="border border-[#b91c1c] bg-white text-[#b91c1c] font-black text-xs px-2.5 py-0.5 rounded-xs shrink-0 shadow-2xs">
+                <div style="margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                    <div style="border: 1px solid #b91c1c; background-color: #ffffff; color: #b91c1c; font-weight: 900; font-size: 12px; padding: 2px 10px; border-radius: 2px; flex-shrink: 0;">
                         No. <span class="num">{{ $order->invoice_no }}</span>
                     </div>
-                    <div class="flex-1 bg-[#edf2f7] border-y border-[#1e3a5f] py-0.5 px-3 text-center rounded-xs">
-                        <div class="font-bold text-xs text-[#1e3a5f]">
+                    <div style="flex: 1; background-color: #edf2f7; border-top: 1px solid #1e3a5f; border-bottom: 1px solid #1e3a5f; padding: 2px 12px; text-align: center; border-radius: 2px;">
+                        <div style="font-weight: 800; font-size: 12px; color: #1e3a5f;">
                             {{ $settings['company_address'] ?? 'هەولێر — ١٠٠م بەرامبەر گۆڕستانی شێخ ئەحمەد' }}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- زانیاری کڕیار، ناونیشان، بەروار بە دۆتی تەواو لەسەر هەمان هێڵ --}}
-            <div class="mt-2.5 mb-1.5 flex items-baseline justify-between text-[11px] gap-2 font-bold text-slate-900">
-                <div class="flex items-baseline gap-1 flex-1 min-w-0">
-                    <span class="text-slate-900 shrink-0 select-none">بەڕێز :</span>
-                    <div class="flex-1 border-b-[1.5px] border-dotted border-black px-1 min-w-0">
-                        <span class="text-slate-900 font-bold truncate">{{ $order->customer?->name }}</span>
+            {{-- زانیاری کڕیار، ناونیشان، بەروار بە دۆتی تەواوی ڕەش --}}
+            <div style="margin-top: 8px; margin-bottom: 6px; display: flex; align-items: baseline; justify-content: space-between; font-size: 11px; font-weight: 700; color: #0f172a; gap: 8px;">
+                {{-- بەڕێز --}}
+                <div style="display: flex; align-items: baseline; gap: 4px; flex: 1; min-width: 0;">
+                    <span style="color: #0f172a; flex-shrink: 0; user-select: none;">بەڕێز :</span>
+                    <div style="flex: 1; border-bottom: 1.5px dotted #000000; padding: 0 4px; min-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span style="color: #0f172a; font-weight: 800;">{{ $order->customer?->name }}</span>
                     </div>
                 </div>
 
-                <div class="flex items-baseline gap-1 flex-1 min-w-0">
-                    <span class="text-slate-900 shrink-0 select-none">ناونیشان :</span>
-                    <div class="flex-1 border-b-[1.5px] border-dotted border-black px-1 min-w-0">
-                        <span class="text-slate-800 font-bold truncate">
+                {{-- ناونیشان --}}
+                <div style="display: flex; align-items: baseline; gap: 4px; flex: 1; min-width: 0;">
+                    <span style="color: #0f172a; flex-shrink: 0; user-select: none;">ناونیشان :</span>
+                    <div style="flex: 1; border-bottom: 1.5px dotted #000000; padding: 0 4px; min-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span style="color: #1e293b; font-weight: 700;">
                             {{ $order->address_snapshot ?: ($order->customer?->address ?: '') }}
                         </span>
                     </div>
                 </div>
 
-                <div class="flex items-baseline gap-1 shrink-0 w-36">
-                    <span class="text-slate-900 shrink-0 select-none">بەروار :</span>
-                    <div class="flex-1 border-b-[1.5px] border-dotted border-black text-center px-1">
-                        <span class="num font-bold text-slate-900 text-center" dir="ltr">
+                {{-- بەروار --}}
+                <div style="display: flex; align-items: baseline; gap: 4px; flex-shrink: 0; width: 140px;">
+                    <span style="color: #0f172a; flex-shrink: 0; user-select: none;">بەروار :</span>
+                    <div style="flex: 1; border-bottom: 1.5px dotted #000000; text-align: center; padding: 0 4px;">
+                        <span class="num" style="color: #0f172a; font-weight: 800;" dir="ltr">
                             {{ $order->order_date?->format('Y / m / d') }}
                         </span>
                     </div>
