@@ -86,9 +86,9 @@
             <button onclick="window.print()" class="btn btn-primary !py-1.5 !px-4 text-xs shadow-sm cursor-pointer">
                 🖨️ چاپکردنی وەسڵ
             </button>
-            <button type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '{{ route('orders.index') }}'; }" class="btn btn-ghost !py-1.5 text-xs bg-white border border-slate-200 cursor-pointer">
+            <a href="{{ route('orders.index') }}" onclick="if (window.opener) { window.close(); return false; } if (history.length > 1 && document.referrer) { history.back(); return false; }" class="btn btn-ghost !py-1.5 text-xs bg-white border border-slate-200 cursor-pointer">
                 گەڕانەوە
-            </button>
+            </a>
         </div>
     </div>
 
