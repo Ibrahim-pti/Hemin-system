@@ -225,6 +225,7 @@ class OrderController extends Controller
         return $request->validate([
             'invoice_no' => ['nullable', 'string', 'max:30', $unique],
             'customer_id' => ['required', 'exists:customers,id'],
+            'address_snapshot' => ['nullable', 'string', 'max:255'],
             'order_date' => ['required', 'date'],
             'delivery_date' => ['nullable', 'date', 'after_or_equal:order_date'],
             'currency' => ['required', 'in:IQD,USD'],
@@ -245,6 +246,7 @@ class OrderController extends Controller
             'delivery_date.after_or_equal' => 'بەرواری گەیاندن ناتوانێت پێش بەرواری وەسڵ بێت.',
         ], [
             'customer_id' => 'کڕیار',
+            'address_snapshot' => 'ناونیشان',
             'lines.*.description' => 'ناوەڕۆک / ناوی شتەکە',
             'lines.*.image' => 'وێنە',
             'lines.*.unit_price' => 'نرخ',
@@ -267,6 +269,12 @@ class OrderController extends Controller
         }
 
         $prepaid = (float) str_replace(',', '', (string) ($data['prepaid_amount'] ?? 0));
+        $address = !empty($data['address_snapshot']) ? trim($data['address_snapshot']) : ($customer?->address ?? null);
+
+        // ئەگەر ناونیشانی کڕیار بەتاڵ بوو، ناونیشانەکەی بۆ پاشەکەوت بکە بۆ داهاتوو
+        if ($customer && empty($customer->address) && $address) {
+            $customer->update(['address' => $address]);
+        }
 
         return [
             'customer_id' => $data['customer_id'],
@@ -281,7 +289,7 @@ class OrderController extends Controller
             'discount_amount' => $discount,
             'total' => max(0, $subtotal - $discount),
             'prepaid_amount' => $prepaid,
-            'address_snapshot' => $customer?->address,
+            'address_snapshot' => $address,
             'note' => $data['note'] ?? null,
         ];
     }

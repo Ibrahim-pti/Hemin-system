@@ -61,6 +61,7 @@ class CustomerController extends Controller
                 'id' => $customer->id,
                 'name' => $customer->name,
                 'phone' => $customer->phone,
+                'address' => $customer->address,
                 'discount_percent' => (float) $customer->discount_percent,
             ],
         ]);

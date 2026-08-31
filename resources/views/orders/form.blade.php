@@ -23,7 +23,7 @@
           @js(old('discount_amount', $order->discount_amount ? (float)$order->discount_amount : '')),
           @js(old('currency', $order->currency ?: 'IQD')),
           @js(collect($customers)->mapWithKeys(fn ($c) => [$c->id => (float) $c->discount_percent])->all()),
-          @js($customers->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone, 'discount_percent' => (float) $c->discount_percent])->values()->all())
+          @js($customers->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone, 'address' => $c->address, 'discount_percent' => (float) $c->discount_percent])->values()->all())
       )">
     @csrf
     @if ($order->exists) @method('PUT') @endif
@@ -38,7 +38,7 @@
         </div>
     @endif
 
-    {{-- ١. زانیاری سەرەکی کڕیار و بەروار --}}
+    {{-- ١. زانیاری سەرەکی کڕیار، ناونیشان و بەروار --}}
     <div class="card">
         <div class="card-head flex items-center justify-between">
             <span>زانیاری وەسڵ و کڕیار</span>
@@ -66,8 +66,16 @@
                        value="{{ old('order_date', $order->order_date?->toDateString() ?? now()->toDateString()) }}">
             </div>
 
+            {{-- ناونیشانی شوێنی کار / کڕیار --}}
+            <div class="sm:col-span-2">
+                <label class="label" for="address_snapshot">ناونیشانی شوێنی کار / کڕیار</label>
+                <input id="address_snapshot" name="address_snapshot" type="text" class="field"
+                       x-model="address"
+                       placeholder="بۆ نموونە: هەولێر — گوندی ئیتاڵی، پیرمام...">
+            </div>
+
             {{-- تێبینی --}}
-            <div class="sm:col-span-3">
+            <div class="sm:col-span-1">
                 <label class="label" for="note">تێبینی</label>
                 <input id="note" name="note" class="field" value="{{ old('note', $order->note) }}" placeholder="تێبینی گشتی وەسڵ...">
             </div>
@@ -301,6 +309,10 @@
                     <label class="label text-xs" for="modal_customer_phone">ژمارەی مۆبایل</label>
                     <input id="modal_customer_phone" x-model="newCustomer.phone" class="field num text-sm w-full" dir="ltr" placeholder="0750..." @keydown.enter.prevent="saveQuickCustomer()">
                 </div>
+                <div>
+                    <label class="label text-xs" for="modal_customer_address">ناونیشان</label>
+                    <input id="modal_customer_address" x-model="newCustomer.address" class="field text-sm w-full" placeholder="هەولێر، پیرمام، گوندی ئیتاڵی..." @keydown.enter.prevent="saveQuickCustomer()">
+                </div>
 
                 <div x-show="customerModalError" class="text-xs text-rose-600 font-semibold bg-rose-50 p-2.5 rounded-lg border border-rose-200" x-text="customerModalError"></div>
 
@@ -324,12 +336,13 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         discountAmount: initialDiscount ? (typeof initialDiscount === 'number' ? initialDiscount.toLocaleString('en-US') : initialDiscount) : '',
         currency: initialCurrency,
         customerId: '{{ old('customer_id', $order->customer_id) }}',
+        address: '{{ old('address_snapshot', $order->address_snapshot ?: ($order->customer?->address ?? '')) }}',
         customerDiscounts: customerDiscounts,
         customersList: initialCustomersList,
         showCustomerModal: false,
         savingCustomer: false,
         customerModalError: '',
-        newCustomer: { name: '', phone: '' },
+        newCustomer: { name: '', phone: '', address: '' },
         prepaid: '{{ old('prepaid_amount', $order->exists ? ($order->prepaid_amount ? number_format($order->prepaid_amount) : '') : '') }}',
         prepaidManuallySet: {{ ($order->exists || old('prepaid_amount') !== null) ? 'true' : 'false' }},
         exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ?: ($rate ?: 150000)) }}',
@@ -363,7 +376,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         },
 
         openCustomerModal() {
-            this.newCustomer = { name: '', phone: '' };
+            this.newCustomer = { name: '', phone: '', address: '' };
             this.customerModalError = '';
             this.showCustomerModal = true;
             this.$nextTick(() => {
@@ -377,6 +390,10 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
                 this.customerId = '';
                 this.openCustomerModal();
             } else {
+                const cust = this.customersList.find(c => String(c.id) === String(this.customerId));
+                if (cust && cust.address) {
+                    this.address = cust.address;
+                }
                 this.applyCustomerDiscount();
             }
         },
@@ -403,6 +420,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
                 if (data.ok && data.customer) {
                     this.customersList.unshift(data.customer);
                     this.customerId = data.customer.id;
+                    this.address = data.customer.address || '';
                     this.customerDiscounts[data.customer.id] = data.customer.discount_percent;
                     this.applyCustomerDiscount();
                     this.showCustomerModal = false;
