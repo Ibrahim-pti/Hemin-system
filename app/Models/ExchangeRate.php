@@ -50,9 +50,9 @@ class ExchangeRate extends Model
         }
 
         return (float) ($rate ?: (static::query()
-            ->whereDate('effective_date', '<=', now())
             ->orderByDesc('effective_date')
-            ->value('usd_to_iqd') ?: 1450.00));
+            ->orderByDesc('id')
+            ->value('usd_to_iqd') ?: 0));
     }
 
     /** نرخی ڕۆژێکی دیاریکراو — بۆ تۆمارکردنی مامەڵەی کۆن. */
