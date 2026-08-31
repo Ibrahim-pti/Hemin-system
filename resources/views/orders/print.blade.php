@@ -242,7 +242,7 @@
                             <td colspan="4" class="py-1 px-3">
                                 <div class="flex items-center justify-between gap-2 text-rose-700">
                                     <span class="text-[11px] font-bold shrink-0">
-                                        داشکاندن {{ $order->discount_percent > 0 ? '('.fmt_num($order->discount_percent, 2).'٪)' : '' }}:
+                                        داشکاندن:
                                     </span>
                                     <div class="flex-1 border-b border-dotted border-rose-300 mx-1"></div>
                                     <div class="shrink-0 flex items-baseline gap-1 font-bold text-xs text-rose-700">

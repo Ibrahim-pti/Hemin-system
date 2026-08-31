@@ -209,6 +209,11 @@ class OrderController extends Controller
                 'exchange_rate' => $request->filled('exchange_rate') ? str_replace(',', '', (string) $request->input('exchange_rate')) : null,
             ]);
         }
+        if ($request->has('discount_amount')) {
+            $request->merge([
+                'discount_amount' => $request->filled('discount_amount') ? str_replace(',', '', (string) $request->input('discount_amount')) : 0,
+            ]);
+        }
         if ($request->has('discount_percent')) {
             $request->merge([
                 'discount_percent' => $request->filled('discount_percent') ? str_replace(',', '', (string) $request->input('discount_percent')) : 0,
@@ -224,8 +229,8 @@ class OrderController extends Controller
             'delivery_date' => ['nullable', 'date', 'after_or_equal:order_date'],
             'currency' => ['required', 'in:IQD,USD'],
             'exchange_rate' => ['nullable', 'numeric', 'min:0'],
-            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'prepaid_amount' => ['nullable'],
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
@@ -243,6 +248,7 @@ class OrderController extends Controller
             'lines.*.description' => 'ناوەڕۆک / ناوی شتەکە',
             'lines.*.image' => 'وێنە',
             'lines.*.unit_price' => 'نرخ',
+            'discount_amount' => 'داشکاندن',
             'prepaid_amount' => 'پێشەکی',
         ]);
     }
@@ -251,11 +257,14 @@ class OrderController extends Controller
     {
         $subtotal = collect($data['lines'])->sum(fn ($line) => $this->lineTotal($line));
 
-        // داشکاندن یان بە ڕێژە یان بە بڕ — ڕێژە پێشینەی هەیە.
-        $percent = (float) ($data['discount_percent'] ?? 0);
-        $discount = $percent > 0
-            ? $subtotal * $percent / 100
-            : (float) ($data['discount_amount'] ?? 0);
+        // داشکاندن بە بڕی پارە (دینار یان دۆلار)
+        $discount = (float) str_replace(',', '', (string) ($data['discount_amount'] ?? 0));
+        if ($discount <= 0 && !empty($data['discount_percent'])) {
+            $percent = (float) $data['discount_percent'];
+            $discount = $subtotal * $percent / 100;
+        } else {
+            $percent = $subtotal > 0 && $discount > 0 ? round(($discount / $subtotal) * 100, 2) : 0;
+        }
 
         $prepaid = (float) str_replace(',', '', (string) ($data['prepaid_amount'] ?? 0));
 
