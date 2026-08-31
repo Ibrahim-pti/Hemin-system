@@ -86,9 +86,9 @@
             <button onclick="window.print()" class="btn btn-primary !py-1.5 !px-4 text-xs shadow-sm cursor-pointer">
                 🖨️ چاپکردنی وەسڵ
             </button>
-            <a href="{{ route('orders.show', $order) }}" class="btn btn-ghost !py-1.5 text-xs bg-white border border-slate-200">
-                گەڕانەوە بۆ وەسڵ
-            </a>
+            <button type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '{{ route('orders.index') }}'; }" class="btn btn-ghost !py-1.5 text-xs bg-white border border-slate-200 cursor-pointer">
+                گەڕانەوە
+            </button>
         </div>
     </div>
 
