@@ -261,10 +261,10 @@
                         </tr>
                     @endfor
 
-                    {{-- بەشی خوارەوە: کۆی گشتی، داشکاندن، پێشەکی و ماوە لەناو یەک چوارچێوە بە سەنتەری تەواو لەگەڵ دۆتەکان --}}
+                    {{-- بەشی خوارەوە: کۆی گشتی، داشکاندن، پێشەکی و ماوە لەناو یەک چوارچێوە بە مەسافەی گونجاو --}}
                     <tr>
-                        <td colspan="4" style="padding: 6px 12px; border: 1.5px solid #1e3a5f; background-color: #ffffff;">
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <td colspan="4" style="padding: 8px 12px; border: 1.5px solid #1e3a5f; background-color: #ffffff;">
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
                                 {{-- کۆی گشتی --}}
                                 <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; line-height: 1;">
                                     <span style="font-weight: 900; shrink: 0; color: #0f172a; transform: translateY(2px);">کۆی گشتی</span>
