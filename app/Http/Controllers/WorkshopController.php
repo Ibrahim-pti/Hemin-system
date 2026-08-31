@@ -490,47 +490,62 @@ class WorkshopController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'job_title' => ['required', 'string', 'max:100'],
-            'salary_type' => ['required', 'in:daily,weekly,monthly'],
+            'salary_type' => ['nullable', 'in:daily,weekly,monthly'],
             'daily_wage' => ['nullable', 'numeric', 'min:0'],
-            'wage_currency' => ['required', 'in:IQD,USD'],
+            'wage_currency' => ['nullable', 'in:IQD,USD'],
             'note' => ['nullable', 'string', 'max:255'],
         ], [], ['name' => 'ناو', 'job_title' => 'پیشە', 'salary_type' => 'شێوازی پارەدان']);
 
-        $employee = Employee::create([
-            'name' => $validated['name'],
-            'phone' => $validated['phone'] ?? null,
-            'job_title' => $validated['job_title'],
-            'salary_type' => $validated['salary_type'] ?? 'daily',
-            'daily_wage' => $validated['daily_wage'] ?? 0,
-            'wage_currency' => $validated['wage_currency'],
-            'hire_date' => now()->toDateString(),
-            'is_active' => true,
-            'note' => $validated['note'] ?? null,
-        ]);
+        try {
+            $data = [
+                'name' => $validated['name'],
+                'phone' => $validated['phone'] ?? null,
+                'job_title' => $validated['job_title'],
+                'daily_wage' => $validated['daily_wage'] ?? 0,
+                'wage_currency' => $validated['wage_currency'] ?? 'IQD',
+                'hire_date' => now()->toDateString(),
+                'is_active' => true,
+                'note' => $validated['note'] ?? null,
+            ];
 
-        if ($request->wantsJson()) {
-            return response()->json([
-                'ok' => true,
-                'message' => "وەستا / کارمەند {$employee->name} زیادکرا.",
-                'employee' => [
-                    'id' => $employee->id,
-                    'name' => $employee->name,
-                    'phone' => $employee->phone,
-                    'job_title' => $employee->job_title,
-                    'job_title_label' => $employee->job_title_label,
-                    'salary_type' => $employee->salary_type,
-                    'salary_type_label' => $employee->salary_type_label,
-                    'daily_wage' => (float) $employee->daily_wage,
-                    'wage_currency' => $employee->wage_currency,
-                    'hire_date' => $employee->hire_date?->format('Y/m/d'),
-                    'is_active' => true,
-                    'note' => $employee->note,
-                    'attendance' => null,
-                ]
-            ]);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('employees', 'salary_type')) {
+                $data['salary_type'] = $validated['salary_type'] ?? 'daily';
+            }
+
+            $employee = Employee::create($data);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'ok' => true,
+                    'message' => "وەستا / کارمەند {$employee->name} زیادکرا.",
+                    'employee' => [
+                        'id' => $employee->id,
+                        'name' => $employee->name,
+                        'phone' => $employee->phone,
+                        'job_title' => $employee->job_title,
+                        'job_title_label' => $employee->job_title_label,
+                        'salary_type' => $employee->salary_type ?? 'daily',
+                        'salary_type_label' => $employee->salary_type_label ?? 'ڕۆژانە',
+                        'daily_wage' => (float) $employee->daily_wage,
+                        'wage_currency' => $employee->wage_currency ?? 'IQD',
+                        'hire_date' => $employee->hire_date?->format('Y/m/d'),
+                        'is_active' => true,
+                        'note' => $employee->note,
+                        'attendance' => null,
+                    ]
+                ]);
+            }
+
+            return back()->with('ok', "وەستا / کارمەند {$employee->name} بە سەرکەوتوویی زیادکرا.");
+        } catch (\Throwable $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'هەڵە لە پاشەکەوتکردندا: ' . $e->getMessage(),
+                ], 500);
+            }
+            return back()->with('err', 'هەڵە لە پاشەکەوتکردندا: ' . $e->getMessage());
         }
-
-        return back()->with('ok', "وەستا / کارمەند {$employee->name} بە سەرکەوتوویی زیادکرا.");
     }
 
     /** دەستکاری مووچە و زانیاری وەستا لەلایەن بەڕێوەبەرەوە */
@@ -546,36 +561,51 @@ class WorkshopController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'job_title' => ['required', 'string', 'max:100'],
-            'salary_type' => ['required', 'in:daily,weekly,monthly'],
+            'salary_type' => ['nullable', 'in:daily,weekly,monthly'],
             'daily_wage' => ['required', 'numeric', 'min:0'],
-            'wage_currency' => ['required', 'in:IQD,USD'],
+            'wage_currency' => ['nullable', 'in:IQD,USD'],
             'is_active' => ['nullable', 'boolean'],
             'note' => ['nullable', 'string', 'max:255'],
         ], [], ['name' => 'ناو', 'job_title' => 'پیشە', 'salary_type' => 'شێوازی پارەدان']);
 
-        $employee->update([
-            'name' => $validated['name'],
-            'phone' => $validated['phone'] ?? null,
-            'job_title' => $validated['job_title'],
-            'salary_type' => $validated['salary_type'] ?? 'daily',
-            'daily_wage' => $validated['daily_wage'],
-            'wage_currency' => $validated['wage_currency'],
-            'is_active' => $request->has('is_active') ? $request->boolean('is_active') : $employee->is_active,
-            'note' => $validated['note'] ?? null,
-        ]);
+        try {
+            $data = [
+                'name' => $validated['name'],
+                'phone' => $validated['phone'] ?? null,
+                'job_title' => $validated['job_title'],
+                'daily_wage' => $validated['daily_wage'],
+                'wage_currency' => $validated['wage_currency'] ?? 'IQD',
+                'is_active' => $request->has('is_active') ? $request->boolean('is_active') : $employee->is_active,
+                'note' => $validated['note'] ?? null,
+            ];
 
-        if ($request->wantsJson()) {
-            return response()->json([
-                'ok' => true,
-                'message' => "زانیاری و مووچەی {$employee->name} نوێکرایەوە.",
-                'job_title' => $employee->job_title,
-                'job_title_label' => $employee->job_title_label,
-                'salary_type' => $employee->salary_type,
-                'salary_type_label' => $employee->salary_type_label,
-                'daily_wage' => (float) $employee->daily_wage,
-            ]);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('employees', 'salary_type')) {
+                $data['salary_type'] = $validated['salary_type'] ?? 'daily';
+            }
+
+            $employee->update($data);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'ok' => true,
+                    'message' => "زانیاری و مووچەی {$employee->name} نوێکرایەوە.",
+                    'job_title' => $employee->job_title,
+                    'job_title_label' => $employee->job_title_label,
+                    'salary_type' => $employee->salary_type ?? 'daily',
+                    'salary_type_label' => $employee->salary_type_label ?? 'ڕۆژانە',
+                    'daily_wage' => (float) $employee->daily_wage,
+                ]);
+            }
+
+            return back()->with('ok', "زانیاری و مووچەی {$employee->name} بە سەرکەوتوویی نوێکرایەوە.");
+        } catch (\Throwable $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'هەڵە لە نوێکردنەوەدا: ' . $e->getMessage(),
+                ], 500);
+            }
+            return back()->with('err', 'هەڵە لە نوێکردنەوەدا: ' . $e->getMessage());
         }
-
-        return back()->with('ok', "زانیاری و مووچەی {$employee->name} بە سەرکەوتوویی نوێکرایەوە.");
     }
 }

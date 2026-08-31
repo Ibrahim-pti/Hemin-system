@@ -26,7 +26,7 @@
         {{-- هەڵبژاردنی بەروار + دوگمەکانی ڕێکخستن و زیادکردن --}}
         <div class="flex items-center gap-2.5 flex-wrap">
             {{-- دوگمەی زیادکردنی وەستای نوێ --}}
-            <button type="button" @click="showNewEmployeeModal = true"
+            <button type="button" @click="openNewEmployeeModal()"
                     class="px-4 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25 flex items-center gap-1.5 transition-all cursor-pointer border border-emerald-500">
                 <span class="text-base font-black leading-none">+</span>
                 <span>زیادکردنی وەستا / کارمەند</span>
@@ -478,7 +478,6 @@
                                class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-indigo-500 font-mono">
                     </div>
                 </div>
-
                 {{-- شێوازی پارەدان: ڕۆژانە / حەفتانە / مانگانە --}}
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">شێوازی پارەدان *</label>
@@ -523,7 +522,13 @@
 
                 <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                     <button type="button" @click="showNewEmployeeModal = false" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200">داخستن</button>
-                    <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold" style="background-color: #059669 !important; color: #ffffff !important;">💾 پاشەکەوتکردن و زیادکردن</button>
+                    <button type="submit" 
+                            :disabled="isSavingEmployee"
+                            class="btn btn-primary !py-2 !px-5 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer" 
+                            style="background-color: #059669 !important; color: #ffffff !important;">
+                        <span x-show="isSavingEmployee" class="inline-block animate-spin">⏳</span>
+                        <span x-text="isSavingEmployee ? 'پاشەکەوت دەکرێت...' : '💾 پاشەکەوتکردن و زیادکردن'"></span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -583,17 +588,17 @@
                     <label class="block font-bold text-slate-700 mb-1">شێوازی پارەدان *</label>
                     <div class="grid grid-cols-3 gap-2">
                         <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
-                               :class="editWageForm.salary_type === 'daily' ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                                :class="editWageForm.salary_type === 'daily' ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
                             <input type="radio" value="daily" x-model="editWageForm.salary_type" class="sr-only">
                             <span>📅 ڕۆژانە</span>
                         </label>
                         <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
-                               :class="editWageForm.salary_type === 'weekly' ? 'bg-blue-50 border-blue-500 text-blue-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                                :class="editWageForm.salary_type === 'weekly' ? 'bg-blue-50 border-blue-500 text-blue-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
                             <input type="radio" value="weekly" x-model="editWageForm.salary_type" class="sr-only">
                             <span>🗓️ حەفتانە</span>
                         </label>
                         <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border cursor-pointer transition-all text-xs font-bold"
-                               :class="editWageForm.salary_type === 'monthly' ? 'bg-purple-50 border-purple-500 text-purple-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
+                                :class="editWageForm.salary_type === 'monthly' ? 'bg-purple-50 border-purple-500 text-purple-800 shadow-2xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'">
                             <input type="radio" value="monthly" x-model="editWageForm.salary_type" class="sr-only">
                             <span>📆 مانگانە</span>
                         </label>
@@ -616,7 +621,13 @@
 
                 <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                     <button type="button" @click="showEditWageModal = false" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200">داخستن</button>
-                    <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold" style="background-color: #2563eb !important; color: #ffffff !important;">نوێکردنەوەی مووچە</button>
+                    <button type="submit" 
+                            :disabled="isUpdatingWage"
+                            class="btn btn-primary !py-2 !px-5 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer" 
+                            style="background-color: #2563eb !important; color: #ffffff !important;">
+                        <span x-show="isUpdatingWage" class="inline-block animate-spin">⏳</span>
+                        <span x-text="isUpdatingWage ? 'نوێ دەکرێتەوە...' : 'نوێکردنەوەی مووچە'"></span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -710,7 +721,13 @@
 
                 <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                     <button type="button" @click="showModal = false" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200">داخستن</button>
-                    <button type="submit" class="btn btn-primary !py-2 !px-5 text-xs font-bold" style="background-color: #2563eb !important; color: #ffffff !important;">پاشەکەوتکردن</button>
+                    <button type="submit" 
+                            :disabled="isSavingAttendance"
+                            class="btn btn-primary !py-2 !px-5 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer" 
+                            style="background-color: #2563eb !important; color: #ffffff !important;">
+                        <span x-show="isSavingAttendance" class="inline-block animate-spin">⏳</span>
+                        <span x-text="isSavingAttendance ? 'پاشەکەوت دەکرێت...' : 'پاشەکەوتکردن'"></span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -736,6 +753,11 @@ function workshopEmployeesApp() {
 
         newEmployeeCustomJob: false,
         editWageCustomJob: false,
+
+        isSavingEmployee: false,
+        isUpdatingWage: false,
+        isSavingAttendance: false,
+        isSavingSettings: false,
 
         settingsForm: {
             workshop_work_start: '{{ $shiftSettings['work_start'] }}',
@@ -793,10 +815,25 @@ function workshopEmployeesApp() {
             window.location.href = `{{ route('workshop.employees') }}?date=${this.selectedDate}`;
         },
 
+        openNewEmployeeModal() {
+            this.newEmployeeForm = {
+                name: '',
+                phone: '',
+                job_title: 'master',
+                salary_type: 'daily',
+                daily_wage: '',
+                wage_currency: 'IQD',
+                note: ''
+            };
+            this.newEmployeeCustomJob = false;
+            this.isSavingEmployee = false;
+            this.showNewEmployeeModal = true;
+        },
+
         get filteredEmployees() {
             return this.employeesList.filter(emp => {
                 const matchStatus = this.statusFilter === 'all' || (emp.attendance && emp.attendance.status === this.statusFilter);
-                const q = this.searchQuery.toLowerCase();
+                const q = (this.searchQuery || '').toLowerCase().trim();
                 const matchQuery = !q || emp.name.toLowerCase().includes(q) || (emp.phone && emp.phone.includes(q));
                 return matchStatus && matchQuery;
             });
@@ -840,18 +877,19 @@ function workshopEmployeesApp() {
                 job_title: emp.job_title,
                 salary_type: emp.salary_type || 'daily',
                 daily_wage: emp.daily_wage,
-                wage_currency: emp.wage_currency
+                wage_currency: emp.wage_currency || 'IQD'
             };
             this.showEditWageModal = true;
         },
 
         async quickCheckIn(employeeId) {
             try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 const res = await fetch('{{ route('attendance.quick-check-in') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': token,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
@@ -859,8 +897,8 @@ function workshopEmployeesApp() {
                         work_date: this.selectedDate
                     })
                 });
-                const data = await res.json();
-                if (data.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
                     const emp = this.employeesList.find(e => e.id === employeeId);
                     if (emp) {
                         if (!emp.attendance) {
@@ -868,21 +906,24 @@ function workshopEmployeesApp() {
                         }
                         emp.attendance.status = 'present';
                         emp.attendance.status_label = 'ئامادەیە';
-                        emp.attendance.check_in = data.attendance.check_in.substring(0, 5);
+                        emp.attendance.check_in = data.attendance?.check_in ? data.attendance.check_in.substring(0, 5) : '';
                     }
+                } else {
+                    alert(data.message || 'هەڵەیەک ڕوویدا.');
                 }
             } catch (e) {
-                alert('هەڵەی پەیوەندی.');
+                alert('هەڵەی پەیوەندی بە سێرڤەرەوە.');
             }
         },
 
         async quickCheckOut(employeeId) {
             try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 const res = await fetch('{{ route('attendance.quick-check-out') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': token,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
@@ -890,8 +931,8 @@ function workshopEmployeesApp() {
                         work_date: this.selectedDate
                     })
                 });
-                const data = await res.json();
-                if (data.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
                     const emp = this.employeesList.find(e => e.id === employeeId);
                     if (emp) {
                         if (!emp.attendance) {
@@ -899,28 +940,33 @@ function workshopEmployeesApp() {
                         }
                         emp.attendance.status = 'present';
                         emp.attendance.status_label = 'ئامادەیە';
-                        emp.attendance.check_out = data.attendance.check_out.substring(0, 5);
-                        emp.attendance.overtime_hours = data.attendance.overtime_hours;
+                        emp.attendance.check_out = data.attendance?.check_out ? data.attendance.check_out.substring(0, 5) : '';
+                        emp.attendance.overtime_hours = data.attendance?.overtime_hours || 0;
                     }
+                } else {
+                    alert(data.message || 'هەڵەیەک ڕوویدا.');
                 }
             } catch (e) {
-                alert('هەڵەی پەیوەندی.');
+                alert('هەڵەی پەیوەندی بە سێرڤەرەوە.');
             }
         },
 
         async saveAttendance() {
+            if (this.isSavingAttendance) return;
+            this.isSavingAttendance = true;
             try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 const res = await fetch('{{ route('attendance.record-single') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': token,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(this.form)
                 });
-                const data = await res.json();
-                if (data.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
                     const emp = this.employeesList.find(e => e.id === this.form.employee_id);
                     if (emp) {
                         emp.attendance = {
@@ -939,67 +985,100 @@ function workshopEmployeesApp() {
                         };
                     }
                     this.showModal = false;
+                } else {
+                    let errMsg = data.message || 'هەڵەیەک ڕوویدا.';
+                    if (data.errors) {
+                        errMsg = Object.values(data.errors).flat().join('\n');
+                    }
+                    alert(errMsg);
                 }
             } catch (e) {
-                alert('هەڵەی پەیوەندی.');
+                alert('هەڵەی پەیوەندی بە سێرڤەرەوە.');
+            } finally {
+                this.isSavingAttendance = false;
             }
         },
 
         async saveSettings() {
+            if (this.isSavingSettings) return;
+            this.isSavingSettings = true;
             try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 const res = await fetch('{{ route('workshop.settings') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': token,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(this.settingsForm)
                 });
-                const data = await res.json();
-                if (data.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
                     this.showSettingsModal = false;
                     window.location.reload();
+                } else {
+                    let errMsg = data.message || 'هەڵەیەک ڕوویدا.';
+                    if (data.errors) {
+                        errMsg = Object.values(data.errors).flat().join('\n');
+                    }
+                    alert(errMsg);
                 }
             } catch (e) {
-                alert('هەڵەی پەیوەندی.');
+                alert('هەڵەی پەیوەندی بە سێرڤەرەوە.');
+            } finally {
+                this.isSavingSettings = false;
             }
         },
 
         async storeEmployee() {
+            if (this.isSavingEmployee) return;
+            this.isSavingEmployee = true;
             try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 const res = await fetch('{{ route('workshop.employees.quick-store') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': token,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(this.newEmployeeForm)
                 });
-                const data = await res.json();
-                if (data.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
                     this.showNewEmployeeModal = false;
                     window.location.reload();
+                } else {
+                    let errMsg = data.message || 'هەڵەیەک ڕوویدا لە کاتی پاشەکەوتکردندا.';
+                    if (data.errors) {
+                        errMsg = Object.values(data.errors).flat().join('\n');
+                    }
+                    alert(errMsg);
                 }
             } catch (e) {
-                alert('هەڵەی پەیوەندی.');
+                alert('هەڵەی پەیوەندی بە سێرڤەرەوە: ' + (e.message || e));
+            } finally {
+                this.isSavingEmployee = false;
             }
         },
 
         async updateWage() {
+            if (this.isUpdatingWage) return;
+            this.isUpdatingWage = true;
             try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 const res = await fetch(`/workshop/employees/${this.editWageForm.id}/update-wage`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': token,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(this.editWageForm)
                 });
-                const data = await res.json();
-                if (data.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
                     const emp = this.employeesList.find(e => e.id === this.editWageForm.id);
                     if (emp) {
                         emp.name = this.editWageForm.name;
@@ -1009,12 +1088,20 @@ function workshopEmployeesApp() {
                         emp.salary_type = data.salary_type || this.editWageForm.salary_type;
                         emp.salary_type_label = data.salary_type_label || (emp.salary_type === 'monthly' ? 'مانگانە' : (emp.salary_type === 'weekly' ? 'حەفتانە' : 'ڕۆژانە'));
                         emp.daily_wage = parseFloat(this.editWageForm.daily_wage);
-                        emp.wage_currency = this.editWageForm.wage_currency;
+                        emp.wage_currency = this.editWageForm.wage_currency || 'IQD';
                     }
                     this.showEditWageModal = false;
+                } else {
+                    let errMsg = data.message || 'هەڵەیەک ڕوویدا لە کاتی نوێکردنەوەدا.';
+                    if (data.errors) {
+                        errMsg = Object.values(data.errors).flat().join('\n');
+                    }
+                    alert(errMsg);
                 }
             } catch (e) {
-                alert('هەڵەی پەیوەندی.');
+                alert('هەڵەی پەیوەندی: ' + (e.message || e));
+            } finally {
+                this.isUpdatingWage = false;
             }
         }
     };
