@@ -70,14 +70,13 @@
                     ])),
                 ],
                 [
-                    'title' => 'کۆگا و ماددەکان',
+                    'title' => 'کۆگا و کارمەندان',
                     'activeBg' => 'rgba(59, 130, 246, 0.12)',
                     'activeBorder' => 'rgba(59, 130, 246, 0.22)',
                     'activeText' => '#60a5fa',
                     'activeIconBg' => 'rgba(59, 130, 246, 0.2)',
                     'activeIconColor' => '#93c5fd',
                     'items' => [
-                        ['route' => 'items.*', 'href' => route('items.index'), 'label' => 'ماددە و کەلوپەل', 'icon' => 'items', 'can' => 'manage_items'],
                         ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_settings'],
                         ['route' => 'warehouses.*', 'href' => route('warehouses.index'), 'label' => 'کۆگا', 'icon' => 'warehouses', 'can' => 'manage_settings'],
                         ['route' => 'employees.*', 'href' => route('employees.index'), 'label' => 'کارمەندان', 'icon' => 'employees', 'can' => 'manage_employees'],
