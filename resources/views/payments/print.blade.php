@@ -36,9 +36,9 @@
             </div>
 
             <div class="text-center">
-                <h1 class="text-xl font-bold text-[#b91c1c]">{{ $settings['company_name'] ?? '' }}</h1>
+                <h1 class="text-xl font-bold text-[#b91c1c]">{{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}</h1>
                 <p class="mt-1 inline-block rounded border border-[#1d4ed8] px-3 py-1 text-sm font-semibold text-[#1d4ed8]">
-                    {{ $payment->direction === 'in' ? 'حەقدی — وەرگرتنی پارە' : 'حەقدی — دانی پارە' }}
+                    سەنەدی حەقدی وەرگیراو لە موشتەری
                 </p>
             </div>
 
@@ -51,13 +51,13 @@
         {{-- ناوەڕۆک --}}
         <div class="mt-6 space-y-4 text-base">
             <div>
-                {{ $payment->direction === 'in' ? 'وەرگیرا لە بەڕێز:' : 'درا بە بەڕێز:' }}
+                وەرگیرا لە بەڕێز:
                 <span class="dotted font-semibold">{{ $payment->party_label }}</span>
             </div>
 
             <div class="flex items-center gap-3">
-                <span>بڕی:</span>
-                <span class="num rounded border border-[#1d4ed8] bg-[#eff4ff] px-4 py-2 text-xl font-bold">
+                <span>بڕی پارە:</span>
+                <span class="num rounded border border-[#1d4ed8] bg-[#eff4ff] px-4 py-2 text-xl font-bold text-emerald-800">
                     {{ fmt_money($payment->amount, $payment->currency) }}
                 </span>
             </div>
@@ -69,14 +69,14 @@
             @if ($payment->currency === 'USD')
                 <div class="text-sm text-[--color-ink-soft]">
                     بە نرخی <span class="num">{{ fmt_num($payment->exchange_rate) }}</span> =
-                    <span class="num">{{ fmt_money($payment->amount_iqd) }}</span>
+                    <span class="num font-bold text-slate-800">{{ fmt_money($payment->amount_iqd) }}</span>
                 </div>
             @endif
 
             @if ($payment->order)
                 <div>
                     لەسەر حسابی وەسڵی ژمارە:
-                    <span class="num font-semibold">{{ $payment->order->invoice_no }}</span>
+                    <span class="num font-semibold text-blue-700">#{{ $payment->order->invoice_no }}</span>
                 </div>
             @endif
 
@@ -86,7 +86,7 @@
 
             @if ($balance !== null)
                 <div class="rounded border border-[--color-line] bg-[--color-canvas] px-4 py-2">
-                    باڵانسی ماوە:
+                    باڵانسی ماوەی کڕیار دوای ئەم حەقدییە:
                     <span class="num font-bold {{ $balance > 0 ? 'text-[#dc2626]' : 'text-[#16a34a]' }}">
                         {{ fmt_money($balance) }}
                     </span>
@@ -96,7 +96,8 @@
 
         {{-- ئیمزا --}}
         <div class="mt-10 flex items-end justify-between text-sm">
-            <div>ئیمزای {{ $payment->direction === 'in' ? 'وەرگر' : 'وەرگر' }}: <span class="dotted">&nbsp;</span></div>
+            <div>ئیمزای موشتەری (پارەدەر): <span class="dotted">&nbsp;</span></div>
+            <div>ئیمزای کارگە (پارەوەرگر): <span class="dotted">&nbsp;</span></div>
             <div class="text-[--color-ink-soft]">
                 تۆمارکەر: {{ $payment->user?->name ?? '—' }}
             </div>

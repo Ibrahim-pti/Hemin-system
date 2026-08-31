@@ -23,8 +23,9 @@ class PaymentController extends Controller
     {
         $payments = Payment::query()
             ->with(['party', 'order', 'cashBox', 'user'])
+            ->where('direction', 'in')
             ->search($request->string('q')->toString())
-            ->when($request->string('direction')->toString(), fn ($q, $d) => $q->where('direction', $d))
+            ->when($request->integer('customer_id'), fn ($q, $c) => $q->where('party_type', Customer::class)->where('party_id', $c))
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
             ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
             ->latest('paid_at')
@@ -32,93 +33,101 @@ class PaymentController extends Controller
             ->paginate(30)
             ->withQueryString();
 
+        $allCustomers = Customer::active()->get();
+        $totalDebt = (float) $allCustomers->sum(fn ($c) => max(0, $c->balance()));
+
+        $totalIn = (float) Payment::where('direction', 'in')
+            ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
+            ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
+            ->sum('amount_iqd');
+
+        $totalCount = Payment::where('direction', 'in')
+            ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
+            ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
+            ->count();
+
         return view('payments.index', [
             'payments' => $payments,
-            'totalIn' => (float) Payment::where('direction', 'in')
-                ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
-                ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
-                ->sum('amount_iqd'),
-            'totalOut' => (float) Payment::where('direction', 'out')
-                ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
-                ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
-                ->sum('amount_iqd'),
+            'totalIn' => $totalIn,
+            'totalCount' => $totalCount,
+            'totalDebt' => $totalDebt,
+            'customers' => $allCustomers,
         ]);
     }
 
     public function create(Request $request): View
     {
-        $direction = $request->string('type')->toString() === 'out' ? 'out' : 'in';
+        $selectedCustomerId = $request->integer('customer') ?: null;
+        $selectedOrderId = $request->integer('order') ?: null;
+
+        $order = $selectedOrderId ? Order::with('customer')->find($selectedOrderId) : null;
+        if ($order && !$selectedCustomerId) {
+            $selectedCustomerId = $order->customer_id;
+        }
+
+        $customers = Customer::active()->orderBy('name')->get()->map(function ($c) {
+            return [
+                'id' => $c->id,
+                'name' => $c->name,
+                'phone' => $c->phone,
+                'balance' => $c->balance(),
+            ];
+        });
+
+        $orders = Order::where('status', '!=', 'cancelled')
+            ->whereNotIn('status', ['draft'])
+            ->latest('order_date')
+            ->latest('id')
+            ->limit(200)
+            ->get(['id', 'invoice_no', 'customer_id', 'total', 'currency', 'order_date']);
 
         return view('payments.form', [
-            'direction' => $direction,
-            'customers' => Customer::active()->orderBy('name')->get(['id', 'name', 'phone']),
-            'suppliers' => Supplier::active()->orderBy('name')->get(['id', 'name']),
-            'employees' => Employee::active()->orderBy('name')->get(['id', 'name']),
-            'orders' => Order::where('status', '!=', 'cancelled')->latest('id')->limit(150)->get(['id', 'invoice_no', 'customer_id', 'total', 'currency', 'order_date']),
-            'purchases' => Purchase::where('status', '!=', 'cancelled')->latest('id')->limit(150)->get(['id', 'invoice_no', 'supplier_id', 'total', 'currency', 'purchase_date']),
+            'direction' => 'in',
+            'customers' => $customers,
+            'orders' => $orders,
             'cashBoxes' => CashBox::where('is_active', true)->get(),
             'rate' => ExchangeRate::current(),
-            'selected' => [
-                'customer' => $request->integer('customer') ?: null,
-                'supplier' => $request->integer('supplier') ?: null,
-                'order' => $request->integer('order') ?: null,
-                'purchase' => $request->integer('purchase') ?: null,
-            ],
-            'order' => $request->integer('order') ? Order::find($request->integer('order')) : null,
-            'purchase' => $request->integer('purchase') ? Purchase::find($request->integer('purchase')) : null,
+            'selectedCustomer' => $selectedCustomerId,
+            'selectedOrder' => $selectedOrderId,
+            'order' => $order,
         ]);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'direction' => ['required', 'in:in,out'],
-            'party_kind' => ['required', 'in:customer,supplier,employee,other'],
-            'party_id' => ['nullable', 'integer'],
-            'party_name' => ['nullable', 'string', 'max:255'],
+            'customer_id' => ['required', 'exists:customers,id'],
             'order_id' => ['nullable', 'exists:orders,id'],
-            'purchase_id' => ['nullable', 'exists:purchases,id'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'currency' => ['required', 'in:IQD,USD'],
+            'exchange_rate' => ['nullable', 'numeric', 'min:0'],
             'cash_box_id' => ['nullable', 'exists:cash_boxes,id'],
             'paid_at' => ['required', 'date'],
-            'note' => ['nullable', 'string'],
+            'note' => ['nullable', 'string', 'max:255'],
         ], [
-            'amount.gt' => 'بڕ دەبێت لە سفر زیاتر بێت.',
+            'customer_id.required' => 'کڕیار هەڵبژێرە.',
+            'customer_id.exists' => 'کڕیاری دیاریکراو نەدۆزرایەوە.',
+            'amount.required' => 'بڕی پارە بنووسە.',
+            'amount.gt' => 'بڕ دەبێت لە ٠ زیاتر بێت.',
         ]);
 
-        $party = match ($data['party_kind']) {
-            'customer' => Customer::find($data['party_id']),
-            'supplier' => Supplier::find($data['party_id']),
-            'employee' => Employee::find($data['party_id']),
-            default => null,
-        };
-
-        if ($data['party_kind'] !== 'other' && ! $party) {
-            return back()->withInput()->with('err', 'لایەنی مامەڵە هەڵبژێرە.');
-        }
+        $customer = Customer::findOrFail($data['customer_id']);
 
         $payment = $this->payments->record([
-            'direction' => $data['direction'],
+            'direction' => 'in',
             'amount' => $data['amount'],
             'currency' => $data['currency'],
             'paid_at' => $data['paid_at'],
-            'party' => $party,
-            'party_name' => $data['party_name'] ?? null,
+            'party' => $customer,
+            'party_name' => $customer->name,
             'order_id' => $data['order_id'] ?? null,
-            'purchase_id' => $data['purchase_id'] ?? null,
             'cash_box_id' => $data['cash_box_id'] ?? null,
-            'category' => match ($data['party_kind']) {
-                'customer' => 'customer_payment',
-                'supplier' => 'supplier_payment',
-                'employee' => 'wage',
-                default => 'other',
-            },
+            'category' => 'customer_payment',
             'note' => $data['note'] ?? null,
         ]);
 
         return redirect()->route('payments.print', $payment)
-            ->with('ok', "حەقدی {$payment->voucher_no} تۆمارکرا.");
+            ->with('ok', "سەنەدی حەقدی ژمارە {$payment->voucher_no} بۆ {$customer->name} تۆمارکرا.");
     }
 
     public function show(Payment $payment): View

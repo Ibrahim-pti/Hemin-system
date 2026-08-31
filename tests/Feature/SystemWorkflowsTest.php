@@ -214,9 +214,7 @@ class SystemWorkflowsTest extends TestCase
 
         // Record customer payment (in)
         $paymentRes = $this->post('/payments', [
-            'direction' => 'in',
-            'party_kind' => 'customer',
-            'party_id' => $customer->id,
+            'customer_id' => $customer->id,
             'amount' => 40000,
             'currency' => 'IQD',
             'paid_at' => now()->toDateString(),
