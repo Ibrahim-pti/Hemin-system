@@ -28,13 +28,13 @@
             </div>
         </div>
 
-        {{-- ٢. ژمارەی سەنەدەکانی حەقدی --}}
+        {{-- ٢. ژمارەی حەقدییەکان --}}
         <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-blue-500 relative flex items-center justify-between overflow-hidden">
             <div>
                 <div class="text-2xl sm:text-3xl font-black text-slate-800 num tracking-tight">
                     {{ fmt_num($totalCount) }}
                 </div>
-                <div class="text-xs font-bold text-slate-500 mt-1">کۆی سەنەدەکانی حەقدی تۆمارکراو</div>
+                <div class="text-xs font-bold text-slate-500 mt-1">کۆی حەقدییە تۆمارکراوەکان</div>
             </div>
             <div class="size-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0">
                 🧾
@@ -58,13 +58,13 @@
     {{-- ٢. فۆرمی فلتەر و گەڕان --}}
     <form method="GET" class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 items-end">
-            {{-- گەڕان بە ناو و ژمارە --}}
+            {{-- گەڕان بە ناو و وەسڵ --}}
             <div class="sm:col-span-2">
                 <label class="block text-xs font-bold text-slate-600 mb-1">گەڕان لە حەقدی</label>
                 <div class="relative">
                     <input type="search" name="q" value="{{ request('q') }}"
                            class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 bg-slate-50/50"
-                           placeholder="ناوی موشتەری، ژمارەی سەنەد، وەسڵ یان تێبینی...">
+                           placeholder="ناوی موشتەری، وەسڵ یان تێبینی...">
                     <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
                 </div>
             </div>
@@ -108,7 +108,7 @@
                 <span>تۆماری حەقدی وەرگیراو لە موشتەرییەکان</span>
             </div>
             <span class="text-xs text-slate-500 font-semibold num">
-                کۆی گشتی: {{ fmt_num($payments->total()) }} سەنەد
+                کۆی گشتی: {{ fmt_num($payments->total()) }} حەقدی
             </span>
         </div>
 
@@ -117,7 +117,6 @@
                 <thead>
                     <tr class="border-b border-slate-100 bg-slate-50/80 text-xs text-slate-500 font-bold">
                         <th class="py-3 px-4 w-12 text-center">#</th>
-                        <th class="py-3 px-4 text-center">سەنەد</th>
                         <th class="py-3 px-4">موشتەری (کڕیار)</th>
                         <th class="py-3 px-4 text-center">وەسڵی پەیوەندیدار</th>
                         <th class="py-3 px-4 text-center">بەروار</th>
@@ -132,15 +131,6 @@
                             {{-- # --}}
                             <td class="py-3.5 px-4 text-center num text-slate-400 font-medium text-xs">
                                 {{ $payments->firstItem() + $index }}
-                            </td>
-
-                            {{-- ژمارەی سەنەد --}}
-                            <td class="py-3.5 px-4 text-center">
-                                <a href="{{ route('payments.print', $payment) }}" target="_blank"
-                                   class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-mono font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 shadow-2xs transition-all"
-                                   title="چاپی سەنەد">
-                                    {{ $payment->voucher_no }}
-                                </a>
                             </td>
 
                             {{-- موشتەری --}}
@@ -197,7 +187,7 @@
                                 <div class="inline-flex items-center gap-1.5">
                                     <a href="{{ route('payments.print', $payment) }}" target="_blank"
                                        class="inline-flex items-center gap-1 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold shadow-2xs transition-colors"
-                                       title="چاپکردنی سەنەد">
+                                       title="چاپ">
                                         <span>🖨️</span>
                                         <span>چاپ</span>
                                     </a>
@@ -213,8 +203,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-12 text-center text-slate-400 text-sm font-medium">
-                                هیچ سەنەدێکی حەقدی نەدۆزرایەوە.
+                            <td colspan="7" class="py-12 text-center text-slate-400 text-sm font-medium">
+                                هیچ حەقدییەک نەدۆزرایەوە.
                             </td>
                         </tr>
                     @endforelse
@@ -241,7 +231,7 @@
             </div>
             <h3 class="text-base font-extrabold text-slate-900 mb-1">دڵنیایت لە سڕینەوە؟</h3>
             <p class="text-xs text-slate-500 mb-5 leading-relaxed">
-                ئەم سەنەدە و جوڵەی ناو قاسەکەی بە تەواوی دەسڕدرێنەوە و باڵانسی کڕیارەکە نوێ دەبێتەوە.
+                ئەم حەقدییە و جوڵەی ناو قاسەکەی بە تەواوی دەسڕدرێنەوە و باڵانسی کڕیارەکە نوێ دەبێتەوە.
             </p>
             <div class="flex items-center justify-center gap-2">
                 <form :action="deleteUrl" method="POST">
