@@ -217,75 +217,67 @@
                         </tr>
                     @endfor
 
-                    {{-- بەشی خوارەوە: کۆی گشتی بە دۆتی تەواو و هاوتەریب لەگەڵ دەقەکە --}}
+                    {{-- بەشی خوارەوە: کۆی گشتی، داشکاندن، پێشەکی و ماوە لەناو یەک چوارچێوە بەبێ خەتی جیاکەرەوە --}}
                     <tr>
-                        <td colspan="4" style="padding: 5px 12px; border: 1.5px solid #1e3a5f; background-color: #ffffff;">
-                            <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; line-height: 1.2;">
-                                <span style="font-weight: 900; shrink: 0; color: #0f172a;">کۆی گشتی</span>
-                                <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; display: flex; justify-content: center; align-items: baseline;">
-                                    <span class="num" style="font-weight: 900; font-size: 13px; color: #000000; line-height: 1; transform: translateY(2px);">
-                                        {{ fmt_num($order->total) }}
+                        <td colspan="4" style="padding: 6px 12px; border: 1.5px solid #1e3a5f; background-color: #ffffff;">
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                {{-- کۆی گشتی --}}
+                                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+                                    <span style="font-weight: 900; shrink: 0; color: #0f172a;">کۆی گشتی</span>
+                                    <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; display: flex; justify-content: center; align-items: center; padding-bottom: 1px;">
+                                        <span class="num" style="font-weight: 900; font-size: 13px; color: #000000; line-height: 1;">
+                                            {{ fmt_num($order->total) }}
+                                        </span>
+                                    </div>
+                                    <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
+                                        {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
                                     </span>
                                 </div>
-                                <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
-                                    {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
-                                </span>
+
+                                {{-- داشکاندن ئەگەر هەبێت --}}
+                                @if ($order->discount_amount > 0)
+                                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+                                        <span style="font-weight: 900; shrink: 0; color: #b91c1c;">داشکاندن</span>
+                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; display: flex; justify-content: center; align-items: center; padding-bottom: 1px;">
+                                            <span class="num" style="font-weight: 900; font-size: 12px; color: #b91c1c; line-height: 1;">
+                                                - {{ fmt_num($order->discount_amount) }}
+                                            </span>
+                                        </div>
+                                        <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
+                                            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                        </span>
+                                    </div>
+                                @endif
+
+                                {{-- پێشەکی و ماوە تەنها کاتێک قەرز هەبێت دێتە دەرەوە --}}
+                                @if ($remaining > 0)
+                                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+                                        <span style="font-weight: 900; shrink: 0; color: #047857;">پێشەکی / پارەی دراو</span>
+                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; display: flex; justify-content: center; align-items: center; padding-bottom: 1px;">
+                                            <span class="num" style="font-weight: 900; font-size: 12px; color: #047857; line-height: 1;">
+                                                {{ fmt_num($paid) }}
+                                            </span>
+                                        </div>
+                                        <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
+                                            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                        </span>
+                                    </div>
+
+                                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+                                        <span style="font-weight: 900; shrink: 0; color: #b91c1c;">ماوە (قەرز)</span>
+                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; display: flex; justify-content: center; align-items: center; padding-bottom: 1px;">
+                                            <span class="num" style="font-weight: 900; font-size: 13px; color: #b91c1c; line-height: 1;">
+                                                {{ fmt_num($remaining) }}
+                                            </span>
+                                        </div>
+                                        <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
+                                            {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
                         </td>
                     </tr>
-
-                    {{-- داشکاندن ئەگەر هەبێت --}}
-                    @if ($order->discount_amount > 0)
-                        <tr>
-                            <td colspan="4" style="padding: 4px 12px; border: 1.5px solid #1e3a5f; border-top: none; background-color: #ffffff;">
-                                <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; line-height: 1.2;">
-                                    <span style="font-weight: 900; shrink: 0; color: #b91c1c;">داشکاندن</span>
-                                    <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; display: flex; justify-content: center; align-items: baseline;">
-                                        <span class="num" style="font-weight: 900; font-size: 12px; color: #b91c1c; line-height: 1; transform: translateY(2px);">
-                                            - {{ fmt_num($order->discount_amount) }}
-                                        </span>
-                                    </div>
-                                    <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
-                                        {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
-                                    </span>
-                                </div>
-                            </td>
-                        </tr>
-                    @endif
-
-                    {{-- پێشەکی و ماوە تەنها کاتێک قەرز هەبێت دێتە دەرەوە --}}
-                    @if ($remaining > 0)
-                        <tr>
-                            <td colspan="4" style="padding: 4px 12px; border: 1.5px solid #1e3a5f; border-top: none; background-color: #ffffff;">
-                                <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; line-height: 1.2;">
-                                    <span style="font-weight: 900; shrink: 0; color: #047857;">پێشەکی / پارەی دراو</span>
-                                    <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; display: flex; justify-content: center; align-items: baseline;">
-                                        <span class="num" style="font-weight: 900; font-size: 12px; color: #047857; line-height: 1; transform: translateY(2px);">
-                                            {{ fmt_num($paid) }}
-                                        </span>
-                                    </div>
-                                    <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
-                                        {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
-                                    </span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="4" style="padding: 4px 12px; border: 1.5px solid #1e3a5f; border-top: none; background-color: #ffffff;">
-                                <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; line-height: 1.2;">
-                                    <span style="font-weight: 900; shrink: 0; color: #b91c1c;">ماوە (قەرز)</span>
-                                    <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; display: flex; justify-content: center; align-items: baseline;">
-                                        <span class="num" style="font-weight: 900; font-size: 13px; color: #b91c1c; line-height: 1; transform: translateY(2px);">
-                                            {{ fmt_num($remaining) }}
-                                        </span>
-                                    </div>
-                                    <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a;">
-                                        {{ $order->currency === 'USD' ? 'دۆلار' : 'دینار' }}
-                                    </span>
-                                </div>
-                            </td>
-                        </tr>
-                    @endif
                 </tbody>
             </table>
 
