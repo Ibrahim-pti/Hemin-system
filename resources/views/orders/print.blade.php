@@ -88,56 +88,62 @@
 
     <div class="receipt-sheet">
         <div>
-            {{-- بەشی سەرەوە / سەردێڕ بە شێوازی دەفتەری وەسڵ --}}
-            <div class="text-center relative">
-                {{-- ژمارەی وەسڵ لە سەرەوە دەستە چەپ --}}
-                <div class="absolute left-0 top-0 border border-[#b91c1c] bg-white px-2.5 py-0.5 rounded text-xs font-black text-[#b91c1c] shadow-2xs">
-                    No. <span class="num">{{ $order->invoice_no }}</span>
-                </div>
-
+            {{-- بەشی سەرەوە / سەردێڕ ڕێک بەپێی وێنەی دەفتەری وەسڵەکە --}}
+            <div class="text-center">
                 <h1 class="text-2xl font-black text-[#b91c1c] tracking-tight leading-none">
                     {{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}
                 </h1>
-                <p class="text-[11px] font-bold text-slate-800 mt-1">
-                    {{ $settings['company_tagline'] ?? 'بۆ دروست کردنی دەرگا و مەحەجەرە و کەپر و مەسعەد' }}
+                <p class="text-[11px] font-bold text-slate-800 mt-1 leading-tight">
+                    بۆ دروست کردنی دەرگا و مەحەجەرە و کەپر و مەسعەد
                 </p>
-                <p class="text-[10px] font-semibold text-slate-700">
-                    بە شێوازێکی ئەندەسی
+                <p class="text-[10px] font-semibold text-slate-700 leading-tight">
+                    بە شێوازێکی هەندەسی
                 </p>
                 <p class="text-[11px] font-bold text-slate-900 mt-0.5" dir="rtl">
                     هێمن :
-                    <span class="num" dir="ltr">{{ $settings['company_phone'] ?? '٠٧٥٠٤٥٦٨٥٥٦' }}</span>
-                    -
                     <span class="num" dir="ltr">{{ $settings['company_phone2'] ?? '٠٧٥٠١٢٠١١١٠' }}</span>
+                    -
+                    <span class="num" dir="ltr">{{ $settings['company_phone'] ?? '٠٧٥٠٤٥٦٨٥٥٦' }}</span>
                 </p>
 
-                {{-- باڕی ناونیشان تەواو لە ناوەڕاست وەک وەسڵە ئەسڵیەکە --}}
-                <div class="mt-1.5 rounded-sm bg-[#1e3a5f]/10 border-y border-[#1e3a5f] py-0.5 px-3 text-center">
-                    <div class="font-bold text-xs text-[#1e3a5f]">
-                        {{ $settings['company_address'] ?? 'هەولێر — ١٠٠م بەرامبەر گۆڕستانی شێخ ئەحمەد' }}
+                {{-- باڕی ناونیشان و ژمارەی وەسڵ لە دەستەچەپ ڕێک وەک دەفتەرەکە --}}
+                <div class="mt-2 flex items-center gap-1.5">
+                    <div class="border border-[#b91c1c] bg-white text-[#b91c1c] font-black text-xs px-2.5 py-0.5 rounded-xs shrink-0 shadow-2xs">
+                        No. <span class="num">{{ $order->invoice_no }}</span>
+                    </div>
+                    <div class="flex-1 bg-[#edf2f7] border-y border-[#1e3a5f] py-0.5 px-3 text-center rounded-xs">
+                        <div class="font-bold text-xs text-[#1e3a5f]">
+                            {{ $settings['company_address'] ?? 'هەولێر — ١٠٠م بەرامبەر گۆڕستانی شێخ ئەحمەد' }}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {{-- زانیاری کڕیار، ناونیشان، بەروار بەبێ هیچ خەت و هێڵێک لە ژێریاندا --}}
-            <div class="mt-2.5 mb-1.5 flex items-center justify-between text-[11px] gap-3 font-bold text-slate-900">
-                <div class="flex items-center gap-1.5 flex-1 min-w-0">
-                    <span class="text-slate-800 shrink-0">بەڕێز:</span>
-                    <span class="text-slate-900 truncate leading-none">{{ $order->customer?->name }}</span>
+            {{-- زانیاری کڕیار، ناونیشان، بەروار بە دۆتی تەواو وەک دەفتەری وەسڵ --}}
+            <div class="mt-2.5 mb-1.5 flex items-center justify-between text-[11px] gap-2 font-bold text-slate-900">
+                <div class="flex items-center gap-1 flex-1 min-w-0">
+                    <span class="text-slate-900 shrink-0">بەڕێز :</span>
+                    <div class="flex-1 border-b border-dotted border-black flex items-center min-h-[16px] px-1">
+                        <span class="text-slate-900 font-bold truncate leading-none">{{ $order->customer?->name }}</span>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-1.5 flex-1 min-w-0">
-                    <span class="text-slate-800 shrink-0">ناونیشان:</span>
-                    <span class="text-slate-800 truncate leading-none">
-                        {{ $order->address_snapshot ?: ($order->customer?->address ?: '—') }}
-                    </span>
+                <div class="flex items-center gap-1 flex-1 min-w-0">
+                    <span class="text-slate-900 shrink-0">ناونیشان :</span>
+                    <div class="flex-1 border-b border-dotted border-black flex items-center min-h-[16px] px-1">
+                        <span class="text-slate-800 font-bold truncate leading-none">
+                            {{ $order->address_snapshot ?: ($order->customer?->address ?: '') }}
+                        </span>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-1.5 shrink-0">
-                    <span class="text-slate-800 shrink-0">بەروار:</span>
-                    <span class="num text-slate-900 leading-none" dir="ltr">
-                        {{ $order->order_date?->format('Y / m / d') }}
-                    </span>
+                <div class="flex items-center gap-1 shrink-0 w-36">
+                    <span class="text-slate-900 shrink-0">بەروار :</span>
+                    <div class="flex-1 border-b border-dotted border-black flex items-center justify-center min-h-[16px] px-1">
+                        <span class="num font-bold text-slate-900 text-center leading-none" dir="ltr">
+                            {{ $order->order_date?->format('Y / m / d') }}
+                        </span>
+                    </div>
                 </div>
             </div>
 
