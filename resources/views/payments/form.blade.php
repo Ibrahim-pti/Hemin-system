@@ -44,7 +44,7 @@
     @endif
 
     {{-- کارتی سەرەکی فۆرم --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden"
+    <div class="card"
          x-data="customerPaymentForm(
             @js($customers),
             @js($orders),
@@ -53,17 +53,6 @@
             '{{ old('amount', $order ? (float)$order->remaining() : '') }}',
             '{{ number_format($rate * 100) }}'
          )">
-
-        {{-- سەردێڕی کارت --}}
-        <div class="p-4 sm:p-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex items-center justify-between">
-            <div class="flex items-center gap-2.5 font-black text-base sm:text-lg">
-                <span class="size-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">📥</span>
-                <span>وەرگرتنی حەقدی (کاش) لە موشتەری</span>
-            </div>
-            <span class="text-xs font-bold bg-white/20 px-3 py-1 rounded-lg">
-                داهاتی قاسە
-            </span>
-        </div>
 
         <form method="POST" action="{{ route('payments.store') }}" class="p-5 sm:p-7 space-y-6">
             @csrf
