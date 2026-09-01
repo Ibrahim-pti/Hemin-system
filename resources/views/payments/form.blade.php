@@ -96,7 +96,6 @@
             <div class="bg-slate-50/80 border border-slate-200/80 rounded-xl p-4">
                 <label class="block text-xs font-bold text-slate-700 mb-1" for="order_id">
                     بەستنەوە بە وەسڵێکی فرۆشتنی دیاریکراو
-                    <span class="text-slate-400 font-normal text-[11px]">(ئارەزوومەندانە — ئەگەر وەسڵ دیاری نەکەیت دەچێتە سەر گشتی باڵانسی موشتەری)</span>
                 </label>
                 <select id="order_id" name="order_id" class="field w-full text-xs font-semibold bg-white !py-2"
                         x-model="selectedOrder"
@@ -104,7 +103,7 @@
                     <option value="">— تەواوی حسابی موشتەری (گشتی) —</option>
                     <template x-for="ord in filteredOrders" :key="ord.id">
                         <option :value="ord.id"
-                                x-text="'وەسڵی #' + ord.invoice_no + ' — بڕ: ' + money(ord.total) + ' (' + ord.order_date + ')'"
+                                x-text="'وەسڵی #' + ord.invoice_no + ' — بڕ: ' + money(ord.total)"
                                 :selected="selectedOrder == ord.id">
                         </option>
                     </template>

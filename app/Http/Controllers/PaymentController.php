@@ -79,7 +79,15 @@ class PaymentController extends Controller
             ->latest('order_date')
             ->latest('id')
             ->limit(200)
-            ->get(['id', 'invoice_no', 'customer_id', 'total', 'currency', 'order_date']);
+            ->get(['id', 'invoice_no', 'customer_id', 'total', 'currency', 'order_date'])
+            ->map(fn ($o) => [
+                'id' => $o->id,
+                'invoice_no' => $o->invoice_no,
+                'customer_id' => $o->customer_id,
+                'total' => (float) $o->total,
+                'currency' => $o->currency,
+                'order_date' => $o->order_date ? $o->order_date->format('Y-m-d') : '',
+            ]);
 
         return view('payments.form', [
             'direction' => 'in',
