@@ -317,13 +317,12 @@
 </head>
 <body x-data="{
           selectedRole: 'admin',
-          email: 'admin@hemin.krd',
+          email: '{{ old('email', '') }}',
           password: '',
           showPassword: false,
           loading: false,
           setRole(role) {
               this.selectedRole = role;
-              this.email = role === 'admin' ? 'admin@hemin.krd' : 'kogha@hemin.krd';
               this.password = '';
               this.$nextTick(() => {
                   const passInput = document.getElementById('password');
@@ -415,7 +414,8 @@
                            x-model="email"
                            class="form-input input-email"
                            dir="ltr" 
-                           placeholder="admin@hemin.krd">
+                           autocomplete="email"
+                           placeholder="example@domain.com">
                     <div class="input-icon-right">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="2"/>
