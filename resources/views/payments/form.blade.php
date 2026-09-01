@@ -103,7 +103,7 @@
                     <option value="">— تەواوی حسابی موشتەری (گشتی) —</option>
                     <template x-for="ord in filteredOrders" :key="ord.id">
                         <option :value="ord.id"
-                                x-text="'وەسڵی #' + ord.invoice_no + ' — بڕ: ' + money(ord.total)"
+                                x-text="'وەسڵی #' + ord.invoice_no + ' — بڕ: ' + (ord.currency === 'USD' ? '$' + Number(ord.total).toLocaleString('en-US') : Number(ord.total).toLocaleString('en-US') + ' د.ع')"
                                 :selected="selectedOrder == ord.id">
                         </option>
                     </template>
@@ -123,12 +123,12 @@
                            placeholder="0">
 
                     {{-- دوگمە خێراکان بۆ دیاریکردنی بڕ --}}
-                    <div class="grid grid-cols-3 gap-2 mt-2" x-show="currentCustomerDebt > 0">
-                        <button type="button" @click="amount = currentCustomerDebt"
+                    <div class="grid grid-cols-3 gap-2 mt-2" x-show="currentCustomerDebt > 0 || selectedOrder">
+                        <button type="button" @click="setFullDebt()"
                                 class="py-1 px-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer">
                             هەموو قەرزەکە
                         </button>
-                        <button type="button" @click="amount = Math.round(currentCustomerDebt / 2)"
+                        <button type="button" @click="setHalfDebt()"
                                 class="py-1 px-2 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer">
                             نیوەی قەرزەکە
                         </button>
@@ -231,6 +231,10 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
             return this.currentCustomer ? Math.max(0, parseFloat(this.currentCustomer.balance) || 0) : 0;
         },
 
+        get selectedOrderObj() {
+            return this.orders.find(o => String(o.id) === String(this.selectedOrder)) || null;
+        },
+
         get filteredOrders() {
             if (!this.selectedCustomer) return this.orders;
             return this.orders.filter(o => String(o.customer_id) === String(this.selectedCustomer));
@@ -238,7 +242,7 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
 
         get cleanRate() {
             const r = parseFloat(this.exchangeRate.toString().replace(/[^0-9.]/g, ''));
-            return isNaN(r) ? 0 : r;
+            return isNaN(r) || r <= 0 ? 150000 : r;
         },
 
         get amountIqd() {
@@ -250,18 +254,39 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
             return amt;
         },
 
+        get currentTargetDebt() {
+            if (this.selectedOrderObj) {
+                return parseFloat(this.selectedOrderObj.total) || 0;
+            }
+            if (this.currency === 'USD') {
+                const ratePer1 = this.cleanRate > 0 ? (this.cleanRate / 100) : 1500;
+                return Math.round(this.currentCustomerDebt / ratePer1);
+            }
+            return this.currentCustomerDebt;
+        },
+
+        setFullDebt() {
+            this.amount = this.currentTargetDebt;
+        },
+
+        setHalfDebt() {
+            this.amount = Math.round(this.currentTargetDebt / 2);
+        },
+
         handleCustomerChange() {
             this.selectedOrder = '';
-            if (this.currentCustomerDebt > 0 && (!this.amount || parseFloat(this.amount) === 0)) {
-                this.amount = this.currentCustomerDebt;
-            }
         },
 
         handleOrderChange() {
             if (this.selectedOrder) {
                 const ord = this.orders.find(o => String(o.id) === String(this.selectedOrder));
-                if (ord && !this.selectedCustomer) {
-                    this.selectedCustomer = ord.customer_id;
+                if (ord) {
+                    if (!this.selectedCustomer) {
+                        this.selectedCustomer = ord.customer_id;
+                    }
+                    if (ord.currency) {
+                        this.currency = ord.currency;
+                    }
                 }
             }
         },

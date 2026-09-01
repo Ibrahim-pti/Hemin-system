@@ -121,10 +121,17 @@ class PaymentController extends Controller
 
         $customer = Customer::findOrFail($data['customer_id']);
 
+        $exchangeRate = null;
+        if ($data['currency'] === 'USD' && !empty($data['exchange_rate'])) {
+            $rawRate = (float) str_replace(',', '', (string) $data['exchange_rate']);
+            $exchangeRate = $rawRate > 5000 ? $rawRate / 100 : $rawRate;
+        }
+
         $payment = $this->payments->record([
             'direction' => 'in',
             'amount' => $data['amount'],
             'currency' => $data['currency'],
+            'exchange_rate' => $exchangeRate,
             'paid_at' => $data['paid_at'],
             'party' => $customer,
             'party_name' => $customer->name,
