@@ -21,9 +21,6 @@
     <div class="no-print mx-auto mb-4 flex max-w-[190mm] gap-2">
         <button onclick="window.print()" class="btn btn-primary">چاپکردن</button>
         <a href="{{ route('payments.index') }}" class="btn btn-ghost">لیستی حەقدی</a>
-        @if ($payment->order_id)
-            <a href="{{ route('orders.show', $payment->order_id) }}" class="btn btn-ghost">وەسڵەکە</a>
-        @endif
     </div>
 
     <div class="sheet border-2 border-[#1d4ed8] p-6">
