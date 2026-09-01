@@ -70,7 +70,7 @@
                         <option value="">— موشتەری دیاری بکە —</option>
                         <template x-for="cust in customers" :key="cust.id">
                             <option :value="cust.id"
-                                    x-text="cust.name + (cust.phone ? ' (' + cust.phone + ')' : '') + (cust.balance > 0 ? ' — قەرز: ' + money(cust.balance) : ' — بێ قەرز')"
+                                    x-text="cust.name + (cust.balance > 0 ? ' — قەرز: ' + money(cust.balance) : ' — بێ قەرز')"
                                     :selected="selectedCustomer == cust.id">
                             </option>
                         </template>
