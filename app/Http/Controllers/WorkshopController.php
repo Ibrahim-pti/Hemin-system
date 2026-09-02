@@ -887,6 +887,7 @@ class WorkshopController extends Controller
                     'salary_type' => $employee->salary_type ?? 'daily',
                     'salary_type_label' => $employee->salary_type_label ?? 'ڕۆژانە',
                     'daily_wage' => (float) $employee->daily_wage,
+                    'effective_daily_wage' => (float) $employee->effective_daily_wage,
                 ]);
             }
 

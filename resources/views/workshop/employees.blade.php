@@ -205,10 +205,15 @@
                             <h2 class="text-base sm:text-lg font-black text-white" x-text="selectedEmployee?.name"></h2>
                             <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-teal-700 text-teal-200" x-text="selectedEmployee?.job_title_label"></span>
                         </div>
-                        <div class="text-xs text-teal-200 font-mono mt-0.5 flex items-center gap-1.5">
-                            <span>مووچەی ڕۆژانە:</span>
-                            <b class="text-white font-bold" x-text="formatNumber(selectedEmployee?.effective_daily_wage || selectedEmployee?.daily_wage) + ' د.ع'"></b>
-                            <span class="text-[10px] bg-teal-900/80 text-teal-200 px-1.5 py-0.5 rounded font-bold" x-text="selectedEmployee?.salary_type_label || 'ڕۆژانە'"></span>
+                        <div class="text-xs text-teal-200 font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+                            <span x-text="selectedEmployee?.salary_type === 'monthly' ? 'مووچەی مانگانە:' : (selectedEmployee?.salary_type === 'weekly' ? 'مووچەی حەفتانە:' : 'مووچەی ڕۆژانە:')"></span>
+                            <b class="text-white font-bold text-sm" x-text="formatNumber(selectedEmployee?.daily_wage) + ' د.ع'"></b>
+                            <span class="text-[10px] bg-teal-900/80 text-teal-200 px-1.5 py-0.5 rounded font-bold" x-text="selectedEmployee?.salary_type_label || (selectedEmployee?.salary_type === 'monthly' ? 'مانگانە' : (selectedEmployee?.salary_type === 'weekly' ? 'حەفتانە' : 'ڕۆژانە'))"></span>
+                            <template x-if="selectedEmployee?.salary_type === 'monthly' || selectedEmployee?.salary_type === 'weekly'">
+                                <span class="text-[11px] text-teal-300 font-normal">
+                                    (ڕۆژانەی هاوتا: <span class="font-bold text-white" x-text="formatNumber(selectedEmployee?.effective_daily_wage)"></span> د.ع)
+                                </span>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -911,6 +916,9 @@ function workshopEmployeesApp() {
                 const data = await res.json();
                 if (data.ok) {
                     this.drawerData = data;
+                    if (data.employee) {
+                        this.selectedEmployee = { ...this.selectedEmployee, ...data.employee };
+                    }
                 }
             } catch (e) {
                 console.error(e);
@@ -1069,6 +1077,9 @@ function workshopEmployeesApp() {
                         row.daily_wage = payload.daily_wage;
                         row.effective_daily_wage = data.effective_daily_wage ?? payload.daily_wage;
                         this.recalculateRow(row);
+                    }
+                    if (this.showEmployeeDrawer && this.selectedEmployee?.id === this.editWageForm.id) {
+                        this.loadEmployeeMonthDetails();
                     }
                     this.showEditWageModal = false;
                 }
