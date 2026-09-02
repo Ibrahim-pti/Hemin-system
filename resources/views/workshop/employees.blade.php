@@ -4,62 +4,64 @@
 @section('content')
 <div x-data="workshopEmployeesApp()" x-init="init()" class="space-y-3.5 select-none" dir="rtl">
 
-    {{-- ١. هێڵی سەرەوە: ناونیشان، فلتەری شیک لە ناوەڕاست، و دوگمەکانی کردار --}}
-    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3.5">
+    {{-- ١. هێڵی سەرەوە: پەرتکراو لەسەر یەک دێڕ (ڕاست: ناونیشان | ناوەڕاست: فلتەر | چەپ: دوگمەکان) --}}
+    <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-3">
         
         {{-- لای ڕاست: ناونیشان --}}
-        <div class="flex items-center justify-center md:justify-start gap-2.5 w-full md:w-auto">
-            <div class="w-10 h-10 rounded-xl bg-teal-700 text-white flex items-center justify-center text-xl shrink-0 shadow-xs">
+        <div class="flex items-center gap-2.5 shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-teal-700 text-white flex items-center justify-center text-lg shrink-0 shadow-xs">
                 📋
             </div>
             <div>
-                <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">جەدوەلی ئامادەبوونی ڕۆژانە (دەفتەری وەستاکان)</h1>
+                <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight">جەدوەلی ئامادەبوونی ڕۆژانە (دەفتەری وەستاکان)</h1>
                 <p class="text-[11px] text-slate-500 font-medium mt-0.5">بەڕێوەبردنی دەوام و حیساباتی وەستاکان</p>
             </div>
         </div>
 
-        {{-- ناوەڕاست: فلتەری زۆر شیک و مۆدێرنی ماوە --}}
-        <div class="flex items-center justify-center w-full md:w-auto">
-            <div class="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-2xl border border-slate-200 shadow-2xs">
+        {{-- ناوەڕاست: فلتەری ماوە و بەروار --}}
+        <div class="flex items-center justify-center shrink-0">
+            <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-2xl border border-slate-200 shadow-2xs">
                 {{-- گەڕانەوە بۆ هەفتەی پێشوو --}}
                 <button type="button" @click="changeWeekOffset(-1)"
                         title="هەفتەی پێشوو"
-                        class="w-8 h-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs shadow-2xs transition-all cursor-pointer">
+                        class="w-7 h-7 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs shadow-2xs transition-all cursor-pointer">
                     ←
                 </button>
 
                 {{-- سێلێکتی فلتەری کات --}}
                 <div class="relative flex items-center">
-                    <span class="absolute right-2.5 text-slate-400 pointer-events-none text-xs">📅</span>
+                    <span class="absolute right-2 text-slate-400 pointer-events-none text-xs">📅</span>
                     <select x-model="rangeType" @change="setRange(rangeType)"
-                            class="bg-white text-slate-800 font-black text-xs pr-8 pl-6 py-2 rounded-xl border border-slate-200 hover:border-teal-600 focus:outline-hidden focus:ring-2 focus:ring-teal-500/20 cursor-pointer shadow-2xs transition-all appearance-none">
+                            class="bg-white text-slate-800 font-black text-xs pr-7 pl-5 py-1.5 rounded-xl border border-slate-200 hover:border-teal-600 focus:outline-hidden focus:ring-2 focus:ring-teal-500/20 cursor-pointer shadow-2xs transition-all appearance-none">
                         <option value="this_week">ئەم هەفتەیە</option>
                         <option value="last_week">هەفتەی پێشوو</option>
                         <option value="this_month">ئەم مانگە</option>
                         <option value="last_month">مانگی پێشوو</option>
                     </select>
-                    <span class="absolute left-2.5 text-slate-400 pointer-events-none text-[10px]">▼</span>
+                    <span class="absolute left-2 text-slate-400 pointer-events-none text-[9px]">▼</span>
                 </div>
 
                 {{-- ڕۆیشتن بۆ هەفتەی دواتر --}}
                 <button type="button" @click="changeWeekOffset(1)"
                         title="هەفتەی دواتر"
-                        class="w-8 h-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs shadow-2xs transition-all cursor-pointer">
+                        class="w-7 h-7 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs shadow-2xs transition-all cursor-pointer">
                     →
                 </button>
 
                 {{-- بەرواری ئەم ماوەیە --}}
-                <div class="hidden sm:flex items-center font-mono text-[11px] font-bold text-teal-900 bg-teal-50 px-2.5 py-1.5 rounded-xl border border-teal-200">
-                    {{ str_replace('-', '/', $from) }} ~ {{ str_replace('-', '/', $to) }}
+                <div class="flex items-center whitespace-nowrap font-mono text-[11px] font-bold text-teal-950 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs shrink-0 select-text" dir="ltr">
+                    <span>{{ str_replace('-', '/', $from) }}</span>
+                    <span class="text-teal-600 font-bold mx-1 text-[10px]">تا</span>
+                    <span>{{ str_replace('-', '/', $to) }}</span>
                 </div>
             </div>
         </div>
 
         {{-- لای چەپ: دوگمەکانی کردار (سەحی ئەمڕۆ، وەستای نوێ، سێتینگ) --}}
-        <div class="flex items-center justify-center md:justify-end gap-2 flex-wrap w-full md:w-auto">
+        <div class="flex items-center gap-2 shrink-0">
             {{-- سەحی هەمووان بۆ ئەمڕۆ --}}
             <button type="button" @click="batchMarkToday()"
-                    class="px-3 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer">
+                    class="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer">
                 <span>✔️</span>
                 <span>سەحی ئەمڕۆ</span>
             </button>
