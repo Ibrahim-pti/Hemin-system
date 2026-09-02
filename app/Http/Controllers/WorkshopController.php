@@ -533,7 +533,9 @@ class WorkshopController extends Controller
         $totalPaidAll = array_sum(array_column($employeesMatrix, 'total_paid'));
         $totalRemainingAll = array_sum(array_column($employeesMatrix, 'remaining_balance'));
 
-        $cashBoxes = \App\Models\CashBox::all();
+        $cashBoxes = \App\Models\CashBox::all()->each(function ($box) {
+            $box->balance = (float) $box->balance();
+        });
 
         return view('workshop.employees', compact(
             'employees',
@@ -1366,6 +1368,10 @@ class WorkshopController extends Controller
                     'paid_at' => $payment->paid_at?->format('Y/m/d'),
                     'note' => $payment->note,
                 ],
+                'cash_box' => $payment->cashBox ? [
+                    'id' => $payment->cashBox->id,
+                    'balance' => (float) $payment->cashBox->balance(),
+                ] : null,
             ]);
         }
 

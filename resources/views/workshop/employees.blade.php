@@ -488,25 +488,41 @@
                         <label class="block mb-1 text-slate-600">جۆری پارەدان</label>
                         <select x-model="paymentForm.payment_type" @change="onPaymentTypeChange()"
                                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
-                            <option value="wage">دانی حەقی خۆی (شایستە / مووچە)</option>
+                            <option value="wage">مووچە</option>
                             <option value="advance">پێشەکی</option>
                         </select>
                     </div>
 
+                    {{-- هەڵبژاردنی قاسە لەگەڵ پیشاندانی ڕاستەوخۆی باڵانسەکەی --}}
                     <div>
-                        <label class="block mb-1 text-slate-600">بڕی پارە (د.ع) *</label>
-                        <input type="text" inputmode="numeric" x-model="paymentForm.amount"
-                               @input="paymentForm.amount = formatMoneyInput($event.target.value)" required
-                               placeholder="بڕی پارە بە دینار"
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-black text-base text-slate-900 focus:outline-hidden focus:border-teal-600">
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-slate-600">قاسە</label>
-                        <select x-model="paymentForm.cash_box_id" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white">
-                            @foreach($cashBoxes as $box)
-                                <option value="{{ $box->id }}">{{ $box->name }}</option>
-                            @endforeach
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-slate-600">قاسە</label>
+                            <template x-if="selectedCashBox">
+                                <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-lg"
+                                      :class="(selectedCashBox?.balance ?? 0) > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                                      x-text="'باڵانسی قاسە: ' + formatNumber(selectedCashBox?.balance ?? 0) + ' ' + (selectedCashBox?.currency === 'USD' ? '$' : 'د.ع')"></span>
+                            </template>
+                        </div>
+                        <select x-model="paymentForm.cash_box_id" @change="onCashBoxChange()"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            <template x-for="box in cashBoxes" :key="box.id">
+                                <option :value="box.id" x-text="box.name + ' (' + formatNumber(box.balance) + ' ' + (box.currency === 'USD' ? '$' : 'د.ع') + ')'"></option>
+                            </template>
                         </select>
+                    </div>
+
+                    {{-- بڕی پارە بە دراوی دیاریکراوی قاسە (دینار یان دۆلار) --}}
+                    <div>
+                        <label class="block mb-1 text-slate-600 font-bold"
+                               x-text="'بڕی پارە (' + (paymentForm.currency === 'USD' ? 'دۆلار $' : 'دینار د.ع') + ') *'"></label>
+                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
+                            <input type="text" inputmode="numeric" x-model="paymentForm.amount"
+                                   @input="paymentForm.amount = formatMoneyInput($event.target.value)" required
+                                   :placeholder="paymentForm.currency === 'USD' ? 'بڕی پارە بە دۆلار' : 'بڕی پارە بە دینار'"
+                                   class="w-full px-3 py-2 font-mono font-black text-base text-slate-900 focus:outline-hidden">
+                            <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0"
+                                  x-text="paymentForm.currency === 'USD' ? '$' : 'د.ع'"></span>
+                        </div>
                     </div>
                     <div>
                         <label class="block mb-1 text-slate-600">بەروار</label>
@@ -739,6 +755,16 @@ function workshopEmployeesApp() {
         searchQuery: '',
         days: {!! json_encode($days, JSON_UNESCAPED_UNICODE) !!},
         matrix: {!! json_encode($employeesMatrix, JSON_UNESCAPED_UNICODE) !!},
+        cashBoxes: {!! json_encode($cashBoxes, JSON_UNESCAPED_UNICODE) !!},
+
+        get selectedCashBox() {
+            return this.cashBoxes.find(b => b.id == this.paymentForm?.cash_box_id);
+        },
+        onCashBoxChange() {
+            if (this.selectedCashBox) {
+                this.paymentForm.currency = this.selectedCashBox.currency || 'IQD';
+            }
+        },
         
         showEmployeeDrawer: false,
         selectedEmployee: null,
@@ -1006,14 +1032,16 @@ function workshopEmployeesApp() {
             const remaining = this.drawerData?.stats?.remaining_balance ?? row?.remaining_balance ?? 0;
             const hasRemaining = remaining > 0;
 
+            const defaultBox = this.cashBoxes.find(b => b.currency === (row.wage_currency || 'IQD')) || this.cashBoxes[0];
+
             this.paymentForm = {
                 employee_id: row.id,
                 payment_type: hasRemaining ? 'wage' : 'advance',
                 amount: hasRemaining ? this.formatMoneyInput(remaining) : '',
-                currency: row.wage_currency || 'IQD',
-                cash_box_id: '{{ $cashBoxes->first()?->id }}',
+                currency: defaultBox ? defaultBox.currency : 'IQD',
+                cash_box_id: defaultBox ? defaultBox.id : (this.cashBoxes[0]?.id || ''),
                 paid_at: '{{ now()->toDateString() }}',
-                note: hasRemaining ? `حەقی شایستەی ${row.name}` : `پێشەکی ${row.name}`
+                note: hasRemaining ? `مووچەی ${row.name}` : `پێشەکی ${row.name}`
             };
             this.showPaymentModal = true;
         },
@@ -1023,13 +1051,13 @@ function workshopEmployeesApp() {
             if (remaining > 0) {
                 this.paymentForm.amount = this.formatMoneyInput(remaining);
                 this.paymentForm.payment_type = 'wage';
-                this.paymentForm.note = `حەقی شایستەی ${this.paymentEmployee?.name || ''}`;
+                this.paymentForm.note = `مووچەی ${this.paymentEmployee?.name || ''}`;
             }
         },
 
         onPaymentTypeChange() {
             if (this.paymentForm.payment_type === 'wage') {
-                this.paymentForm.note = `حەقی شایستەی ${this.paymentEmployee?.name || ''}`;
+                this.paymentForm.note = `مووچەی ${this.paymentEmployee?.name || ''}`;
             } else {
                 this.paymentForm.note = `پێشەکی ${this.paymentEmployee?.name || ''}`;
             }
@@ -1059,13 +1087,19 @@ function workshopEmployeesApp() {
                         row.total_paid += parseFloat(payload.amount);
                         row.remaining_balance = row.total_earned - row.total_paid;
                     }
+                    if (data.cash_box) {
+                        const cb = this.cashBoxes.find(b => b.id === data.cash_box.id);
+                        if (cb) cb.balance = data.cash_box.balance;
+                    }
                     this.showPaymentModal = false;
                     if (this.showEmployeeDrawer) {
                         this.loadEmployeeMonthDetails();
                     }
+                } else {
+                    alert(data.message || 'هەڵە لە تۆمارکردنی پارەدان');
                 }
             } catch (e) {
-                alert('هەڵە لە تۆمارکردنی پێشەکی');
+                alert('هەڵە لە تۆمارکردنی پارەدان');
             }
         },
 
