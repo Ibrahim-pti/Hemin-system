@@ -88,7 +88,7 @@ class Attendance extends Model
         }
 
         $workStart = Setting::get('workshop_work_start', '08:00');
-        $graceMinutes = (int) Setting::get('workshop_late_grace_minutes', 15);
+        $graceMinutes = (int) Setting::get('workshop_late_grace_minutes', 0);
 
         $dateStr = $workDate ?: now()->toDateString();
         $startTime = Carbon::parse("{$dateStr} {$workStart}");

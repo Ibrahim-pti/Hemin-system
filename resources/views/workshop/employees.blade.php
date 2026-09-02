@@ -242,18 +242,30 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-center text-xs">
                     {{-- ١. ڕۆژانی دەوام --}}
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                        <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی هاتوو لە مانگدا</div>
-                        <div class="text-base font-black text-emerald-800 font-mono mt-0.5" x-text="(drawerData?.stats?.present_count ?? 0) + ' ڕۆژ'"></div>
-                        <template x-if="(drawerData?.stats?.half_day_count ?? 0) > 0">
-                            <div class="text-[10px] text-amber-700 font-bold mt-0.5" x-text="'+ ' + drawerData.stats.half_day_count + ' نیوە'"></div>
-                        </template>
+                        <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی دەوام لە مانگدا</div>
+                        <div class="text-base font-black text-emerald-800 font-mono mt-0.5" x-text="(drawerData?.stats?.present_count ?? 0) + ' ڕۆژ ئامادە'"></div>
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap mt-0.5">
+                            <template x-if="(drawerData?.stats?.half_day_count ?? 0) > 0">
+                                <span class="text-[10px] text-amber-700 font-bold" x-text="'+ ' + drawerData.stats.half_day_count + ' نیوە'"></span>
+                            </template>
+                            <template x-if="(drawerData?.stats?.absent_count ?? 0) > 0">
+                                <span class="text-[10px] text-rose-600 font-bold" x-text="drawerData.stats.absent_count + ' ڕۆژ غیاب'"></span>
+                            </template>
+                        </div>
                     </div>
 
                     {{-- ٢. پارەی هەیە (شایستە) --}}
                     <div class="bg-white p-2.5 rounded-xl border border-teal-200 shadow-2xs">
                         <div class="text-[10px] text-teal-800 font-bold">پارەی هەیە (شایستە)</div>
                         <div class="text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
-                        <div class="text-[9px] text-slate-400 mt-0.5">حەقدەست + زیادە - سزا</div>
+                        <div class="text-[9px] text-slate-400 mt-0.5">
+                            <template x-if="(drawerData?.stats?.absent_penalty_deduction ?? 0) > 0">
+                                <span class="text-rose-600 font-bold" x-text="'سزای غیاب: -' + formatNumber(drawerData.stats.absent_penalty_deduction) + ' د.ع'"></span>
+                            </template>
+                            <template x-if="!(drawerData?.stats?.absent_penalty_deduction ?? 0)">
+                                <span>حەقدەست + زیادە - سزا</span>
+                            </template>
+                        </div>
                     </div>
 
                     {{-- ٤. باڵانسی ماوە / دۆخی پارەدان --}}
@@ -515,7 +527,7 @@
                             class="flex-1 py-2 px-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"
                             :class="settingsTab === 'penalty' ? 'bg-white text-teal-900 shadow-2xs font-black' : 'text-slate-600 hover:bg-slate-200/60'">
                         <span>⚠️</span>
-                        <span>سزای تاخیربوون</span>
+                        <span>سزا و لێبڕینەکان</span>
                     </button>
                 </div>
 
@@ -565,73 +577,118 @@
                         </div>
                     </div>
 
-                    {{-- ٣. بەشی یاسا و سزای تاخیربوون --}}
-                    <div x-show="settingsTab === 'penalty'" class="space-y-3.5">
-                        <div>
-                            <label class="block mb-1 text-slate-700 font-black">خولەکی لێخۆشبوون لە تاخیربوون (Grace Period)</label>
-                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white shadow-2xs">
-                                <input type="number" min="0" max="120" x-model="settingsForm.workshop_late_grace_minutes"
-                                       class="w-full px-3 py-2 font-mono font-bold text-slate-800 focus:outline-hidden">
-                                <span class="bg-slate-100 px-3 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
-                                    خولەک
-                                </span>
+                    {{-- ٣. بەشی سزا و یاساکانی لێبڕین --}}
+                    <div x-show="settingsTab === 'penalty'" class="space-y-4">
+
+                        {{-- لێبڕینی نیو ڕۆژ دەوام --}}
+                        <div class="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80 space-y-3">
+                            <div>
+                                <label class="block mb-1 text-slate-800 font-black">لێبڕینی نیو ڕۆژ دەوام (Half Day)</label>
+                                <select x-model="settingsForm.workshop_half_day_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-amber-600 shadow-2xs">
+                                    <option value="percentage">نیوەی مووچەی ڕۆژانە (٥٠٪ - ستاندارد)</option>
+                                    <option value="fixed_amount">بڕێکی دیاریکراوی جێگیر (د.ع)</option>
+                                </select>
                             </div>
-                            <p class="text-[11px] text-slate-400 font-medium mt-1">ئەگەر کرێکار تا ئەمەندە خولەکە دواکەوت، سزای لەسەر نادرێت.</p>
-                        </div>
 
-                        <div>
-                            <label class="block mb-1 text-slate-700 font-black">شێوازی سزادانی تاخیربوون لە دەوام</label>
-                            <select x-model="settingsForm.workshop_late_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 shadow-2xs">
-                                <option value="none">بێ سزای دارایی (تەنها خولەکی تاخیربوون تۆمار بکرێت)</option>
-                                <option value="fixed_amount">بڕینی بڕێکی دیاریکراو بۆ هەر ڕۆژێکی تاخیربوون</option>
-                                <option value="weekly_threshold">سزا لە ئەگەری دووبارەبوونەوە لە هەفتەیەکدا</option>
-                            </select>
-                        </div>
-
-                        <template x-if="settingsForm.workshop_late_deduction_type === 'fixed_amount'">
-                            <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 space-y-2">
-                                <label class="block text-slate-700 font-black">بڕی سزای پارە بۆ هەر ڕۆژێک تاخیربوون (د.ع) *</label>
-                                <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
-                                    <input type="text" inputmode="numeric" x-model="settingsForm.workshop_late_deduction_rate"
-                                           @input="settingsForm.workshop_late_deduction_rate = formatMoneyInput($event.target.value)"
-                                           placeholder="5,000"
-                                           class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
-                                    <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
-                                        د.ع
-                                    </span>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template x-if="settingsForm.workshop_late_deduction_type === 'weekly_threshold'">
-                            <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 space-y-3">
+                            <template x-if="settingsForm.workshop_half_day_deduction_type === 'fixed_amount'">
                                 <div>
-                                    <label class="block mb-1 text-slate-700 font-black">مەرج: چەند ڕۆژ تاخیربوون لە هەفتەدا؟ *</label>
+                                    <label class="block mb-1 text-slate-700 font-bold text-xs">بڕی لێبڕین بۆ هەر ڕۆژێکی نیو دەوام (د.ع) *</label>
                                     <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
-                                        <input type="number" min="1" max="6" x-model="settingsForm.workshop_late_weekly_threshold_days"
-                                               class="w-full px-3 py-2 font-mono font-bold text-slate-800 focus:outline-hidden">
-                                        <span class="bg-slate-100 px-3 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
-                                            ڕۆژ لە هەفتە
-                                        </span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر لە هەفتەیەکدا ئەم ژمارەیە یان زیاتر دواکەوت سزای دەدرێت.</p>
-                                </div>
-
-                                <div>
-                                    <label class="block mb-1 text-slate-700 font-black">بڕی سزای شکاندنی مەرجەکە (د.ع)</label>
-                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
-                                        <input type="text" inputmode="numeric" x-model="settingsForm.workshop_late_weekly_penalty_amount"
-                                               @input="settingsForm.workshop_late_weekly_penalty_amount = formatMoneyInput($event.target.value)"
-                                               placeholder="ئەگەر بەتاڵ بێت مووچەی ڕۆژێک دەبڕدرێت"
+                                        <input type="text" inputmode="numeric" x-model="settingsForm.workshop_half_day_deduction_rate"
+                                               @input="settingsForm.workshop_half_day_deduction_rate = formatMoneyInput($event.target.value)"
+                                               placeholder="10,000"
                                                class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
                                         <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
                                             د.ع
                                         </span>
                                     </div>
-                                    <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر دیاری نەکرێت، سیستەمەکە یەک مووچەی ڕۆژانەی دەبڕێت.</p>
+                                    <p class="text-[11px] text-slate-500 font-medium mt-1">ئەم بڕە پارەیە لە ڕۆژانەی کارمەند دەبڕدرێت ئەگەر نیو ڕۆژ دەوام بکات.</p>
                                 </div>
+                            </template>
+                        </div>
+
+                        {{-- لێبڕین و سزای غیاببوونی کامل --}}
+                        <div class="p-3.5 bg-rose-50/60 rounded-2xl border border-rose-200/80 space-y-3">
+                            <div>
+                                <label class="block mb-1 text-slate-800 font-black">لێبڕین و سزای غیاببوونی کامل (Full Day Absence)</label>
+                                <select x-model="settingsForm.workshop_absent_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-rose-600 shadow-2xs">
+                                    <option value="none">تەنها بڕینی مووچەی ئەو ڕۆژە (١ ڕۆژ - بێ سزای زیادە)</option>
+                                    <option value="fixed_amount">سزای دارایی جێگیر بۆ هەر ڕۆژێکی غیاب (د.ع)</option>
+                                    <option value="one_day_wage">سزای دوو ڕۆژ مووچە (دوو هێندە دەبڕدرێت)</option>
+                                </select>
                             </div>
-                        </template>
+
+                            <template x-if="settingsForm.workshop_absent_deduction_type === 'fixed_amount'">
+                                <div>
+                                    <label class="block mb-1 text-slate-700 font-bold text-xs">بڕی سزای پارە بۆ هەر ڕۆژێکی غیاببوون (د.ع) *</label>
+                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-rose-600 bg-white shadow-2xs">
+                                        <input type="text" inputmode="numeric" x-model="settingsForm.workshop_absent_deduction_rate"
+                                               @input="settingsForm.workshop_absent_deduction_rate = formatMoneyInput($event.target.value)"
+                                               placeholder="25,000"
+                                               class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
+                                        <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                            د.ع
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 font-medium mt-1">سەرەڕای پێنەدانی مووچەی ئەو ڕۆژە، ئەم بڕە سزایەش وەک لێبڕین دادەنرێت.</p>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- سزای تاخیربوون لە دەوام --}}
+                        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                            <label class="block mb-1 text-slate-800 font-black">شێوازی سزادانی تاخیربوون لە دەوام</label>
+                            <select x-model="settingsForm.workshop_late_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 shadow-2xs">
+                                <option value="none">بێ سزای دارایی (تەنها خولەکی تاخیربوون تۆمار بکرێت)</option>
+                                <option value="fixed_amount">بڕینی بڕێکی دیاریکراو بۆ هەر ڕۆژێکی تاخیربوون</option>
+                                <option value="weekly_threshold">سزا لە ئەگەری دووبارەبوونەوە لە هەفتەیەکدا</option>
+                            </select>
+
+                            <template x-if="settingsForm.workshop_late_deduction_type === 'fixed_amount'">
+                                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+                                    <label class="block text-slate-700 font-bold text-xs">بڕی سزای پارە بۆ هەر ڕۆژێک تاخیربوون (د.ع) *</label>
+                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
+                                        <input type="text" inputmode="numeric" x-model="settingsForm.workshop_late_deduction_rate"
+                                               @input="settingsForm.workshop_late_deduction_rate = formatMoneyInput($event.target.value)"
+                                               placeholder="5,000"
+                                               class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
+                                        <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                            د.ع
+                                        </span>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template x-if="settingsForm.workshop_late_deduction_type === 'weekly_threshold'">
+                                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-3">
+                                    <div>
+                                        <label class="block mb-1 text-slate-700 font-bold text-xs">مەرج: چەند ڕۆژ تاخیربوون لە هەفتەدا؟ *</label>
+                                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
+                                            <input type="number" min="1" max="6" x-model="settingsForm.workshop_late_weekly_threshold_days"
+                                                   class="w-full px-3 py-2 font-mono font-bold text-slate-800 focus:outline-hidden">
+                                            <span class="bg-slate-100 px-3 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
+                                                ڕۆژ لە هەفتە
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر لە هەفتەیەکدا ئەم ژمارەیە یان زیاتر دواکەوت سزای دەدرێت.</p>
+                                    </div>
+
+                                    <div>
+                                        <label class="block mb-1 text-slate-700 font-bold text-xs">بڕی سزای شکاندنی مەرجەکە (د.ع)</label>
+                                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
+                                            <input type="text" inputmode="numeric" x-model="settingsForm.workshop_late_weekly_penalty_amount"
+                                                   @input="settingsForm.workshop_late_weekly_penalty_amount = formatMoneyInput($event.target.value)"
+                                                   placeholder="ئەگەر بەتاڵ بێت مووچەی ڕۆژێک دەبڕدرێت"
+                                                   class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
+                                            <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                                د.ع
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر دیاری نەکرێت، سیستەمەکە یەک مووچەی ڕۆژانەی دەبڕێت.</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
 
                 </div>
@@ -930,7 +987,11 @@ function workshopEmployeesApp() {
             workshop_weekly_holiday: '{{ $shiftSettings['weekly_holiday'] ?? "friday" }}',
             workshop_overtime_hourly_rate: {!! json_encode(($shiftSettings['overtime_hourly_rate'] ?? 0) > 0 ? $shiftSettings['overtime_hourly_rate'] : '') !!},
             workshop_overtime_multiplier: {{ $shiftSettings['overtime_multiplier'] ?? 1.0 }},
-            workshop_late_grace_minutes: {{ $shiftSettings['late_grace_minutes'] ?? 15 }},
+            workshop_half_day_deduction_type: '{{ $shiftSettings['half_day_deduction_type'] ?? "percentage" }}',
+            workshop_half_day_deduction_rate: {!! json_encode(($shiftSettings['half_day_deduction_rate'] ?? 0) > 0 ? $shiftSettings['half_day_deduction_rate'] : '') !!},
+            workshop_absent_deduction_type: '{{ $shiftSettings['absent_deduction_type'] ?? "none" }}',
+            workshop_absent_deduction_rate: {!! json_encode(($shiftSettings['absent_deduction_rate'] ?? 0) > 0 ? $shiftSettings['absent_deduction_rate'] : '') !!},
+            workshop_late_grace_minutes: {{ $shiftSettings['late_grace_minutes'] ?? 0 }},
             workshop_late_deduction_type: '{{ $shiftSettings['late_deduction_type'] ?? "none" }}',
             workshop_late_deduction_rate: {!! json_encode(($shiftSettings['late_deduction_rate'] ?? 0) > 0 ? $shiftSettings['late_deduction_rate'] : '') !!},
             workshop_late_weekly_threshold_days: {{ $shiftSettings['late_weekly_threshold_days'] ?? 2 }},
@@ -1381,6 +1442,8 @@ function workshopEmployeesApp() {
             try {
                 const payload = { ...this.settingsForm };
                 payload.workshop_overtime_hourly_rate = this.cleanMoney(payload.workshop_overtime_hourly_rate);
+                payload.workshop_half_day_deduction_rate = this.cleanMoney(payload.workshop_half_day_deduction_rate);
+                payload.workshop_absent_deduction_rate = this.cleanMoney(payload.workshop_absent_deduction_rate);
                 payload.workshop_late_deduction_rate = this.cleanMoney(payload.workshop_late_deduction_rate);
                 payload.workshop_late_weekly_penalty_amount = this.cleanMoney(payload.workshop_late_weekly_penalty_amount);
 
@@ -1410,6 +1473,7 @@ function workshopEmployeesApp() {
         recalculateRow(row) {
             let present = 0;
             let halfDay = 0;
+            let absent = 0;
             let ot = 0;
             let fuel = 0;
             let lateMins = 0;
@@ -1420,6 +1484,7 @@ function workshopEmployeesApp() {
                 if (cell) {
                     if (cell.status === 'present') present++;
                     else if (cell.status === 'half_day') halfDay++;
+                    else if (cell.status === 'absent') absent++;
                     ot += parseFloat(cell.overtime_hours || 0);
                     fuel += parseFloat(cell.fuel_expense || 0);
                     manualDeduction += parseFloat(cell.deduction_amount || 0);
@@ -1432,13 +1497,20 @@ function workshopEmployeesApp() {
 
             row.present_count = present;
             row.half_day_count = halfDay;
+            row.absent_count = absent;
             row.total_overtime = ot;
             row.total_fuel = fuel;
             row.total_late_minutes = lateMins;
             row.late_days_count = lateDays;
 
             const wage = row.effective_daily_wage || row.daily_wage;
-            const baseEarned = (present * wage) + (halfDay * wage * 0.5);
+            let halfDayEarned = wage * 0.5;
+            const halfDayDedRate = this.cleanMoney(this.settingsForm.workshop_half_day_deduction_rate);
+            if (this.settingsForm.workshop_half_day_deduction_type === 'fixed_amount' && halfDayDedRate > 0) {
+                halfDayEarned = Math.max(0, wage - halfDayDedRate);
+            }
+            const baseEarned = (present * wage) + (halfDay * halfDayEarned);
+
             const cleanOtRate = this.cleanMoney(this.settingsForm.workshop_overtime_hourly_rate);
             const otMultiplier = parseFloat(this.settingsForm.workshop_overtime_multiplier) || 1.0;
             const otHourlyRate = (cleanOtRate > 0)
@@ -1446,8 +1518,16 @@ function workshopEmployeesApp() {
                 : ((wage / (this.settingsForm.workshop_work_hours || 8)) * otMultiplier);
             const otEarned = ot * otHourlyRate;
 
-            row.total_deductions = manualDeduction;
-            row.total_earned = Math.round(baseEarned + otEarned + fuel - manualDeduction);
+            let absentPenalty = 0;
+            const absentDedRate = this.cleanMoney(this.settingsForm.workshop_absent_deduction_rate);
+            if (this.settingsForm.workshop_absent_deduction_type === 'fixed_amount' && absentDedRate > 0) {
+                absentPenalty = absent * absentDedRate;
+            } else if (this.settingsForm.workshop_absent_deduction_type === 'one_day_wage') {
+                absentPenalty = absent * wage;
+            }
+
+            row.total_deductions = manualDeduction + absentPenalty;
+            row.total_earned = Math.round(baseEarned + otEarned + fuel - row.total_deductions);
             row.remaining_balance = Math.round(row.total_earned - row.total_paid);
         },
 

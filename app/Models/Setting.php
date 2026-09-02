@@ -55,5 +55,9 @@ class Setting extends Model
         'workshop_work_hours' => '8',
         'workshop_weekly_holiday' => 'friday',
         'workshop_overtime_multiplier' => '1.0',
+        'workshop_half_day_deduction_type' => 'percentage',
+        'workshop_half_day_deduction_rate' => '0',
+        'workshop_absent_deduction_type' => 'none',
+        'workshop_absent_deduction_rate' => '0',
     ];
 }

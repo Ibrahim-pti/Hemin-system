@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attendance;
 use App\Models\CashBox;
 use App\Models\Employee;
 use App\Models\Setting;
@@ -180,6 +181,75 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $res->assertJson(['ok' => true]);
 
         $this->assertSoftDeleted($employee);
+    }
+
+    public function test_half_day_deduction_and_absent_penalty_calculations()
+    {
+        $this->actingAs($this->admin);
+
+        // ڕێکخستنی بڕینی نیو دەوام (10,000) و سزای غیاب (15,000)
+        $this->postJson('/workshop/settings', [
+            'workshop_work_hours' => 8,
+            'workshop_weekly_holiday' => 'friday',
+            'workshop_half_day_deduction_type' => 'fixed_amount',
+            'workshop_half_day_deduction_rate' => 10000,
+            'workshop_absent_deduction_type' => 'fixed_amount',
+            'workshop_absent_deduction_rate' => 15000,
+        ])->assertStatus(200);
+
+        $employee = Employee::create([
+            'name' => 'وەستا کاروان',
+            'job_title' => 'master',
+            'salary_type' => 'daily',
+            'daily_wage' => 40000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $monthStr = now()->format('Y-m');
+        $date1 = now()->startOfMonth()->toDateString();
+        $date2 = now()->startOfMonth()->addDay()->toDateString();
+        $date3 = now()->startOfMonth()->addDays(2)->toDateString();
+
+        // ڕۆژی ١: ئامادە (٤٠،٠٠٠)
+        Attendance::create([
+            'employee_id' => $employee->id,
+            'work_date' => $date1,
+            'status' => 'present',
+            'user_id' => $this->admin->id,
+        ]);
+
+        // ڕۆژی ٢: نیو ڕۆژ (٤٠،٠٠٠ - ١٠،٠٠٠ = ٣٠،٠٠٠)
+        Attendance::create([
+            'employee_id' => $employee->id,
+            'work_date' => $date2,
+            'status' => 'half_day',
+            'user_id' => $this->admin->id,
+        ]);
+
+        // ڕۆژی ٣: غیاب (سزای ١٥،٠٠٠)
+        Attendance::create([
+            'employee_id' => $employee->id,
+            'work_date' => $date3,
+            'status' => 'absent',
+            'user_id' => $this->admin->id,
+        ]);
+
+        // پشکنینی دێتەلی مانگ
+        $res = $this->getJson("/workshop/employees/{$employee->id}/month-details?month={$monthStr}");
+        $res->assertStatus(200);
+        $res->assertJson([
+            'ok' => true,
+            'stats' => [
+                'present_count' => 1,
+                'half_day_count' => 1,
+                'absent_count' => 1,
+                'base_earned' => 70000, // 40000 + 30000
+                'absent_penalty_deduction' => 15000,
+                'total_deductions' => 15000,
+                'total_earned' => 55000, // 70000 - 15000
+            ],
+        ]);
     }
 }
 

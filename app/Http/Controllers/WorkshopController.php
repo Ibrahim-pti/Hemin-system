@@ -287,7 +287,11 @@ class WorkshopController extends Controller
             'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
             'overtime_hourly_rate' => (float) Setting::get('workshop_overtime_hourly_rate', 0),
             'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
-            'late_grace_minutes' => (int) Setting::get('workshop_late_grace_minutes', 15),
+            'half_day_deduction_type' => Setting::get('workshop_half_day_deduction_type', 'percentage'),
+            'half_day_deduction_rate' => (float) Setting::get('workshop_half_day_deduction_rate', 0),
+            'absent_deduction_type' => Setting::get('workshop_absent_deduction_type', 'none'),
+            'absent_deduction_rate' => (float) Setting::get('workshop_absent_deduction_rate', 0),
+            'late_grace_minutes' => (int) Setting::get('workshop_late_grace_minutes', 0),
             'late_deduction_type' => Setting::get('workshop_late_deduction_type', 'none'),
             'late_deduction_rate' => (float) Setting::get('workshop_late_deduction_rate', 0),
             'late_weekly_threshold_days' => (int) Setting::get('workshop_late_weekly_threshold_days', 2),
@@ -385,12 +389,24 @@ class WorkshopController extends Controller
             $effectiveDailyWage = $emp->effective_daily_wage;
 
             // حیساباتی دارایی بۆ ماوەی دیاریکراو
-            $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5);
+            $halfDayEarned = round($effectiveDailyWage * 0.5, 2);
+            if ($shiftSettings['half_day_deduction_type'] === 'fixed_amount' && $shiftSettings['half_day_deduction_rate'] > 0) {
+                $halfDayEarned = max(0, round($effectiveDailyWage - $shiftSettings['half_day_deduction_rate'], 2));
+            }
+            $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $halfDayEarned);
             $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
             $overtimeHourlyRate = $shiftSettings['overtime_hourly_rate'] > 0
                 ? $shiftSettings['overtime_hourly_rate']
                 : ($hourlyWage * $shiftSettings['overtime_multiplier']);
             $overtimeEarned = round($totalOvertime * $overtimeHourlyRate, 2);
+
+            // حیساباتی سزای غیاببوونی کامل
+            $calculatedAbsentPenalty = 0.0;
+            if ($shiftSettings['absent_deduction_type'] === 'fixed_amount' && $shiftSettings['absent_deduction_rate'] > 0) {
+                $calculatedAbsentPenalty = $absentCount * $shiftSettings['absent_deduction_rate'];
+            } elseif ($shiftSettings['absent_deduction_type'] === 'one_day_wage') {
+                $calculatedAbsentPenalty = $absentCount * $effectiveDailyWage;
+            }
 
             // حیساباتی بڕینی تاخیربوون بەپێی یاسای بەڕێوەبەر
             $calculatedLateDeduction = 0.0;
@@ -406,7 +422,7 @@ class WorkshopController extends Controller
                 $calculatedLateDeduction += $lateDaysCount * $shiftSettings['late_deduction_rate'];
             }
 
-            $totalDeductions = round($totalManualDeduction + $calculatedLateDeduction, 2);
+            $totalDeductions = round($totalManualDeduction + $calculatedLateDeduction + $calculatedAbsentPenalty, 2);
             $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $totalDeductions, 2);
 
             $rangePayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $from && $p->paid_at->toDateString() <= $to);
@@ -426,9 +442,21 @@ class WorkshopController extends Controller
             $monthLateMinutes = (int) $monthAtts->sum('late_minutes');
             $monthLateDays = $monthAtts->where('late_minutes', '>', 0)->count();
 
-            $monthBaseEarned = ($monthPresent * $effectiveDailyWage) + ($monthHalfDay * $effectiveDailyWage * 0.5);
+            $monthHalfDayEarned = round($effectiveDailyWage * 0.5, 2);
+            if ($shiftSettings['half_day_deduction_type'] === 'fixed_amount' && $shiftSettings['half_day_deduction_rate'] > 0) {
+                $monthHalfDayEarned = max(0, round($effectiveDailyWage - $shiftSettings['half_day_deduction_rate'], 2));
+            }
+            $monthBaseEarned = ($monthPresent * $effectiveDailyWage) + ($monthHalfDay * $monthHalfDayEarned);
+
+            $monthAbsentPenalty = 0.0;
+            if ($shiftSettings['absent_deduction_type'] === 'fixed_amount' && $shiftSettings['absent_deduction_rate'] > 0) {
+                $monthAbsentPenalty = $monthAbsent * $shiftSettings['absent_deduction_rate'];
+            } elseif ($shiftSettings['absent_deduction_type'] === 'one_day_wage') {
+                $monthAbsentPenalty = $monthAbsent * $effectiveDailyWage;
+            }
+
             $monthOvertimeEarned = round($monthOvertime * $overtimeHourlyRate, 2);
-            $monthTotalEarned = round($monthBaseEarned + $monthOvertimeEarned + $monthFuel + $monthBonus - $monthDeductions, 2);
+            $monthTotalEarned = round($monthBaseEarned + $monthOvertimeEarned + $monthFuel + $monthBonus - ($monthDeductions + $monthAbsentPenalty), 2);
 
             $monthPayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $monthStart && $p->paid_at->toDateString() <= $monthEnd);
             $monthTotalPaid = (float) $monthPayments->sum('amount_iqd');
@@ -757,6 +785,10 @@ class WorkshopController extends Controller
             'workshop_work_start' => ['nullable', 'string'],
             'workshop_work_end' => ['nullable', 'string'],
             'workshop_overtime_multiplier' => ['nullable', 'numeric'],
+            'workshop_half_day_deduction_type' => ['nullable', 'string'],
+            'workshop_half_day_deduction_rate' => ['nullable', 'numeric', 'min:0'],
+            'workshop_absent_deduction_type' => ['nullable', 'string'],
+            'workshop_absent_deduction_rate' => ['nullable', 'numeric', 'min:0'],
             'workshop_late_grace_minutes' => ['nullable', 'numeric'],
             'workshop_late_deduction_type' => ['nullable', 'string'],
             'workshop_late_deduction_rate' => ['nullable', 'numeric'],
@@ -968,10 +1000,16 @@ class WorkshopController extends Controller
 
         $attendance->status = $status;
         $effectiveWage = $employee->effective_daily_wage;
+        $halfDayDedType = Setting::get('workshop_half_day_deduction_type', 'percentage');
+        $halfDayDedRate = (float) Setting::get('workshop_half_day_deduction_rate', 0);
+        $halfDayWage = ($halfDayDedType === 'fixed_amount' && $halfDayDedRate > 0)
+            ? max(0, round($effectiveWage - $halfDayDedRate, 2))
+            : round($effectiveWage * 0.5, 2);
+
         if ($status === 'present') {
             $attendance->wage_snapshot = $effectiveWage;
         } elseif ($status === 'half_day') {
-            $attendance->wage_snapshot = round($effectiveWage * 0.5, 2);
+            $attendance->wage_snapshot = $halfDayWage;
         } else {
             $attendance->wage_snapshot = 0;
         }
@@ -1086,10 +1124,16 @@ class WorkshopController extends Controller
         $attendance->note = $validated['note'] ?? null;
 
         $effectiveWage = $employee->effective_daily_wage;
+        $halfDayDedType = Setting::get('workshop_half_day_deduction_type', 'percentage');
+        $halfDayDedRate = (float) Setting::get('workshop_half_day_deduction_rate', 0);
+        $halfDayWage = ($halfDayDedType === 'fixed_amount' && $halfDayDedRate > 0)
+            ? max(0, round($effectiveWage - $halfDayDedRate, 2))
+            : round($effectiveWage * 0.5, 2);
+
         if ($status === 'present') {
             $attendance->wage_snapshot = $effectiveWage;
         } elseif ($status === 'half_day') {
-            $attendance->wage_snapshot = round($effectiveWage * 0.5, 2);
+            $attendance->wage_snapshot = $halfDayWage;
         } else {
             $attendance->wage_snapshot = 0;
         }
@@ -1134,6 +1178,10 @@ class WorkshopController extends Controller
             'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
             'overtime_hourly_rate' => (float) Setting::get('workshop_overtime_hourly_rate', 0),
             'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
+            'half_day_deduction_type' => Setting::get('workshop_half_day_deduction_type', 'percentage'),
+            'half_day_deduction_rate' => (float) Setting::get('workshop_half_day_deduction_rate', 0),
+            'absent_deduction_type' => Setting::get('workshop_absent_deduction_type', 'none'),
+            'absent_deduction_rate' => (float) Setting::get('workshop_absent_deduction_rate', 0),
         ];
 
         $attendances = $employee->attendances()
@@ -1173,12 +1221,25 @@ class WorkshopController extends Controller
                 $effectiveDailyWage = (float) $employee->daily_wage / $workingDaysCount;
             }
         }
-        $baseEarned = round(($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5));
+
+        $halfDayEarned = round($effectiveDailyWage * 0.5, 2);
+        if ($shiftSettings['half_day_deduction_type'] === 'fixed_amount' && $shiftSettings['half_day_deduction_rate'] > 0) {
+            $halfDayEarned = max(0, round($effectiveDailyWage - $shiftSettings['half_day_deduction_rate'], 2));
+        }
+        $baseEarned = round(($presentCount * $effectiveDailyWage) + ($halfDayCount * $halfDayEarned));
         $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
         $overtimeHourlyRate = $shiftSettings['overtime_hourly_rate'] > 0
             ? $shiftSettings['overtime_hourly_rate']
             : ($hourlyWage * $shiftSettings['overtime_multiplier']);
         $overtimeEarned = round($totalOvertime * $overtimeHourlyRate);
+
+        // هەژمارکردنی سزای غیاببوونی کامل بۆ مانگەکە
+        $calculatedAbsentPenalty = 0;
+        if ($shiftSettings['absent_deduction_type'] === 'fixed_amount' && $shiftSettings['absent_deduction_rate'] > 0) {
+            $calculatedAbsentPenalty = round($absentCount * $shiftSettings['absent_deduction_rate']);
+        } elseif ($shiftSettings['absent_deduction_type'] === 'one_day_wage') {
+            $calculatedAbsentPenalty = round($absentCount * $effectiveDailyWage);
+        }
 
         // هەژمارکردنی یاسای تاخیربوونی کارگە بۆ مانگەکە
         $calculatedLatePenalty = 0;
@@ -1196,7 +1257,7 @@ class WorkshopController extends Controller
             $calculatedLatePenalty = $lateDaysCount * $lateDeductionRate;
         }
 
-        $allDeductions = round($totalDeductions + $calculatedLatePenalty);
+        $allDeductions = round($totalDeductions + $calculatedLatePenalty + $calculatedAbsentPenalty);
         $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $allDeductions);
 
         $totalPaid = round((float) $payments->sum('amount_iqd'));
@@ -1229,6 +1290,7 @@ class WorkshopController extends Controller
                 'late_days_count' => $lateDaysCount,
                 'manual_deductions' => $totalDeductions,
                 'late_penalty_deduction' => $calculatedLatePenalty,
+                'absent_penalty_deduction' => $calculatedAbsentPenalty,
                 'total_deductions' => $allDeductions,
                 'total_bonus' => $totalBonus,
                 'base_earned' => $baseEarned,
