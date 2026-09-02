@@ -91,28 +91,31 @@
             </div>
         </div>
 
-        {{-- خشتەی سەرەکی --}}
+        {{-- خشتەی سەرەکی بە شێوازێکی زۆر ڕێک و هاوسەنگ --}}
         <div class="overflow-x-auto">
-            <table class="w-full text-right border-collapse text-xs">
+            <table class="w-full text-right border-collapse text-xs table-fixed">
                 <thead>
                     <tr class="bg-slate-100/90 text-slate-700 font-black border-b border-slate-200 text-center">
                         {{-- وەستا --}}
-                        <th class="py-2.5 px-3 text-right sticky right-0 bg-slate-100 z-10 min-w-[170px] border-l border-slate-200">
+                        <th class="py-3 px-4 text-right sticky right-0 bg-slate-100 z-10 w-56 sm:w-64 border-l border-slate-200">
                             وەستا / کارمەند
                         </th>
 
-                        {{-- ڕۆژەکان (شەممە تا هەینی) --}}
+                        {{-- ڕۆژەکان (شەممە تا هەینی) بە قەبارەی یەکسان و ڕێک --}}
                         @foreach($days as $d)
-                            <th class="py-2 px-1 min-w-[62px] max-w-[75px] border-l border-slate-200 {{ $d['is_today'] ? 'bg-amber-100/70 text-amber-950 font-black' : ($d['is_holiday'] ? 'bg-slate-200/50 text-slate-500' : '') }}">
+                            <th class="py-2.5 px-1 border-l border-slate-200 {{ $d['is_today'] ? 'bg-amber-100/80 text-amber-950 font-black ring-1 ring-amber-300 ring-inset' : ($d['is_holiday'] ? 'bg-slate-200/50 text-slate-500' : '') }}">
                                 <div class="flex flex-col items-center leading-tight">
-                                    <span class="text-[11px]">{{ $d['day_name'] }}</span>
-                                    <span class="text-[10px] font-mono opacity-70">{{ $d['day_short'] }}</span>
+                                    <span class="text-xs font-black">{{ $d['day_name'] }}</span>
+                                    <span class="text-[10px] font-mono font-bold opacity-75 mt-0.5">{{ $d['day_short'] }}</span>
+                                    @if($d['is_today'])
+                                        <span class="text-[9px] font-black px-1.5 py-0.2 mt-0.5 rounded bg-amber-500 text-white leading-none">ئەمڕۆ</span>
+                                    @endif
                                 </div>
                             </th>
                         @endforeach
 
                         {{-- کردارەکان --}}
-                        <th class="py-2.5 px-3 min-w-[120px] text-center print:hidden">کردارەکان</th>
+                        <th class="py-3 px-3 w-40 sm:w-44 text-center print:hidden">کردارەکان</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium">
@@ -122,30 +125,35 @@
                             {{-- زانیاری وەستا --}}
                             <td class="py-3 px-3.5 sticky right-0 bg-white hover:bg-slate-50 z-10 border-l border-slate-200">
                                 <div class="flex items-center justify-between gap-2">
-                                    <div class="cursor-pointer" @click="openEmployeeDrawer(row)">
-                                        <div class="font-black text-slate-900 hover:text-teal-700 leading-tight text-xs sm:text-sm" x-text="row.name"></div>
-                                        <div class="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
-                                            <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-bold" x-text="row.job_title_label"></span>
-                                            <span>•</span>
-                                            <span class="text-teal-800 font-bold" x-text="formatNumber(row.daily_wage) + ' د.ع'"></span>
+                                    <div class="flex items-center gap-2.5 cursor-pointer overflow-hidden" @click="openEmployeeDrawer(row)">
+                                        <div class="w-8 h-8 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs shrink-0">
+                                            <span x-text="row.name.charAt(0)"></span>
+                                        </div>
+                                        <div class="overflow-hidden">
+                                            <div class="font-black text-slate-900 hover:text-teal-700 leading-tight text-xs sm:text-sm truncate" x-text="row.name"></div>
+                                            <div class="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
+                                                <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-bold text-[10px]" x-text="row.job_title_label"></span>
+                                                <span>•</span>
+                                                <span class="text-teal-800 font-bold" x-text="formatNumber(row.daily_wage) + ' د.ع'"></span>
+                                            </div>
                                         </div>
                                     </div>
                                     <button type="button" @click="openEditWageModal(row)"
-                                            class="p-1.5 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-slate-100 print:hidden transition-colors"
+                                            class="p-1.5 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-slate-100 print:hidden transition-colors shrink-0"
                                             title="دەستکاری مووچە">
                                         ✏️
                                     </button>
                                 </div>
                             </td>
 
-                            {{-- خانەکانی ڕۆژەکان بە ستایلی مۆدێرن و فراوان --}}
+                            {{-- خانەکانی ڕۆژەکان بە شێوازێکی مۆدێرن و یەکسان --}}
                             <template x-for="day in days" :key="day.date">
                                 <td class="p-1.5 text-center border-l border-slate-100 relative group"
                                     :class="day.is_today ? 'bg-amber-50/50' : (day.is_holiday ? 'bg-slate-100/40' : '')">
                                     
                                     <div @click="toggleCell(row.id, day.date)"
                                          @contextmenu.prevent="openCellDetailModal(row, day)"
-                                         class="w-full h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all text-xs font-black select-none border"
+                                         class="w-full h-10 rounded-xl flex items-center justify-center cursor-pointer transition-all text-xs font-black select-none border shadow-2xs"
                                          :class="getCellStyle(row.cells[day.date])">
                                         <span x-text="getCellDisplay(row.cells[day.date])"></span>
                                     </div>
@@ -159,14 +167,14 @@
                                 </td>
                             </template>
 
-                            {{-- کردارەکان: دێتەل و پێشەکی --}}
+                            {{-- کردارەکان: وردەکاری و پێشەکی --}}
                             <td class="py-2.5 px-3 text-center print:hidden">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <button type="button" @click="openEmployeeDrawer(row)"
                                             class="px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-all cursor-pointer flex items-center gap-1"
-                                            title="بینینی دێتەلی تەواو، حیسابات و ڕۆژەکانی مانگ">
+                                            title="بینینی وردەکاری تەواو، حیسابات و ڕۆژەکانی مانگ">
                                         <span>👁️</span>
-                                        <span>دێتەل</span>
+                                        <span>وردەکاری</span>
                                     </button>
                                     <button type="button" @click="openPaymentModal(row)"
                                             class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 transition-all cursor-pointer flex items-center gap-1"
@@ -183,7 +191,7 @@
         </div>
     </div>
 
-    {{-- ٤. بەشی دێتەلی تەواوی وەستا (Worker Details Drawer/Modal) --}}
+    {{-- ٤. بەشی وردەکاری تەواوی وەستا (Worker Details Drawer/Modal) --}}
     <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
         <div @click.away="showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             
