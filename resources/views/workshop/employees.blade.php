@@ -393,7 +393,8 @@
                     <div>
                         <label class="block mb-1.5 text-slate-700 font-black">نرخی هەر کاتژمێرێکی کاتی زیادە (د.ع) *</label>
                         <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-500/20 bg-white transition-all shadow-2xs">
-                            <input type="number" min="0" step="500" x-model="settingsForm.workshop_overtime_hourly_rate"
+                            <input type="text" inputmode="numeric" x-model="settingsForm.workshop_overtime_hourly_rate"
+                                   @input="settingsForm.workshop_overtime_hourly_rate = formatMoneyInput($event.target.value)"
                                    placeholder="0"
                                    class="w-full px-3.5 py-2.5 font-mono font-black text-emerald-700 focus:outline-hidden text-sm bg-transparent">
                             <span class="bg-slate-100 px-3.5 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
@@ -444,8 +445,10 @@
                 <div class="p-4 space-y-3 font-bold text-slate-700">
                     <div>
                         <label class="block mb-1 text-slate-600">بڕی پارە (د.ع) *</label>
-                        <input type="number" min="1" step="500" x-model="paymentForm.amount" required
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-black text-base text-purple-950">
+                        <input type="text" inputmode="numeric" x-model="paymentForm.amount"
+                               @input="paymentForm.amount = formatMoneyInput($event.target.value)" required
+                               placeholder="بڕی پارە بە دینار"
+                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-black text-base text-purple-950 focus:outline-hidden focus:border-purple-600">
                     </div>
                     <div>
                         <label class="block mb-1 text-slate-600">قاسە</label>
@@ -522,7 +525,8 @@
                         <div>
                             <label class="block mb-1 text-slate-600"
                                    x-text="newEmpForm.salary_type === 'monthly' ? 'مووچەی مانگانە *' : (newEmpForm.salary_type === 'weekly' ? 'مووچەی حەفتانە *' : 'مووچەی ڕۆژانە *')"></label>
-                            <input type="number" min="0" step="500" x-model="newEmpForm.daily_wage" required
+                            <input type="text" inputmode="numeric" x-model="newEmpForm.daily_wage"
+                                   @input="newEmpForm.daily_wage = formatMoneyInput($event.target.value)" required
                                    :placeholder="newEmpForm.salary_type === 'monthly' ? 'بڕی مانگانە' : (newEmpForm.salary_type === 'weekly' ? 'بڕی حەفتانە' : 'بڕی ڕۆژانە')"
                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
                         </div>
@@ -588,7 +592,8 @@
                         <div>
                             <label class="block mb-1 text-slate-600"
                                    x-text="editWageForm.salary_type === 'monthly' ? 'مووچەی مانگانە *' : (editWageForm.salary_type === 'weekly' ? 'مووچەی حەفتانە *' : 'مووچەی ڕۆژانە *')"></label>
-                            <input type="number" min="0" step="500" x-model="editWageForm.daily_wage" required
+                            <input type="text" inputmode="numeric" x-model="editWageForm.daily_wage"
+                                   @input="editWageForm.daily_wage = formatMoneyInput($event.target.value)" required
                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
                         </div>
                         <div>
@@ -949,6 +954,10 @@ function workshopEmployeesApp() {
 
         async savePayment() {
             try {
+                const payload = {
+                    ...this.paymentForm,
+                    amount: this.cleanMoney(this.paymentForm.amount)
+                };
                 const res = await fetch('{{ route('workshop.employees.record-payment') }}', {
                     method: 'POST',
                     headers: {
@@ -956,7 +965,7 @@ function workshopEmployeesApp() {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(this.paymentForm)
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await res.json();
@@ -964,7 +973,7 @@ function workshopEmployeesApp() {
                     alert(data.message);
                     const row = this.matrix.find(r => r.id === this.paymentForm.employee_id);
                     if (row) {
-                        row.total_paid += parseFloat(this.paymentForm.amount);
+                        row.total_paid += parseFloat(payload.amount);
                         row.remaining_balance = row.total_earned - row.total_paid;
                     }
                     this.showPaymentModal = false;
@@ -992,6 +1001,10 @@ function workshopEmployeesApp() {
 
         async saveNewEmployee() {
             try {
+                const payload = {
+                    ...this.newEmpForm,
+                    daily_wage: this.cleanMoney(this.newEmpForm.daily_wage)
+                };
                 const res = await fetch('{{ route('workshop.employees.quick-store') }}', {
                     method: 'POST',
                     headers: {
@@ -999,7 +1012,7 @@ function workshopEmployeesApp() {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(this.newEmpForm)
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await res.json();
@@ -1018,13 +1031,17 @@ function workshopEmployeesApp() {
                 phone: row.phone,
                 job_title: row.job_title,
                 salary_type: row.salary_type || 'daily',
-                daily_wage: row.daily_wage
+                daily_wage: this.formatMoneyInput(row.daily_wage)
             };
             this.showEditWageModal = true;
         },
 
         async saveEditWage() {
             try {
+                const payload = {
+                    ...this.editWageForm,
+                    daily_wage: this.cleanMoney(this.editWageForm.daily_wage)
+                };
                 const res = await fetch(`/workshop/employees/${this.editWageForm.id}/update-wage`, {
                     method: 'POST',
                     headers: {
@@ -1032,7 +1049,7 @@ function workshopEmployeesApp() {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(this.editWageForm)
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await res.json();
@@ -1043,8 +1060,10 @@ function workshopEmployeesApp() {
                         row.phone = this.editWageForm.phone;
                         row.job_title = this.editWageForm.job_title;
                         row.job_title_label = data.job_title_label;
-                        row.daily_wage = parseFloat(this.editWageForm.daily_wage);
-                        row.effective_daily_wage = row.daily_wage;
+                        row.salary_type = this.editWageForm.salary_type;
+                        row.salary_type_label = data.salary_type_label || (this.editWageForm.salary_type === 'monthly' ? 'مانگانە' : (this.editWageForm.salary_type === 'weekly' ? 'حەفتانە' : 'ڕۆژانە'));
+                        row.daily_wage = payload.daily_wage;
+                        row.effective_daily_wage = data.effective_daily_wage ?? payload.daily_wage;
                         this.recalculateRow(row);
                     }
                     this.showEditWageModal = false;
@@ -1057,9 +1076,7 @@ function workshopEmployeesApp() {
         async saveSettings() {
             try {
                 const payload = { ...this.settingsForm };
-                if (payload.workshop_overtime_hourly_rate === '' || payload.workshop_overtime_hourly_rate === null || payload.workshop_overtime_hourly_rate === undefined) {
-                    payload.workshop_overtime_hourly_rate = 0;
-                }
+                payload.workshop_overtime_hourly_rate = this.cleanMoney(payload.workshop_overtime_hourly_rate);
                 const res = await fetch('{{ route('workshop.settings') }}', {
                     method: 'POST',
                     headers: {
@@ -1125,6 +1142,18 @@ function workshopEmployeesApp() {
         formatNumber(num) {
             if (num === null || num === undefined || isNaN(num)) return '0';
             return Number(Math.round(num)).toLocaleString('en-US');
+        },
+
+        formatMoneyInput(val) {
+            if (val === null || val === undefined || val === '') return '';
+            let clean = String(val).replace(/[^0-9]/g, '');
+            if (!clean) return '';
+            return parseInt(clean, 10).toLocaleString('en-US');
+        },
+
+        cleanMoney(val) {
+            if (!val) return 0;
+            return parseFloat(String(val).replace(/,/g, '')) || 0;
         }
     };
 }
