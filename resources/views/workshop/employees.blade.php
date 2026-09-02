@@ -332,23 +332,22 @@
                                                   x-text="item.status_label"></span>
                                         </td>
                                         <td class="py-2.5 px-3 text-center font-mono text-xs">
-                                            <template x-if="item.overtime_hours > 0">
-                                                <div class="flex flex-col items-center gap-0.5">
+                                            <div class="flex flex-col items-center gap-0.5">
+                                                <template x-if="item.overtime_hours > 0">
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md font-black bg-blue-50 text-blue-700 border border-blue-200"
-                                                          x-text="'+ ' + item.overtime_hours + ' کاتژمێر'"></span>
-                                                    <template x-if="item.trip_destination">
-                                                        <span class="text-[10px] text-teal-800 font-bold" x-text="'🏠 ' + item.trip_destination"></span>
-                                                    </template>
-                                                </div>
-                                            </template>
-                                            <template x-if="!item.overtime_hours || item.overtime_hours <= 0">
-                                                <template x-if="item.trip_destination">
-                                                    <span class="text-[10px] text-teal-800 font-bold" x-text="'🏠 ' + item.trip_destination"></span>
+                                                          x-text="'+ ' + item.overtime_hours + ' کاتژمێر (کارگە)'"></span>
                                                 </template>
-                                                <template x-if="!item.trip_destination">
+                                                <template x-if="item.custom_task_name">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black bg-teal-50 text-teal-800 border border-teal-200 shadow-2xs"
+                                                          x-text="item.custom_task_name + (item.custom_task_amount > 0 ? ': ' + formatNumber(item.custom_task_amount) + ' د.ع' : '')"></span>
+                                                </template>
+                                                <template x-if="item.trip_destination">
+                                                    <span class="text-[10px] text-slate-500 font-bold" x-text="'📍 ' + item.trip_destination"></span>
+                                                </template>
+                                                <template x-if="(!item.overtime_hours || item.overtime_hours <= 0) && !item.custom_task_name && !item.trip_destination">
                                                     <span class="text-slate-300 font-bold">—</span>
                                                 </template>
-                                            </template>
+                                            </div>
                                         </td>
                                         <td class="py-2.5 px-3 text-right text-xs">
                                             <div class="flex items-center gap-2 flex-wrap">
@@ -586,18 +585,58 @@
                             <p class="text-[11px] text-slate-500 font-medium mt-1">بڕی ئەو پارەیەی بۆ هەر کاتژمێرێکی زیادە لەناو کارگە بۆ کرێکار هەژمار دەکرێت.</p>
                         </div>
 
-                        <div class="p-3.5 bg-teal-50/70 rounded-2xl border border-teal-200/80 space-y-2">
-                            <label class="block text-slate-800 font-black">نرخی کاتی کارکردن کاتێک دەچنە ماڵان / دانان (د.ع) *</label>
-                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white shadow-2xs">
-                                <input type="text" inputmode="numeric" x-model="settingsForm.workshop_home_visit_hourly_rate"
-                                       @input="settingsForm.workshop_home_visit_hourly_rate = formatMoneyInput($event.target.value)"
-                                       placeholder="بۆ نموونە: 7,000"
-                                       class="w-full px-3 py-2 font-mono font-black text-teal-800 focus:outline-hidden text-sm">
-                                <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
-                                    د.ع / کاتژمێر
-                                </span>
+                        {{-- جۆرەکانی کارکردن لە دەرەوە، چوونە ماڵان و خزمەتگوزارییەکان --}}
+                        <div class="p-3.5 bg-teal-50/70 rounded-2xl border border-teal-200/80 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label class="block text-slate-800 font-black text-xs sm:text-sm">نرخی چوونە ماڵان، ئیشی دەرەوە و خزمەتگوزارییەکان</label>
+                                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">دەتوانیت هەر جۆرە کارێکی تر بە ناو و نرخی تایبەت لێرە زیاد بکەیت.</p>
+                                </div>
+                                <button type="button" @click="addCustomRateRow()"
+                                        class="px-2.5 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-black flex items-center gap-1 shadow-2xs cursor-pointer transition-all">
+                                    <span>+</span>
+                                    <span>زیادکردنی جۆری تر</span>
+                                </button>
                             </div>
-                            <p class="text-[11px] text-slate-500 font-medium">ئەگەر کرێکار یان وەستا بچێتە ماڵان بۆ دانان، کاتژمێری زیادەکەی بەم نرخە هەژمار دەکرێت لەبری نرخی ئاسایی.</p>
+
+                            <div class="space-y-2">
+                                <template x-for="(item, index) in customRatesList" :key="index">
+                                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs space-y-2">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-[11px] font-bold text-teal-900" x-text="'#' + (index + 1) + ' ' + (item.name || 'خزمەتگوزاری / کار')"></span>
+                                            <button type="button" @click="removeCustomRateRow(index)"
+                                                    class="text-rose-500 hover:text-rose-700 text-xs font-bold px-1.5 py-0.5 rounded-md hover:bg-rose-50 cursor-pointer">
+                                                ✕ سڕینەوە
+                                            </button>
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                            <div>
+                                                <label class="block mb-0.5 text-slate-500 font-bold text-[10px]">ناوی کار / خزمەتگوزاری</label>
+                                                <input type="text" x-model="item.name"
+                                                       placeholder="بۆ نموونە: چوونە ماڵان، دەرەوەی شار..."
+                                                       class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-teal-600">
+                                            </div>
+                                            <div>
+                                                <label class="block mb-0.5 text-slate-500 font-bold text-[10px]">نرخ (د.ع)</label>
+                                                <div class="flex items-stretch rounded-lg border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
+                                                    <input type="text" inputmode="numeric" x-model="item.rate"
+                                                           @input="item.rate = formatMoneyInput($event.target.value)"
+                                                           placeholder="0"
+                                                           class="w-full px-2.5 py-1.5 font-mono font-black text-teal-800 text-xs focus:outline-hidden">
+                                                    <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block mb-0.5 text-slate-500 font-bold text-[10px]">شێوازی هەژمارکردن</label>
+                                                <select x-model="item.unit" class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                                                    <option value="hourly">بۆ هەر کاتژمێرێک</option>
+                                                    <option value="fixed">بڕی جێگیر (بۆ هەر جارێک)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
 
@@ -864,15 +903,19 @@
                         </select>
                     </div>
 
-                    {{-- کاتی زیادە و چوونە ماڵان --}}
-                    <div class="p-2.5 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-2">
-                        <div class="text-[11px] font-black text-blue-900 flex items-center gap-1">
-                            <span>⏱️</span>
-                            <span>کاتی زیادە و چوونە ماڵان</span>
+                    {{-- کاتی زیادە و کارکردن لە دەرەوە / ماڵان --}}
+                    <div class="p-2.5 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-2.5">
+                        <div class="text-[11px] font-black text-blue-900 flex items-center justify-between">
+                            <div class="flex items-center gap-1">
+                                <span>⏱️</span>
+                                <span>کاتی زیادە و ئیشی دەرەوە / ماڵان</span>
+                            </div>
                         </div>
+
+                        {{-- ١. کاتی زیادەی کارگە و ناوی شوێن --}}
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">کاتی زیادە (کاتژمێر)</label>
+                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">کاتی زیادەی کارگە (کاتژمێر)</label>
                                 <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-blue-600 bg-white">
                                     <input type="number" step="0.5" min="0" x-model="cellForm.overtime_hours"
                                            placeholder="0"
@@ -881,11 +924,53 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">چوونە ماڵان / شوێن</label>
+                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">چوونە ماڵان / ناوی شوێن</label>
                                 <input type="text" x-model="cellForm.trip_destination"
                                        placeholder="بۆ نموونە: ماڵی حاجی..."
                                        class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-blue-600">
                             </div>
+                        </div>
+
+                        {{-- ٢. دیاریکردنی جۆری کاری دەرەوە لەگەڵ نرخ --}}
+                        <div class="p-2 bg-white/90 rounded-xl border border-blue-200/80 space-y-2">
+                            <div>
+                                <label class="block mb-1 text-slate-700 font-black text-[10px]">جۆری کاری دەرەوە / خزمەتگوزاری</label>
+                                <select x-model="cellForm.custom_task_name"
+                                        @change="onCellTaskSelected($event.target.value)"
+                                        class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-blue-600">
+                                    <option value="">— هیچ (تەنها کاتی زیادەی کارگە) —</option>
+                                    <template x-for="r in customRatesList" :key="r.name">
+                                        <option :value="r.name" x-text="r.name + ' (' + formatNumber(r.rate) + ' د.ع ' + (r.unit === 'fixed' ? 'جێگیر' : '/ ک') + ')'"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <template x-if="cellForm.custom_task_name">
+                                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                                    <template x-if="cellForm.custom_task_unit === 'hourly'">
+                                        <div>
+                                            <label class="block mb-1 text-slate-600 font-bold text-[10px]">کاتژمێری ئیشەکە</label>
+                                            <div class="flex items-stretch rounded-lg border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
+                                                <input type="number" step="0.5" min="0" x-model="cellForm.custom_task_hours"
+                                                       @input="calculateCustomTaskAmount()"
+                                                       placeholder="0"
+                                                       class="w-full px-2.5 py-1 font-mono font-bold text-teal-800 text-xs focus:outline-hidden">
+                                                <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">ک</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <div :class="cellForm.custom_task_unit === 'fixed' ? 'col-span-2' : ''">
+                                        <label class="block mb-1 text-slate-600 font-bold text-[10px]">شایستەی پارەکەی (د.ع)</label>
+                                        <div class="flex items-stretch rounded-lg border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-teal-50/60">
+                                            <input type="text" inputmode="numeric" x-model="cellForm.custom_task_amount"
+                                                   @input="cellForm.custom_task_amount = formatMoneyInput($event.target.value)"
+                                                   placeholder="0"
+                                                   class="w-full px-2.5 py-1 font-mono font-black text-teal-900 text-xs focus:outline-hidden">
+                                            <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
 
@@ -1026,6 +1111,21 @@ function workshopEmployeesApp() {
             workshop_late_weekly_penalty_amount: {!! json_encode(($shiftSettings['late_weekly_penalty_amount'] ?? 0) > 0 ? $shiftSettings['late_weekly_penalty_amount'] : '') !!}
         },
 
+        customRatesList: {!! json_encode(!empty($shiftSettings['custom_overtime_rates']) ? $shiftSettings['custom_overtime_rates'] : [
+            ['name' => 'چوونە ماڵان / دانان', 'rate' => (($shiftSettings['home_visit_hourly_rate'] ?? 0) > 0 ? $shiftSettings['home_visit_hourly_rate'] : 7000), 'unit' => 'hourly']
+        ], JSON_UNESCAPED_UNICODE) !!},
+
+        addCustomRateRow() {
+            this.customRatesList.push({ name: '', rate: '', unit: 'hourly' });
+        },
+        removeCustomRateRow(index) {
+            if (this.customRatesList.length <= 1) {
+                this.customRatesList = [{ name: '', rate: '', unit: 'hourly' }];
+                return;
+            }
+            this.customRatesList.splice(index, 1);
+        },
+
         showCellModal: false,
         activeCellEmployee: null,
         activeCellDay: null,
@@ -1038,11 +1138,46 @@ function workshopEmployeesApp() {
             hours: 0,
             overtime_hours: 0,
             trip_destination: '',
+            custom_task_name: '',
+            custom_task_rate: 0,
+            custom_task_unit: 'hourly',
+            custom_task_hours: 0,
+            custom_task_amount: '',
             exit_reason: '',
             late_minutes: 0,
             fuel_expense: 0,
             deduction_amount: 0,
             note: ''
+        },
+
+        onCellTaskSelected(name) {
+            const found = this.customRatesList.find(r => r.name === name);
+            if (found) {
+                this.cellForm.custom_task_name = found.name;
+                this.cellForm.custom_task_rate = this.cleanMoney(found.rate);
+                this.cellForm.custom_task_unit = found.unit || 'hourly';
+                if (found.unit === 'fixed') {
+                    this.cellForm.custom_task_amount = this.formatMoneyInput(found.rate);
+                } else {
+                    if (!this.cellForm.custom_task_hours || this.cellForm.custom_task_hours <= 0) {
+                        this.cellForm.custom_task_hours = 1;
+                    }
+                    this.calculateCustomTaskAmount();
+                }
+            } else {
+                this.cellForm.custom_task_name = '';
+                this.cellForm.custom_task_rate = 0;
+                this.cellForm.custom_task_hours = 0;
+                this.cellForm.custom_task_amount = '';
+            }
+        },
+
+        calculateCustomTaskAmount() {
+            const hours = parseFloat(this.cellForm.custom_task_hours) || 0;
+            const rate = parseFloat(this.cellForm.custom_task_rate) || 0;
+            if (hours > 0 && rate > 0) {
+                this.cellForm.custom_task_amount = this.formatMoneyInput(Math.round(hours * rate));
+            }
         },
 
         showPaymentModal: false,
@@ -1166,6 +1301,11 @@ function workshopEmployeesApp() {
                 status: existing?.status || 'present',
                 overtime_hours: existing?.overtime_hours > 0 ? existing.overtime_hours : '',
                 trip_destination: existing?.trip_destination || '',
+                custom_task_name: existing?.custom_task_name || '',
+                custom_task_rate: existing?.custom_task_rate || 0,
+                custom_task_unit: existing?.custom_task_unit || 'hourly',
+                custom_task_hours: existing?.custom_task_hours > 0 ? existing.custom_task_hours : '',
+                custom_task_amount: existing?.custom_task_amount > 0 ? this.formatMoneyInput(existing.custom_task_amount) : '',
                 exit_reason: existing?.exit_reason || '',
                 fuel_expense: existing?.fuel_expense > 0 ? this.formatMoneyInput(existing.fuel_expense) : '',
                 note: existing?.note || ''
@@ -1182,6 +1322,11 @@ function workshopEmployeesApp() {
                     status: this.cellForm.status,
                     overtime_hours: parseFloat(this.cellForm.overtime_hours) || 0,
                     trip_destination: this.cellForm.trip_destination || '',
+                    custom_task_name: this.cellForm.custom_task_name || '',
+                    custom_task_rate: parseFloat(this.cellForm.custom_task_rate) || 0,
+                    custom_task_unit: this.cellForm.custom_task_unit || 'hourly',
+                    custom_task_hours: parseFloat(this.cellForm.custom_task_hours) || 0,
+                    custom_task_amount: this.cleanMoney(this.cellForm.custom_task_amount),
                     exit_reason: this.cellForm.exit_reason || '',
                     fuel_expense: this.cleanMoney(this.cellForm.fuel_expense),
                     note: this.cellForm.note || ''
@@ -1481,6 +1626,11 @@ function workshopEmployeesApp() {
                 payload.workshop_absent_deduction_rate = this.cleanMoney(payload.workshop_absent_deduction_rate);
                 payload.workshop_late_deduction_rate = this.cleanMoney(payload.workshop_late_deduction_rate);
                 payload.workshop_late_weekly_penalty_amount = this.cleanMoney(payload.workshop_late_weekly_penalty_amount);
+                payload.workshop_custom_overtime_rates = this.customRatesList.map(r => ({
+                    name: r.name ? r.name.trim() : '',
+                    rate: this.cleanMoney(r.rate),
+                    unit: r.unit || 'hourly'
+                })).filter(r => r.name !== '' || r.rate > 0);
 
                 const res = await fetch('{{ route('workshop.settings') }}', {
                     method: 'POST',
@@ -1556,9 +1706,16 @@ function workshopEmployeesApp() {
 
             let otEarned = 0;
             Object.values(row.cells).forEach(cell => {
-                if (cell && parseFloat(cell.overtime_hours || 0) > 0) {
-                    const rate = (cell.trip_destination && cell.trip_destination.trim()) ? homeOtRate : stdOtRate;
-                    otEarned += parseFloat(cell.overtime_hours) * rate;
+                if (cell) {
+                    if (parseFloat(cell.overtime_hours || 0) > 0) {
+                        const rate = (cell.trip_destination && cell.trip_destination.trim() && !cell.custom_task_name) ? homeOtRate : stdOtRate;
+                        otEarned += parseFloat(cell.overtime_hours) * rate;
+                    }
+                    if (parseFloat(cell.custom_task_amount || 0) > 0) {
+                        otEarned += parseFloat(cell.custom_task_amount);
+                    } else if (parseFloat(cell.custom_task_hours || 0) > 0 && parseFloat(cell.custom_task_rate || 0) > 0) {
+                        otEarned += parseFloat(cell.custom_task_hours) * parseFloat(cell.custom_task_rate);
+                    }
                 }
             });
 

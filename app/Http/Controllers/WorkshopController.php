@@ -288,6 +288,9 @@ class WorkshopController extends Controller
             'overtime_hourly_rate' => (float) Setting::get('workshop_overtime_hourly_rate', 0),
             'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
             'home_visit_hourly_rate' => (float) Setting::get('workshop_home_visit_hourly_rate', 0),
+            'custom_overtime_rates' => json_decode(Setting::get('workshop_custom_overtime_rates', '[]'), true) ?: [
+                ['name' => 'چوونە ماڵان / دانان', 'rate' => ((float) Setting::get('workshop_home_visit_hourly_rate', 0) ?: 7000), 'unit' => 'hourly']
+            ],
             'half_day_deduction_type' => Setting::get('workshop_half_day_deduction_type', 'percentage'),
             'half_day_deduction_rate' => (float) Setting::get('workshop_half_day_deduction_rate', 0),
             'absent_deduction_type' => Setting::get('workshop_absent_deduction_type', 'none'),
@@ -378,6 +381,11 @@ class WorkshopController extends Controller
                         'deduction_amount' => $deduction,
                         'bonus_amount' => $bonus,
                         'trip_destination' => $att->trip_destination ?? '',
+                        'custom_task_name' => $att->custom_task_name ?? '',
+                        'custom_task_rate' => (float) ($att->custom_task_rate ?? 0),
+                        'custom_task_unit' => $att->custom_task_unit ?? 'hourly',
+                        'custom_task_hours' => (float) ($att->custom_task_hours ?? 0),
+                        'custom_task_amount' => (float) ($att->custom_task_amount ?? 0),
                         'note' => $att->note ?? '',
                     ];
                 } else {
@@ -406,9 +414,17 @@ class WorkshopController extends Controller
             $overtimeEarned = 0.0;
             foreach ($days as $d) {
                 $dAtt = $allAtts->get($d['date']);
-                if ($dAtt && (float) $dAtt->overtime_hours > 0) {
-                    $rate = (! empty($dAtt->trip_destination)) ? $homeOvertimeRate : $stdOvertimeRate;
-                    $overtimeEarned += ((float) $dAtt->overtime_hours * $rate);
+                if ($dAtt) {
+                    $otHours = (float) $dAtt->overtime_hours;
+                    if ($otHours > 0) {
+                        $rate = (! empty($dAtt->trip_destination) && empty($dAtt->custom_task_name)) ? $homeOvertimeRate : $stdOvertimeRate;
+                        $overtimeEarned += ($otHours * $rate);
+                    }
+                    if ((float) $dAtt->custom_task_amount > 0) {
+                        $overtimeEarned += (float) $dAtt->custom_task_amount;
+                    } elseif ((float) $dAtt->custom_task_hours > 0 && (float) $dAtt->custom_task_rate > 0) {
+                        $overtimeEarned += ((float) $dAtt->custom_task_hours * (float) $dAtt->custom_task_rate);
+                    }
                 }
             }
             $overtimeEarned = round($overtimeEarned, 2);
@@ -470,9 +486,15 @@ class WorkshopController extends Controller
 
             $monthOvertimeEarned = 0.0;
             foreach ($monthAtts as $mAtt) {
-                if ((float) $mAtt->overtime_hours > 0) {
-                    $rate = (! empty($mAtt->trip_destination)) ? $homeOvertimeRate : $stdOvertimeRate;
-                    $monthOvertimeEarned += ((float) $mAtt->overtime_hours * $rate);
+                $otHours = (float) $mAtt->overtime_hours;
+                if ($otHours > 0) {
+                    $rate = (! empty($mAtt->trip_destination) && empty($mAtt->custom_task_name)) ? $homeOvertimeRate : $stdOvertimeRate;
+                    $monthOvertimeEarned += ($otHours * $rate);
+                }
+                if ((float) $mAtt->custom_task_amount > 0) {
+                    $monthOvertimeEarned += (float) $mAtt->custom_task_amount;
+                } elseif ((float) $mAtt->custom_task_hours > 0 && (float) $mAtt->custom_task_rate > 0) {
+                    $monthOvertimeEarned += ((float) $mAtt->custom_task_hours * (float) $mAtt->custom_task_rate);
                 }
             }
             $monthOvertimeEarned = round($monthOvertimeEarned, 2);
@@ -821,6 +843,28 @@ class WorkshopController extends Controller
             Setting::put($key, (string) $value);
         }
 
+        if ($request->has('workshop_custom_overtime_rates')) {
+            $rates = $request->input('workshop_custom_overtime_rates');
+            if (is_array($rates)) {
+                $cleaned = [];
+                foreach ($rates as $r) {
+                    $name = trim($r['name'] ?? '');
+                    $rate = (float) ($r['rate'] ?? 0);
+                    $unit = in_array($r['unit'] ?? '', ['hourly', 'fixed']) ? $r['unit'] : 'hourly';
+                    if ($name !== '' || $rate > 0) {
+                        $cleaned[] = [
+                            'name' => $name,
+                            'rate' => $rate,
+                            'unit' => $unit,
+                        ];
+                    }
+                }
+                Setting::put('workshop_custom_overtime_rates', json_encode($cleaned, JSON_UNESCAPED_UNICODE));
+            } elseif (is_string($rates)) {
+                Setting::put('workshop_custom_overtime_rates', $rates);
+            }
+        }
+
         if ($request->wantsJson()) {
             return response()->json(['ok' => true, 'message' => 'ڕێکخستنەکانی دەوام و کاتی زیادە بە سەرکەوتوویی پاشەکەوتکران.']);
         }
@@ -1081,6 +1125,11 @@ class WorkshopController extends Controller
             'deduction_amount' => ['nullable', 'numeric', 'min:0'],
             'bonus_amount' => ['nullable', 'numeric', 'min:0'],
             'trip_destination' => ['nullable', 'string', 'max:255'],
+            'custom_task_name' => ['nullable', 'string', 'max:255'],
+            'custom_task_rate' => ['nullable', 'numeric', 'min:0'],
+            'custom_task_unit' => ['nullable', 'string', 'in:hourly,fixed'],
+            'custom_task_hours' => ['nullable', 'numeric', 'min:0'],
+            'custom_task_amount' => ['nullable', 'numeric', 'min:0'],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -1130,6 +1179,19 @@ class WorkshopController extends Controller
         // هەژمارکردنی تاخیربوون ئەگەر دەستی دیاری نەکرابێت
         $lateMinutes = isset($validated['late_minutes']) && $validated['late_minutes'] !== '' ? (int) $validated['late_minutes'] : Attendance::calculateLateMinutes($checkIn, $date);
 
+        $taskName = $validated['custom_task_name'] ?? null;
+        $taskRate = (float) ($validated['custom_task_rate'] ?? 0);
+        $taskUnit = $validated['custom_task_unit'] ?? 'hourly';
+        $taskHours = (float) ($validated['custom_task_hours'] ?? 0);
+        $taskAmount = 0.0;
+        if (! empty($taskName) || $taskRate > 0) {
+            if ($taskUnit === 'fixed') {
+                $taskAmount = $taskRate;
+            } else {
+                $taskAmount = round($taskHours * $taskRate, 2);
+            }
+        }
+
         $attendance->status = $status;
         $attendance->check_in = $checkIn ? (strlen($checkIn) === 5 ? "{$checkIn}:00" : $checkIn) : null;
         $attendance->check_out = $checkOut ? (strlen($checkOut) === 5 ? "{$checkOut}:00" : $checkOut) : null;
@@ -1142,6 +1204,11 @@ class WorkshopController extends Controller
         $attendance->deduction_amount = (float) ($validated['deduction_amount'] ?? 0);
         $attendance->bonus_amount = (float) ($validated['bonus_amount'] ?? 0);
         $attendance->trip_destination = $validated['trip_destination'] ?? null;
+        $attendance->custom_task_name = $taskName;
+        $attendance->custom_task_rate = $taskRate;
+        $attendance->custom_task_unit = $taskUnit;
+        $attendance->custom_task_hours = $taskHours;
+        $attendance->custom_task_amount = $taskAmount;
         $attendance->note = $validated['note'] ?? null;
 
         $effectiveWage = $employee->effective_daily_wage;
@@ -1181,6 +1248,11 @@ class WorkshopController extends Controller
                 'deduction_amount' => (float) $attendance->deduction_amount,
                 'bonus_amount' => (float) $attendance->bonus_amount,
                 'trip_destination' => $attendance->trip_destination ?? '',
+                'custom_task_name' => $attendance->custom_task_name ?? '',
+                'custom_task_rate' => (float) $attendance->custom_task_rate,
+                'custom_task_unit' => $attendance->custom_task_unit ?? 'hourly',
+                'custom_task_hours' => (float) $attendance->custom_task_hours,
+                'custom_task_amount' => (float) $attendance->custom_task_amount,
                 'note' => $attendance->note ?? '',
             ],
             'message' => "دێتەلی دەوامی {$employee->name} بە سەرکەوتوویی نوێکرایەوە.",
@@ -1261,8 +1333,13 @@ class WorkshopController extends Controller
         foreach ($attendances as $att) {
             $otHours = (float) $att->overtime_hours;
             if ($otHours > 0) {
-                $rate = (! empty($att->trip_destination)) ? $homeOvertimeRate : $stdOvertimeRate;
+                $rate = (! empty($att->trip_destination) && empty($att->custom_task_name)) ? $homeOvertimeRate : $stdOvertimeRate;
                 $overtimeEarned += ($otHours * $rate);
+            }
+            if ((float) $att->custom_task_amount > 0) {
+                $overtimeEarned += (float) $att->custom_task_amount;
+            } elseif ((float) $att->custom_task_hours > 0 && (float) $att->custom_task_rate > 0) {
+                $overtimeEarned += ((float) $att->custom_task_hours * (float) $att->custom_task_rate);
             }
         }
         $overtimeEarned = round($overtimeEarned);
@@ -1352,6 +1429,11 @@ class WorkshopController extends Controller
                     'status_label' => $a->status_label,
                     'overtime_hours' => (float) $a->overtime_hours,
                     'trip_destination' => $a->trip_destination,
+                    'custom_task_name' => $a->custom_task_name,
+                    'custom_task_rate' => (float) $a->custom_task_rate,
+                    'custom_task_unit' => $a->custom_task_unit ?? 'hourly',
+                    'custom_task_hours' => (float) $a->custom_task_hours,
+                    'custom_task_amount' => (float) $a->custom_task_amount,
                     'exit_reason' => $a->exit_reason,
                     'fuel_expense' => (float) $a->fuel_expense,
                     'deduction_amount' => (float) $a->deduction_amount,

@@ -320,5 +320,93 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $this->assertEquals('ماڵی کاک ئاراس', $monthRes->json('attendances.0.trip_destination'));
         $this->assertEquals('بەنزینی ئۆتۆمبێل', $monthRes->json('attendances.0.exit_reason'));
     }
+
+    public function test_custom_overtime_job_rates_and_calculations()
+    {
+        $this->actingAs($this->admin);
+
+        // پاشەکەوتکردنی جۆرەکانی کاری دەرەوە لە سێتینگ
+        $settingsRes = $this->postJson('/workshop/settings', [
+            'workshop_work_hours' => 8,
+            'workshop_weekly_holiday' => 'friday',
+            'workshop_overtime_hourly_rate' => 5000,
+            'workshop_custom_overtime_rates' => [
+                ['name' => 'چوونە ماڵان / دانان', 'rate' => 7000, 'unit' => 'hourly'],
+                ['name' => 'ئیشی دەرەوەی شار', 'rate' => 10000, 'unit' => 'hourly'],
+                ['name' => 'دانانی قوفڵ و بەستن', 'rate' => 15000, 'unit' => 'fixed'],
+            ],
+        ]);
+        $settingsRes->assertStatus(200);
+
+        // پشکنینی پاشەکەوتکردنی سێتینگ
+        $savedRates = json_decode(Setting::get('workshop_custom_overtime_rates'), true);
+        $this->assertCount(3, $savedRates);
+        $this->assertEquals('ئیشی دەرەوەی شار', $savedRates[1]['name']);
+        $this->assertEquals(10000, $savedRates[1]['rate']);
+
+        // دروستکردنی وەستایەک بە کرێی ٤٠،٠٠٠ د.ع
+        $employee = Employee::create([
+            'name' => 'وەستا هەردی',
+            'job_title' => 'master',
+            'salary_type' => 'daily',
+            'daily_wage' => 40000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $today = now()->isFriday() ? now()->subDay()->toDateString() : now()->toDateString();
+
+        // تۆمارکردنی دەوام و دیاریکردنی کاری دەرەوە (ئیشی دەرەوەی شار، ٢.٥ کاتژمێر = ٢٥،٠٠٠ د.ع)
+        $cellRes = $this->postJson('/workshop/employees/save-cell-detail', [
+            'employee_id' => $employee->id,
+            'work_date' => $today,
+            'status' => 'present',
+            'custom_task_name' => 'ئیشی دەرەوەی شار',
+            'custom_task_rate' => 10000,
+            'custom_task_unit' => 'hourly',
+            'custom_task_hours' => 2.5,
+            'custom_task_amount' => 25000,
+            'trip_destination' => 'کۆیە - باخی کاک فاروق',
+            'exit_reason' => 'کڕینی مەواد',
+            'fuel_expense' => 20000,
+            'note' => 'تەواوکردنی کاری دەرەوە',
+        ]);
+
+        $cellRes->assertStatus(200);
+        $cellRes->assertJson([
+            'ok' => true,
+            'attendance' => [
+                'status' => 'present',
+                'custom_task_name' => 'ئیشی دەرەوەی شار',
+                'custom_task_rate' => 10000,
+                'custom_task_hours' => 2.5,
+                'custom_task_amount' => 25000,
+                'trip_destination' => 'کۆیە - باخی کاک فاروق',
+                'exit_reason' => 'کڕینی مەواد',
+                'fuel_expense' => 20000,
+            ],
+        ]);
+
+        // پشکنینی حیساباتی مانگانە بە وردی:
+        // حەقدەستی ڕۆژ = ٤٠،٠٠٠
+        // حەقدەستی کاری دەرەوە = ٢٥،٠٠٠
+        // سەرفیاتی مەواد/بەنزین = ٢٠،٠٠٠
+        // کۆی گشتی شایستەی دارایی = ٤٠،٠٠٠ + ٢٥،٠٠٠ + ٢٠،٠٠٠ = ٨٥،٠٠٠ د.ع مەزبوت
+        $monthStr = now()->format('Y-m');
+        $monthRes = $this->getJson("/workshop/employees/{$employee->id}/month-details?month={$monthStr}");
+        $monthRes->assertStatus(200);
+        $monthRes->assertJson([
+            'ok' => true,
+            'stats' => [
+                'base_earned' => 40000,
+                'overtime_earned' => 25000,
+                'total_fuel' => 20000,
+                'total_earned' => 85000,
+            ],
+        ]);
+
+        $this->assertEquals('ئیشی دەرەوەی شار', $monthRes->json('attendances.0.custom_task_name'));
+        $this->assertEquals(25000, $monthRes->json('attendances.0.custom_task_amount'));
+    }
 }
 

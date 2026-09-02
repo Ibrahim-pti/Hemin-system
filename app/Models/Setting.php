@@ -60,5 +60,6 @@ class Setting extends Model
         'workshop_half_day_deduction_rate' => '0',
         'workshop_absent_deduction_type' => 'none',
         'workshop_absent_deduction_rate' => '0',
+        'workshop_custom_overtime_rates' => '[]',
     ];
 }

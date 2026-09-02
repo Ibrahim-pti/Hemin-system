@@ -20,7 +20,9 @@ class Attendance extends Model
     protected $fillable = [
         'employee_id', 'work_date', 'check_in', 'check_out', 'status',
         'hours', 'overtime_hours', 'late_minutes', 'temporary_exit_hours', 'exit_reason',
-        'fuel_expense', 'deduction_amount', 'bonus_amount', 'trip_destination', 'wage_snapshot', 'user_id', 'note',
+        'fuel_expense', 'deduction_amount', 'bonus_amount', 'trip_destination',
+        'custom_task_name', 'custom_task_rate', 'custom_task_unit', 'custom_task_hours', 'custom_task_amount',
+        'wage_snapshot', 'user_id', 'note',
     ];
 
     protected function casts(): array
@@ -34,6 +36,9 @@ class Attendance extends Model
             'fuel_expense' => 'decimal:2',
             'deduction_amount' => 'decimal:2',
             'bonus_amount' => 'decimal:2',
+            'custom_task_rate' => 'decimal:2',
+            'custom_task_hours' => 'decimal:2',
+            'custom_task_amount' => 'decimal:2',
             'wage_snapshot' => 'decimal:2',
         ];
     }
