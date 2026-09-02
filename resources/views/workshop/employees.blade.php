@@ -204,8 +204,10 @@
                             <h2 class="text-base sm:text-lg font-black text-white" x-text="selectedEmployee?.name"></h2>
                             <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-teal-700 text-teal-200" x-text="selectedEmployee?.job_title_label"></span>
                         </div>
-                        <div class="text-xs text-teal-200 font-mono mt-0.5">
-                            مووچەی ڕۆژانە: <b class="text-white" x-text="formatNumber(selectedEmployee?.daily_wage) + ' د.ع'"></b>
+                        <div class="text-xs text-teal-200 font-mono mt-0.5 flex items-center gap-1.5">
+                            <span>مووچەی ڕۆژانە:</span>
+                            <b class="text-white font-bold" x-text="formatNumber(selectedEmployee?.effective_daily_wage || selectedEmployee?.daily_wage) + ' د.ع'"></b>
+                            <span class="text-[10px] bg-teal-900/80 text-teal-200 px-1.5 py-0.5 rounded font-bold" x-text="selectedEmployee?.salary_type_label || 'ڕۆژانە'"></span>
                         </div>
                     </div>
                 </div>
@@ -1122,7 +1124,7 @@ function workshopEmployeesApp() {
 
         formatNumber(num) {
             if (num === null || num === undefined || isNaN(num)) return '0';
-            return Number(num).toLocaleString('en-US');
+            return Number(Math.round(num)).toLocaleString('en-US');
         }
     };
 }
