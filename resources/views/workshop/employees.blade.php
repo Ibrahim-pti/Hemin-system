@@ -349,12 +349,12 @@
                     </div>
                 </div>
 
-                {{-- وەسڵەکانی پێشەکی --}}
+                {{-- وەسڵەکانی پارەدان --}}
                 <div>
                     <div class="mb-2">
                         <h3 class="font-black text-slate-800 flex items-center gap-1.5">
                             <span>💸</span>
-                            <span>وەسڵەکانی پارەدان و پێشەکی لە قاصە</span>
+                            <span>وەسڵەکانی پارەدان لە قاصە</span>
                         </h3>
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-hidden">
@@ -373,7 +373,7 @@
                                         <td class="p-2 font-mono font-bold text-slate-800 text-right" x-text="'#' + p.voucher_no"></td>
                                         <td class="p-2 font-mono text-slate-600" x-text="p.paid_at"></td>
                                         <td class="p-2 font-mono font-black text-purple-900" x-text="formatNumber(p.amount) + ' ' + p.currency"></td>
-                                        <td class="p-2 text-slate-600 text-right" x-text="p.note || 'پێشەکی'"></td>
+                                        <td class="p-2 text-slate-600 text-right" x-text="p.note || 'مووچە'"></td>
                                     </tr>
                                 </template>
                                 <template x-if="!drawerData?.payments || drawerData.payments.length === 0">
@@ -394,7 +394,7 @@
                     <div class="bg-teal-50 border border-teal-200 rounded-2xl p-3.5 flex items-center justify-between">
                         <div>
                             <h3 class="text-xs sm:text-sm font-black text-teal-950" x-text="'تۆمارکردنی پارەدان بۆ: ' + (selectedEmployee?.name || '')"></h3>
-                            <p class="text-[11px] text-teal-700 mt-0.5">پێدانی مووچەی شایستە یان پێشەکی لە قاصەوە</p>
+                            <p class="text-[11px] text-teal-700 mt-0.5">پێدانی مووچەی شایستە لە قاصەوە</p>
                         </div>
                         <template x-if="(drawerData?.stats?.remaining_balance ?? 0) > 0">
                             <button type="button" @click="setFullDuePayment()"
@@ -414,14 +414,6 @@
                     <div class="space-y-3 font-bold text-slate-700">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <label class="block mb-1 text-slate-600">جۆری پارەدان</label>
-                                <select x-model="paymentForm.payment_type" @change="onPaymentTypeChange()"
-                                        class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
-                                    <option value="wage">مووچە</option>
-                                    <option value="advance">پێشەکی</option>
-                                </select>
-                            </div>
-                            <div>
                                 <div class="flex items-center justify-between mb-1">
                                     <label class="text-slate-600">قاسە</label>
                                     <template x-if="selectedCashBox">
@@ -436,6 +428,12 @@
                                         <option :value="box.id" x-text="box.name + ' (' + formatNumber(box.balance) + ' ' + (box.currency === 'USD' ? '$' : 'د.ع') + ')'"></option>
                                     </template>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label class="block mb-1 text-slate-600">بەروار</label>
+                                <input type="date" x-model="paymentForm.paid_at" required
+                                       class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-mono font-bold bg-white">
                             </div>
                         </div>
 
@@ -452,17 +450,12 @@
                                           x-text="paymentForm.currency === 'USD' ? '$' : 'د.ع'"></span>
                                 </div>
                             </div>
-                            <div>
-                                <label class="block mb-1 text-slate-600">بەروار</label>
-                                <input type="date" x-model="paymentForm.paid_at" required
-                                       class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-mono font-bold bg-white">
-                            </div>
-                        </div>
 
-                        <div>
-                            <label class="block mb-1 text-slate-600">تێبینی</label>
-                            <input type="text" x-model="paymentForm.note" placeholder="تێبینی بۆ ئەم پارەدانە..."
-                                   class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-medium">
+                            <div>
+                                <label class="block mb-1 text-slate-600">تێبینی</label>
+                                <input type="text" x-model="paymentForm.note" placeholder="تێبینی بۆ ئەم مووچەیە..."
+                                       class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-medium">
+                            </div>
                         </div>
 
                         <div class="pt-2 flex items-center justify-end gap-2.5">
@@ -1100,12 +1093,12 @@ function workshopEmployeesApp() {
 
             this.paymentForm = {
                 employee_id: row?.id,
-                payment_type: hasRemaining ? 'wage' : 'advance',
+                payment_type: 'wage',
                 amount: hasRemaining ? this.formatMoneyInput(remaining) : '',
                 currency: defaultBox ? defaultBox.currency : 'IQD',
                 cash_box_id: defaultBox ? defaultBox.id : (this.cashBoxes[0]?.id || ''),
                 paid_at: '{{ now()->toDateString() }}',
-                note: hasRemaining ? `مووچەی ${row?.name || ''}` : `پێشەکی ${row?.name || ''}`
+                note: `مووچەی ${row?.name || ''}`
             };
         },
 
@@ -1123,14 +1116,6 @@ function workshopEmployeesApp() {
                 this.paymentForm.amount = this.formatMoneyInput(remaining);
                 this.paymentForm.payment_type = 'wage';
                 this.paymentForm.note = `مووچەی ${this.paymentEmployee?.name || ''}`;
-            }
-        },
-
-        onPaymentTypeChange() {
-            if (this.paymentForm.payment_type === 'wage') {
-                this.paymentForm.note = `مووچەی ${this.paymentEmployee?.name || ''}`;
-            } else {
-                this.paymentForm.note = `پێشەکی ${this.paymentEmployee?.name || ''}`;
             }
         },
 
