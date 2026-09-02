@@ -280,6 +280,8 @@ class WorkshopController extends Controller
             ];
         }
 
+        $canSeeMoney = auth()->user()?->isAdmin() ?? false;
+
         $shiftSettings = [
             'work_start' => Setting::get('workshop_work_start', '08:00'),
             'work_end' => Setting::get('workshop_work_end', '17:00'),
@@ -319,7 +321,7 @@ class WorkshopController extends Controller
             ->orderBy('name')
             ->get();
 
-        $employeesMatrix = $employees->map(function (Employee $emp) use ($days, $shiftSettings, $from, $to, $monthStart, $monthEnd) {
+        $employeesMatrix = $employees->map(function (Employee $emp) use ($days, $shiftSettings, $from, $to, $monthStart, $monthEnd, $canSeeMoney) {
             $allAtts = $emp->attendances->keyBy(fn ($a) => $a->work_date instanceof \DateTimeInterface ? $a->work_date->format('Y-m-d') : substr((string) $a->work_date, 0, 10));
 
             $cells = [];
@@ -376,16 +378,16 @@ class WorkshopController extends Controller
                         'overtime_hours' => $ot,
                         'late_minutes' => $lateMin,
                         'temporary_exit_hours' => $tempExit,
-                        'exit_reason' => $att->exit_reason ?? '',
-                        'fuel_expense' => $fuel,
-                        'deduction_amount' => $deduction,
-                        'bonus_amount' => $bonus,
+                        'exit_reason' => $canSeeMoney ? ($att->exit_reason ?? '') : '',
+                        'fuel_expense' => $canSeeMoney ? $fuel : 0,
+                        'deduction_amount' => $canSeeMoney ? $deduction : 0,
+                        'bonus_amount' => $canSeeMoney ? $bonus : 0,
                         'trip_destination' => $att->trip_destination ?? '',
-                        'custom_task_name' => $att->custom_task_name ?? '',
-                        'custom_task_rate' => (float) ($att->custom_task_rate ?? 0),
+                        'custom_task_name' => $canSeeMoney ? ($att->custom_task_name ?? '') : '',
+                        'custom_task_rate' => $canSeeMoney ? (float) ($att->custom_task_rate ?? 0) : 0,
                         'custom_task_unit' => $att->custom_task_unit ?? 'hourly',
                         'custom_task_hours' => (float) ($att->custom_task_hours ?? 0),
-                        'custom_task_amount' => (float) ($att->custom_task_amount ?? 0),
+                        'custom_task_amount' => $canSeeMoney ? (float) ($att->custom_task_amount ?? 0) : 0,
                         'note' => $att->note ?? '',
                     ];
                 } else {
@@ -520,10 +522,10 @@ class WorkshopController extends Controller
                 'phone' => $emp->phone ?? '',
                 'job_title' => $emp->job_title,
                 'job_title_label' => $emp->job_title_label,
-                'salary_type' => $salaryType,
-                'salary_type_label' => $emp->salary_type_label,
-                'daily_wage' => $dailyWage,
-                'effective_daily_wage' => $effectiveDailyWage,
+                'salary_type' => $canSeeMoney ? $salaryType : 'daily',
+                'salary_type_label' => $canSeeMoney ? $emp->salary_type_label : '',
+                'daily_wage' => $canSeeMoney ? $dailyWage : 0,
+                'effective_daily_wage' => $canSeeMoney ? $effectiveDailyWage : 0,
                 'wage_currency' => $emp->wage_currency ?? 'IQD',
                 'hire_date' => $emp->hire_date?->format('Y/m/d'),
                 'note' => $emp->note ?? '',
@@ -534,30 +536,30 @@ class WorkshopController extends Controller
                 'absent_count' => $absentCount,
                 'holiday_count' => $holidayCount,
                 'total_overtime' => $totalOvertime,
-                'total_fuel' => $totalFuel,
+                'total_fuel' => $canSeeMoney ? $totalFuel : 0,
                 'total_temp_exit' => $totalTempExit,
                 'total_late_minutes' => $totalLateMinutes,
                 'late_days_count' => $lateDaysCount,
-                'total_deductions' => $totalDeductions,
-                'total_bonus' => $totalBonus,
-                'base_earned' => $baseEarned,
-                'overtime_earned' => $overtimeEarned,
-                'total_earned' => $totalEarned,
-                'total_paid' => $totalPaid,
-                'remaining_balance' => $remainingBalance,
-                'payments' => $paymentsList,
+                'total_deductions' => $canSeeMoney ? $totalDeductions : 0,
+                'total_bonus' => $canSeeMoney ? $totalBonus : 0,
+                'base_earned' => $canSeeMoney ? $baseEarned : 0,
+                'overtime_earned' => $canSeeMoney ? $overtimeEarned : 0,
+                'total_earned' => $canSeeMoney ? $totalEarned : 0,
+                'total_paid' => $canSeeMoney ? $totalPaid : 0,
+                'remaining_balance' => $canSeeMoney ? $remainingBalance : 0,
+                'payments' => $canSeeMoney ? $paymentsList : [],
                 'month_summary' => [
                     'present_count' => $monthPresent,
                     'half_day_count' => $monthHalfDay,
                     'absent_count' => $monthAbsent,
                     'leave_count' => $monthLeave,
                     'overtime_hours' => $monthOvertime,
-                    'fuel_expense' => $monthFuel,
+                    'fuel_expense' => $canSeeMoney ? $monthFuel : 0,
                     'late_minutes' => $monthLateMinutes,
                     'late_days' => $monthLateDays,
-                    'total_earned' => $monthTotalEarned,
-                    'total_paid' => $monthTotalPaid,
-                    'remaining' => $monthRemaining,
+                    'total_earned' => $canSeeMoney ? $monthTotalEarned : 0,
+                    'total_paid' => $canSeeMoney ? $monthTotalPaid : 0,
+                    'remaining' => $canSeeMoney ? $monthRemaining : 0,
                 ],
             ];
         })->values()->all();
@@ -608,6 +610,7 @@ class WorkshopController extends Controller
         });
 
         return view('workshop.employees', compact(
+            'canSeeMoney',
             'employees',
             'employeesMatrix',
             'days',
@@ -820,6 +823,10 @@ class WorkshopController extends Controller
     /** نوێکردنەوەی ڕێکخستنەکانی دەوام و کاتی زیادە */
     public function updateSettings(Request $request)
     {
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی دەستکاریکردنی سێتینگی هەیە.');
+        }
+
         $validated = $request->validate([
             'workshop_work_hours' => ['required', 'numeric', 'min:1', 'max:24'],
             'workshop_overtime_hourly_rate' => ['nullable', 'numeric', 'min:0'],
@@ -875,6 +882,10 @@ class WorkshopController extends Controller
     /** زیادکردنی خێرای وەستا و حەمەڵ */
     public function quickStoreEmployee(Request $request)
     {
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی زیادکردنی کارمەندی هەیە.');
+        }
+
         $jobTitle = $request->input('job_title');
         if ($jobTitle === '__NEW__' || !empty($request->input('custom_job_title'))) {
             $jobTitle = trim($request->input('custom_job_title') ?: $jobTitle);
@@ -946,6 +957,10 @@ class WorkshopController extends Controller
     /** دەستکاری مووچە و زانیاری وەستا لەلایەن بەڕێوەبەرەوە */
     public function updateEmployeeWage(Request $request, Employee $employee)
     {
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی دەستکاریکردنی مووچەی هەیە.');
+        }
+
         $jobTitle = $request->input('job_title');
         if ($jobTitle === '__NEW__' || !empty($request->input('custom_job_title'))) {
             $jobTitle = trim($request->input('custom_job_title') ?: $jobTitle);
@@ -1262,6 +1277,10 @@ class WorkshopController extends Controller
     /** بەدەستهێنانی دێتەلی مانگانە و ڕاپۆرتی حیساباتی تاکەکەسی بۆ وەستا */
     public function employeeMonthDetails(Employee $employee, Request $request)
     {
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی بینینی حیساباتی دارایی هەیە.');
+        }
+
         $yearMonth = $request->input('month', now()->format('Y-m'));
         $startDate = \Carbon\Carbon::parse("{$yearMonth}-01")->startOfMonth()->toDateString();
         $endDate = \Carbon\Carbon::parse("{$yearMonth}-01")->endOfMonth()->toDateString();
@@ -1512,6 +1531,10 @@ class WorkshopController extends Controller
     /** تۆمارکردنی پێشەکی یان دانی مووچە بۆ وەستا لە ڕێگەی قاصەوە */
     public function recordEmployeePayment(Request $request, \App\Services\PaymentService $paymentService)
     {
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی تۆمارکردنی پارەدانی هەیە.');
+        }
+
         $validated = $request->validate([
             'employee_id' => ['required', 'exists:employees,id'],
             'amount' => ['required', 'numeric', 'min:1'],
@@ -1561,6 +1584,10 @@ class WorkshopController extends Controller
     /** سڕینەوەی وەستا یان کرێکار لە سیستەم */
     public function destroyEmployee(Employee $employee)
     {
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی سڕینەوەی کارمەندی هەیە.');
+        }
+
         $name = $employee->name;
         $employee->attendances()->delete();
         $employee->delete();

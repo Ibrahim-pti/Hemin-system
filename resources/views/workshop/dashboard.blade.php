@@ -39,7 +39,7 @@
             <a href="{{ route('workshop.employees') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 shadow-2xs transition-all">
                 <span>👷</span>
-                <span>وەستاکان</span>
+                <span>کارمەندان</span>
             </a>
         </div>
     </div>
@@ -242,7 +242,7 @@
                             👷
                         </div>
                         <div>
-                            <h3 class="font-black text-sm text-slate-900">وەستاکانی کارگە</h3>
+                            <h3 class="font-black text-sm text-slate-900">کارمەندانی کارگە</h3>
                             <p class="text-[11px] text-slate-400 font-medium">ئامادەبوونی ئەمڕۆ</p>
                         </div>
                     </div>

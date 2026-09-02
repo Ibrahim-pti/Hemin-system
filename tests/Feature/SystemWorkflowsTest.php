@@ -219,7 +219,17 @@ class SystemWorkflowsTest extends TestCase
         $batchRes->assertStatus(200);
         $batchRes->assertJson(['ok' => true]);
 
-        // Record employee advance/payment
+        // Storekeeper should be forbidden from recording payments
+        $storekeeperPaymentRes = $this->postJson('/workshop/employees/record-payment', [
+            'employee_id' => $employee->id,
+            'amount' => 20000,
+            'paid_at' => now()->toDateString(),
+            'note' => 'پێشەکی هەفتانە',
+        ]);
+        $storekeeperPaymentRes->assertStatus(403);
+
+        // Admin can record employee advance/payment
+        $this->actingAs($this->admin);
         $paymentRes = $this->postJson('/workshop/employees/record-payment', [
             'employee_id' => $employee->id,
             'amount' => 20000,

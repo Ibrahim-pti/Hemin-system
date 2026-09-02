@@ -1,5 +1,5 @@
 @extends('layouts.menu')
-@section('title', 'دەفتەری سەحی وەستاکان')
+@section('title', 'دەفتەری دەوامی کارمەندان')
 
 @section('content')
 <div x-data="workshopEmployeesApp()" x-init="init()" class="space-y-3.5 select-none" dir="rtl">
@@ -13,8 +13,8 @@
                 📋
             </div>
             <div>
-                <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight">جەدوەلی ئامادەبوونی ڕۆژانە (دەفتەری وەستاکان)</h1>
-                <p class="text-[11px] text-slate-500 font-medium mt-0.5">بەڕێوەبردنی دەوام و حیساباتی وەستاکان</p>
+                <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight">جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان</h1>
+                <p class="text-[11px] text-slate-500 font-medium mt-0.5">تۆمارکردنی ئامادەبوون، کاتی زیادە و غیاباتی ڕۆژانە</p>
             </div>
         </div>
 
@@ -57,14 +57,15 @@
             </div>
         </div>
 
-        {{-- لای چەپ: دوگمەکانی کردار (وەستای نوێ، سێتینگ) --}}
+        @if($canSeeMoney)
+        {{-- لای چەپ: دوگمەکانی کردار بۆ بەڕێوەبەر (کارمەندی نوێ، سێتینگ) --}}
         <div class="flex items-center gap-2 shrink-0">
 
-            {{-- زیادکردنی وەستا --}}
+            {{-- زیادکردنی کارمەند --}}
             <button type="button" @click="openNewEmployeeModal()"
                     class="px-3 py-2 rounded-xl text-xs font-black bg-teal-800 hover:bg-teal-900 text-white shadow-2xs flex items-center gap-1 transition-all cursor-pointer">
                 <span>+</span>
-                <span>وەستای نوێ</span>
+                <span>کارمەندی نوێ</span>
             </button>
 
             {{-- سێتینگ --}}
@@ -74,6 +75,7 @@
                 ⚙️
             </button>
         </div>
+        @endif
     </div>
 
     {{-- جەدوەلی سەحی ڕۆژانە --}}
@@ -82,7 +84,7 @@
         {{-- بارێکی باریک بۆ گەڕان و هێماکان --}}
         <div class="px-3.5 py-2.5 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-slate-50/60">
             <div class="flex items-center gap-2 flex-1 max-w-xs">
-                <input type="text" x-model="searchQuery" placeholder="🔍 گەڕان بە ناوی وەستا..."
+                <input type="text" x-model="searchQuery" placeholder="🔍 گەڕان بە ناوی کارمەند..."
                        class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-hidden focus:border-teal-600 bg-white font-medium shadow-2xs">
             </div>
 
@@ -122,8 +124,10 @@
                             </th>
                         @endforeach
 
-                        {{-- کردارەکان بە قەبارەی کەم و ئایکۆن --}}
+                        @if($canSeeMoney)
+                        {{-- کردارەکان تەنها بۆ بەڕێوەبەر --}}
                         <th class="py-3 px-2 w-28 sm:w-32 min-w-[100px] text-center print:hidden">کردارەکان</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium">
@@ -135,10 +139,10 @@
                                 <span x-text="index + 1"></span>
                             </td>
 
-                            {{-- ناوی وەستا (لە ناوەڕاست) --}}
+                            {{-- ناوی کارمەند (لە ناوەڕاست) --}}
                             <td class="py-2.5 px-3 text-center sticky bg-white group-hover:bg-slate-50 z-10 border-l border-slate-200" style="right: 48px;">
-                                <div class="cursor-pointer overflow-hidden text-center" @click="openEmployeeDrawer(row)">
-                                    <span class="font-black text-slate-900 hover:text-teal-700 text-xs sm:text-sm truncate block text-center" x-text="row.name"></span>
+                                <div :class="isAdmin ? 'cursor-pointer hover:text-teal-700' : 'cursor-default'" class="overflow-hidden text-center" @click="isAdmin ? openEmployeeDrawer(row) : null">
+                                    <span class="font-black text-slate-900 text-xs sm:text-sm truncate block text-center" x-text="row.name"></span>
                                 </div>
                             </td>
 
@@ -168,7 +172,8 @@
                                 </td>
                             </template>
 
-                            {{-- کردارەکان: بەس ئایکۆن بۆ ئەوەی جێ نەگرێت --}}
+                            @if($canSeeMoney)
+                            {{-- کردارەکان: تەنها بۆ بەڕێوەبەر بە ئایکۆن --}}
                             <td class="py-2 px-2 text-center print:hidden">
                                 <div class="flex items-center justify-center gap-1">
                                     <button type="button" @click="openEmployeeDrawer(row)"
@@ -178,16 +183,17 @@
                                     </button>
                                     <button type="button" @click="openEditWageModal(row)"
                                             class="w-7 h-7 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer flex items-center justify-center shadow-2xs"
-                                            title="دەستکاری مووچە و پیشەی وەستا">
+                                            title="دەستکاری مووچە و پیشەی کارمەند">
                                         ✏️
                                     </button>
                                     <button type="button" @click="confirmDeleteEmployee(row)"
                                             class="w-7 h-7 rounded-lg text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer flex items-center justify-center shadow-2xs"
-                                            title="سڕینەوەی ئەم وەستایە">
+                                            title="سڕینەوەی ئەم کارمەندە">
                                         🗑️
                                     </button>
                                 </div>
                             </td>
+                            @endif
                         </tr>
                     </template>
                 </tbody>
@@ -195,7 +201,8 @@
         </div>
     </div>
 
-    {{-- ٤. بەشی وردەکاری تەواوی وەستا و حیساباتی خۆکار (Worker Details Drawer/Modal) --}}
+    {{-- ٤. بەشی وردەکاری تەواوی وەستا و حیساباتی خۆکار (Worker Details Drawer/Modal) - تەنها بۆ بەڕێوەبەر --}}
+    @if($canSeeMoney)
     <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
         <div @click.away="if (!showEditWageModal && !showCellModal) showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             
@@ -879,6 +886,7 @@
             </form>
         </div>
     </div>
+    @endif
 
     {{-- ٩. مۆداڵی دەستکاری وردی خانەی سەح (Cell Detail Modal) --}}
     <div x-show="showCellModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
@@ -931,74 +939,78 @@
                             </div>
                         </div>
 
-                        {{-- ٢. دیاریکردنی جۆری کاری دەرەوە لەگەڵ نرخ --}}
-                        <div class="p-2 bg-white/90 rounded-xl border border-blue-200/80 space-y-2">
-                            <div>
-                                <label class="block mb-1 text-slate-700 font-black text-[10px]">جۆری کاری دەرەوە / خزمەتگوزاری</label>
-                                <select x-model="cellForm.custom_task_name"
-                                        @change="onCellTaskSelected($event.target.value)"
-                                        class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-blue-600">
-                                    <option value="">— هیچ (تەنها کاتی زیادەی کارگە) —</option>
-                                    <template x-for="r in customRatesList" :key="r.name">
-                                        <option :value="r.name" x-text="r.name + ' (' + formatNumber(r.rate) + ' د.ع ' + (r.unit === 'fixed' ? 'جێگیر' : '/ ک') + ')'"></option>
-                                    </template>
-                                </select>
-                            </div>
+                        {{-- ٢. دیاریکردنی جۆری کاری دەرەوە لەگەڵ نرخ (تەنها بۆ بەڕێوەبەر) --}}
+                        <template x-if="isAdmin">
+                            <div class="p-2 bg-white/90 rounded-xl border border-blue-200/80 space-y-2">
+                                <div>
+                                    <label class="block mb-1 text-slate-700 font-black text-[10px]">جۆری کاری دەرەوە / خزمەتگوزاری</label>
+                                    <select x-model="cellForm.custom_task_name"
+                                            @change="onCellTaskSelected($event.target.value)"
+                                            class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-blue-600">
+                                        <option value="">— هیچ (تەنها کاتی زیادەی کارگە) —</option>
+                                        <template x-for="r in customRatesList" :key="r.name">
+                                            <option :value="r.name" x-text="r.name + ' (' + formatNumber(r.rate) + ' د.ع ' + (r.unit === 'fixed' ? 'جێگیر' : '/ ک') + ')'"></option>
+                                        </template>
+                                    </select>
+                                </div>
 
-                            <template x-if="cellForm.custom_task_name">
-                                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-                                    <template x-if="cellForm.custom_task_unit === 'hourly'">
-                                        <div>
-                                            <label class="block mb-1 text-slate-600 font-bold text-[10px]">کاتژمێری ئیشەکە</label>
-                                            <div class="flex items-stretch rounded-lg border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
-                                                <input type="number" step="0.5" min="0" x-model="cellForm.custom_task_hours"
-                                                       @input="calculateCustomTaskAmount()"
+                                <template x-if="cellForm.custom_task_name">
+                                    <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                                        <template x-if="cellForm.custom_task_unit === 'hourly'">
+                                            <div>
+                                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">کاتژمێری ئیشەکە</label>
+                                                <div class="flex items-stretch rounded-lg border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
+                                                    <input type="number" step="0.5" min="0" x-model="cellForm.custom_task_hours"
+                                                           @input="calculateCustomTaskAmount()"
+                                                           placeholder="0"
+                                                           class="w-full px-2.5 py-1 font-mono font-bold text-teal-800 text-xs focus:outline-hidden">
+                                                    <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">ک</span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <div :class="cellForm.custom_task_unit === 'fixed' ? 'col-span-2' : ''">
+                                            <label class="block mb-1 text-slate-600 font-bold text-[10px]">شایستەی پارەکەی (د.ع)</label>
+                                            <div class="flex items-stretch rounded-lg border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-teal-50/60">
+                                                <input type="text" inputmode="numeric" x-model="cellForm.custom_task_amount"
+                                                       @input="cellForm.custom_task_amount = formatMoneyInput($event.target.value)"
                                                        placeholder="0"
-                                                       class="w-full px-2.5 py-1 font-mono font-bold text-teal-800 text-xs focus:outline-hidden">
-                                                <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">ک</span>
+                                                       class="w-full px-2.5 py-1 font-mono font-black text-teal-900 text-xs focus:outline-hidden">
+                                                <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
                                             </div>
                                         </div>
-                                    </template>
-                                    <div :class="cellForm.custom_task_unit === 'fixed' ? 'col-span-2' : ''">
-                                        <label class="block mb-1 text-slate-600 font-bold text-[10px]">شایستەی پارەکەی (د.ع)</label>
-                                        <div class="flex items-stretch rounded-lg border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-teal-50/60">
-                                            <input type="text" inputmode="numeric" x-model="cellForm.custom_task_amount"
-                                                   @input="cellForm.custom_task_amount = formatMoneyInput($event.target.value)"
-                                                   placeholder="0"
-                                                   class="w-full px-2.5 py-1 font-mono font-black text-teal-900 text-xs focus:outline-hidden">
-                                            <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
-                                        </div>
                                     </div>
-                                </div>
-                            </template>
-                        </div>
+                                </template>
+                            </div>
+                        </template>
                     </div>
 
-                    {{-- سەرفیات و خەرجی (ناوی خەرجی + نرخ) --}}
-                    <div class="p-2.5 bg-purple-50/60 rounded-2xl border border-purple-100 space-y-2">
-                        <div class="text-[11px] font-black text-purple-900 flex items-center gap-1">
-                            <span>⛽</span>
-                            <span>خەرجی و سەرفیات (ناوی خەرجی و نرخ)</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">ناوی خەرجی (بەنزین و هتد)</label>
-                                <input type="text" x-model="cellForm.exit_reason"
-                                       placeholder="بۆ نموونە: بەنزین، مەواد..."
-                                       class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-purple-600">
+                    {{-- سەرفیات و خەرجی (ناوی خەرجی + نرخ) - تەنها بۆ بەڕێوەبەر --}}
+                    <template x-if="isAdmin">
+                        <div class="p-2.5 bg-purple-50/60 rounded-2xl border border-purple-100 space-y-2">
+                            <div class="text-[11px] font-black text-purple-900 flex items-center gap-1">
+                                <span>⛽</span>
+                                <span>خەرجی و سەرفیات (ناوی خەرجی و نرخ)</span>
                             </div>
-                            <div>
-                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">بڕی پارە (د.ع)</label>
-                                <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-purple-600 bg-white">
-                                    <input type="text" inputmode="numeric" x-model="cellForm.fuel_expense"
-                                           @input="cellForm.fuel_expense = formatMoneyInput($event.target.value)"
-                                           placeholder="0"
-                                           class="w-full px-2.5 py-1.5 font-mono font-black text-purple-900 text-xs focus:outline-hidden">
-                                    <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block mb-1 text-slate-600 font-bold text-[10px]">ناوی خەرجی (بەنزین و هتد)</label>
+                                    <input type="text" x-model="cellForm.exit_reason"
+                                           placeholder="بۆ نموونە: بەنزین، مەواد..."
+                                           class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-purple-600">
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-slate-600 font-bold text-[10px]">بڕی پارە (د.ع)</label>
+                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-purple-600 bg-white">
+                                        <input type="text" inputmode="numeric" x-model="cellForm.fuel_expense"
+                                               @input="cellForm.fuel_expense = formatMoneyInput($event.target.value)"
+                                               placeholder="0"
+                                               class="w-full px-2.5 py-1.5 font-mono font-black text-purple-900 text-xs focus:outline-hidden">
+                                        <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </template>
 
                     <div>
                         <label class="block mb-1 text-slate-600 font-bold">تێبینی</label>
@@ -1047,6 +1059,7 @@
 <script>
 function workshopEmployeesApp() {
     return {
+        isAdmin: {{ $canSeeMoney ? 'true' : 'false' }},
         rangeType: '{{ $rangeType }}',
         weekOffset: {{ $weekOffset ?? 0 }},
         from: '{{ $from }}',

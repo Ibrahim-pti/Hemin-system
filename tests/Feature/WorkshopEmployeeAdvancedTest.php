@@ -15,6 +15,7 @@ class WorkshopEmployeeAdvancedTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+    private User $storekeeper;
 
     protected function setUp(): void
     {
@@ -22,6 +23,7 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $this->seed();
 
         $this->admin = User::where('email', 'admin@hemin.krd')->firstOrFail();
+        $this->storekeeper = User::where('email', 'kogha@hemin.krd')->firstOrFail();
     }
 
     public function test_workshop_manager_can_update_shift_and_late_penalty_settings()
@@ -407,6 +409,80 @@ class WorkshopEmployeeAdvancedTest extends TestCase
 
         $this->assertEquals('ئیشی دەرەوەی شار', $monthRes->json('attendances.0.custom_task_name'));
         $this->assertEquals(25000, $monthRes->json('attendances.0.custom_task_amount'));
+    }
+
+    public function test_wasta_vs_admin_role_separation()
+    {
+        $employee = Employee::create([
+            'name' => 'وەستا سامان',
+            'job_title' => 'master',
+            'salary_type' => 'daily',
+            'daily_wage' => 50000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        // 1. ڕۆڵی وەستا (Storekeeper / Wasta):
+        $this->actingAs($this->storekeeper);
+
+        $viewRes = $this->get('/workshop/employees');
+        $viewRes->assertStatus(200);
+        $this->assertFalse($viewRes->viewData('canSeeMoney'));
+        $viewRes->assertSee('وەستا سامان');
+        $viewRes->assertSee('جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان');
+        // نابێت دوگمە و دەسەڵاتە داراییەکانی لای بەڕێوەبەر ببینێت
+        $viewRes->assertDontSee('+ کارمەندی نوێ');
+        $viewRes->assertDontSee('سێتینگی تاخیربوون و دەوام');
+        $viewRes->assertDontSee('کردارەکان');
+
+        // لە داتای matrix دا مووچە و حیسابات دەبێت سفر کرابێت
+        $matrix = $viewRes->viewData('employeesMatrix');
+        $this->assertNotEmpty($matrix);
+        $this->assertEquals(0, $matrix[0]['daily_wage']);
+        $this->assertEquals(0, $matrix[0]['total_earned']);
+        $this->assertEquals(0, $matrix[0]['remaining_balance']);
+
+        // وەستا تەنها دەتوانێت دەوام تۆمار بکات (سەح / ئامادەبوون / غیاب / نیو ڕۆژ)
+        $toggleRes = $this->postJson('/workshop/employees/toggle-cell', [
+            'employee_id' => $employee->id,
+            'work_date' => now()->toDateString(),
+            'status' => 'half_day',
+        ]);
+        $toggleRes->assertStatus(200);
+        $toggleRes->assertJson(['ok' => true, 'status' => 'half_day']);
+
+        // ئەگەر وەستا ڕاستەوخۆ هەوڵی دەستکاریکردنی مووچە یان سێتینگ یان پارەدان بدات ڕەتدەکرێتەوە (403)
+        $this->postJson('/workshop/settings', [
+            'workshop_work_hours' => 8,
+            'workshop_weekly_holiday' => 'friday',
+        ])->assertStatus(403);
+
+        $this->postJson('/workshop/employees/quick-store', [
+            'name' => 'وەستای قەدەغەکراو',
+            'job_title' => 'master',
+        ])->assertStatus(403);
+
+        $this->postJson("/workshop/employees/{$employee->id}/update-wage", [
+            'name' => $employee->name,
+            'job_title' => 'master',
+            'daily_wage' => 60000,
+        ])->assertStatus(403);
+
+        $this->getJson("/workshop/employees/{$employee->id}/month-details")->assertStatus(403);
+
+        $this->deleteJson("/workshop/employees/{$employee->id}")->assertStatus(403);
+
+        // 2. ڕۆڵی بەڕێوەبەر (Admin): دەسەڵاتی تەواوی دارایی و ڕێکخستنی هەیە
+        $this->actingAs($this->admin);
+
+        $adminViewRes = $this->get('/workshop/employees');
+        $adminViewRes->assertStatus(200);
+        $adminViewRes->assertSee('+ کارمەندی نوێ');
+        $adminViewRes->assertSee('سێتینگی تاخیربوون و دەوام');
+        $adminViewRes->assertSee('کردارەکان');
+
+        $adminMatrix = $adminViewRes->viewData('employeesMatrix');
+        $this->assertEquals(50000, $adminMatrix[0]['daily_wage']);
     }
 }
 

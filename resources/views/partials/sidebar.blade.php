@@ -66,7 +66,7 @@
                     'items' => array_values(array_filter([
                         $isWasta ? ['route' => 'workshop.orders', 'href' => route('workshop.orders'), 'label' => 'داواکارییەکانی کارگە', 'icon' => 'orders', 'can' => 'view_workshop'] : null,
                         $isWasta ? ['route' => 'workshop.materials', 'href' => route('workshop.materials'), 'label' => 'مەخزەن', 'icon' => 'items', 'can' => 'view_workshop'] : null,
-                        ['route' => 'workshop.employees', 'href' => route('workshop.employees'), 'label' => 'وەستا و حەمەڵەکان', 'icon' => 'employees', 'can' => 'view_workshop'],
+                        ['route' => 'workshop.employees', 'href' => route('workshop.employees'), 'label' => 'کارمەندان', 'icon' => 'employees', 'can' => 'view_workshop'],
                     ])),
                 ],
                 [
