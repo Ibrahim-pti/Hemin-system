@@ -919,13 +919,14 @@ class WorkshopController extends Controller
             ->whereDate('work_date', $date)
             ->first();
 
-        // سوڕانەوەی دۆخ بە یەک کلیک: ئامادە (سەح) -> نیوە دەوام (نیو دان) -> غائیب -> خاڵی -> سەح
+        // سوڕانەوەی دۆخ بە یەک کلیک: هاتووە -> نیو ڕۆژ -> نەهاتووە -> خاڵی -> هاتووە
         if (! $status) {
-            if (! $attendance || ! $attendance->status) {
+            $currentStatus = $attendance?->status;
+            if (! $attendance || ! in_array($currentStatus, ['present', 'half_day', 'absent'])) {
                 $status = 'present';
-            } elseif ($attendance->status === 'present') {
+            } elseif ($currentStatus === 'present') {
                 $status = 'half_day';
-            } elseif ($attendance->status === 'half_day') {
+            } elseif ($currentStatus === 'half_day') {
                 $status = 'absent';
             } else {
                 $status = 'delete';
