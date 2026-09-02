@@ -219,6 +219,12 @@
                 </div>
 
                 <div class="flex items-center gap-2">
+                    <button type="button" @click="openPaymentModal(selectedEmployee)"
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-emerald-500 hover:bg-emerald-600 text-white shadow-md cursor-pointer flex items-center gap-1.5 transition-all">
+                        <span>💸</span>
+                        <span>پێدانی پارە</span>
+                    </button>
+
                     <div class="flex items-center gap-1.5 bg-teal-900/90 px-2.5 py-1 rounded-xl border border-teal-700">
                         <span class="text-[11px] text-teal-200 font-bold">مانگ:</span>
                         <input type="month" x-model="selectedMonth" @change="loadEmployeeMonthDetails()"
@@ -333,15 +339,11 @@
 
                 {{-- وەسڵەکانی پێشەکی --}}
                 <div>
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="mb-2">
                         <h3 class="font-black text-slate-800 flex items-center gap-1.5">
                             <span>💸</span>
-                            <span>پێشەکی و پارەدان لە قاصە</span>
+                            <span>وەسڵەکانی پارەدان و پێشەکی لە قاصە</span>
                         </h3>
-                        <button type="button" @click="openPaymentModal(selectedEmployee)"
-                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-800 cursor-pointer">
-                            + دانی پێشەکی
-                        </button>
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-hidden">
                         <table class="w-full text-right">
@@ -375,11 +377,8 @@
             </div>
 
             {{-- ژێرپەڕە --}}
-            <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
-                <button type="button" @click="showEmployeeDrawer = false" class="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 cursor-pointer">داخستن</button>
-                <button type="button" @click="openPaymentModal(selectedEmployee)" class="px-4 py-1.5 rounded-xl text-xs font-black bg-purple-700 hover:bg-purple-800 text-white shadow-2xs cursor-pointer">
-                    💸 دانی پێشەکی
-                </button>
+            <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end shrink-0">
+                <button type="button" @click="showEmployeeDrawer = false" class="px-5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 cursor-pointer transition-all">داخستن</button>
             </div>
 
         </div>
@@ -456,25 +455,53 @@
         </div>
     </div>
 
-    {{-- ٦. مۆداڵی پێشەکی (Payment Modal) --}}
+    {{-- ٦. مۆداڵی پێدانی پارە و شایستە (Payment Modal) --}}
     <div x-show="showPaymentModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
         <div @click.away="showPaymentModal = false" class="bg-white rounded-3xl w-full max-w-sm shadow-2xl border border-slate-200 overflow-hidden text-xs">
             <form @submit.prevent="savePayment()">
-                <div class="p-4 bg-purple-900 text-white flex items-center justify-between">
+                <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
-                        <h2 class="text-base font-black text-white" x-text="'پێشەکی: ' + (paymentEmployee?.name || '')"></h2>
-                        <p class="text-[11px] text-purple-200">دەرچوونی پارە لە قاصەوە</p>
+                        <h2 class="text-base font-black text-white" x-text="'پێدانی پارە بە: ' + (paymentEmployee?.name || '')"></h2>
+                        <p class="text-[11px] text-teal-200">دانی پارەی شایستە (حەقی خۆی) یان پێشەکی لە قاصەوە</p>
                     </div>
-                    <button type="button" @click="showPaymentModal = false" class="text-purple-200 hover:text-white text-lg font-bold">✕</button>
+                    <button type="button" @click="showPaymentModal = false" class="text-teal-200 hover:text-white text-lg font-bold">✕</button>
                 </div>
 
                 <div class="p-4 space-y-3 font-bold text-slate-700">
+                    {{-- کورتەی حەقی شایستە و باڵانسی ماوە --}}
+                    <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 space-y-1.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-slate-500">کۆی شایستە (حەقی کارکردن):</span>
+                            <span class="font-mono font-black text-slate-800" x-text="formatNumber(drawerData?.stats?.total_earned ?? paymentEmployee?.total_earned ?? 0) + ' د.ع'"></span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-amber-700">باڵانسی ماوە لای کارگە:</span>
+                            <span class="font-mono font-black text-amber-900" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? paymentEmployee?.remaining_balance ?? 0) + ' د.ع'"></span>
+                        </div>
+                        <template x-if="(drawerData?.stats?.remaining_balance ?? paymentEmployee?.remaining_balance ?? 0) > 0">
+                            <button type="button" @click="setFullDuePayment()"
+                                    class="w-full mt-1 py-1.5 px-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-[11px] flex items-center justify-between shadow-2xs transition-colors cursor-pointer">
+                                <span>💰 دانانی تەواوی حەقی شایستەی ماوە:</span>
+                                <span class="font-mono font-black" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? paymentEmployee?.remaining_balance ?? 0) + ' د.ع'"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-slate-600">جۆری پارەدان</label>
+                        <select x-model="paymentForm.payment_type" @change="onPaymentTypeChange()"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            <option value="wage">دانی حەقی خۆی (شایستە / مووچە)</option>
+                            <option value="advance">پێشەکی</option>
+                        </select>
+                    </div>
+
                     <div>
                         <label class="block mb-1 text-slate-600">بڕی پارە (د.ع) *</label>
                         <input type="text" inputmode="numeric" x-model="paymentForm.amount"
                                @input="paymentForm.amount = formatMoneyInput($event.target.value)" required
                                placeholder="بڕی پارە بە دینار"
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-black text-base text-purple-950 focus:outline-hidden focus:border-purple-600">
+                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-black text-base text-slate-900 focus:outline-hidden focus:border-teal-600">
                     </div>
                     <div>
                         <label class="block mb-1 text-slate-600">قاسە</label>
@@ -496,10 +523,10 @@
                     </div>
                 </div>
 
-                <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-                    <button type="button" @click="showPaymentModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200">داخستن</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-xl font-black bg-purple-700 text-white hover:bg-purple-800 shadow-2xs">
-                        تۆمارکردن
+                <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+                    <button type="button" @click="showPaymentModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 font-bold">داخستن</button>
+                    <button type="submit" class="px-5 py-1.5 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800 shadow-2xs">
+                        تۆمارکردنی پارەدان
                     </button>
                 </div>
             </form>
@@ -979,15 +1006,36 @@ function workshopEmployeesApp() {
 
         openPaymentModal(row) {
             this.paymentEmployee = row;
+            const remaining = this.drawerData?.stats?.remaining_balance ?? row?.remaining_balance ?? 0;
+            const hasRemaining = remaining > 0;
+
             this.paymentForm = {
                 employee_id: row.id,
-                amount: '',
+                payment_type: hasRemaining ? 'wage' : 'advance',
+                amount: hasRemaining ? this.formatMoneyInput(remaining) : '',
                 currency: row.wage_currency || 'IQD',
                 cash_box_id: '{{ $cashBoxes->first()?->id }}',
                 paid_at: '{{ now()->toDateString() }}',
-                note: `پێشەکی ${row.name}`
+                note: hasRemaining ? `حەقی شایستەی ${row.name}` : `پێشەکی ${row.name}`
             };
             this.showPaymentModal = true;
+        },
+
+        setFullDuePayment() {
+            const remaining = this.drawerData?.stats?.remaining_balance ?? this.paymentEmployee?.remaining_balance ?? 0;
+            if (remaining > 0) {
+                this.paymentForm.amount = this.formatMoneyInput(remaining);
+                this.paymentForm.payment_type = 'wage';
+                this.paymentForm.note = `حەقی شایستەی ${this.paymentEmployee?.name || ''}`;
+            }
+        },
+
+        onPaymentTypeChange() {
+            if (this.paymentForm.payment_type === 'wage') {
+                this.paymentForm.note = `حەقی شایستەی ${this.paymentEmployee?.name || ''}`;
+            } else {
+                this.paymentForm.note = `پێشەکی ${this.paymentEmployee?.name || ''}`;
+            }
         },
 
         async savePayment() {
