@@ -69,17 +69,17 @@ class Employee extends Model
         $amount = (float) $this->daily_wage;
         $type = $this->salary_type ?? 'daily';
 
-        // ئەگەر مووچەی مانگانە زیاتر بێت لە ١٠٠،٠٠٠ د.ع ئەوا دابەشی ٣٠ ڕۆژ دەکرێت بۆ دەرهێنانی ڕۆژانە
-        if ($type === 'monthly' && $amount >= 100000) {
-            return round($amount / 30);
+        // بۆ مووچەی مانگانە، مانگ ٢٦ ڕۆژی کاری کارگەی هەیە (هەینییەکان پشووی فەرمین)
+        if ($type === 'monthly' && $amount >= 50000) {
+            return round($amount / 26, 2);
         }
 
-        // ئەگەر مووچەی حەفتانە زیاتر بێت لە ٥٠،٠٠٠ د.ع ئەوا دابەشی ٦ دەکرێت
-        if ($type === 'weekly' && $amount >= 50000) {
-            return round($amount / 6);
+        // بۆ مووچەی حەفتانە، هەفتە ٦ ڕۆژی کاری هەیە
+        if ($type === 'weekly' && $amount >= 20000) {
+            return round($amount / 6, 2);
         }
 
-        return round($amount);
+        return round($amount, 2);
     }
 
     /** حەقدەستی کۆکراوەی ماوەیەک (تەنها ڕۆژانی ئامادەبوون). */

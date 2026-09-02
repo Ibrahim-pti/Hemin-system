@@ -1159,6 +1159,18 @@ class WorkshopController extends Controller
         $lateDaysCount = $attendances->where('late_minutes', '>', 0)->count();
 
         $effectiveDailyWage = $employee->effective_daily_wage;
+        if ($employee->salary_type === 'monthly') {
+            $period = \Carbon\CarbonPeriod::create($startDate, $endDate);
+            $workingDaysCount = 0;
+            foreach ($period as $dt) {
+                if (! Attendance::isWeeklyHoliday($dt)) {
+                    $workingDaysCount++;
+                }
+            }
+            if ($workingDaysCount > 0) {
+                $effectiveDailyWage = (float) $employee->daily_wage / $workingDaysCount;
+            }
+        }
         $baseEarned = round(($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5));
         $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
         $overtimeHourlyRate = $shiftSettings['overtime_hourly_rate'] > 0
