@@ -391,7 +391,7 @@
                     <div>
                         <label class="block mb-1.5 text-slate-700 font-black">نرخی هەر کاتژمێرێکی کاتی زیادە (د.ع) *</label>
                         <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-500/20 bg-white transition-all shadow-2xs">
-                            <input type="number" min="0" step="500" x-model="settingsForm.workshop_overtime_hourly_rate" required
+                            <input type="number" min="0" step="500" x-model="settingsForm.workshop_overtime_hourly_rate"
                                    placeholder="0"
                                    class="w-full px-3.5 py-2.5 font-mono font-black text-emerald-700 focus:outline-hidden text-sm bg-transparent">
                             <span class="bg-slate-100 px-3.5 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
@@ -693,7 +693,7 @@ function workshopEmployeesApp() {
         showSettingsModal: false,
         settingsForm: {
             workshop_work_hours: {{ $shiftSettings['work_hours'] }},
-            workshop_overtime_hourly_rate: {{ $shiftSettings['overtime_hourly_rate'] ?? 0 }},
+            workshop_overtime_hourly_rate: {!! json_encode(($shiftSettings['overtime_hourly_rate'] ?? 0) > 0 ? $shiftSettings['overtime_hourly_rate'] : '') !!},
             workshop_weekly_holiday: '{{ $shiftSettings['weekly_holiday'] }}'
         },
 
@@ -1054,6 +1054,10 @@ function workshopEmployeesApp() {
 
         async saveSettings() {
             try {
+                const payload = { ...this.settingsForm };
+                if (payload.workshop_overtime_hourly_rate === '' || payload.workshop_overtime_hourly_rate === null || payload.workshop_overtime_hourly_rate === undefined) {
+                    payload.workshop_overtime_hourly_rate = 0;
+                }
                 const res = await fetch('{{ route('workshop.settings') }}', {
                     method: 'POST',
                     headers: {
@@ -1061,7 +1065,7 @@ function workshopEmployeesApp() {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(this.settingsForm)
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await res.json();
