@@ -523,19 +523,6 @@
                     
                     {{-- ١. بەشی کاتی دەوام و پشوو --}}
                     <div x-show="settingsTab === 'hours'" class="space-y-3.5">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block mb-1 text-slate-600 font-bold">کاتی دەستپێکردنی بەیانیان</label>
-                                <input type="time" x-model="settingsForm.workshop_work_start"
-                                       class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold bg-white focus:outline-hidden focus:border-teal-600">
-                            </div>
-                            <div>
-                                <label class="block mb-1 text-slate-600 font-bold">کاتی کۆتایی دەوام</label>
-                                <input type="time" x-model="settingsForm.workshop_work_end"
-                                       class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold bg-white focus:outline-hidden focus:border-teal-600">
-                            </div>
-                        </div>
-
                         <div>
                             <label class="block mb-1 text-slate-700 font-black">کاتژمێری فەرمی ڕۆژانە *</label>
                             <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white shadow-2xs">
