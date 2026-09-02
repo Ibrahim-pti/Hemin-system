@@ -19,8 +19,8 @@ class Attendance extends Model
 
     protected $fillable = [
         'employee_id', 'work_date', 'check_in', 'check_out', 'status',
-        'hours', 'overtime_hours', 'temporary_exit_hours', 'exit_reason',
-        'fuel_expense', 'trip_destination', 'wage_snapshot', 'user_id', 'note',
+        'hours', 'overtime_hours', 'late_minutes', 'temporary_exit_hours', 'exit_reason',
+        'fuel_expense', 'deduction_amount', 'bonus_amount', 'trip_destination', 'wage_snapshot', 'user_id', 'note',
     ];
 
     protected function casts(): array
@@ -29,8 +29,11 @@ class Attendance extends Model
             'work_date' => 'date',
             'hours' => 'decimal:2',
             'overtime_hours' => 'decimal:2',
+            'late_minutes' => 'integer',
             'temporary_exit_hours' => 'decimal:2',
             'fuel_expense' => 'decimal:2',
+            'deduction_amount' => 'decimal:2',
+            'bonus_amount' => 'decimal:2',
             'wage_snapshot' => 'decimal:2',
         ];
     }
@@ -40,6 +43,7 @@ class Attendance extends Model
         'absent' => 'ئامادە نەبوو',
         'holiday' => 'پشوو',
         'leave' => 'مۆڵەت',
+        'half_day' => 'نیوەڕۆژ',
     ];
 
     /** کاتژمێری کاری ئاسایی — زیاتر لەمە دەبێتە کاتی زیادە. */
@@ -72,6 +76,32 @@ class Attendance extends Model
         $holidays = array_map('trim', explode(',', strtolower($holidaySetting)));
 
         return in_array($dayOfWeek, $holidays, true);
+    }
+
+    /**
+     * حیسابکردنی خولەکی تاخیربوون لە کاتی دەستپێکی دەوامەوە.
+     */
+    public static function calculateLateMinutes(?string $checkIn, ?string $workDate = null): int
+    {
+        if (! $checkIn) {
+            return 0;
+        }
+
+        $workStart = Setting::get('workshop_work_start', '08:00');
+        $graceMinutes = (int) Setting::get('workshop_late_grace_minutes', 15);
+
+        $dateStr = $workDate ?: now()->toDateString();
+        $startTime = Carbon::parse("{$dateStr} {$workStart}");
+        $inTime = Carbon::parse("{$dateStr} {$checkIn}");
+
+        if ($inTime->greaterThan($startTime)) {
+            $diffMinutes = (int) $startTime->diffInMinutes($inTime, false);
+            if ($diffMinutes > $graceMinutes) {
+                return $diffMinutes;
+            }
+        }
+
+        return 0;
     }
 
     /**

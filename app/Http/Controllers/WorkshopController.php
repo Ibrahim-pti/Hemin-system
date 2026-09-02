@@ -197,7 +197,13 @@ class WorkshopController extends Controller
         $rangeType = $request->input('range_type', 'this_week');
         $today = now();
 
-        if ($request->filled('from') && $request->filled('to')) {
+        $weekOffset = (int) $request->input('week_offset', 0);
+        if ($request->has('week_offset')) {
+            $rangeType = 'week_offset';
+            $targetWeek = $today->copy()->addWeeks($weekOffset);
+            $from = $targetWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
+            $to = $targetWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+        } elseif ($request->filled('from') && $request->filled('to')) {
             $from = $request->date('from')->toDateString();
             $to = $request->date('to')->toDateString();
             $rangeType = 'custom';
@@ -221,11 +227,11 @@ class WorkshopController extends Controller
             }
         }
 
-        // دڵنیابوونەوە لەوەی لە ٣١ ڕۆژ زیاتر نەبێت بۆ ڕێگری لە قورسایی جەدوەل
+        // دڵنیابوونەوە لەوەی لە ٣٥ ڕۆژ زیاتر نەبێت بۆ ڕێگری لە قورسایی جەدوەل
         $fromDate = \Carbon\Carbon::parse($from);
         $toDate = \Carbon\Carbon::parse($to);
-        if ($fromDate->diffInDays($toDate) > 31) {
-            $toDate = $fromDate->copy()->addDays(30);
+        if ($fromDate->diffInDays($toDate) > 35) {
+            $toDate = $fromDate->copy()->addDays(34);
             $to = $toDate->toDateString();
         }
 
@@ -249,6 +255,7 @@ class WorkshopController extends Controller
                 'day_short' => $dt->format('m/d'),
                 'day_num' => $dt->format('j'),
                 'month_num' => $dt->format('n'),
+                'day_of_week' => $dt->dayOfWeek,
                 'is_today' => $dt->isToday(),
                 'is_holiday' => Attendance::isWeeklyHoliday($dateStr),
             ];
@@ -260,48 +267,76 @@ class WorkshopController extends Controller
             'work_hours' => (float) Setting::get('workshop_work_hours', 8),
             'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
             'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
+            'late_grace_minutes' => (int) Setting::get('workshop_late_grace_minutes', 15),
+            'late_deduction_type' => Setting::get('workshop_late_deduction_type', 'fixed_amount'),
+            'late_deduction_rate' => (float) Setting::get('workshop_late_deduction_rate', 0),
+            'late_weekly_threshold_days' => (int) Setting::get('workshop_late_weekly_threshold_days', 2),
+            'late_weekly_penalty_amount' => (float) Setting::get('workshop_late_weekly_penalty_amount', 0),
         ];
+
+        // دەستنیشانکردنی دەستپێک و کۆتایی ئەم مانگە بۆ کورتەی مانگانەی هەر وەستایەک
+        $monthStart = $today->copy()->startOfMonth()->toDateString();
+        $monthEnd = $today->copy()->endOfMonth()->toDateString();
 
         $employees = Employee::query()
             ->active()
             ->with([
-                'attendances' => fn ($q) => $q->whereBetween('work_date', [$from, $to]),
-                'payments' => fn ($q) => $q->where('direction', 'out')->whereBetween('paid_at', [$from, $to])->latest('paid_at'),
+                'attendances' => fn ($q) => $q->whereBetween('work_date', [
+                    min($from, $monthStart),
+                    max($to, $monthEnd)
+                ]),
+                'payments' => fn ($q) => $q->where('direction', 'out')->latest('paid_at'),
             ])
             ->orderByRaw("CASE job_title WHEN 'master' THEN 1 WHEN 'porter' THEN 2 WHEN 'helper' THEN 3 WHEN 'driver' THEN 4 WHEN 'other' THEN 5 ELSE 6 END")
             ->orderBy('name')
             ->get();
 
-        $employeesMatrix = $employees->map(function (Employee $emp) use ($days, $shiftSettings, $from, $to) {
-            $attendancesKeyed = $emp->attendances->keyBy(fn ($a) => $a->work_date instanceof \DateTimeInterface ? $a->work_date->format('Y-m-d') : substr((string) $a->work_date, 0, 10));
+        $employeesMatrix = $employees->map(function (Employee $emp) use ($days, $shiftSettings, $from, $to, $monthStart, $monthEnd) {
+            $allAtts = $emp->attendances->keyBy(fn ($a) => $a->work_date instanceof \DateTimeInterface ? $a->work_date->format('Y-m-d') : substr((string) $a->work_date, 0, 10));
 
             $cells = [];
             $presentCount = 0;
+            $halfDayCount = 0;
             $leaveCount = 0;
             $absentCount = 0;
             $holidayCount = 0;
             $totalOvertime = 0.0;
             $totalFuel = 0.0;
             $totalTempExit = 0.0;
+            $totalManualDeduction = 0.0;
+            $totalBonus = 0.0;
+            $totalLateMinutes = 0;
+            $lateDaysCount = 0;
 
             foreach ($days as $d) {
                 $dStr = $d['date'];
-                $att = $attendancesKeyed->get($dStr);
+                $att = $allAtts->get($dStr);
 
                 if ($att) {
                     $status = $att->status;
                     $ot = (float) $att->overtime_hours;
                     $fuel = (float) $att->fuel_expense;
                     $tempExit = (float) $att->temporary_exit_hours;
+                    $deduction = (float) $att->deduction_amount;
+                    $bonus = (float) $att->bonus_amount;
+                    $lateMin = (int) $att->late_minutes;
 
                     if ($status === 'present') $presentCount++;
+                    elseif ($status === 'half_day') $halfDayCount++;
                     elseif ($status === 'leave') $leaveCount++;
                     elseif ($status === 'absent') $absentCount++;
                     elseif ($status === 'holiday') $holidayCount++;
 
+                    if ($lateMin > 0) {
+                        $lateDaysCount++;
+                        $totalLateMinutes += $lateMin;
+                    }
+
                     $totalOvertime += $ot;
                     $totalFuel += $fuel;
                     $totalTempExit += $tempExit;
+                    $totalManualDeduction += $deduction;
+                    $totalBonus += $bonus;
 
                     $cells[$dStr] = [
                         'id' => $att->id,
@@ -311,9 +346,12 @@ class WorkshopController extends Controller
                         'check_out' => $att->check_out ? substr($att->check_out, 0, 5) : '',
                         'hours' => (float) $att->hours,
                         'overtime_hours' => $ot,
+                        'late_minutes' => $lateMin,
                         'temporary_exit_hours' => $tempExit,
                         'exit_reason' => $att->exit_reason ?? '',
                         'fuel_expense' => $fuel,
+                        'deduction_amount' => $deduction,
+                        'bonus_amount' => $bonus,
                         'trip_destination' => $att->trip_destination ?? '',
                         'note' => $att->note ?? '',
                     ];
@@ -326,16 +364,54 @@ class WorkshopController extends Controller
             $salaryType = $emp->salary_type ?? 'daily';
             $effectiveDailyWage = $emp->effective_daily_wage;
 
-            // حیساباتی دارایی
-            $baseEarned = $presentCount * $effectiveDailyWage;
+            // حیساباتی دارایی بۆ ماوەی دیاریکراو
+            $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5);
             $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
             $overtimeEarned = $totalOvertime * $hourlyWage * $shiftSettings['overtime_multiplier'];
-            $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel, 2);
 
-            $totalPaid = (float) $emp->payments->sum('amount_iqd');
+            // حیساباتی بڕینی تاخیربوون بەپێی یاسای بەڕێوەبەر
+            $calculatedLateDeduction = 0.0;
+            if ($shiftSettings['late_deduction_type'] === 'per_minute' && $shiftSettings['late_deduction_rate'] > 0) {
+                $calculatedLateDeduction += $totalLateMinutes * $shiftSettings['late_deduction_rate'];
+            } elseif ($shiftSettings['late_deduction_type'] === 'per_hour' && $shiftSettings['late_deduction_rate'] > 0) {
+                $calculatedLateDeduction += ($totalLateMinutes / 60) * $hourlyWage * $shiftSettings['late_deduction_rate'];
+            } elseif ($shiftSettings['late_deduction_type'] === 'weekly_threshold' && $shiftSettings['late_weekly_threshold_days'] > 0) {
+                if ($lateDaysCount >= $shiftSettings['late_weekly_threshold_days']) {
+                    $calculatedLateDeduction += $shiftSettings['late_weekly_penalty_amount'] > 0 ? $shiftSettings['late_weekly_penalty_amount'] : $effectiveDailyWage;
+                }
+            } elseif ($shiftSettings['late_deduction_type'] === 'fixed_amount' && $shiftSettings['late_deduction_rate'] > 0) {
+                $calculatedLateDeduction += $lateDaysCount * $shiftSettings['late_deduction_rate'];
+            }
+
+            $totalDeductions = round($totalManualDeduction + $calculatedLateDeduction, 2);
+            $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $totalDeductions, 2);
+
+            $rangePayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $from && $p->paid_at->toDateString() <= $to);
+            $totalPaid = (float) $rangePayments->sum('amount_iqd');
             $remainingBalance = round($totalEarned - $totalPaid, 2);
 
-            $paymentsList = $emp->payments->map(fn ($p) => [
+            // هەژمارکردنی ئاماری تەواوی مانگ بۆ پڕۆفایل و دێتەلی وەستاکە
+            $monthAtts = $emp->attendances->filter(fn ($a) => $a->work_date && $a->work_date->toDateString() >= $monthStart && $a->work_date->toDateString() <= $monthEnd);
+            $monthPresent = $monthAtts->where('status', 'present')->count();
+            $monthHalfDay = $monthAtts->where('status', 'half_day')->count();
+            $monthAbsent = $monthAtts->where('status', 'absent')->count();
+            $monthLeave = $monthAtts->where('status', 'leave')->count();
+            $monthOvertime = (float) $monthAtts->sum('overtime_hours');
+            $monthFuel = (float) $monthAtts->sum('fuel_expense');
+            $monthDeductions = (float) $monthAtts->sum('deduction_amount');
+            $monthBonus = (float) $monthAtts->sum('bonus_amount');
+            $monthLateMinutes = (int) $monthAtts->sum('late_minutes');
+            $monthLateDays = $monthAtts->where('late_minutes', '>', 0)->count();
+
+            $monthBaseEarned = ($monthPresent * $effectiveDailyWage) + ($monthHalfDay * $effectiveDailyWage * 0.5);
+            $monthOvertimeEarned = $monthOvertime * $hourlyWage * $shiftSettings['overtime_multiplier'];
+            $monthTotalEarned = round($monthBaseEarned + $monthOvertimeEarned + $monthFuel + $monthBonus - $monthDeductions, 2);
+
+            $monthPayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $monthStart && $p->paid_at->toDateString() <= $monthEnd);
+            $monthTotalPaid = (float) $monthPayments->sum('amount_iqd');
+            $monthRemaining = round($monthTotalEarned - $monthTotalPaid, 2);
+
+            $paymentsList = $rangePayments->map(fn ($p) => [
                 'id' => $p->id,
                 'voucher_no' => $p->voucher_no,
                 'amount' => (float) $p->amount,
@@ -360,50 +436,76 @@ class WorkshopController extends Controller
                 'note' => $emp->note ?? '',
                 'cells' => $cells,
                 'present_count' => $presentCount,
+                'half_day_count' => $halfDayCount,
                 'leave_count' => $leaveCount,
                 'absent_count' => $absentCount,
                 'holiday_count' => $holidayCount,
                 'total_overtime' => $totalOvertime,
                 'total_fuel' => $totalFuel,
                 'total_temp_exit' => $totalTempExit,
+                'total_late_minutes' => $totalLateMinutes,
+                'late_days_count' => $lateDaysCount,
+                'total_deductions' => $totalDeductions,
+                'total_bonus' => $totalBonus,
                 'base_earned' => $baseEarned,
                 'overtime_earned' => $overtimeEarned,
                 'total_earned' => $totalEarned,
                 'total_paid' => $totalPaid,
                 'remaining_balance' => $remainingBalance,
                 'payments' => $paymentsList,
+                'month_summary' => [
+                    'present_count' => $monthPresent,
+                    'half_day_count' => $monthHalfDay,
+                    'absent_count' => $monthAbsent,
+                    'leave_count' => $monthLeave,
+                    'overtime_hours' => $monthOvertime,
+                    'fuel_expense' => $monthFuel,
+                    'late_minutes' => $monthLateMinutes,
+                    'late_days' => $monthLateDays,
+                    'total_earned' => $monthTotalEarned,
+                    'total_paid' => $monthTotalPaid,
+                    'remaining' => $monthRemaining,
+                ],
             ];
         })->values()->all();
 
-        // ژماردنی ئاماری هەر ڕۆژێک بە جیا بۆ خوارەوەی جەدوەل (وەک دەفتەرەکە)
+        // ئاماری کۆڵۆمەکان بۆ خوارەوەی خشتەی دەفتەرەکە
         $dayTotals = [];
         foreach ($days as $d) {
             $dStr = $d['date'];
             $presentOnDay = 0;
+            $halfDayOnDay = 0;
             $overtimeOnDay = 0.0;
             $fuelOnDay = 0.0;
+            $lateOnDay = 0;
 
             foreach ($employeesMatrix as $row) {
                 $cell = $row['cells'][$dStr] ?? null;
-                if ($cell && $cell['status'] === 'present') {
-                    $presentOnDay++;
+                if ($cell) {
+                    if ($cell['status'] === 'present') $presentOnDay++;
+                    elseif ($cell['status'] === 'half_day') $halfDayOnDay++;
                     $overtimeOnDay += $cell['overtime_hours'];
                     $fuelOnDay += $cell['fuel_expense'];
+                    if ($cell['late_minutes'] > 0) $lateOnDay++;
                 }
             }
 
             $dayTotals[$dStr] = [
                 'present' => $presentOnDay,
+                'half_day' => $halfDayOnDay,
                 'overtime' => $overtimeOnDay,
                 'fuel' => $fuelOnDay,
+                'late' => $lateOnDay,
             ];
         }
 
         // کۆی گشتییەکانی سەرجەم ماوەکە
         $totalEmployeesCount = count($employeesMatrix);
         $totalPresentManDays = array_sum(array_column($employeesMatrix, 'present_count'));
+        $totalHalfDays = array_sum(array_column($employeesMatrix, 'half_day_count'));
         $totalOvertimeHours = array_sum(array_column($employeesMatrix, 'total_overtime'));
         $totalFuelExpenses = array_sum(array_column($employeesMatrix, 'total_fuel'));
+        $totalLateDeductions = array_sum(array_column($employeesMatrix, 'total_deductions'));
         $totalEarnedAll = array_sum(array_column($employeesMatrix, 'total_earned'));
         $totalPaidAll = array_sum(array_column($employeesMatrix, 'total_paid'));
         $totalRemainingAll = array_sum(array_column($employeesMatrix, 'remaining_balance'));
@@ -418,11 +520,14 @@ class WorkshopController extends Controller
             'from',
             'to',
             'rangeType',
+            'weekOffset',
             'shiftSettings',
             'totalEmployeesCount',
             'totalPresentManDays',
+            'totalHalfDays',
             'totalOvertimeHours',
             'totalFuelExpenses',
+            'totalLateDeductions',
             'totalEarnedAll',
             'totalPaidAll',
             'totalRemainingAll',
@@ -617,7 +722,7 @@ class WorkshopController extends Controller
         return back()->with('ok', 'بەکارهێنانی مەواد تۆمارکرا.');
     }
 
-    /** نوێکردنەوەی ڕێکخستنەکانی دەوام و پشوو و کاتی زیادە */
+    /** نوێکردنەوەی ڕێکخستنەکانی دەوام و پشوو و کاتی زیادە و یاسای تاخیربوون */
     public function updateSettings(Request $request)
     {
         $validated = $request->validate([
@@ -626,6 +731,11 @@ class WorkshopController extends Controller
             'workshop_work_hours' => ['required', 'numeric', 'min:1', 'max:24'],
             'workshop_weekly_holiday' => ['required', 'string'],
             'workshop_overtime_multiplier' => ['required', 'numeric', 'min:0.5', 'max:5'],
+            'workshop_late_grace_minutes' => ['nullable', 'numeric', 'min:0', 'max:120'],
+            'workshop_late_deduction_type' => ['nullable', 'in:fixed_amount,per_minute,per_hour,weekly_threshold'],
+            'workshop_late_deduction_rate' => ['nullable', 'numeric', 'min:0'],
+            'workshop_late_weekly_threshold_days' => ['nullable', 'numeric', 'min:1', 'max:7'],
+            'workshop_late_weekly_penalty_amount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         foreach ($validated as $key => $value) {
@@ -633,10 +743,10 @@ class WorkshopController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['ok' => true, 'message' => 'ڕێکخستنەکانی دەوام بە سەرکەوتوویی پاشەکەوتکران.']);
+            return response()->json(['ok' => true, 'message' => 'ڕێکخستنەکانی دەوام و تاخیربوون بە سەرکەوتوویی پاشەکەوتکران.']);
         }
 
-        return back()->with('ok', 'ڕێکخستنەکانی دەوام بە سەرکەوتوویی پاشەکەوتکران.');
+        return back()->with('ok', 'ڕێکخستنەکانی دەوام و تاخیربوون بە سەرکەوتوویی پاشەکەوتکران.');
     }
 
     /** زیادکردنی خێرای وەستا و حەمەڵ */
@@ -771,13 +881,13 @@ class WorkshopController extends Controller
         }
     }
 
-    /** گۆڕینی خێرای دۆخی خانەی ئامادەبوون (سەح / غائیب / ئیجازە / هیچی تر) بە یەک کلیک */
+    /** گۆڕینی خێرای دۆخی خانەی ئامادەبوون (سەح / نیوەڕۆژ / غائیب / ئیجازە / هیچی تر) بە یەک کلیک */
     public function toggleAttendanceCell(Request $request)
     {
         $validated = $request->validate([
             'employee_id' => ['required', 'exists:employees,id'],
             'work_date' => ['required', 'date'],
-            'status' => ['nullable', 'in:present,absent,leave,holiday,delete'],
+            'status' => ['nullable', 'in:present,half_day,absent,leave,holiday,delete'],
         ]);
 
         $employee = Employee::findOrFail($validated['employee_id']);
@@ -801,11 +911,13 @@ class WorkshopController extends Controller
             ]);
         }
 
-        // ئەگەر دۆخ دیاری نەکرابێت، بە یەک کلیک بەدوای یەکدا دەسوڕێت: سەح -> غائیب -> ئیجازە -> خاڵی
+        // ئەگەر دۆخ دیاری نەکرابێت، بە یەک کلیک بەدوای یەکدا دەسوڕێت: سەح -> نیوەڕۆژ -> غائیب -> ئیجازە -> خاڵی
         if (! $status) {
             if (! $attendance || ! $attendance->status) {
                 $status = 'present';
             } elseif ($attendance->status === 'present') {
+                $status = 'half_day';
+            } elseif ($attendance->status === 'half_day') {
                 $status = 'absent';
             } elseif ($attendance->status === 'absent') {
                 $status = 'leave';
@@ -829,7 +941,15 @@ class WorkshopController extends Controller
         }
 
         $attendance->status = $status;
-        $attendance->wage_snapshot = $status === 'present' ? $employee->effective_daily_wage : 0;
+        $effectiveWage = $employee->effective_daily_wage;
+        if ($status === 'present') {
+            $attendance->wage_snapshot = $effectiveWage;
+        } elseif ($status === 'half_day') {
+            $attendance->wage_snapshot = round($effectiveWage * 0.5, 2);
+        } else {
+            $attendance->wage_snapshot = 0;
+        }
+
         $attendance->user_id = auth()->id();
         $attendance->save();
 
@@ -845,13 +965,235 @@ class WorkshopController extends Controller
                 'check_out' => $attendance->check_out ? substr($attendance->check_out, 0, 5) : '',
                 'hours' => (float) $attendance->hours,
                 'overtime_hours' => (float) $attendance->overtime_hours,
+                'late_minutes' => (int) $attendance->late_minutes,
                 'temporary_exit_hours' => (float) $attendance->temporary_exit_hours,
                 'exit_reason' => $attendance->exit_reason ?? '',
                 'fuel_expense' => (float) $attendance->fuel_expense,
+                'deduction_amount' => (float) $attendance->deduction_amount,
+                'bonus_amount' => (float) $attendance->bonus_amount,
                 'trip_destination' => $attendance->trip_destination ?? '',
                 'note' => $attendance->note ?? '',
             ],
             'message' => "دۆخی {$employee->name} بۆ بەرواری {$date} نوێکرایەوە.",
+        ]);
+    }
+
+    /** پاشەکەوتکردنی دێتەلی تەواوی خانەی سەح و دەوامی ڕۆژێک (موداڵی دێتەل) */
+    public function saveAttendanceDetail(Request $request)
+    {
+        $validated = $request->validate([
+            'employee_id' => ['required', 'exists:employees,id'],
+            'work_date' => ['required', 'date'],
+            'status' => ['required', 'in:present,half_day,absent,leave,holiday,delete'],
+            'check_in' => ['nullable', 'string'],
+            'check_out' => ['nullable', 'string'],
+            'hours' => ['nullable', 'numeric', 'min:0'],
+            'overtime_hours' => ['nullable', 'numeric', 'min:0'],
+            'late_minutes' => ['nullable', 'integer', 'min:0'],
+            'temporary_exit_hours' => ['nullable', 'numeric', 'min:0'],
+            'exit_reason' => ['nullable', 'string', 'max:255'],
+            'fuel_expense' => ['nullable', 'numeric', 'min:0'],
+            'deduction_amount' => ['nullable', 'numeric', 'min:0'],
+            'bonus_amount' => ['nullable', 'numeric', 'min:0'],
+            'trip_destination' => ['nullable', 'string', 'max:255'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $employee = Employee::findOrFail($validated['employee_id']);
+        $date = $validated['work_date'];
+
+        $attendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('work_date', $date)
+            ->first();
+
+        if ($validated['status'] === 'delete') {
+            if ($attendance) {
+                $attendance->delete();
+            }
+            return response()->json([
+                'ok' => true,
+                'status' => null,
+                'status_label' => 'تۆمارنەکراو',
+                'attendance' => null,
+                'message' => "تۆماری ڕۆژەکە سڕدرایەوە.",
+            ]);
+        }
+
+        if (! $attendance) {
+            $attendance = new Attendance([
+                'employee_id' => $employee->id,
+                'work_date' => $date,
+            ]);
+        }
+
+        $status = $validated['status'];
+        $checkIn = $validated['check_in'] ?? null;
+        $checkOut = $validated['check_out'] ?? null;
+
+        // ئەگەر کاتژمێری هاتن و چوون هەبوو و hours پڕنەکرابۆوە، با خۆکار حیساب بێت
+        $calculated = Attendance::calculateHours($checkIn, $checkOut);
+        $hours = isset($validated['hours']) && $validated['hours'] !== '' ? (float) $validated['hours'] : $calculated['hours'];
+        $overtime = isset($validated['overtime_hours']) && $validated['overtime_hours'] !== '' ? (float) $validated['overtime_hours'] : $calculated['overtime'];
+
+        // هەژمارکردنی تاخیربوون ئەگەر دەستی دیاری نەکرابێت
+        $lateMinutes = isset($validated['late_minutes']) && $validated['late_minutes'] !== '' ? (int) $validated['late_minutes'] : Attendance::calculateLateMinutes($checkIn, $date);
+
+        $attendance->status = $status;
+        $attendance->check_in = $checkIn ? (strlen($checkIn) === 5 ? "{$checkIn}:00" : $checkIn) : null;
+        $attendance->check_out = $checkOut ? (strlen($checkOut) === 5 ? "{$checkOut}:00" : $checkOut) : null;
+        $attendance->hours = $hours;
+        $attendance->overtime_hours = $overtime;
+        $attendance->late_minutes = $lateMinutes;
+        $attendance->temporary_exit_hours = (float) ($validated['temporary_exit_hours'] ?? 0);
+        $attendance->exit_reason = $validated['exit_reason'] ?? null;
+        $attendance->fuel_expense = (float) ($validated['fuel_expense'] ?? 0);
+        $attendance->deduction_amount = (float) ($validated['deduction_amount'] ?? 0);
+        $attendance->bonus_amount = (float) ($validated['bonus_amount'] ?? 0);
+        $attendance->trip_destination = $validated['trip_destination'] ?? null;
+        $attendance->note = $validated['note'] ?? null;
+
+        $effectiveWage = $employee->effective_daily_wage;
+        if ($status === 'present') {
+            $attendance->wage_snapshot = $effectiveWage;
+        } elseif ($status === 'half_day') {
+            $attendance->wage_snapshot = round($effectiveWage * 0.5, 2);
+        } else {
+            $attendance->wage_snapshot = 0;
+        }
+
+        $attendance->user_id = auth()->id();
+        $attendance->save();
+
+        return response()->json([
+            'ok' => true,
+            'status' => $attendance->status,
+            'status_label' => $attendance->status_label,
+            'attendance' => [
+                'id' => $attendance->id,
+                'status' => $attendance->status,
+                'status_label' => $attendance->status_label,
+                'check_in' => $attendance->check_in ? substr($attendance->check_in, 0, 5) : '',
+                'check_out' => $attendance->check_out ? substr($attendance->check_out, 0, 5) : '',
+                'hours' => (float) $attendance->hours,
+                'overtime_hours' => (float) $attendance->overtime_hours,
+                'late_minutes' => (int) $attendance->late_minutes,
+                'temporary_exit_hours' => (float) $attendance->temporary_exit_hours,
+                'exit_reason' => $attendance->exit_reason ?? '',
+                'fuel_expense' => (float) $attendance->fuel_expense,
+                'deduction_amount' => (float) $attendance->deduction_amount,
+                'bonus_amount' => (float) $attendance->bonus_amount,
+                'trip_destination' => $attendance->trip_destination ?? '',
+                'note' => $attendance->note ?? '',
+            ],
+            'message' => "دێتەلی دەوامی {$employee->name} بە سەرکەوتوویی نوێکرایەوە.",
+        ]);
+    }
+
+    /** بەدەستهێنانی دێتەلی مانگانە و ڕاپۆرتی حیساباتی تاکەکەسی بۆ وەستا */
+    public function employeeMonthDetails(Employee $employee, Request $request)
+    {
+        $yearMonth = $request->input('month', now()->format('Y-m'));
+        $startDate = \Carbon\Carbon::parse("{$yearMonth}-01")->startOfMonth()->toDateString();
+        $endDate = \Carbon\Carbon::parse("{$yearMonth}-01")->endOfMonth()->toDateString();
+
+        $shiftSettings = [
+            'work_start' => Setting::get('workshop_work_start', '08:00'),
+            'work_end' => Setting::get('workshop_work_end', '17:00'),
+            'work_hours' => (float) Setting::get('workshop_work_hours', 8),
+            'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
+            'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
+        ];
+
+        $attendances = $employee->attendances()
+            ->whereBetween('work_date', [$startDate, $endDate])
+            ->orderBy('work_date')
+            ->get();
+
+        $payments = $employee->payments()
+            ->where('direction', 'out')
+            ->whereBetween('paid_at', [$startDate, $endDate])
+            ->orderByDesc('paid_at')
+            ->get();
+
+        $presentCount = $attendances->where('status', 'present')->count();
+        $halfDayCount = $attendances->where('status', 'half_day')->count();
+        $absentCount = $attendances->where('status', 'absent')->count();
+        $leaveCount = $attendances->where('status', 'leave')->count();
+        $holidayCount = $attendances->where('status', 'holiday')->count();
+
+        $totalOvertime = (float) $attendances->sum('overtime_hours');
+        $totalFuel = (float) $attendances->sum('fuel_expense');
+        $totalDeductions = (float) $attendances->sum('deduction_amount');
+        $totalBonus = (float) $attendances->sum('bonus_amount');
+        $totalLateMinutes = (int) $attendances->sum('late_minutes');
+        $lateDaysCount = $attendances->where('late_minutes', '>', 0)->count();
+
+        $effectiveDailyWage = $employee->effective_daily_wage;
+        $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5);
+        $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
+        $overtimeEarned = $totalOvertime * $hourlyWage * $shiftSettings['overtime_multiplier'];
+        $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $totalDeductions, 2);
+
+        $totalPaid = (float) $payments->sum('amount_iqd');
+        $remainingBalance = round($totalEarned - $totalPaid, 2);
+
+        return response()->json([
+            'ok' => true,
+            'employee' => [
+                'id' => $employee->id,
+                'name' => $employee->name,
+                'phone' => $employee->phone,
+                'job_title' => $employee->job_title,
+                'job_title_label' => $employee->job_title_label,
+                'salary_type' => $employee->salary_type ?? 'daily',
+                'salary_type_label' => $employee->salary_type_label ?? 'ڕۆژانە',
+                'daily_wage' => (float) $employee->daily_wage,
+                'effective_daily_wage' => $effectiveDailyWage,
+                'wage_currency' => $employee->wage_currency ?? 'IQD',
+            ],
+            'month' => $yearMonth,
+            'stats' => [
+                'present_count' => $presentCount,
+                'half_day_count' => $halfDayCount,
+                'absent_count' => $absentCount,
+                'leave_count' => $leaveCount,
+                'holiday_count' => $holidayCount,
+                'total_overtime' => $totalOvertime,
+                'total_fuel' => $totalFuel,
+                'total_late_minutes' => $totalLateMinutes,
+                'late_days_count' => $lateDaysCount,
+                'total_deductions' => $totalDeductions,
+                'total_bonus' => $totalBonus,
+                'base_earned' => $baseEarned,
+                'overtime_earned' => $overtimeEarned,
+                'total_earned' => $totalEarned,
+                'total_paid' => $totalPaid,
+                'remaining_balance' => $remainingBalance,
+            ],
+            'attendances' => $attendances->map(fn ($a) => [
+                'id' => $a->id,
+                'work_date' => $a->work_date?->format('Y/m/d'),
+                'status' => $a->status,
+                'status_label' => $a->status_label,
+                'check_in' => $a->check_in ? substr($a->check_in, 0, 5) : '',
+                'check_out' => $a->check_out ? substr($a->check_out, 0, 5) : '',
+                'hours' => (float) $a->hours,
+                'overtime_hours' => (float) $a->overtime_hours,
+                'late_minutes' => (int) $a->late_minutes,
+                'fuel_expense' => (float) $a->fuel_expense,
+                'deduction_amount' => (float) $a->deduction_amount,
+                'bonus_amount' => (float) $a->bonus_amount,
+                'note' => $a->note,
+            ])->values()->all(),
+            'payments' => $payments->map(fn ($p) => [
+                'id' => $p->id,
+                'voucher_no' => $p->voucher_no,
+                'amount' => (float) $p->amount,
+                'amount_iqd' => (float) $p->amount_iqd,
+                'currency' => $p->currency,
+                'paid_at' => $p->paid_at?->format('Y/m/d'),
+                'note' => $p->note,
+            ])->values()->all(),
         ]);
     }
 
@@ -860,7 +1202,7 @@ class WorkshopController extends Controller
     {
         $validated = $request->validate([
             'work_date' => ['required', 'date'],
-            'status' => ['required', 'in:present,absent,leave,holiday'],
+            'status' => ['required', 'in:present,half_day,absent,leave,holiday'],
         ]);
 
         $date = $validated['work_date'];
@@ -881,7 +1223,14 @@ class WorkshopController extends Controller
                 }
 
                 $attendance->status = $status;
-                $attendance->wage_snapshot = $status === 'present' ? $employee->effective_daily_wage : 0;
+                $effectiveWage = $employee->effective_daily_wage;
+                if ($status === 'present') {
+                    $attendance->wage_snapshot = $effectiveWage;
+                } elseif ($status === 'half_day') {
+                    $attendance->wage_snapshot = round($effectiveWage * 0.5, 2);
+                } else {
+                    $attendance->wage_snapshot = 0;
+                }
                 $attendance->user_id = auth()->id();
                 $attendance->save();
             }

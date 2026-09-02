@@ -138,6 +138,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/workshop/employees/quick-store', [WorkshopController::class, 'quickStoreEmployee'])->name('workshop.employees.quick-store');
     Route::post('/workshop/employees/{employee}/update-wage', [WorkshopController::class, 'updateEmployeeWage'])->name('workshop.employees.update-wage');
     Route::post('/workshop/employees/toggle-cell', [WorkshopController::class, 'toggleAttendanceCell'])->name('workshop.employees.toggle-cell');
+    Route::post('/workshop/employees/save-cell-detail', [WorkshopController::class, 'saveAttendanceDetail'])->name('workshop.employees.save-cell-detail');
+    Route::get('/workshop/employees/{employee}/month-details', [WorkshopController::class, 'employeeMonthDetails'])->name('workshop.employees.month-details');
     Route::post('/workshop/employees/batch-mark-day', [WorkshopController::class, 'batchMarkDay'])->name('workshop.employees.batch-mark-day');
     Route::post('/workshop/employees/record-payment', [WorkshopController::class, 'recordEmployeePayment'])->name('workshop.employees.record-payment');
 
