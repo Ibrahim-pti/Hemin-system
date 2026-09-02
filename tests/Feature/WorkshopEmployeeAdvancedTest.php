@@ -149,4 +149,25 @@ class WorkshopEmployeeAdvancedTest extends TestCase
             ],
         ]);
     }
+
+    public function test_workshop_employee_can_be_deleted()
+    {
+        $this->actingAs($this->admin);
+
+        $employee = Employee::create([
+            'name' => 'وەستا هەڵکەوت',
+            'job_title' => 'master',
+            'salary_type' => 'daily',
+            'daily_wage' => 30000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $res = $this->deleteJson("/workshop/employees/{$employee->id}");
+        $res->assertStatus(200);
+        $res->assertJson(['ok' => true]);
+
+        $this->assertSoftDeleted($employee);
+    }
 }
+

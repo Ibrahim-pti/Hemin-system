@@ -142,6 +142,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/workshop/employees/{employee}/month-details', [WorkshopController::class, 'employeeMonthDetails'])->name('workshop.employees.month-details');
     Route::post('/workshop/employees/batch-mark-day', [WorkshopController::class, 'batchMarkDay'])->name('workshop.employees.batch-mark-day');
     Route::post('/workshop/employees/record-payment', [WorkshopController::class, 'recordEmployeePayment'])->name('workshop.employees.record-payment');
+    Route::delete('/workshop/employees/{employee}', [WorkshopController::class, 'destroyEmployee'])->name('workshop.employees.destroy');
 
     Route::middleware('can:manage_external_jobs')->group(function () {
         Route::resource('external-jobs', ExternalJobController::class)->parameters(['external-jobs' => 'job']);

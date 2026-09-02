@@ -1132,7 +1132,25 @@ class WorkshopController extends Controller
         $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5);
         $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
         $overtimeEarned = $totalOvertime * $hourlyWage * $shiftSettings['overtime_multiplier'];
-        $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $totalDeductions, 2);
+
+        // هەژمارکردنی یاسای تاخیربوونی کارگە بۆ مانگەکە
+        $calculatedLatePenalty = 0;
+        $lateDeductionType = Setting::get('workshop_late_deduction_type', 'weekly_threshold');
+        $lateDeductionRate = (float) Setting::get('workshop_late_deduction_rate', 0);
+        $weeklyThresholdDays = (int) Setting::get('workshop_late_weekly_threshold_days', 2);
+        $weeklyPenaltyAmount = (float) Setting::get('workshop_late_weekly_penalty_amount', 0);
+
+        if ($lateDeductionType === 'weekly_threshold' && $weeklyThresholdDays > 0) {
+            if ($lateDaysCount >= $weeklyThresholdDays) {
+                $weeksWithPenalty = ceil($lateDaysCount / $weeklyThresholdDays);
+                $calculatedLatePenalty = $weeksWithPenalty * ($weeklyPenaltyAmount > 0 ? $weeklyPenaltyAmount : $effectiveDailyWage);
+            }
+        } elseif ($lateDeductionType === 'fixed_amount' && $lateDeductionRate > 0) {
+            $calculatedLatePenalty = $lateDaysCount * $lateDeductionRate;
+        }
+
+        $allDeductions = round($totalDeductions + $calculatedLatePenalty, 2);
+        $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $allDeductions, 2);
 
         $totalPaid = (float) $payments->sum('amount_iqd');
         $remainingBalance = round($totalEarned - $totalPaid, 2);
@@ -1162,7 +1180,9 @@ class WorkshopController extends Controller
                 'total_fuel' => $totalFuel,
                 'total_late_minutes' => $totalLateMinutes,
                 'late_days_count' => $lateDaysCount,
-                'total_deductions' => $totalDeductions,
+                'manual_deductions' => $totalDeductions,
+                'late_penalty_deduction' => $calculatedLatePenalty,
+                'total_deductions' => $allDeductions,
                 'total_bonus' => $totalBonus,
                 'base_earned' => $baseEarned,
                 'overtime_earned' => $overtimeEarned,
@@ -1290,4 +1310,18 @@ class WorkshopController extends Controller
 
         return back()->with('ok', "پارەدان بۆ {$employee->name} بە سەرکەوتوویی تۆمارکرا.");
     }
+
+    /** سڕینەوەی وەستا یان کرێکار لە سیستەم */
+    public function destroyEmployee(Employee $employee)
+    {
+        $name = $employee->name;
+        $employee->attendances()->delete();
+        $employee->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => "وەستا ({$name}) بە سەرکەوتوویی سڕدرایەوە.",
+        ]);
+    }
 }
+

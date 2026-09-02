@@ -167,20 +167,20 @@
                                 </td>
                             </template>
 
-                            {{-- کردارەکان: وردەکاری و پێشەکی --}}
+                            {{-- کردارەکان: وردەکاری و سڕینەوە --}}
                             <td class="py-2.5 px-3 text-center print:hidden">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <button type="button" @click="openEmployeeDrawer(row)"
                                             class="px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-all cursor-pointer flex items-center gap-1"
-                                            title="بینینی وردەکاری تەواو، حیسابات و ڕۆژەکانی مانگ">
+                                            title="بینینی وردەکاری و حیساباتی خۆکاری مانگ">
                                         <span>👁️</span>
                                         <span>وردەکاری</span>
                                     </button>
-                                    <button type="button" @click="openPaymentModal(row)"
-                                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 transition-all cursor-pointer flex items-center gap-1"
-                                            title="دانی پێشەکی لە قاصە">
-                                        <span>💸</span>
-                                        <span>پێشەکی</span>
+                                    <button type="button" @click="confirmDeleteEmployee(row)"
+                                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer flex items-center gap-1"
+                                            title="سڕینەوەی ئەم وەستایە">
+                                        <span>🗑️</span>
+                                        <span>سڕینەوە</span>
                                     </button>
                                 </div>
                             </td>
@@ -191,7 +191,7 @@
         </div>
     </div>
 
-    {{-- ٤. بەشی وردەکاری تەواوی وەستا (Worker Details Drawer/Modal) --}}
+    {{-- ٤. بەشی وردەکاری تەواوی وەستا و حیساباتی خۆکار (Worker Details Drawer/Modal) --}}
     <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
         <div @click.away="showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             
@@ -207,32 +207,21 @@
                             <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-teal-700 text-teal-200" x-text="selectedEmployee?.job_title_label"></span>
                         </div>
                         <div class="text-xs text-teal-200 font-mono mt-0.5">
-                            مووچە: <b class="text-white" x-text="formatNumber(selectedEmployee?.daily_wage) + ' د.ع'"></b>
+                            مووچەی ڕۆژانە: <b class="text-white" x-text="formatNumber(selectedEmployee?.daily_wage) + ' د.ع'"></b>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="month" x-model="selectedMonth" @change="loadEmployeeMonthDetails()"
-                           class="bg-teal-900 text-white text-xs font-mono px-2.5 py-1 rounded-lg border border-teal-700 cursor-pointer">
+                    <div class="flex items-center gap-1.5 bg-teal-900/90 px-2.5 py-1 rounded-xl border border-teal-700">
+                        <span class="text-[11px] text-teal-200 font-bold">مانگ:</span>
+                        <input type="month" x-model="selectedMonth" @change="loadEmployeeMonthDetails()"
+                               class="bg-transparent text-white text-xs font-mono font-bold cursor-pointer focus:outline-hidden">
+                    </div>
                     <button type="button" @click="showEmployeeDrawer = false" class="text-teal-200 hover:text-white text-lg font-bold p-1">✕</button>
                 </div>
             </div>
 
-            {{-- کارتی کورتی ئامارەکانی مانگ --}}
-            <div class="p-3.5 bg-slate-50 border-b border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                    <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی هاتوو لە مانگدا</div>
-                    <div class="text-base font-black text-emerald-800 font-mono mt-0.5" x-text="(drawerData?.stats?.present_count ?? selectedEmployee?.month_summary?.present_count ?? 0) + ' ڕۆژ'"></div>
-                </div>
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                    <div class="text-[10px] text-teal-800 font-bold">پارەی هەیە (شایستە)</div>
-                    <div class="text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? selectedEmployee?.month_summary?.total_earned ?? 0) + ' د.ع'"></div>
-                </div>
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                    <div class="text-[10px] text-purple-800 font-bold">چەند براوە (پێشەکی)</div>
-                    <div class="text-base font-black text-purple-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_paid ?? selectedEmployee?.month_summary?.total_paid ?? 0) + ' د.ع'"></div>
-                </div>
                 <div class="bg-white p-2.5 rounded-xl border border-slate-200">
                     <div class="text-[10px] text-amber-800 font-bold">باڵانسی ماوە</div>
                     <div class="text-base font-black text-amber-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? selectedEmployee?.month_summary?.remaining ?? 0) + ' د.ع'"></div>
@@ -900,6 +889,7 @@ function workshopEmployeesApp() {
 
         async loadEmployeeMonthDetails() {
             if (!this.selectedEmployee) return;
+            this.drawerLoading = true;
             try {
                 const res = await fetch(`/workshop/employees/${this.selectedEmployee.id}/month-details?month=${this.selectedMonth}`, {
                     headers: { 'Accept': 'application/json' }
@@ -910,6 +900,32 @@ function workshopEmployeesApp() {
                 }
             } catch (e) {
                 console.error(e);
+            } finally {
+                this.drawerLoading = false;
+            }
+        },
+
+        async confirmDeleteEmployee(row) {
+            if (!confirm(`ئایا دڵنیایت دەتەوێت وەستا (${row.name}) بە تەواوی بسڕیتەوە لە سیستەم؟`)) return;
+            try {
+                const res = await fetch(`/workshop/employees/${row.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await res.json();
+                if (data.ok) {
+                    this.matrix = this.matrix.filter(e => e.id !== row.id);
+                    alert(data.message);
+                } else {
+                    alert(data.message || 'هەڵە لە سڕینەوەدا');
+                }
+            } catch (e) {
+                alert('هەڵە لە سڕینەوەدا');
             }
         },
 
