@@ -5,7 +5,7 @@
 <div x-data="workshopEmployeesApp()" x-init="init()" class="space-y-3.5 select-none" dir="rtl">
 
     {{-- ١. هێڵی سەرەوە: ناونیشان و کۆنتڕۆڵی هەفتە و دوگمە سەرەکییەکان بە شێوازێکی خاوێن و پوخت --}}
-    <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+    <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-2xs flex flex-col xl:flex-row xl:items-center justify-between gap-3">
         
         {{-- ناونیشان و ماوەی بەروار --}}
         <div class="flex items-center gap-3">
@@ -77,39 +77,39 @@
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         
         {{-- بارێکی باریک بۆ گەڕان و هێماکان --}}
-        <div class="px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between gap-3 bg-slate-50/60">
+        <div class="px-3.5 py-2.5 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-slate-50/60">
             <div class="flex items-center gap-2 flex-1 max-w-xs">
                 <input type="text" x-model="searchQuery" placeholder="🔍 گەڕان بە ناوی وەستا..."
                        class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-hidden focus:border-teal-600 bg-white font-medium shadow-2xs">
             </div>
 
-            <div class="flex items-center gap-3 text-[11px] font-bold text-slate-500">
+            <div class="flex items-center gap-3 text-[11px] font-bold text-slate-500 flex-wrap">
                 <span class="flex items-center gap-1 text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> سەح</span>
                 <span class="flex items-center gap-1 text-rose-700"><span class="w-2 h-2 rounded-full bg-rose-500"></span> غائیب</span>
-                <span class="text-slate-400 font-normal">| کلیک لەسەر خانە بکە بۆ گۆڕینی دۆخ</span>
+                <span class="text-slate-400 font-normal hidden sm:inline">| کلیک لەسەر خانە بکە بۆ گۆڕینی دۆخ</span>
             </div>
         </div>
 
-        {{-- خشتەی سەرەکی بە شێوازێکی زۆر ڕێک و هاوسەنگ --}}
+        {{-- خشتەی سەرەکی بە شێوازێکی زۆر ڕێک و ڕیسپۆنسیڤ --}}
         <div class="overflow-x-auto">
-            <table class="w-full text-right border-collapse text-xs table-fixed">
+            <table class="w-full min-w-[760px] text-right border-collapse text-xs table-fixed">
                 <thead>
                     <tr class="bg-slate-100/90 text-slate-700 font-black border-b border-slate-200 text-center">
                         {{-- ژمارەی ڕیزبەند (#) --}}
-                        <th class="py-3 px-2 text-center sticky right-0 bg-slate-100 z-20 w-12 border-l border-slate-200 font-mono text-slate-600 font-black">
+                        <th class="py-3 px-2 text-center sticky right-0 bg-slate-100 z-20 w-12 min-w-[48px] border-l border-slate-200 font-mono text-slate-600 font-black">
                             #
                         </th>
 
                         {{-- ناو (لە ناوەڕاست) --}}
-                        <th class="py-3 px-3 text-center sticky bg-slate-100 z-20 w-36 sm:w-44 border-l border-slate-200 font-black text-slate-700" style="right: 48px;">
+                        <th class="py-3 px-3 text-center sticky bg-slate-100 z-20 w-36 sm:w-44 min-w-[130px] border-l border-slate-200 font-black text-slate-700" style="right: 48px;">
                             ناو
                         </th>
 
-                        {{-- ڕۆژەکان (شەممە تا هەینی) بە قەبارەی یەکسان و ڕێک --}}
+                        {{-- ڕۆژەکان (شەممە تا هەینی) بە قەبارەی یەکسان، فراوان و بێ بەریەککەوتن --}}
                         @foreach($days as $d)
-                            <th class="py-2.5 px-1 border-l border-slate-200 {{ $d['is_today'] ? 'bg-amber-100/80 text-amber-950 font-black ring-1 ring-amber-300 ring-inset' : ($d['is_holiday'] ? 'bg-slate-200/50 text-slate-500' : '') }}">
-                                <div class="flex flex-col items-center leading-tight">
-                                    <span class="text-xs font-black">{{ $d['day_name'] }}</span>
+                            <th class="py-2.5 px-1 w-20 min-w-[70px] border-l border-slate-200 {{ $d['is_today'] ? 'bg-amber-100/80 text-amber-950 font-black ring-1 ring-amber-300 ring-inset' : ($d['is_holiday'] ? 'bg-slate-200/50 text-slate-500' : '') }}">
+                                <div class="flex flex-col items-center leading-tight whitespace-nowrap">
+                                    <span class="text-[11px] sm:text-xs font-black">{{ $d['day_name'] }}</span>
                                     <span class="text-[10px] font-mono font-bold opacity-75 mt-0.5">{{ $d['day_short'] }}</span>
                                     @if($d['is_today'])
                                         <span class="text-[9px] font-black px-1.5 py-0.2 mt-0.5 rounded bg-amber-500 text-white leading-none">ئەمڕۆ</span>
@@ -119,7 +119,7 @@
                         @endforeach
 
                         {{-- کردارەکان بە قەبارەی کەم و ئایکۆن --}}
-                        <th class="py-3 px-2 w-28 sm:w-32 text-center print:hidden">کردارەکان</th>
+                        <th class="py-3 px-2 w-28 sm:w-32 min-w-[100px] text-center print:hidden">کردارەکان</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium">
