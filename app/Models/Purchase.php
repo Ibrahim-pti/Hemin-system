@@ -21,8 +21,13 @@ class Purchase extends Model
     protected $fillable = [
         'invoice_no', 'supplier_id', 'warehouse_id', 'purchase_date',
         'currency', 'exchange_rate', 'subtotal', 'discount_amount', 'total',
-        'paid_amount', 'status', 'user_id', 'note',
+        'paid_amount', 'status', 'user_id', 'note', 'image',
     ];
+
+    public function imageUrl(): ?string
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 
     protected function casts(): array
     {

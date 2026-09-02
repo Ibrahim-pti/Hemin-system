@@ -264,6 +264,13 @@
             </div>
         @endif
 
+        @if ($purchase->imageUrl())
+            <div class="mt-4 pt-3 border-t border-slate-200 text-center">
+                <div class="text-xs font-bold text-slate-700 mb-2">وێنەی هاوپێچکراوی وەسڵ:</div>
+                <img src="{{ $purchase->imageUrl() }}" class="max-h-72 mx-auto rounded border border-slate-300 object-contain shadow-xs">
+            </div>
+        @endif
+
         {{-- ئیمزا و پەسەندکردن لە خوارەوە --}}
         <div class="mt-8 pt-4 border-t border-slate-300 grid grid-cols-2 text-center text-xs font-bold text-slate-800">
             <div>

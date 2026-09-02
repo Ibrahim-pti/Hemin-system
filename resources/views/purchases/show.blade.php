@@ -181,6 +181,25 @@
                 @endif
             </div>
 
+            {{-- وێنەی پسوولەی کڕین --}}
+            @if ($purchase->imageUrl())
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2">
+                    <h3 class="font-black text-slate-800 text-xs flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                        <span>📷</span>
+                        <span>وێنەی وەسڵی کڕین</span>
+                    </h3>
+                    <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer group"
+                         onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')"
+                         title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
+                        <img src="{{ $purchase->imageUrl() }}" class="w-full max-h-64 object-contain mx-auto group-hover:scale-105 transition-transform">
+                    </div>
+                    <a href="{{ $purchase->imageUrl() }}" target="_blank"
+                       class="block text-center text-[11px] font-bold text-teal-700 hover:underline pt-1">
+                        🔍 بینینی تەواوی وێنەکە
+                    </a>
+                </div>
+            @endif
+
             {{-- پوختەی دارایی --}}
             <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3 text-xs">
                 <h3 class="font-black text-slate-800 text-sm border-b border-slate-100 pb-2">پوختەی دارایی پسوولە</h3>

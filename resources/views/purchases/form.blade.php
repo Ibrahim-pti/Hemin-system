@@ -19,15 +19,33 @@
 
     $initialDiscount = old('discount_amount', $purchase->discount_amount ? number_format((float)$purchase->discount_amount) : '');
     $initialPaid = old('paid_amount', $purchase->paid_amount ? number_format((float)$purchase->paid_amount) : '');
+
+    if ($purchase->exists) {
+        if ((float) $purchase->total > 0 && (float) $purchase->paid_amount >= (float) $purchase->total) {
+            $initialPaymentType = 'cash';
+        } elseif ((float) $purchase->paid_amount <= 0) {
+            $initialPaymentType = 'debt';
+        } else {
+            $initialPaymentType = 'partial';
+        }
+    } else {
+        $initialPaymentType = old('payment_type', 'cash');
+    }
+
+    $initialImage = $purchase->imageUrl();
 @endphp
 
 <form method="POST"
       action="{{ $purchase->exists ? route('purchases.update', $purchase) : route('purchases.store') }}"
-      x-data="purchaseForm(@js($initialLines), @js($initialDiscount), @js($initialPaid))"
+      enctype="multipart/form-data"
+      x-data="purchaseForm(@js($initialLines), @js($initialDiscount), @js($initialPaid), @js($initialPaymentType), @js($initialImage))"
       class="space-y-4">
     @csrf
     @if ($purchase->exists) @method('PUT') @endif
     <input type="hidden" name="currency" value="IQD">
+    <input type="hidden" name="entry_mode" :value="entryMode">
+    <input type="hidden" name="payment_type" :value="paymentType">
+    <input type="hidden" name="remove_image" :value="removeImageFlag ? '1' : '0'">
 
     @if ($errors->any())
         <div class="card mb-4 border-r-4 !border-r-[--color-danger] px-4 py-3 text-sm">
@@ -38,7 +56,7 @@
         </div>
     @endif
 
-    {{-- ١. زانیاری سەرەکی کڕین و کۆمپانیا --}}
+    {{-- ١. زانیاری سەرەکی کڕین و کۆمپانیا لەگەڵ وێنەی وەسڵ --}}
     <div class="card">
         <div class="card-head flex items-center justify-between">
             <span class="font-bold text-slate-800 text-sm">زانیاری پسوولەی کڕین و فرۆشیار</span>
@@ -94,137 +112,263 @@
                        placeholder="تێبینی، ژمارەی پسوولەی فرۆشیار یان مەرجەکان..."
                        value="{{ old('note', $purchase->note) }}">
             </div>
+
+            {{-- وێنەی پسوولەی کڕین (فایل یان کامێرا) --}}
+            <div class="sm:col-span-2 lg:col-span-4 bg-slate-50/80 p-3.5 rounded-2xl border border-dashed border-slate-300">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl">📸</span>
+                        <div>
+                            <span class="block text-xs font-bold text-slate-800">وێنەی پسوولەی کڕین (وەسڵی کاغەزی فرۆشیار)</span>
+                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت یان فایلەکەی دابنێیت.</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <input type="file" id="purchase_image_input" name="image" accept="image/*" class="hidden" @change="onImageChange($event)">
+
+                        <template x-if="imagePreview">
+                            <div class="flex items-center gap-2">
+                                <div class="relative size-12 rounded-xl overflow-hidden border-2 border-teal-600 shadow-xs group">
+                                    <img :src="imagePreview" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="window.open(imagePreview, '_blank')" title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
+                                </div>
+                                <button type="button" @click="removeImage()" class="btn btn-ghost !py-1 !px-2.5 text-xs text-rose-600 border border-rose-200 hover:bg-rose-50 cursor-pointer">
+                                    لابردنی وێنە
+                                </button>
+                                <button type="button" @click="document.getElementById('purchase_image_input').click()" class="btn btn-ghost !py-1 !px-2.5 text-xs text-slate-700 bg-white border border-slate-200 cursor-pointer">
+                                    گۆڕینی وێنە
+                                </button>
+                            </div>
+                        </template>
+
+                        <template x-if="!imagePreview">
+                            <button type="button" @click="document.getElementById('purchase_image_input').click()"
+                                    class="px-4 py-2 rounded-xl text-xs font-black bg-white hover:bg-teal-50 text-teal-800 border border-teal-600/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer">
+                                <span>📷</span>
+                                <span>دانانی وێنەی وەسڵەکە</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    {{-- ٢. خشتەی کاڵا و مەوادەکان --}}
-    <div class="card">
-        <div class="card-head">
-            <span class="font-bold text-slate-800 text-sm">کاڵا و مەوادە کڕدراوەکان</span>
+    {{-- ٢. شێوازی تۆمارکردنی مەوادەکان (خێرا یان دانە بە دانە) --}}
+    <div class="card overflow-hidden">
+        <div class="card-head flex flex-wrap items-center justify-between gap-3">
+            <span class="font-bold text-slate-800 text-sm">مەوادە کڕدراوەکان</span>
+
+            {{-- دوگمەی گۆڕینی شێواز: خێرا یان دانە بە دانە --}}
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
+                <button type="button" @click="setEntryMode('quick')"
+                        :class="entryMode === 'quick' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                        class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>تۆماری خێرا (تەنها کۆی نرخ)</span>
+                </button>
+                <button type="button" @click="setEntryMode('itemized')"
+                        :class="entryMode === 'itemized' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                        class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5">
+                    <span>📋</span>
+                    <span>وردەکاری مەوادەکان (دانە بە دانە)</span>
+                </button>
+            </div>
         </div>
 
-        {{-- لیستی کاڵاکان بۆ autocomplete --}}
-        <datalist id="items_list">
-            @foreach ($items as $item)
-                <option value="{{ $item->name }}" data-price="{{ $item->last_cost }}">
-                    {{ $item->unit?->name ? '(' . $item->unit->name . ')' : '' }}
-                </option>
-            @endforeach
-        </datalist>
+        {{-- ١. شێوازی تۆماری خێرا (بۆ کاتێک کۆمەڵێک مەوادی تێدایە و تەنها کۆی نرخ تۆمار دەکەیت) --}}
+        <div x-show="entryMode === 'quick'" class="p-4 sm:p-5 space-y-4 bg-teal-50/20">
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-3 text-xs text-teal-950 flex items-start gap-2.5">
+                <span class="text-lg">💡</span>
+                <div class="leading-relaxed">
+                    <b>تۆماری خێرا:</b> کاتێک وەسڵەکەت کۆمەڵێک مەوادی هەمەجۆری تێدایە و پێویست ناکات دانە بە دانە تۆماریان بکەیت، تەنها کۆی گشتی نرخی پسوولەکە بنووسە.
+                </div>
+            </div>
 
-        <div class="overflow-x-auto">
-            <table class="table w-full">
-                <thead>
-                    <tr class="bg-slate-50/80 text-xs text-slate-700 font-bold border-b border-[--color-line]">
-                        <th style="width: 44px; text-align: center;">#</th>
-                        <th style="text-align: right; padding: 10px 12px;">ناوی کاڵا / مەواد (دەستنووس یان لە لیست)</th>
-                        <th style="width: 130px; text-align: center;">بڕ / ژمارە</th>
-                        <th style="width: 190px; text-align: center;">نرخی یەکە (د.ع)</th>
-                        <th style="width: 190px; text-align: center;">کۆی گشتی (د.ع)</th>
-                        <th style="text-align: right; padding: 10px 12px;">تێبینی</th>
-                        <th style="width: 44px; text-align: center;"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 text-sm">
-                    <template x-for="(line, index) in lines" :key="index">
-                        <tr class="hover:bg-slate-50/70 transition-colors">
-                            {{-- # --}}
-                            <td class="text-center num text-slate-400 font-medium text-xs" x-text="index + 1"></td>
-
-                            {{-- ناوی کاڵا --}}
-                            <td style="padding: 6px 12px;">
-                                <input type="text" list="items_list"
-                                       :name="`lines[${index}][item_name]`"
-                                       x-model="line.item_name"
-                                       @input="fillPrice(line)"
-                                       class="field w-full !py-2 !px-3 text-sm font-bold bg-white"
-                                       placeholder="ناوی کاڵا بنووسە..." required autocomplete="off">
-                            </td>
-
-                            {{-- بڕ --}}
-                            <td style="padding: 6px 12px;">
-                                <input type="text" inputmode="decimal" required
-                                       :name="`lines[${index}][qty]`"
-                                       x-model="line.qty"
-                                       @input="formatQty($event, line)"
-                                       class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white"
-                                       placeholder="0">
-                            </td>
-
-                            {{-- نرخی یەکە بە فاریزە --}}
-                            <td style="padding: 6px 12px;">
-                                <input type="text" inputmode="numeric" required
-                                       :name="`lines[${index}][unit_price]`"
-                                       x-model="line.unit_price"
-                                       @input="formatLinePrice($event, line)"
-                                       class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white"
-                                       dir="ltr"
-                                       placeholder="0">
-                            </td>
-
-                            {{-- کۆی دێڕ --}}
-                            <td style="padding: 6px 12px;" class="text-center num font-bold text-slate-900" x-text="money(lineTotal(line))"></td>
-
-                            {{-- تێبینی دێڕ --}}
-                            <td style="padding: 6px 12px;">
-                                <input type="text" :name="`lines[${index}][note]`"
-                                       x-model="line.note"
-                                       class="field w-full !py-2 !px-3 text-xs bg-white"
-                                       placeholder="تێبینی دێڕ...">
-                            </td>
-
-                            {{-- سڕینەوە --}}
-                            <td style="text-align: center; padding: 6px;">
-                                <button type="button" @click="removeLine(index)"
-                                        class="inline-flex items-center justify-center size-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                                        x-show="lines.length > 1" title="سڕینەوەی دێڕ">✕</button>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-
-        {{-- دوگمەی زیادکردنی دێڕ --}}
-        <div class="p-3 border-t border-[--color-line] bg-slate-50/50">
-            <button type="button" @click="addLine()"
-                    class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold text-blue-700 hover:bg-blue-50 border border-dashed border-blue-300 cursor-pointer">
-                + زیادکردنی مەواد یان کاڵای تر
-            </button>
-        </div>
-    </div>
-
-    {{-- ٣. دارایی، داشکاندن، پارەی دراو و پوختەی کۆتایی --}}
-    <div class="grid gap-4 lg:grid-cols-3">
-        {{-- داشکاندن و پارەی دراو --}}
-        <div class="card lg:col-span-2">
-            <div class="card-body grid gap-4 sm:grid-cols-2">
-                {{-- داشکاندن --}}
+            <div class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <label class="label" for="discount_amount">داشکاندن (د.ع)</label>
-                    <input id="discount_amount" name="discount_amount" type="text" inputmode="numeric"
-                           class="field num font-bold w-full"
-                           dir="ltr"
-                           x-model="discount"
-                           @input="formatDiscount($event)"
-                           placeholder="0">
-                    <p class="mt-1 text-xs text-[--color-ink-soft]">
-                        ئەگەر فرۆشیار داشکاندنی کردووە، بڕی پارەکەی لێرە بنووسە.
-                    </p>
+                    <label class="label text-xs font-bold text-slate-800" for="quick_title">ناوی مەوادەکان / باسی کڕین</label>
+                    <input id="quick_title" name="quick_title" type="text"
+                           class="field font-bold text-sm bg-white"
+                           x-model="quickTitle"
+                           placeholder="وەک: مەوادی هەمەجۆری کارگە، وەسڵی پەرژین، بۆیاخ و براغی...">
                 </div>
 
-                {{-- پارەی دراو ئێستا --}}
                 <div>
-                    <label class="label" for="paid_amount">پارەی دراو ئێستا (د.ع)</label>
-                    <input id="paid_amount" name="paid_amount" type="text" inputmode="numeric"
-                           class="field num font-bold text-emerald-700 w-full"
-                           dir="ltr"
-                           x-model="paid"
-                           @input="formatPaid($event)"
-                           placeholder="0">
-                    <p class="mt-1 text-xs text-[--color-ink-soft]">
-                        ئەگەر پارە بدەیت، تۆماری حەقدی و پارەدان دروست دەبێت.
-                    </p>
+                    <label class="label text-xs font-bold text-slate-800" for="quick_total">
+                        کۆی گشتی نرخی پسوولە (د.ع) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input id="quick_total" name="quick_total" type="text" inputmode="numeric"
+                               class="field num font-black text-base text-teal-800 bg-white w-full"
+                               dir="ltr"
+                               x-model="quickTotal"
+                               @input="formatQuickTotal($event)"
+                               placeholder="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ٢. شێوازی وردەکاری مەوادەکان (دانە بە دانە) --}}
+        <div x-show="entryMode === 'itemized'">
+            <datalist id="items_list">
+                @foreach ($items as $item)
+                    <option value="{{ $item->name }}" data-price="{{ $item->last_cost }}">
+                        {{ $item->unit?->name ? '(' . $item->unit->name . ')' : '' }}
+                    </option>
+                @endforeach
+            </datalist>
+
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead>
+                        <tr class="bg-slate-50/80 text-xs text-slate-700 font-bold border-b border-[--color-line]">
+                            <th style="width: 44px; text-align: center;">#</th>
+                            <th style="text-align: right; padding: 10px 12px;">ناوی کاڵا / مەواد (دەستنووس یان لە لیست)</th>
+                            <th style="width: 120px; text-align: center;">بڕ / ژمارە</th>
+                            <th style="width: 180px; text-align: center;">نرخی یەکە (د.ع)</th>
+                            <th style="width: 180px; text-align: center;">کۆی گشتی (د.ع)</th>
+                            <th style="text-align: right; padding: 10px 12px;">تێبینی</th>
+                            <th style="width: 44px; text-align: center;"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        <template x-for="(line, index) in lines" :key="index">
+                            <tr class="hover:bg-slate-50/70 transition-colors">
+                                <td class="text-center num text-slate-400 font-medium text-xs" x-text="index + 1"></td>
+
+                                <td style="padding: 6px 12px;">
+                                    <input type="text" list="items_list"
+                                           :name="`lines[${index}][item_name]`"
+                                           x-model="line.item_name"
+                                           @input="fillPrice(line)"
+                                           class="field w-full !py-2 !px-3 text-sm font-bold bg-white"
+                                           placeholder="ناوی کاڵا بنووسە..." autocomplete="off">
+                                </td>
+
+                                <td style="padding: 6px 12px;">
+                                    <input type="text" inputmode="decimal"
+                                           :name="`lines[${index}][qty]`"
+                                           x-model="line.qty"
+                                           @input="formatQty($event, line)"
+                                           class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white"
+                                           placeholder="1">
+                                </td>
+
+                                <td style="padding: 6px 12px;">
+                                    <input type="text" inputmode="numeric"
+                                           :name="`lines[${index}][unit_price]`"
+                                           x-model="line.unit_price"
+                                           @input="formatLinePrice($event, line)"
+                                           class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white"
+                                           dir="ltr"
+                                           placeholder="0">
+                                </td>
+
+                                <td style="padding: 6px 12px;" class="text-center num font-bold text-slate-900" x-text="money(lineTotal(line))"></td>
+
+                                <td style="padding: 6px 12px;">
+                                    <input type="text" :name="`lines[${index}][note]`"
+                                           x-model="line.note"
+                                           class="field w-full !py-2 !px-3 text-xs bg-white"
+                                           placeholder="تێبینی...">
+                                </td>
+
+                                <td style="text-align: center; padding: 6px;">
+                                    <button type="button" @click="removeLine(index)"
+                                            class="inline-flex items-center justify-center size-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                            x-show="lines.length > 1" title="سڕینەوەی دێڕ">✕</button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-3 border-t border-[--color-line] bg-slate-50/50">
+                <button type="button" @click="addLine()"
+                        class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold text-blue-700 hover:bg-blue-50 border border-dashed border-blue-300 cursor-pointer">
+                    + زیادکردنی مەواد یان کاڵای تر
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ٣. دارایی، شێوازی پارەدان (حازری یان بە قەرز)، و پوختەی کۆتایی --}}
+    <div class="grid gap-4 lg:grid-cols-3">
+        {{-- شێوازی پارەدان و داشکاندن --}}
+        <div class="card lg:col-span-2">
+            <div class="card-body space-y-4">
+                {{-- هەڵبژاردنی حازری یان بە قەرز --}}
+                <div>
+                    <label class="label font-bold text-xs text-slate-800 mb-1.5">شێوازی پێدانی پارە:</label>
+                    <div class="grid grid-cols-3 gap-2 sm:gap-3">
+                        {{-- حازری (نەقد) --}}
+                        <button type="button" @click="setPaymentType('cash')"
+                                :class="paymentType === 'cash' ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'"
+                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1">
+                            <span class="text-base">💵</span>
+                            <span>حازری (نەقد)</span>
+                            <span class="text-[10px] font-normal" :class="paymentType === 'cash' ? 'text-emerald-100' : 'text-slate-400'">تەواوی پارەکە دراوە</span>
+                        </button>
+
+                        {{-- بە قەرز --}}
+                        <button type="button" @click="setPaymentType('debt')"
+                                :class="paymentType === 'debt' ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-600/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'"
+                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1">
+                            <span class="text-base">⏳</span>
+                            <span>بە قەرز</span>
+                            <span class="text-[10px] font-normal" :class="paymentType === 'debt' ? 'text-rose-100' : 'text-slate-400'">پارە نەدراوە (قەرز)</span>
+                        </button>
+
+                        {{-- بەشێکی دراوە (پێشەکی) --}}
+                        <button type="button" @click="setPaymentType('partial')"
+                                :class="paymentType === 'partial' ? 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-500/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'"
+                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1">
+                            <span class="text-base">⚖️</span>
+                            <span>بەشێکی دراوە</span>
+                            <span class="text-[10px] font-normal" :class="paymentType === 'partial' ? 'text-amber-100' : 'text-slate-400'">نیوە قەرز / پێشەکی</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2 pt-3 border-t border-slate-100">
+                    {{-- داشکاندن --}}
+                    <div>
+                        <label class="label text-xs" for="discount_amount">داشکاندن (د.ع)</label>
+                        <input id="discount_amount" name="discount_amount" type="text" inputmode="numeric"
+                               class="field num font-bold w-full"
+                               dir="ltr"
+                               x-model="discount"
+                               @input="formatDiscount($event)"
+                               placeholder="0">
+                        <p class="mt-1 text-xs text-[--color-ink-soft]">
+                            ئەگەر فرۆشیار داشکاندنی کردووە، بڕەکەی لێرە بنووسە.
+                        </p>
+                    </div>
+
+                    {{-- بڕی پارەی دراو ئەگەر بەشێکی دراوە بوو --}}
+                    <div x-show="paymentType === 'partial'" x-transition>
+                        <label class="label text-xs font-bold text-amber-700" for="paid_amount">بڕی پارەی دراو ئێستا (د.ع)</label>
+                        <input id="paid_amount" name="paid_amount" type="text" inputmode="numeric"
+                               class="field num font-bold text-amber-700 w-full"
+                               dir="ltr"
+                               x-model="paid"
+                               @input="formatPaid($event)"
+                               placeholder="0">
+                    </div>
+
+                    {{-- پەیامی ڕوونکردنەوە ئەگەر نەقد یان قەرز بوو --}}
+                    <div x-show="paymentType === 'cash'" class="sm:col-span-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl p-3 text-xs font-bold flex items-center gap-2">
+                        <span>✓</span>
+                        <span>ئەم پسوولەیە بە شێوەی حازری (نەقد) تۆمار دەکرێت و هیچ قەرزێک بۆ فرۆشیار تۆمار نابێت.</span>
+                    </div>
+
+                    <div x-show="paymentType === 'debt'" class="sm:col-span-2 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl p-3 text-xs font-bold flex items-center gap-2">
+                        <span>⚠️</span>
+                        <span>تەواوی بڕی پسوولەکە بە قەرز بۆ فرۆشیار تۆمار دەکرێت لە بەشی قەرزەکاندا.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -233,7 +377,7 @@
         <div class="card">
             <div class="card-body space-y-2.5 text-sm">
                 <div class="flex justify-between items-center">
-                    <span class="text-[--color-ink-soft]">کۆی کاڵاکان</span>
+                    <span class="text-[--color-ink-soft]">کۆی مەوادەکان</span>
                     <span class="num font-semibold text-slate-800" x-text="money(subtotal())">0 د.ع</span>
                 </div>
 
@@ -263,7 +407,7 @@
 
     {{-- ٤. دوگمەکانی خوارەوە --}}
     <div class="flex flex-wrap items-center gap-3 pt-2">
-        <button type="submit" class="btn btn-primary !py-2.5 !px-6 text-sm font-bold shadow-sm bg-blue-600 hover:bg-blue-700">
+        <button type="submit" class="btn btn-primary !py-2.5 !px-6 text-sm font-bold shadow-sm bg-blue-600 hover:bg-blue-700 cursor-pointer">
             {{ $purchase->exists ? 'نوێکردنەوەی پسوولەی کڕین' : 'تۆمارکردنی پسوولەی کڕین' }}
         </button>
 
@@ -279,11 +423,80 @@
 </form>
 
 <script>
-function purchaseForm(initialLines, initialDiscount, initialPaid) {
+function purchaseForm(initialLines, initialDiscount, initialPaid, initialPaymentType, initialImagePreview) {
+    const hasDetailedItems = initialLines && initialLines.length > 1;
+
     return {
-        lines: initialLines,
+        entryMode: hasDetailedItems ? 'itemized' : 'quick',
+        quickTitle: (initialLines && initialLines[0] && initialLines[0].item_name) ? initialLines[0].item_name : 'مەوادی هەمەجۆری کارگە',
+        quickTotal: (initialLines && initialLines[0] && initialLines[0].unit_price) ? initialLines[0].unit_price : '',
+        paymentType: initialPaymentType || 'cash',
+        lines: initialLines || [{ item_name: '', qty: '', unit_price: '', note: '' }],
         discount: initialDiscount || '',
         paid: initialPaid || '',
+        imagePreview: initialImagePreview || null,
+        removeImageFlag: false,
+
+        init() {
+            if (this.paymentType === 'cash') {
+                this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+            } else if (this.paymentType === 'debt') {
+                this.paid = '0';
+            }
+        },
+
+        setEntryMode(mode) {
+            this.entryMode = mode;
+            if (mode === 'quick' && this.subtotalDetailed() > 0 && !this.quickTotal) {
+                this.quickTotal = this.subtotalDetailed().toLocaleString('en-US');
+            }
+            if (this.paymentType === 'cash') {
+                this.$nextTick(() => {
+                    this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+                });
+            }
+        },
+
+        setPaymentType(type) {
+            this.paymentType = type;
+            if (type === 'cash') {
+                this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+            } else if (type === 'debt') {
+                this.paid = '0';
+            } else {
+                if (this.cleanNum(this.paid) === 0 || this.cleanNum(this.paid) === this.total()) {
+                    this.paid = '';
+                }
+            }
+        },
+
+        onImageChange(e) {
+            const file = e.target.files[0];
+            if (file) {
+                this.imagePreview = URL.createObjectURL(file);
+                this.removeImageFlag = false;
+            }
+        },
+
+        removeImage() {
+            this.imagePreview = null;
+            this.removeImageFlag = true;
+            const input = document.getElementById('purchase_image_input');
+            if (input) input.value = '';
+        },
+
+        formatQuickTotal(e) {
+            let clean = e.target.value.replace(/[^0-9.]/g, '');
+            let parts = clean.split('.');
+            if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+            let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+            let dec = parts.length > 1 ? '.' + parts[1] : '';
+            this.quickTotal = int ? int + dec : '';
+
+            if (this.paymentType === 'cash') {
+                this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+            }
+        },
 
         addLine() {
             this.lines.push({ item_name: '', qty: '', unit_price: '', note: '' });
@@ -293,6 +506,9 @@ function purchaseForm(initialLines, initialDiscount, initialPaid) {
             if (this.lines.length > 1) {
                 this.lines.splice(index, 1);
             }
+            if (this.paymentType === 'cash') {
+                this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+            }
         },
 
         formatQty(e, line) {
@@ -300,6 +516,9 @@ function purchaseForm(initialLines, initialDiscount, initialPaid) {
             let parts = clean.split('.');
             if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
             line.qty = clean ? parts.join('.') : '';
+            if (this.paymentType === 'cash') {
+                this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+            }
         },
 
         formatLinePrice(e, line) {
@@ -309,6 +528,9 @@ function purchaseForm(initialLines, initialDiscount, initialPaid) {
             let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
             let dec = parts.length > 1 ? '.' + parts[1] : '';
             line.unit_price = int ? int + dec : '';
+            if (this.paymentType === 'cash') {
+                this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+            }
         },
 
         formatDiscount(e) {
@@ -318,6 +540,9 @@ function purchaseForm(initialLines, initialDiscount, initialPaid) {
             let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
             let dec = parts.length > 1 ? '.' + parts[1] : '';
             this.discount = int ? int + dec : '';
+            if (this.paymentType === 'cash') {
+                this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+            }
         },
 
         formatPaid(e) {
@@ -339,16 +564,27 @@ function purchaseForm(initialLines, initialDiscount, initialPaid) {
                 const option = Array.from(datalist.options).find(opt => opt.value.trim().toLowerCase() === line.item_name.trim().toLowerCase());
                 if (option && option.dataset.price && (!line.unit_price || this.cleanNum(line.unit_price) == 0)) {
                     line.unit_price = parseFloat(option.dataset.price).toLocaleString('en-US');
+                    if (this.paymentType === 'cash') {
+                        this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+                    }
                 }
             }
         },
 
         lineTotal(line) {
-            return (parseFloat(line.qty) || 0) * this.cleanNum(line.unit_price);
+            const q = (parseFloat(line.qty) || 1);
+            return q * this.cleanNum(line.unit_price);
+        },
+
+        subtotalDetailed() {
+            return this.lines.reduce((sum, line) => sum + this.lineTotal(line), 0);
         },
 
         subtotal() {
-            return this.lines.reduce((sum, line) => sum + this.lineTotal(line), 0);
+            if (this.entryMode === 'quick') {
+                return this.cleanNum(this.quickTotal);
+            }
+            return this.subtotalDetailed();
         },
 
         total() {
@@ -356,6 +592,12 @@ function purchaseForm(initialLines, initialDiscount, initialPaid) {
         },
 
         remaining() {
+            if (this.paymentType === 'cash') {
+                return 0;
+            }
+            if (this.paymentType === 'debt') {
+                return this.total();
+            }
             return Math.max(0, this.total() - this.cleanNum(this.paid));
         },
 

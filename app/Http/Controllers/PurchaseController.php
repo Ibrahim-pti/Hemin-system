@@ -113,13 +113,19 @@ class PurchaseController extends Controller
     {
         $data = $this->validated($request);
 
-        $purchase = DB::transaction(function () use ($data, $request) {
+        $imagePath = null;
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            $imagePath = $request->file('image')->store('purchases', 'public');
+        }
+
+        $purchase = DB::transaction(function () use ($data, $request, $imagePath) {
             $headerData = $this->header($data);
 
             $purchase = Purchase::create($headerData + [
                 'invoice_no' => Purchase::nextInvoiceNo(),
                 'status' => 'draft',
                 'user_id' => auth()->id(),
+                'image' => $imagePath,
             ]);
 
             $this->syncLines($purchase, $data['lines']);
@@ -188,8 +194,15 @@ class PurchaseController extends Controller
 
         $data = $this->validated($request);
 
-        DB::transaction(function () use ($purchase, $data, $request) {
-            $purchase->update($this->header($data));
+        $imagePath = $purchase->image;
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            $imagePath = $request->file('image')->store('purchases', 'public');
+        } elseif ($request->boolean('remove_image')) {
+            $imagePath = null;
+        }
+
+        DB::transaction(function () use ($purchase, $data, $request, $imagePath) {
+            $purchase->update($this->header($data) + ['image' => $imagePath]);
             $purchase->items()->delete();
             $this->syncLines($purchase, $data['lines']);
 
@@ -205,50 +218,81 @@ class PurchaseController extends Controller
     public function confirm(Purchase $purchase)
     {
         if ($purchase->status === 'confirmed') {
-            return back()->with('err', 'پێشتر پەسەندکراوە.');
+            return back()->with('err', 'ئەم پسوولەیە پێشتر پەسەندکراوە.');
         }
 
         $this->stock->postPurchase($purchase);
 
-        return back()->with('ok', 'پەسەندکرا — کاڵاکان چوونە مەخزەنەوە.');
+        return back()->with('ok', 'پسوولەکە پەسەندکرا و مەوادەکان چوونە کۆگاوە.');
     }
 
-    /** هەڵوەشاندنەوە — جوڵەکانی مەخزەن دەسڕدرێنەوە. */
+    /** هەڵوەشاندنەوە — کەمکردنەوەی مەوادەکان لە مەخزەن. */
     public function unconfirm(Purchase $purchase)
     {
+        if ($purchase->status !== 'confirmed') {
+            return back()->with('err', 'ئەم پسوولەیە هێشتا پەسەند نەکراوە.');
+        }
+
         $this->stock->unpostPurchase($purchase);
 
-        return back()->with('ok', 'هەڵوەشێنرایەوە — جوڵەکانی مەخزەن سڕدرانەوە.');
+        return back()->with('ok', 'پسوولەکە هەڵوەشێنرایەوە و مەوادەکان لە کۆگا کەمکرانەوە.');
     }
 
     public function destroy(Purchase $purchase)
     {
         if ($purchase->status === 'confirmed') {
-            return back()->with('err', 'پسوولەی پەسەندکراو ناسڕدرێتەوە.');
+            return back()->with('err', 'ناتوانیت پسوولەی پەسەندکراو بسڕیتەوە — سەرەتا هەڵیبوەشێنەوە.');
         }
 
-        $purchase->items()->delete();
         $purchase->delete();
 
-        return redirect()->route('purchases.index')->with('ok', 'سڕدرایەوە.');
+        return redirect()->route('purchases.index')->with('ok', 'پسوولەی کڕین سڕایەوە.');
     }
 
     private function validated(Request $request): array
     {
         $input = $request->all();
+
+        // پاککردنەوەی فاریزەکان لە ژمارەکان
         if (isset($input['discount_amount'])) {
             $input['discount_amount'] = str_replace(',', '', (string) $input['discount_amount']);
         }
         if (isset($input['paid_amount'])) {
             $input['paid_amount'] = str_replace(',', '', (string) $input['paid_amount']);
         }
+        if (isset($input['quick_total'])) {
+            $input['quick_total'] = str_replace(',', '', (string) $input['quick_total']);
+        }
+
+        // ئەگەر شێوازی تۆماری خێرا بێت (یان تەنها کۆی وەسڵ نووسرابێت)
+        if (($input['entry_mode'] ?? 'itemized') === 'quick' || (!empty($input['quick_total']) && (float) $input['quick_total'] > 0)) {
+            $quickTotal = (float) ($input['quick_total'] ?? 0);
+            if ($quickTotal > 0) {
+                $quickTitle = trim($input['quick_title'] ?? '') ?: 'مەوادی هەمەجۆری وەسڵ';
+                $input['lines'] = [
+                    [
+                        'item_name' => $quickTitle,
+                        'qty' => 1,
+                        'unit_price' => $quickTotal,
+                        'note' => $input['note'] ?? null,
+                    ],
+                ];
+            }
+        }
+
         if (isset($input['lines']) && is_array($input['lines'])) {
             foreach ($input['lines'] as $k => $l) {
                 if (isset($l['unit_price'])) {
                     $input['lines'][$k]['unit_price'] = str_replace(',', '', (string) $l['unit_price']);
                 }
                 if (isset($l['qty'])) {
-                    $input['lines'][$k]['qty'] = str_replace(',', '', (string) $l['qty']);
+                    $qtyClean = str_replace(',', '', (string) $l['qty']);
+                    $input['lines'][$k]['qty'] = ($qtyClean !== '' && (float) $qtyClean > 0) ? $qtyClean : 1;
+                } else {
+                    $input['lines'][$k]['qty'] = 1;
+                }
+                if (empty($input['lines'][$k]['item_name'])) {
+                    $input['lines'][$k]['item_name'] = 'مەوادی کڕدراو';
                 }
             }
         }
@@ -263,6 +307,8 @@ class PurchaseController extends Controller
             'exchange_rate' => ['nullable', 'numeric', 'min:0'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
+            'payment_type' => ['nullable', 'in:cash,debt,partial'],
+            'image' => ['nullable', 'image', 'max:10240'],
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.item_name' => ['nullable', 'string', 'max:255'],
@@ -271,7 +317,7 @@ class PurchaseController extends Controller
             'lines.*.unit_price' => ['required', 'numeric', 'min:0'],
             'lines.*.note' => ['nullable', 'string', 'max:255'],
         ], [
-            'lines.required' => 'لانیکەم یەک کاڵا زیاد بکە.',
+            'lines.required' => 'تکایە بڕی پارەی پسوولەکە بنووسە.',
             'lines.*.qty.gt' => 'بڕ دەبێت لە سفر زیاتر بێت.',
         ]);
     }
@@ -298,7 +344,20 @@ class PurchaseController extends Controller
             ->sum(fn ($line) => (float) $line['qty'] * (float) $line['unit_price']);
 
         $discount = (float) ($data['discount_amount'] ?? 0);
+        $total = max(0, $subtotal - $discount);
         $currency = $data['currency'] ?? 'IQD';
+
+        // شێوازی پارەدان (حازری / نەقد، بە قەرز، یان بەشێکی دراوە)
+        $paymentType = $data['payment_type'] ?? null;
+        if ($paymentType === 'debt') {
+            $paidAmount = 0;
+        } elseif ($paymentType === 'cash') {
+            $paidAmount = $total;
+        } elseif ($paymentType === 'partial') {
+            $paidAmount = min($total, (float) ($data['paid_amount'] ?? 0));
+        } else {
+            $paidAmount = (float) ($data['paid_amount'] ?? 0);
+        }
 
         return [
             'supplier_id' => $supplierId,
@@ -310,8 +369,8 @@ class PurchaseController extends Controller
                 : null,
             'subtotal' => $subtotal,
             'discount_amount' => $discount,
-            'total' => max(0, $subtotal - $discount),
-            'paid_amount' => $data['paid_amount'] ?? 0,
+            'total' => $total,
+            'paid_amount' => $paidAmount,
             'note' => $data['note'] ?? null,
         ];
     }
