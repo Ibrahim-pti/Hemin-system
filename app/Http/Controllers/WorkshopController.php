@@ -191,11 +191,68 @@ class WorkshopController extends Controller
         ));
     }
 
-    /** لاپەڕەی جیاکراوەی وەستا و حەمەڵەکان بە سیستەمی ئامادەبوون */
+    /** لاپەڕەی جەدوەلی سەحی ڕۆژانە و حیساباتی وەستا و حەمەڵەکان */
     public function employees(Request $request): View
     {
-        $date = $request->date('date')?->toDateString() ?? now()->toDateString();
-        $isHoliday = Attendance::isWeeklyHoliday($date);
+        $rangeType = $request->input('range_type', 'this_week');
+        $today = now();
+
+        if ($request->filled('from') && $request->filled('to')) {
+            $from = $request->date('from')->toDateString();
+            $to = $request->date('to')->toDateString();
+            $rangeType = 'custom';
+        } else {
+            switch ($rangeType) {
+                case 'last_week':
+                    $lastWeek = $today->copy()->subWeek();
+                    $from = $lastWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
+                    $to = $lastWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+                    break;
+                case 'this_month':
+                    $from = $today->copy()->startOfMonth()->toDateString();
+                    $to = $today->copy()->endOfMonth()->toDateString();
+                    break;
+                case 'this_week':
+                default:
+                    $rangeType = 'this_week';
+                    $from = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
+                    $to = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+                    break;
+            }
+        }
+
+        // دڵنیابوونەوە لەوەی لە ٣١ ڕۆژ زیاتر نەبێت بۆ ڕێگری لە قورسایی جەدوەل
+        $fromDate = \Carbon\Carbon::parse($from);
+        $toDate = \Carbon\Carbon::parse($to);
+        if ($fromDate->diffInDays($toDate) > 31) {
+            $toDate = $fromDate->copy()->addDays(30);
+            $to = $toDate->toDateString();
+        }
+
+        $kurdishDays = [
+            0 => 'یەکشەممە',
+            1 => 'دووشەممە',
+            2 => 'سێشەممە',
+            3 => 'چوارشەممە',
+            4 => 'پێنجشەممە',
+            5 => 'هەینی',
+            6 => 'شەممە',
+        ];
+
+        $period = \Carbon\CarbonPeriod::create($from, $to);
+        $days = [];
+        foreach ($period as $dt) {
+            $dateStr = $dt->toDateString();
+            $days[] = [
+                'date' => $dateStr,
+                'day_name' => $kurdishDays[$dt->dayOfWeek],
+                'day_short' => $dt->format('m/d'),
+                'day_num' => $dt->format('j'),
+                'month_num' => $dt->format('n'),
+                'is_today' => $dt->isToday(),
+                'is_holiday' => Attendance::isWeeklyHoliday($dateStr),
+            ];
+        }
 
         $shiftSettings = [
             'work_start' => Setting::get('workshop_work_start', '08:00'),
@@ -207,64 +264,169 @@ class WorkshopController extends Controller
 
         $employees = Employee::query()
             ->active()
-            ->with(['attendances' => fn ($q) => $q->whereDate('work_date', $date)])
+            ->with([
+                'attendances' => fn ($q) => $q->whereBetween('work_date', [$from, $to]),
+                'payments' => fn ($q) => $q->where('direction', 'out')->whereBetween('paid_at', [$from, $to])->latest('paid_at'),
+            ])
             ->orderByRaw("CASE job_title WHEN 'master' THEN 1 WHEN 'porter' THEN 2 WHEN 'helper' THEN 3 WHEN 'driver' THEN 4 WHEN 'other' THEN 5 ELSE 6 END")
             ->orderBy('name')
             ->get();
 
-        $employeesData = $employees->map(function ($emp) use ($date) {
-            $att = $emp->attendances->first();
+        $employeesMatrix = $employees->map(function (Employee $emp) use ($days, $shiftSettings, $from, $to) {
+            $attendancesKeyed = $emp->attendances->keyBy(fn ($a) => $a->work_date instanceof \DateTimeInterface ? $a->work_date->format('Y-m-d') : substr((string) $a->work_date, 0, 10));
+
+            $cells = [];
+            $presentCount = 0;
+            $leaveCount = 0;
+            $absentCount = 0;
+            $holidayCount = 0;
+            $totalOvertime = 0.0;
+            $totalFuel = 0.0;
+            $totalTempExit = 0.0;
+
+            foreach ($days as $d) {
+                $dStr = $d['date'];
+                $att = $attendancesKeyed->get($dStr);
+
+                if ($att) {
+                    $status = $att->status;
+                    $ot = (float) $att->overtime_hours;
+                    $fuel = (float) $att->fuel_expense;
+                    $tempExit = (float) $att->temporary_exit_hours;
+
+                    if ($status === 'present') $presentCount++;
+                    elseif ($status === 'leave') $leaveCount++;
+                    elseif ($status === 'absent') $absentCount++;
+                    elseif ($status === 'holiday') $holidayCount++;
+
+                    $totalOvertime += $ot;
+                    $totalFuel += $fuel;
+                    $totalTempExit += $tempExit;
+
+                    $cells[$dStr] = [
+                        'id' => $att->id,
+                        'status' => $status,
+                        'status_label' => $att->status_label,
+                        'check_in' => $att->check_in ? substr($att->check_in, 0, 5) : '',
+                        'check_out' => $att->check_out ? substr($att->check_out, 0, 5) : '',
+                        'hours' => (float) $att->hours,
+                        'overtime_hours' => $ot,
+                        'temporary_exit_hours' => $tempExit,
+                        'exit_reason' => $att->exit_reason ?? '',
+                        'fuel_expense' => $fuel,
+                        'trip_destination' => $att->trip_destination ?? '',
+                        'note' => $att->note ?? '',
+                    ];
+                } else {
+                    $cells[$dStr] = null;
+                }
+            }
+
+            $dailyWage = (float) $emp->daily_wage;
+            $salaryType = $emp->salary_type ?? 'daily';
+            $effectiveDailyWage = $emp->effective_daily_wage;
+
+            // حیساباتی دارایی
+            $baseEarned = $presentCount * $effectiveDailyWage;
+            $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
+            $overtimeEarned = $totalOvertime * $hourlyWage * $shiftSettings['overtime_multiplier'];
+            $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel, 2);
+
+            $totalPaid = (float) $emp->payments->sum('amount_iqd');
+            $remainingBalance = round($totalEarned - $totalPaid, 2);
+
+            $paymentsList = $emp->payments->map(fn ($p) => [
+                'id' => $p->id,
+                'voucher_no' => $p->voucher_no,
+                'amount' => (float) $p->amount,
+                'amount_iqd' => (float) $p->amount_iqd,
+                'currency' => $p->currency,
+                'paid_at' => $p->paid_at?->format('Y/m/d'),
+                'note' => $p->note,
+            ])->values()->all();
+
             return [
                 'id' => $emp->id,
                 'name' => $emp->name,
-                'phone' => $emp->phone,
+                'phone' => $emp->phone ?? '',
                 'job_title' => $emp->job_title,
                 'job_title_label' => $emp->job_title_label,
-                'salary_type' => $emp->salary_type ?? 'daily',
+                'salary_type' => $salaryType,
                 'salary_type_label' => $emp->salary_type_label,
-                'daily_wage' => (float) $emp->daily_wage,
-                'wage_currency' => $emp->wage_currency,
+                'daily_wage' => $dailyWage,
+                'effective_daily_wage' => $effectiveDailyWage,
+                'wage_currency' => $emp->wage_currency ?? 'IQD',
                 'hire_date' => $emp->hire_date?->format('Y/m/d'),
-                'is_active' => (bool) $emp->is_active,
-                'note' => $emp->note,
-                'attendance' => $att ? [
-                    'id' => $att->id,
-                    'status' => $att->status,
-                    'status_label' => $att->status_label,
-                    'check_in' => $att->check_in ? substr($att->check_in, 0, 5) : '',
-                    'check_out' => $att->check_out ? substr($att->check_out, 0, 5) : '',
-                    'hours' => (float) $att->hours,
-                    'overtime_hours' => (float) $att->overtime_hours,
-                    'temporary_exit_hours' => (float) $att->temporary_exit_hours,
-                    'exit_reason' => $att->exit_reason ?? '',
-                    'fuel_expense' => (float) $att->fuel_expense,
-                    'trip_destination' => $att->trip_destination ?? '',
-                    'note' => $att->note ?? '',
-                ] : null,
+                'note' => $emp->note ?? '',
+                'cells' => $cells,
+                'present_count' => $presentCount,
+                'leave_count' => $leaveCount,
+                'absent_count' => $absentCount,
+                'holiday_count' => $holidayCount,
+                'total_overtime' => $totalOvertime,
+                'total_fuel' => $totalFuel,
+                'total_temp_exit' => $totalTempExit,
+                'base_earned' => $baseEarned,
+                'overtime_earned' => $overtimeEarned,
+                'total_earned' => $totalEarned,
+                'total_paid' => $totalPaid,
+                'remaining_balance' => $remainingBalance,
+                'payments' => $paymentsList,
             ];
         })->values()->all();
 
-        $presentCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'present')->count();
-        $leaveCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'leave')->count();
-        $absentCount = $employees->filter(fn ($e) => $e->attendances->first()?->status === 'absent')->count();
-        $notRecordedCount = $employees->filter(fn ($e) => !$e->attendances->first() || !$e->attendances->first()?->status)->count();
-        $totalOvertime = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->overtime_hours ?? 0));
-        $totalFuel = (float) $employees->sum(fn ($e) => (float) ($e->attendances->first()?->fuel_expense ?? 0));
-        $isFriday = $isHoliday;
+        // ژماردنی ئاماری هەر ڕۆژێک بە جیا بۆ خوارەوەی جەدوەل (وەک دەفتەرەکە)
+        $dayTotals = [];
+        foreach ($days as $d) {
+            $dStr = $d['date'];
+            $presentOnDay = 0;
+            $overtimeOnDay = 0.0;
+            $fuelOnDay = 0.0;
+
+            foreach ($employeesMatrix as $row) {
+                $cell = $row['cells'][$dStr] ?? null;
+                if ($cell && $cell['status'] === 'present') {
+                    $presentOnDay++;
+                    $overtimeOnDay += $cell['overtime_hours'];
+                    $fuelOnDay += $cell['fuel_expense'];
+                }
+            }
+
+            $dayTotals[$dStr] = [
+                'present' => $presentOnDay,
+                'overtime' => $overtimeOnDay,
+                'fuel' => $fuelOnDay,
+            ];
+        }
+
+        // کۆی گشتییەکانی سەرجەم ماوەکە
+        $totalEmployeesCount = count($employeesMatrix);
+        $totalPresentManDays = array_sum(array_column($employeesMatrix, 'present_count'));
+        $totalOvertimeHours = array_sum(array_column($employeesMatrix, 'total_overtime'));
+        $totalFuelExpenses = array_sum(array_column($employeesMatrix, 'total_fuel'));
+        $totalEarnedAll = array_sum(array_column($employeesMatrix, 'total_earned'));
+        $totalPaidAll = array_sum(array_column($employeesMatrix, 'total_paid'));
+        $totalRemainingAll = array_sum(array_column($employeesMatrix, 'remaining_balance'));
+
+        $cashBoxes = \App\Models\CashBox::all();
 
         return view('workshop.employees', compact(
             'employees',
-            'employeesData',
-            'date',
-            'isFriday',
-            'isHoliday',
+            'employeesMatrix',
+            'days',
+            'dayTotals',
+            'from',
+            'to',
+            'rangeType',
             'shiftSettings',
-            'presentCount',
-            'leaveCount',
-            'absentCount',
-            'notRecordedCount',
-            'totalOvertime',
-            'totalFuel'
+            'totalEmployeesCount',
+            'totalPresentManDays',
+            'totalOvertimeHours',
+            'totalFuelExpenses',
+            'totalEarnedAll',
+            'totalPaidAll',
+            'totalRemainingAll',
+            'cashBoxes'
         ));
     }
 
@@ -607,5 +769,176 @@ class WorkshopController extends Controller
             }
             return back()->with('err', 'هەڵە لە نوێکردنەوەدا: ' . $e->getMessage());
         }
+    }
+
+    /** گۆڕینی خێرای دۆخی خانەی ئامادەبوون (سەح / غائیب / ئیجازە / هیچی تر) بە یەک کلیک */
+    public function toggleAttendanceCell(Request $request)
+    {
+        $validated = $request->validate([
+            'employee_id' => ['required', 'exists:employees,id'],
+            'work_date' => ['required', 'date'],
+            'status' => ['nullable', 'in:present,absent,leave,holiday,delete'],
+        ]);
+
+        $employee = Employee::findOrFail($validated['employee_id']);
+        $date = $validated['work_date'];
+        $status = $validated['status'] ?? null;
+
+        $attendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('work_date', $date)
+            ->first();
+
+        if ($status === 'delete') {
+            if ($attendance) {
+                $attendance->delete();
+            }
+            return response()->json([
+                'ok' => true,
+                'status' => null,
+                'status_label' => 'تۆمارنەکراو',
+                'attendance' => null,
+                'message' => "تۆماری ئامادەبوونی {$employee->name} سڕدرایەوە.",
+            ]);
+        }
+
+        // ئەگەر دۆخ دیاری نەکرابێت، بە یەک کلیک بەدوای یەکدا دەسوڕێت: سەح -> غائیب -> ئیجازە -> خاڵی
+        if (! $status) {
+            if (! $attendance || ! $attendance->status) {
+                $status = 'present';
+            } elseif ($attendance->status === 'present') {
+                $status = 'absent';
+            } elseif ($attendance->status === 'absent') {
+                $status = 'leave';
+            } else {
+                $attendance->delete();
+                return response()->json([
+                    'ok' => true,
+                    'status' => null,
+                    'status_label' => 'تۆمارنەکراو',
+                    'attendance' => null,
+                    'message' => "تۆماری ئامادەبوونی {$employee->name} لابرا.",
+                ]);
+            }
+        }
+
+        if (! $attendance) {
+            $attendance = new Attendance([
+                'employee_id' => $employee->id,
+                'work_date' => $date,
+            ]);
+        }
+
+        $attendance->status = $status;
+        $attendance->wage_snapshot = $status === 'present' ? $employee->effective_daily_wage : 0;
+        $attendance->user_id = auth()->id();
+        $attendance->save();
+
+        return response()->json([
+            'ok' => true,
+            'status' => $attendance->status,
+            'status_label' => $attendance->status_label,
+            'attendance' => [
+                'id' => $attendance->id,
+                'status' => $attendance->status,
+                'status_label' => $attendance->status_label,
+                'check_in' => $attendance->check_in ? substr($attendance->check_in, 0, 5) : '',
+                'check_out' => $attendance->check_out ? substr($attendance->check_out, 0, 5) : '',
+                'hours' => (float) $attendance->hours,
+                'overtime_hours' => (float) $attendance->overtime_hours,
+                'temporary_exit_hours' => (float) $attendance->temporary_exit_hours,
+                'exit_reason' => $attendance->exit_reason ?? '',
+                'fuel_expense' => (float) $attendance->fuel_expense,
+                'trip_destination' => $attendance->trip_destination ?? '',
+                'note' => $attendance->note ?? '',
+            ],
+            'message' => "دۆخی {$employee->name} بۆ بەرواری {$date} نوێکرایەوە.",
+        ]);
+    }
+
+    /** سەح لێدانی هەمووان بۆ ڕۆژێکی دیاریکراو (سەحی بەکۆمەڵ) */
+    public function batchMarkDay(Request $request)
+    {
+        $validated = $request->validate([
+            'work_date' => ['required', 'date'],
+            'status' => ['required', 'in:present,absent,leave,holiday'],
+        ]);
+
+        $date = $validated['work_date'];
+        $status = $validated['status'];
+        $employees = Employee::active()->get();
+
+        DB::transaction(function () use ($employees, $date, $status) {
+            foreach ($employees as $employee) {
+                $attendance = Attendance::where('employee_id', $employee->id)
+                    ->whereDate('work_date', $date)
+                    ->first();
+
+                if (! $attendance) {
+                    $attendance = new Attendance([
+                        'employee_id' => $employee->id,
+                        'work_date' => $date,
+                    ]);
+                }
+
+                $attendance->status = $status;
+                $attendance->wage_snapshot = $status === 'present' ? $employee->effective_daily_wage : 0;
+                $attendance->user_id = auth()->id();
+                $attendance->save();
+            }
+        });
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => "ئامادەبوونی هەموو وەستاکان بۆ بەرواری {$date} بە سەرکەوتوویی تۆمارکرا.",
+            ]);
+        }
+
+        return back()->with('ok', "ئامادەبوونی هەموو وەستاکان بۆ بەرواری {$date} تۆمارکرا.");
+    }
+
+    /** تۆمارکردنی پێشەکی یان دانی مووچە بۆ وەستا لە ڕێگەی قاصەوە */
+    public function recordEmployeePayment(Request $request, \App\Services\PaymentService $paymentService)
+    {
+        $validated = $request->validate([
+            'employee_id' => ['required', 'exists:employees,id'],
+            'amount' => ['required', 'numeric', 'min:1'],
+            'currency' => ['nullable', 'in:IQD,USD'],
+            'cash_box_id' => ['nullable', 'exists:cash_boxes,id'],
+            'paid_at' => ['required', 'date'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $employee = Employee::findOrFail($validated['employee_id']);
+
+        $payment = $paymentService->record([
+            'direction' => 'out',
+            'party' => $employee,
+            'party_name' => $employee->name,
+            'amount' => (float) $validated['amount'],
+            'currency' => $validated['currency'] ?? 'IQD',
+            'cash_box_id' => $validated['cash_box_id'] ?? null,
+            'paid_at' => $validated['paid_at'],
+            'category' => 'wage',
+            'note' => $validated['note'] ?: "پێشەکی / حەقدەستی {$employee->name}",
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => "بڕی " . number_format($payment->amount) . " {$payment->currency} بە سەرکەوتوویی درا بە {$employee->name}.",
+                'payment' => [
+                    'id' => $payment->id,
+                    'voucher_no' => $payment->voucher_no,
+                    'amount' => (float) $payment->amount,
+                    'amount_iqd' => (float) $payment->amount_iqd,
+                    'currency' => $payment->currency,
+                    'paid_at' => $payment->paid_at?->format('Y/m/d'),
+                    'note' => $payment->note,
+                ],
+            ]);
+        }
+
+        return back()->with('ok', "پارەدان بۆ {$employee->name} بە سەرکەوتوویی تۆمارکرا.");
     }
 }

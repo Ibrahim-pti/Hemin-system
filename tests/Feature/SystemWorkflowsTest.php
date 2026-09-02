@@ -190,12 +190,44 @@ class SystemWorkflowsTest extends TestCase
             'status' => 'present',
             'check_in' => '08:00',
             'check_out' => '18:00',
-            'overtime_hours' => 2,
             'fuel_expense' => 15000,
             'trip_destination' => 'ماڵی حاجی ئەحمەد',
         ]);
         $recordRes->assertStatus(200);
         $recordRes->assertJson(['ok' => true]);
+
+        // Test new matrix ledger endpoints
+        $matrixViewRes = $this->get('/workshop/employees?range_type=this_week');
+        $matrixViewRes->assertStatus(200);
+        $matrixViewRes->assertSee('وەستا کامەران');
+        $matrixViewRes->assertSee('جەدوەلی ئامادەبوونی ڕۆژانە');
+
+        // Toggle cell endpoint
+        $toggleRes = $this->postJson('/workshop/employees/toggle-cell', [
+            'employee_id' => $employee->id,
+            'work_date' => now()->toDateString(),
+            'status' => 'present',
+        ]);
+        $toggleRes->assertStatus(200);
+        $toggleRes->assertJson(['ok' => true, 'status' => 'present']);
+
+        // Batch mark day
+        $batchRes = $this->postJson('/workshop/employees/batch-mark-day', [
+            'work_date' => now()->toDateString(),
+            'status' => 'present',
+        ]);
+        $batchRes->assertStatus(200);
+        $batchRes->assertJson(['ok' => true]);
+
+        // Record employee advance/payment
+        $paymentRes = $this->postJson('/workshop/employees/record-payment', [
+            'employee_id' => $employee->id,
+            'amount' => 20000,
+            'paid_at' => now()->toDateString(),
+            'note' => 'پێشەکی هەفتانە',
+        ]);
+        $paymentRes->assertStatus(200);
+        $paymentRes->assertJson(['ok' => true]);
     }
 
     public function test_admin_can_record_payments_and_manage_cash_and_reports()
