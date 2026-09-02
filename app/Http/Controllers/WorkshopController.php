@@ -271,9 +271,10 @@ class WorkshopController extends Controller
             'work_end' => Setting::get('workshop_work_end', '17:00'),
             'work_hours' => (float) Setting::get('workshop_work_hours', 8),
             'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
+            'overtime_hourly_rate' => (float) Setting::get('workshop_overtime_hourly_rate', 0),
             'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
             'late_grace_minutes' => (int) Setting::get('workshop_late_grace_minutes', 15),
-            'late_deduction_type' => Setting::get('workshop_late_deduction_type', 'fixed_amount'),
+            'late_deduction_type' => Setting::get('workshop_late_deduction_type', 'none'),
             'late_deduction_rate' => (float) Setting::get('workshop_late_deduction_rate', 0),
             'late_weekly_threshold_days' => (int) Setting::get('workshop_late_weekly_threshold_days', 2),
             'late_weekly_penalty_amount' => (float) Setting::get('workshop_late_weekly_penalty_amount', 0),
@@ -372,7 +373,10 @@ class WorkshopController extends Controller
             // حیساباتی دارایی بۆ ماوەی دیاریکراو
             $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5);
             $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
-            $overtimeEarned = $totalOvertime * $hourlyWage * $shiftSettings['overtime_multiplier'];
+            $overtimeHourlyRate = $shiftSettings['overtime_hourly_rate'] > 0
+                ? $shiftSettings['overtime_hourly_rate']
+                : ($hourlyWage * $shiftSettings['overtime_multiplier']);
+            $overtimeEarned = round($totalOvertime * $overtimeHourlyRate, 2);
 
             // حیساباتی بڕینی تاخیربوون بەپێی یاسای بەڕێوەبەر
             $calculatedLateDeduction = 0.0;
@@ -409,7 +413,7 @@ class WorkshopController extends Controller
             $monthLateDays = $monthAtts->where('late_minutes', '>', 0)->count();
 
             $monthBaseEarned = ($monthPresent * $effectiveDailyWage) + ($monthHalfDay * $effectiveDailyWage * 0.5);
-            $monthOvertimeEarned = $monthOvertime * $hourlyWage * $shiftSettings['overtime_multiplier'];
+            $monthOvertimeEarned = round($monthOvertime * $overtimeHourlyRate, 2);
             $monthTotalEarned = round($monthBaseEarned + $monthOvertimeEarned + $monthFuel + $monthBonus - $monthDeductions, 2);
 
             $monthPayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $monthStart && $p->paid_at->toDateString() <= $monthEnd);
@@ -727,20 +731,21 @@ class WorkshopController extends Controller
         return back()->with('ok', 'بەکارهێنانی مەواد تۆمارکرا.');
     }
 
-    /** نوێکردنەوەی ڕێکخستنەکانی دەوام و پشوو و کاتی زیادە و یاسای تاخیربوون */
+    /** نوێکردنەوەی ڕێکخستنەکانی دەوام و کاتی زیادە */
     public function updateSettings(Request $request)
     {
         $validated = $request->validate([
-            'workshop_work_start' => ['required', 'string'],
-            'workshop_work_end' => ['required', 'string'],
             'workshop_work_hours' => ['required', 'numeric', 'min:1', 'max:24'],
+            'workshop_overtime_hourly_rate' => ['nullable', 'numeric', 'min:0'],
             'workshop_weekly_holiday' => ['required', 'string'],
-            'workshop_overtime_multiplier' => ['required', 'numeric', 'min:0.5', 'max:5'],
-            'workshop_late_grace_minutes' => ['nullable', 'numeric', 'min:0', 'max:120'],
-            'workshop_late_deduction_type' => ['nullable', 'in:fixed_amount,per_minute,per_hour,weekly_threshold'],
-            'workshop_late_deduction_rate' => ['nullable', 'numeric', 'min:0'],
-            'workshop_late_weekly_threshold_days' => ['nullable', 'numeric', 'min:1', 'max:7'],
-            'workshop_late_weekly_penalty_amount' => ['nullable', 'numeric', 'min:0'],
+            'workshop_work_start' => ['nullable', 'string'],
+            'workshop_work_end' => ['nullable', 'string'],
+            'workshop_overtime_multiplier' => ['nullable', 'numeric'],
+            'workshop_late_grace_minutes' => ['nullable', 'numeric'],
+            'workshop_late_deduction_type' => ['nullable', 'string'],
+            'workshop_late_deduction_rate' => ['nullable', 'numeric'],
+            'workshop_late_weekly_threshold_days' => ['nullable', 'numeric'],
+            'workshop_late_weekly_penalty_amount' => ['nullable', 'numeric'],
         ]);
 
         foreach ($validated as $key => $value) {
@@ -748,10 +753,10 @@ class WorkshopController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['ok' => true, 'message' => 'ڕێکخستنەکانی دەوام و تاخیربوون بە سەرکەوتوویی پاشەکەوتکران.']);
+            return response()->json(['ok' => true, 'message' => 'ڕێکخستنەکانی دەوام و کاتی زیادە بە سەرکەوتوویی پاشەکەوتکران.']);
         }
 
-        return back()->with('ok', 'ڕێکخستنەکانی دەوام و تاخیربوون بە سەرکەوتوویی پاشەکەوتکران.');
+        return back()->with('ok', 'ڕێکخستنەکانی دەوام و کاتی زیادە بە سەرکەوتوویی پاشەکەوتکران.');
     }
 
     /** زیادکردنی خێرای وەستا و حەمەڵ */
@@ -1089,10 +1094,9 @@ class WorkshopController extends Controller
         $endDate = \Carbon\Carbon::parse("{$yearMonth}-01")->endOfMonth()->toDateString();
 
         $shiftSettings = [
-            'work_start' => Setting::get('workshop_work_start', '08:00'),
-            'work_end' => Setting::get('workshop_work_end', '17:00'),
             'work_hours' => (float) Setting::get('workshop_work_hours', 8),
             'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
+            'overtime_hourly_rate' => (float) Setting::get('workshop_overtime_hourly_rate', 0),
             'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
         ];
 
@@ -1123,7 +1127,10 @@ class WorkshopController extends Controller
         $effectiveDailyWage = $employee->effective_daily_wage;
         $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5);
         $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
-        $overtimeEarned = $totalOvertime * $hourlyWage * $shiftSettings['overtime_multiplier'];
+        $overtimeHourlyRate = $shiftSettings['overtime_hourly_rate'] > 0
+            ? $shiftSettings['overtime_hourly_rate']
+            : ($hourlyWage * $shiftSettings['overtime_multiplier']);
+        $overtimeEarned = round($totalOvertime * $overtimeHourlyRate, 2);
 
         // هەژمارکردنی یاسای تاخیربوونی کارگە بۆ مانگەکە
         $calculatedLatePenalty = 0;

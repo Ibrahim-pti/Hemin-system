@@ -357,107 +357,55 @@
         </div>
     </div>
 
-    {{-- ٥. مۆداڵی سێتینگی بەڕێوەبەر (Settings Modal) --}}
+    {{-- ٥. مۆداڵی سێتینگی کارگە (Settings Modal) --}}
     <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden text-xs">
+        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-sm shadow-2xl border border-slate-200 overflow-hidden text-xs">
             
             <form @submit.prevent="saveSettings()">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
-                        <h2 class="text-base font-black text-white">سێتینگی دەوام و یاسای تاخیربوون</h2>
-                        <p class="text-[11px] text-teal-200">ڕێکخستنی کاتژمێری دەوام و بڕینی تاخیربوون</p>
+                        <h2 class="text-base font-black text-white">سێتینگی دەوام و کاتی زیادە</h2>
+                        <p class="text-[11px] text-teal-200">دیاریکردنی کاتژمێری فەرمی و نرخی کاتی زیادە</p>
                     </div>
                     <button type="button" @click="showSettingsModal = false" class="text-teal-200 hover:text-white text-lg font-bold">✕</button>
                 </div>
 
                 <div class="p-4 space-y-3.5 font-bold text-slate-700">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block mb-1 text-slate-600">دەستپێکی دەوام</label>
-                            <input type="time" x-model="settingsForm.workshop_work_start" required
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold">
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-slate-600">کۆتایی دەوام</label>
-                            <input type="time" x-model="settingsForm.workshop_work_end" required
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block mb-1 text-slate-600">کاتژمێری فەرمی ڕۆژانە</label>
+                    <div>
+                        <label class="block mb-1 text-slate-600">کاتژمێری فەرمی ڕۆژانە *</label>
+                        <div class="relative">
                             <input type="number" step="0.5" min="1" max="24" x-model="settingsForm.workshop_work_hours" required
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold">
+                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                            <span class="absolute left-3 top-2 text-slate-400 font-normal">کاتژمێر</span>
                         </div>
-                        <div>
-                            <label class="block mb-1 text-slate-600">پشووی هەفتانە</label>
-                            <select x-model="settingsForm.workshop_weekly_holiday" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white">
-                                <option value="friday">هەینی</option>
-                                <option value="saturday">شەممە</option>
-                                <option value="thursday">پێنجشەممە</option>
-                                <option value="none">بێ پشوو</option>
-                            </select>
-                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1 font-normal">کاتی فەرمی ڕۆژانەی کارکردنە</p>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block mb-1 text-slate-600">نرخی کاتی زیادە</label>
-                            <select x-model="settingsForm.workshop_overtime_multiplier" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white">
-                                <option value="1.0">١.٠ (ئاسایی)</option>
-                                <option value="1.25">١.٢٥</option>
-                                <option value="1.5">١.٥</option>
-                            </select>
+                    <div>
+                        <label class="block mb-1 text-slate-600">نرخی هەر کاتژمێرێکی کاتی زیادە (د.ع) *</label>
+                        <div class="relative">
+                            <input type="number" min="0" step="500" x-model="settingsForm.workshop_overtime_hourly_rate" required
+                                   placeholder="نموونە: 3000 یان 5000"
+                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold text-emerald-700 focus:outline-hidden focus:border-teal-600">
+                            <span class="absolute left-3 top-2 text-slate-400 font-normal">د.ع</span>
                         </div>
-                        <div>
-                            <label class="block mb-1 text-slate-600">لێخۆشبوونی تاخیربوون (خولەک)</label>
-                            <input type="number" min="0" max="120" x-model="settingsForm.workshop_late_grace_minutes"
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold">
-                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1 font-normal">ئەگەر لە کاتی فەرمی زیاتر بمێنێتەوە، بۆ هەر کاتژمێرێک ئەم بڕەی بۆ زیاد دەبێت</p>
                     </div>
 
-                    {{-- یاسای تاخیربوون --}}
-                    <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
-                        <div class="text-rose-900 font-black flex items-center gap-1">
-                            <span>⚠️</span>
-                            <span>یاسای بڕینی تاخیربوون:</span>
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-slate-600">شێوازی بڕین</label>
-                            <select x-model="settingsForm.workshop_late_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white">
-                                <option value="weekly_threshold">سزای هەفتانە (ئەگەر لە هەفتەیەک چەند ڕۆژ تاخیر بێت)</option>
-                                <option value="fixed_amount">بڕی دیاریکراو بۆ هەر ڕۆژێکی تاخیر</option>
-                            </select>
-                        </div>
-                        <template x-if="settingsForm.workshop_late_deduction_type === 'weekly_threshold'">
-                            <div class="grid grid-cols-2 gap-2 pt-1">
-                                <div>
-                                    <label class="block mb-0.5 text-slate-600">ئەگەر تاخیر بوو زیاتر لە:</label>
-                                    <input type="number" min="1" max="7" x-model="settingsForm.workshop_late_weekly_threshold_days"
-                                           class="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono font-bold bg-white">
-                                </div>
-                                <div>
-                                    <label class="block mb-0.5 text-slate-600">بڕی سزای هەفتانە (د.ع):</label>
-                                    <input type="number" min="0" step="1000" x-model="settingsForm.workshop_late_weekly_penalty_amount"
-                                           placeholder="٠ = مووچەی یەک ڕۆژ"
-                                           class="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono font-bold bg-white">
-                                </div>
-                            </div>
-                        </template>
-                        <template x-if="settingsForm.workshop_late_deduction_type === 'fixed_amount'">
-                            <div>
-                                <label class="block mb-0.5 text-slate-600">بڕی بڕین بۆ هەر ڕۆژێکی تاخیر (د.ع):</label>
-                                <input type="number" min="0" step="500" x-model="settingsForm.workshop_late_deduction_rate"
-                                       class="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono font-bold bg-white">
-                            </div>
-                        </template>
+                    <div>
+                        <label class="block mb-1 text-slate-600">ڕۆژی پشووی هەفتانە</label>
+                        <select x-model="settingsForm.workshop_weekly_holiday" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            <option value="friday">هەینی</option>
+                            <option value="saturday">شەممە</option>
+                            <option value="thursday">پێنجشەممە</option>
+                            <option value="none">بێ پشوو</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-                    <button type="button" @click="showSettingsModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200">داخستن</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800 shadow-2xs">
+                    <button type="button" @click="showSettingsModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 font-bold">داخستن</button>
+                    <button type="submit" class="px-5 py-1.5 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800 shadow-2xs">
                         پاشەکەوتکردن
                     </button>
                 </div>
@@ -731,16 +679,9 @@ function workshopEmployeesApp() {
 
         showSettingsModal: false,
         settingsForm: {
-            workshop_work_start: '{{ $shiftSettings['work_start'] }}',
-            workshop_work_end: '{{ $shiftSettings['work_end'] }}',
             workshop_work_hours: {{ $shiftSettings['work_hours'] }},
-            workshop_weekly_holiday: '{{ $shiftSettings['weekly_holiday'] }}',
-            workshop_overtime_multiplier: {{ $shiftSettings['overtime_multiplier'] }},
-            workshop_late_grace_minutes: {{ $shiftSettings['late_grace_minutes'] }},
-            workshop_late_deduction_type: '{{ $shiftSettings['late_deduction_type'] }}',
-            workshop_late_deduction_rate: {{ $shiftSettings['late_deduction_rate'] }},
-            workshop_late_weekly_threshold_days: {{ $shiftSettings['late_weekly_threshold_days'] }},
-            workshop_late_weekly_penalty_amount: {{ $shiftSettings['late_weekly_penalty_amount'] }}
+            workshop_overtime_hourly_rate: {{ $shiftSettings['overtime_hourly_rate'] ?? 0 }},
+            workshop_weekly_holiday: '{{ $shiftSettings['weekly_holiday'] }}'
         },
 
         showCellModal: false,
@@ -1152,18 +1093,13 @@ function workshopEmployeesApp() {
 
             const wage = row.effective_daily_wage || row.daily_wage;
             const baseEarned = (present * wage) + (halfDay * wage * 0.5);
-            const hourly = wage / {{ $shiftSettings['work_hours'] }};
-            const otEarned = ot * hourly * {{ $shiftSettings['overtime_multiplier'] }};
+            const otHourlyRate = (this.settingsForm.workshop_overtime_hourly_rate > 0)
+                ? this.settingsForm.workshop_overtime_hourly_rate
+                : (wage / (this.settingsForm.workshop_work_hours || 8));
+            const otEarned = ot * otHourlyRate;
 
-            let policyDeduction = 0;
-            if (this.settingsForm.workshop_late_deduction_type === 'weekly_threshold' && lateDays >= this.settingsForm.workshop_late_weekly_threshold_days) {
-                policyDeduction = this.settingsForm.workshop_late_weekly_penalty_amount > 0 ? this.settingsForm.workshop_late_weekly_penalty_amount : wage;
-            } else if (this.settingsForm.workshop_late_deduction_type === 'fixed_amount') {
-                policyDeduction = lateDays * this.settingsForm.workshop_late_deduction_rate;
-            }
-
-            row.total_deductions = manualDeduction + policyDeduction;
-            row.total_earned = Math.round(baseEarned + otEarned + fuel - row.total_deductions);
+            row.total_deductions = manualDeduction;
+            row.total_earned = Math.round(baseEarned + otEarned + fuel - manualDeduction);
             row.remaining_balance = Math.round(row.total_earned - row.total_paid);
         },
 
