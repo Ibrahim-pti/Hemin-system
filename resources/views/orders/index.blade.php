@@ -245,12 +245,12 @@
                             $paid = $order->paidAmount();
                         @endphp
                         <tr class="hover:bg-blue-50/40 transition-colors cursor-pointer"
-                            onclick="if (!event.target.closest('a')) window.open('{{ route('orders.print', $order) }}', '_blank')">
+                            onclick="if (!event.target.closest('a')) window.location.href = '{{ route('orders.print', $order) }}'">
                             <td class="py-3.5 px-4 text-center num text-slate-400 font-medium">
                                 {{ $orders->firstItem() + $index }}
                             </td>
                             <td class="py-3.5 px-4 text-center">
-                                <a href="{{ route('orders.print', $order) }}" target="_blank"
+                                <a href="{{ route('orders.print', $order) }}"
                                    class="inline-flex items-center justify-center min-w-8 px-3 py-1 rounded-lg text-xs font-mono font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
                                    title="کرتە بکە بۆ کردنەوە و چاپی وەسڵ">
                                     {{ $order->invoice_no }}
@@ -289,7 +289,7 @@
                                             + حەقدی
                                         </a>
                                     @endif
-                                    <a href="{{ route('orders.print', $order) }}" target="_blank"
+                                    <a href="{{ route('orders.print', $order) }}"
                                        class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
                                         چاپ
                                     </a>

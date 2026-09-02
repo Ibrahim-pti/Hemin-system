@@ -43,7 +43,7 @@
                 @foreach ($orders as $order)
                     <tr>
                         <td class="num font-medium">
-                            <a href="{{ route('orders.show', $order) }}" class="text-[--color-brand-700]">{{ $order->invoice_no }}</a>
+                            <a href="{{ route('orders.print', $order) }}" class="text-[--color-brand-700]">{{ $order->invoice_no }}</a>
                         </td>
                         <td class="num whitespace-nowrap">{{ fmt_date($order->order_date) }}</td>
                         <td>{{ $order->customer?->name }}</td>

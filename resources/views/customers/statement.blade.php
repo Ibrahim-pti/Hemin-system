@@ -258,7 +258,7 @@
 
                                     {{-- جۆر / ناوەڕۆک --}}
                                     <td style="padding: 0.85rem 0.85rem; text-align: right;">
-                                        <a href="{{ route('orders.show', $order) }}"
+                                        <a href="{{ route('orders.print', $order) }}"
                                            style="color: #1e293b; font-weight: 700; text-decoration: none; font-size: 0.85rem;">
                                             {{ $itemDesc }}
                                         </a>

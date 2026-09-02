@@ -102,18 +102,13 @@ class OrderController extends Controller
         $order = $result['order'];
         $payment = $result['payment'];
 
-        return redirect()->route('orders.show', $order)
-            ->with('ok', "وەسڵی ژمارە {$order->invoice_no} تۆمارکرا.")
-            ->with('just_created', true)
-            ->with('payment_id', $payment?->id)
-            ->with('has_prepaid', $payment !== null);
+        return redirect()->route('orders.print', $order)
+            ->with('ok', "وەسڵی ژمارە {$order->invoice_no} تۆمارکرا.");
     }
 
-    public function show(Order $order): View
+    public function show(Order $order)
     {
-        $order->load(['customer', 'items.item', 'payments', 'externalJobs', 'user']);
-
-        return view('orders.show', compact('order'));
+        return redirect()->route('orders.print', $order);
     }
 
     /** چاپی وەسڵ — هەمان پێکهاتەی دەفتەرە چاپکراوەکەی کارگە. */
@@ -158,7 +153,7 @@ class OrderController extends Controller
             $this->syncLines($order, $data['lines'], $request->file('lines', []));
         });
 
-        return redirect()->route('orders.show', $order)->with('ok', 'وەسڵەکە نوێکرایەوە.');
+        return redirect()->route('orders.print', $order)->with('ok', 'وەسڵەکە نوێکرایەوە.');
     }
 
     /**

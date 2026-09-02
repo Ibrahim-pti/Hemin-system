@@ -338,7 +338,7 @@
                             @foreach ($recentOrders as $order)
                                 <tr style="border-bottom: 1px solid #f8fafc;">
                                     <td class="num" style="padding: 0.75rem 1rem; text-align: center;">
-                                        <a href="{{ route('orders.show', $order) }}" style="color: #e11d48; font-weight: 700; text-decoration: none;">
+                                        <a href="{{ route('orders.print', $order) }}" style="color: #e11d48; font-weight: 700; text-decoration: none;">
                                             {{ $order->invoice_no }}
                                         </a>
                                     </td>

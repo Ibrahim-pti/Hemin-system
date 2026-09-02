@@ -81,11 +81,9 @@ class OrderMeterPricingTest extends TestCase
         $this->assertEquals(250000, (float) $item2->line_total);
         $this->assertTrue($item2->has_meter);
 
-        // بینینی وەسڵەکە (Show view)
+        // بینینی وەسڵەکە ڕاستەوخۆ دەچێتە سەر چاپی وەسڵ (Print view) بەبێ پەیجی ناوەندی
         $showRes = $this->get("/orders/{$order->id}");
-        $showRes->assertStatus(200);
-        $showRes->assertSee('5.5 مەتر');
-        $showRes->assertSee('دەرگای ئاسنی سەرەکی');
+        $showRes->assertRedirect(route('orders.print', $order));
 
         // چاپی وەسڵەکە (Print view)
         $printRes = $this->get("/orders/{$order->id}/print");

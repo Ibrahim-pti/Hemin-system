@@ -80,17 +80,31 @@
 </head>
 <body class="p-3 sm:p-5">
 
-    {{-- دوگمەکانی سەرەوە بۆ چاپ --}}
+    {{-- دوگمەکانی سەرەوە بۆ چاپ و بەڕێوەبردن --}}
     <div class="no-print mx-auto mb-3 flex max-w-[148mm] items-center justify-between gap-2">
         <div class="flex items-center gap-2">
             <button onclick="window.print()" class="btn btn-primary !py-1.5 !px-4 text-xs shadow-sm cursor-pointer">
                 🖨️ چاپکردنی وەسڵ
             </button>
-            <a href="{{ route('orders.index') }}" onclick="if (window.opener) { window.close(); return false; } if (history.length > 1 && document.referrer) { history.back(); return false; }" class="btn btn-ghost !py-1.5 text-xs bg-white border border-slate-200 cursor-pointer">
+            @if (! in_array($order->status, ['delivered', 'cancelled'], true))
+                <a href="{{ route('orders.edit', $order) }}" class="btn btn-ghost !py-1.5 !px-3 text-xs bg-white border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    ✏️ دەستکاری
+                </a>
+            @endif
+            <a href="{{ route('orders.create') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs bg-white border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                + وەسڵی نوێ
+            </a>
+            <a href="{{ route('orders.index') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs bg-white border border-slate-200 hover:bg-slate-50 cursor-pointer">
                 گەڕانەوە
             </a>
         </div>
     </div>
+
+    @if (session('ok'))
+        <div class="no-print mx-auto mb-3 max-w-[148mm] bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl px-4 py-2.5 flex items-center justify-between">
+            <span>✓ {{ session('ok') }}</span>
+        </div>
+    @endif
 
     <div class="receipt-sheet">
         <div>

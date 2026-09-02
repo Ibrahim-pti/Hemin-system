@@ -243,7 +243,7 @@
 
                                 {{-- ناو (ژمارەی وەسڵ) بە ڕەنگی سووری پەمەیی تۆخ --}}
                                 <td style="padding: 0.85rem 1rem; text-align: center;">
-                                    <a href="{{ route('orders.show', $row['order']) }}"
+                                    <a href="{{ route('orders.print', $row['order']) }}"
                                        class="num"
                                        style="color: #e11d48; font-weight: 800; text-decoration: none; font-size: 0.9rem;">
                                         {{ $row['invoice_no'] }}
@@ -300,7 +300,7 @@
                                         </form>
 
                                         {{-- بینین --}}
-                                        <a href="{{ route('orders.show', $row['order']) }}"
+                                        <a href="{{ route('orders.print', $row['order']) }}"
                                            style="width: 1.85rem; height: 1.85rem; border-radius: 0.4rem; background: #fef3c7; color: #d97706; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;"
                                            title="بینین">
                                             <svg style="width: 0.95rem; height: 0.95rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
