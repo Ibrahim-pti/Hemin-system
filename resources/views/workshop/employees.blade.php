@@ -359,7 +359,7 @@
 
     {{-- ٥. مۆداڵی سێتینگی کارگە (Settings Modal) --}}
     <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-sm shadow-2xl border border-slate-200 overflow-hidden text-xs">
+        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden text-xs">
             
             <form @submit.prevent="saveSettings()">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
@@ -367,34 +367,47 @@
                         <h2 class="text-base font-black text-white">سێتینگی دەوام و کاتی زیادە</h2>
                         <p class="text-[11px] text-teal-200">دیاریکردنی کاتژمێری فەرمی و نرخی کاتی زیادە</p>
                     </div>
-                    <button type="button" @click="showSettingsModal = false" class="text-teal-200 hover:text-white text-lg font-bold">✕</button>
+                    <button type="button" @click="showSettingsModal = false" class="text-teal-200 hover:text-white text-lg font-bold cursor-pointer">✕</button>
                 </div>
 
-                <div class="p-4 space-y-3.5 font-bold text-slate-700">
+                <div class="p-5 space-y-4 font-bold text-slate-700">
+                    {{-- کاتژمێری فەرمی --}}
                     <div>
-                        <label class="block mb-1 text-slate-600">کاتژمێری فەرمی ڕۆژانە *</label>
-                        <div class="relative">
+                        <label class="block mb-1.5 text-slate-700 font-black">کاتژمێری فەرمی ڕۆژانە *</label>
+                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-500/20 bg-white transition-all shadow-2xs">
                             <input type="number" step="0.5" min="1" max="24" x-model="settingsForm.workshop_work_hours" required
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
-                            <span class="absolute left-3 top-2 text-slate-400 font-normal">کاتژمێر</span>
+                                   class="w-full px-3.5 py-2.5 font-mono font-bold text-slate-800 focus:outline-hidden text-xs bg-transparent">
+                            <span class="bg-slate-100 px-3.5 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
+                                کاتژمێر
+                            </span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-1 font-normal">کاتی فەرمی ڕۆژانەی کارکردنە</p>
+                        <p class="text-[11px] text-slate-400 font-medium mt-1.5 flex items-center gap-1">
+                            <span>ℹ️</span>
+                            <span>کاتی فەرمی ڕۆژانەی کارکردنە</span>
+                        </p>
                     </div>
 
+                    {{-- نرخی کاتی زیادە --}}
                     <div>
-                        <label class="block mb-1 text-slate-600">نرخی هەر کاتژمێرێکی کاتی زیادە (د.ع) *</label>
-                        <div class="relative">
+                        <label class="block mb-1.5 text-slate-700 font-black">نرخی هەر کاتژمێرێکی کاتی زیادە (د.ع) *</label>
+                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-500/20 bg-white transition-all shadow-2xs">
                             <input type="number" min="0" step="500" x-model="settingsForm.workshop_overtime_hourly_rate" required
-                                   placeholder="نموونە: 3000 یان 5000"
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold text-emerald-700 focus:outline-hidden focus:border-teal-600">
-                            <span class="absolute left-3 top-2 text-slate-400 font-normal">د.ع</span>
+                                   placeholder="0"
+                                   class="w-full px-3.5 py-2.5 font-mono font-black text-emerald-700 focus:outline-hidden text-sm bg-transparent">
+                            <span class="bg-slate-100 px-3.5 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                د.ع
+                            </span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-1 font-normal">ئەگەر لە کاتی فەرمی زیاتر بمێنێتەوە، بۆ هەر کاتژمێرێک ئەم بڕەی بۆ زیاد دەبێت</p>
+                        <p class="text-[11px] text-slate-500 font-medium mt-1.5 flex items-center gap-1 leading-relaxed">
+                            <span>💡</span>
+                            <span>ئەگەر لە کاتی فەرمی زیاتر بمێنێتەوە، بۆ هەر کاتژمێرێک ئەم بڕەی بۆ هەژمار دەکرێت</span>
+                        </p>
                     </div>
 
+                    {{-- پشووی هەفتانە --}}
                     <div>
-                        <label class="block mb-1 text-slate-600">ڕۆژی پشووی هەفتانە</label>
-                        <select x-model="settingsForm.workshop_weekly_holiday" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                        <label class="block mb-1.5 text-slate-700 font-black">ڕۆژی پشووی هەفتانە</label>
+                        <select x-model="settingsForm.workshop_weekly_holiday" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 shadow-2xs">
                             <option value="friday">هەینی</option>
                             <option value="saturday">شەممە</option>
                             <option value="thursday">پێنجشەممە</option>
@@ -403,9 +416,9 @@
                     </div>
                 </div>
 
-                <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-                    <button type="button" @click="showSettingsModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 font-bold">داخستن</button>
-                    <button type="submit" class="px-5 py-1.5 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800 shadow-2xs">
+                <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+                    <button type="button" @click="showSettingsModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer transition-all">داخستن</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800 shadow-2xs cursor-pointer transition-all">
                         پاشەکەوتکردن
                     </button>
                 </div>
