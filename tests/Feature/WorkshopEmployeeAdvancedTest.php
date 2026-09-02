@@ -411,7 +411,7 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $this->assertEquals(25000, $monthRes->json('attendances.0.custom_task_amount'));
     }
 
-    public function test_wasta_vs_admin_role_separation()
+    public function test_wasta_role_cannot_see_money_or_admin_actions()
     {
         $employee = Employee::create([
             'name' => 'وەستا سامان',
@@ -431,8 +431,8 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $viewRes->assertSee('وەستا سامان');
         $viewRes->assertSee('جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان');
         // نابێت دوگمە و دەسەڵاتە داراییەکانی لای بەڕێوەبەر ببینێت
-        $viewRes->assertDontSee('+ کارمەندی نوێ');
         $viewRes->assertDontSee('سێتینگی تاخیربوون و دەوام');
+        $viewRes->assertDontSee('ڕێکخستنی یاسا و مەرجەکانی دەوام');
         $viewRes->assertDontSee('کردارەکان');
 
         // لە داتای matrix دا مووچە و حیسابات دەبێت سفر کرابێت
@@ -471,18 +471,30 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $this->getJson("/workshop/employees/{$employee->id}/month-details")->assertStatus(403);
 
         $this->deleteJson("/workshop/employees/{$employee->id}")->assertStatus(403);
+    }
 
-        // 2. ڕۆڵی بەڕێوەبەر (Admin): دەسەڵاتی تەواوی دارایی و ڕێکخستنی هەیە
+    public function test_admin_role_can_see_money_and_all_actions()
+    {
+        $employee = Employee::create([
+            'name' => 'وەستا کامەران',
+            'job_title' => 'master',
+            'salary_type' => 'daily',
+            'daily_wage' => 45000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
         $this->actingAs($this->admin);
 
         $adminViewRes = $this->get('/workshop/employees');
         $adminViewRes->assertStatus(200);
-        $adminViewRes->assertSee('+ کارمەندی نوێ');
+        $this->assertTrue($adminViewRes->viewData('canSeeMoney'));
         $adminViewRes->assertSee('سێتینگی تاخیربوون و دەوام');
+        $adminViewRes->assertSee('ڕێکخستنی یاسا و مەرجەکانی دەوام');
         $adminViewRes->assertSee('کردارەکان');
 
         $adminMatrix = $adminViewRes->viewData('employeesMatrix');
-        $this->assertEquals(50000, $adminMatrix[0]['daily_wage']);
+        $this->assertEquals(45000, $adminMatrix[0]['daily_wage']);
     }
 }
 
