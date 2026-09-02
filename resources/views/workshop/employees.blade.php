@@ -530,12 +530,14 @@
                     <div>
                         <label class="block mb-1 text-slate-600">ناو *</label>
                         <input type="text" x-model="newEmpForm.name" required
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold">
+                               placeholder="ناوی سیانی وەستا یان کرێکار"
+                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold focus:outline-hidden focus:border-teal-600">
                     </div>
+
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block mb-1 text-slate-600">پیشە</label>
-                            <select x-model="newEmpForm.job_title" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white">
+                            <select x-model="newEmpForm.job_title" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
                                 <option value="master">وەستا</option>
                                 <option value="porter">حەمەڵ</option>
                                 <option value="helper">یاریدەدەر</option>
@@ -544,15 +546,28 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block mb-1 text-slate-600">مووچەی ڕۆژانە *</label>
-                            <input type="number" min="0" step="500" x-model="newEmpForm.daily_wage" required
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold">
+                            <label class="block mb-1 text-slate-600">شێوازی مووچە</label>
+                            <select x-model="newEmpForm.salary_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                                <option value="daily">ڕۆژانە</option>
+                                <option value="weekly">حەفتانە</option>
+                                <option value="monthly">مانگانە</option>
+                            </select>
                         </div>
                     </div>
-                    <div>
-                        <label class="block mb-1 text-slate-600">مۆبایل</label>
-                        <input type="text" x-model="newEmpForm.phone"
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold">
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block mb-1 text-slate-600"
+                                   x-text="newEmpForm.salary_type === 'monthly' ? 'مووچەی مانگانە *' : (newEmpForm.salary_type === 'weekly' ? 'مووچەی حەفتانە *' : 'مووچەی ڕۆژانە *')"></label>
+                            <input type="number" min="0" step="500" x-model="newEmpForm.daily_wage" required
+                                   :placeholder="newEmpForm.salary_type === 'monthly' ? 'بڕی مانگانە' : (newEmpForm.salary_type === 'weekly' ? 'بڕی حەفتانە' : 'بڕی ڕۆژانە')"
+                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-slate-600">مۆبایل</label>
+                            <input type="text" x-model="newEmpForm.phone" placeholder="0750xxxxxxx"
+                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                        </div>
                     </div>
                 </div>
 
@@ -573,7 +588,7 @@
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-white" x-text="'دەستکاری: ' + (editWageForm.name || '')"></h2>
-                        <p class="text-[11px] text-teal-200">گۆڕینی مووچە و پیشە</p>
+                        <p class="text-[11px] text-teal-200">گۆڕینی مووچە و شێوازی پارەدان</p>
                     </div>
                     <button type="button" @click="showEditWageModal = false" class="text-teal-200 hover:text-white text-lg font-bold">✕</button>
                 </div>
@@ -582,12 +597,13 @@
                     <div>
                         <label class="block mb-1 text-slate-600">ناو *</label>
                         <input type="text" x-model="editWageForm.name" required
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold">
+                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold focus:outline-hidden focus:border-teal-600">
                     </div>
+
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block mb-1 text-slate-600">پیشە</label>
-                            <select x-model="editWageForm.job_title" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white">
+                            <select x-model="editWageForm.job_title" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
                                 <option value="master">وەستا</option>
                                 <option value="porter">حەمەڵ</option>
                                 <option value="helper">یاریدەدەر</option>
@@ -596,15 +612,27 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block mb-1 text-slate-600">مووچەی ڕۆژانە *</label>
-                            <input type="number" min="0" step="500" x-model="editWageForm.daily_wage" required
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold">
+                            <label class="block mb-1 text-slate-600">شێوازی مووچە</label>
+                            <select x-model="editWageForm.salary_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                                <option value="daily">ڕۆژانە</option>
+                                <option value="weekly">حەفتانە</option>
+                                <option value="monthly">مانگانە</option>
+                            </select>
                         </div>
                     </div>
-                    <div>
-                        <label class="block mb-1 text-slate-600">مۆبایل</label>
-                        <input type="text" x-model="editWageForm.phone"
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold">
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block mb-1 text-slate-600"
+                                   x-text="editWageForm.salary_type === 'monthly' ? 'مووچەی مانگانە *' : (editWageForm.salary_type === 'weekly' ? 'مووچەی حەفتانە *' : 'مووچەی ڕۆژانە *')"></label>
+                            <input type="number" min="0" step="500" x-model="editWageForm.daily_wage" required
+                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-slate-600">مۆبایل</label>
+                            <input type="text" x-model="editWageForm.phone"
+                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                        </div>
                     </div>
                 </div>
 
