@@ -96,9 +96,12 @@
             <table class="w-full text-right border-collapse text-xs table-fixed">
                 <thead>
                     <tr class="bg-slate-100/90 text-slate-700 font-black border-b border-slate-200 text-center">
-                        {{-- وەستا --}}
-                        <th class="py-3 px-3 text-right sticky right-0 bg-slate-100 z-10 w-36 sm:w-44 border-l border-slate-200">
-                            وەستا
+                        {{-- ژمارە و وەستا --}}
+                        <th class="py-3 px-3 text-right sticky right-0 bg-slate-100 z-10 w-40 sm:w-48 border-l border-slate-200">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-slate-400 font-mono text-[11px] font-bold">#</span>
+                                <span>وەستا</span>
+                            </div>
                         </th>
 
                         {{-- ڕۆژەکان (شەممە تا هەینی) بە قەبارەی یەکسان و ڕێک --}}
@@ -119,12 +122,13 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium">
-                    <template x-for="row in filteredEmployees" :key="row.id">
+                    <template x-for="(row, index) in filteredEmployees" :key="row.id">
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             
-                            {{-- زانیاری وەستا (کۆمپاکت: پیشە لە پێشەوە، دواتر ناو) --}}
+                            {{-- زانیاری وەستا (ژمارەی ڕیزبەند، پیشە لە پێشەوە، دواتر ناو) --}}
                             <td class="py-2.5 px-3 sticky right-0 bg-white hover:bg-slate-50 z-10 border-l border-slate-200">
                                 <div class="flex items-center gap-1.5 cursor-pointer overflow-hidden" @click="openEmployeeDrawer(row)">
+                                    <span class="w-5 h-5 rounded-md bg-slate-100 text-slate-600 font-mono font-bold text-[11px] flex items-center justify-center shrink-0 border border-slate-200" x-text="index + 1"></span>
                                     <span class="px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 font-bold text-[10px] border border-teal-200 shrink-0" x-text="row.job_title_label"></span>
                                     <span class="font-black text-slate-900 hover:text-teal-700 text-xs truncate" x-text="row.name"></span>
                                 </div>
