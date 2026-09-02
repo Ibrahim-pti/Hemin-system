@@ -39,11 +39,11 @@ class Attendance extends Model
     }
 
     public const STATUSES = [
-        'present' => 'ئامادە',
-        'absent' => 'ئامادە نەبوو',
+        'present' => 'هاتووە',
+        'absent' => 'نەهاتووە',
         'holiday' => 'پشوو',
         'leave' => 'مۆڵەت',
-        'half_day' => 'نیوەڕۆژ',
+        'half_day' => 'نیو ڕۆژ',
     ];
 
     /** کاتژمێری کاری ئاسایی — زیاتر لەمە دەبێتە کاتی زیادە. */

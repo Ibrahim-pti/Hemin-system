@@ -87,9 +87,9 @@
             </div>
 
             <div class="flex items-center gap-3 text-[11px] font-bold text-slate-500 flex-wrap">
-                <span class="flex items-center gap-1 text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> سەح (تەواو)</span>
-                <span class="flex items-center gap-1 text-amber-700"><span class="w-2 h-2 rounded-full bg-amber-500"></span> نیوە دەوام (نیو دان)</span>
-                <span class="flex items-center gap-1 text-rose-700"><span class="w-2 h-2 rounded-full bg-rose-500"></span> غائیب</span>
+                <span class="flex items-center gap-1 text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> هاتووە</span>
+                <span class="flex items-center gap-1 text-amber-700"><span class="w-2 h-2 rounded-full bg-amber-500"></span> نیو ڕۆژ</span>
+                <span class="flex items-center gap-1 text-rose-700"><span class="w-2 h-2 rounded-full bg-rose-500"></span> نەهاتووە</span>
                 <span class="text-slate-400 font-normal hidden sm:inline">| کلیک لەسەر خانە بکە بۆ گۆڕینی دۆخ</span>
             </div>
         </div>
@@ -631,10 +631,10 @@
                     <div>
                         <label class="block mb-1 text-slate-600">دۆخی ئامادەبوون</label>
                         <select x-model="cellForm.status" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
-                            <option value="present">سەح (تەواو) ✔️</option>
-                            <option value="half_day">نیوە دەوام (نیو دان) 🌗</option>
-                            <option value="absent">غائیب (نەهاتوو) ❌</option>
-                            <option value="delete">سڕینەوە (خاڵی) 🗑️</option>
+                            <option value="present">هاتووە</option>
+                            <option value="half_day">نیو ڕۆژ</option>
+                            <option value="absent">نەهاتووە</option>
+                            <option value="delete">سڕینەوە (خاڵی)</option>
                         </select>
                     </div>
 
@@ -786,9 +786,9 @@ function workshopEmployeesApp() {
 
         getCellDisplay(cell) {
             if (!cell || !cell.status) return '—';
-            if (cell.status === 'present') return 'سەح ✔️';
-            if (cell.status === 'half_day') return 'نیو دان 🌗';
-            if (cell.status === 'absent') return 'غائیب ❌';
+            if (cell.status === 'present') return 'هاتووە';
+            if (cell.status === 'half_day') return 'نیو ڕۆژ';
+            if (cell.status === 'absent') return 'نەهاتووە';
             return '—';
         },
 
