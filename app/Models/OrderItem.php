@@ -12,6 +12,7 @@ class OrderItem extends Model
 {
     protected $fillable = [
         'order_id', 'description', 'image', 'item_id', 'pricing_mode',
+        'meter', 'meter_price',
         'width', 'height', 'qty', 'computed_qty', 'unit_price', 'line_total', 'note',
     ];
 
@@ -23,9 +24,16 @@ class OrderItem extends Model
         return $this->item?->imageUrl();
     }
 
+    public function getHasMeterAttribute(): bool
+    {
+        return (float) ($this->meter ?? 0) > 0 && (float) ($this->meter_price ?? 0) > 0;
+    }
+
     protected function casts(): array
     {
         return [
+            'meter' => 'decimal:3',
+            'meter_price' => 'decimal:2',
             'width' => 'decimal:3',
             'height' => 'decimal:3',
             'qty' => 'decimal:3',

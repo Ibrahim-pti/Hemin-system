@@ -229,7 +229,11 @@
                             {{-- ناوەڕۆک --}}
                             <td style="text-align: center; padding: 2px 6px;">
                                 <span class="font-bold text-slate-900">{{ $line->description }}</span>
-                                @if ($line->pricing_mode !== 'count' && $line->measurement_label)
+                                @if ($line->has_meter)
+                                    <span class="num text-[10px] text-slate-600 block leading-tight">
+                                        ({{ fmt_qty($line->meter) }} مەتر × {{ fmt_num($line->meter_price) }})
+                                    </span>
+                                @elseif ($line->pricing_mode !== 'count' && $line->measurement_label)
                                     <span class="num text-[10px] text-slate-600">
                                         ({{ $line->measurement_label }})
                                     </span>
@@ -239,14 +243,14 @@
                                 @endif
                             </td>
 
-                            {{-- ژمارە --}}
+                            {{-- ژمارە / مەتر --}}
                             <td class="num text-center font-semibold text-slate-800">
-                                {{ fmt_qty($line->qty) }}
+                                {{ $line->has_meter ? (fmt_qty($line->meter) . ' م') : fmt_qty($line->qty) }}
                             </td>
 
                             {{-- نرخ --}}
                             <td class="num text-center font-semibold text-slate-800">
-                                {{ fmt_num($line->unit_price) }}
+                                {{ $line->has_meter ? fmt_num($line->meter_price) : fmt_num($line->unit_price) }}
                             </td>
                         </tr>
                     @endforeach

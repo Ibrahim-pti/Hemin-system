@@ -9,10 +9,13 @@
             'description' => $l->description,
             'image' => $l->image,
             'preview' => $l->imageUrl(),
-            'unit_price' => $l->unit_price !== null ? (float)$l->unit_price : '',
+            'meter' => $l->meter !== null ? (float)$l->meter : '',
+            'meter_price' => $l->meter_price !== null ? number_format((float)$l->meter_price) : '',
+            'unit_price' => $l->unit_price !== null ? number_format((float)$l->unit_price) : '',
+            'line_total' => $l->line_total !== null ? number_format((float)$l->line_total) : ($l->unit_price !== null ? number_format((float)$l->unit_price) : ''),
             'note' => $l->note ?? '',
           ])->all()
-        : [['description' => '', 'image' => '', 'preview' => null, 'unit_price' => '', 'note' => '']]);
+        : [['description' => '', 'image' => '', 'preview' => null, 'meter' => '', 'meter_price' => '', 'unit_price' => '', 'line_total' => '', 'note' => '']]);
 @endphp
 
 <form method="POST"
@@ -120,10 +123,12 @@
             <table class="table w-full">
                 <thead>
                     <tr class="bg-slate-50/80 text-xs text-slate-700 font-bold border-b border-[--color-line]">
-                        <th style="width: 60px; text-align: center; padding: 10px 6px;">وێنە</th>
-                        <th style="text-align: right; padding: 10px 12px;">ناوەڕۆک / شتەکە (وەک دەرگا، مەحەجەرە...)</th>
-                        <th style="width: 220px; text-align: center; padding: 10px 12px;">نرخ (<span x-text="currency === 'USD' ? '$' : 'د.ع'"></span>)</th>
-                        <th style="width: 44px; text-align: center; padding: 10px 6px;"></th>
+                        <th style="width: 54px; text-align: center; padding: 10px 4px;">وێنە</th>
+                        <th style="text-align: right; padding: 10px 10px;">ناوەڕۆک / شتەکە (وەک دەرگا، مەحەجەرە...)</th>
+                        <th style="width: 100px; text-align: center; padding: 10px 4px;">مەتر</th>
+                        <th style="width: 140px; text-align: center; padding: 10px 6px;">نرخی مەتر (<span x-text="currency === 'USD' ? '$' : 'د.ع'"></span>)</th>
+                        <th style="width: 160px; text-align: center; padding: 10px 8px;">کۆی گشتی (<span x-text="currency === 'USD' ? '$' : 'د.ع'"></span>)</th>
+                        <th style="width: 38px; text-align: center; padding: 10px 4px;"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm">
@@ -167,27 +172,50 @@
                             </td>
 
                             {{-- ناوەڕۆک / ناوی شتەکە --}}
-                            <td style="padding: 6px 12px;">
+                            <td style="padding: 6px 10px;">
                                 <input :name="`lines[${index}][description]`" x-model="line.description" required
                                        class="field w-full !py-2 !px-3 text-sm bg-white"
                                        :placeholder="'ناوەڕۆک / شتەکە ' + (index + 1) + ' (وەک: دەرگای ئاسن، مەحەجەرە...)'">
                             </td>
 
-                            {{-- نرخ --}}
-                            <td style="padding: 6px 12px;">
+                            {{-- بڕی مەتر --}}
+                            <td style="padding: 6px 4px;">
+                                <input type="number" step="any" min="0"
+                                       :name="`lines[${index}][meter]`"
+                                       x-model="line.meter"
+                                       @input="calculateLineTotal(line)"
+                                       class="field num w-full !py-2 !px-2 text-sm font-bold text-center bg-white"
+                                       dir="ltr"
+                                       placeholder="مەتر">
+                            </td>
+
+                            {{-- نرخی بە مەتر --}}
+                            <td style="padding: 6px 4px;">
+                                <input type="text" inputmode="numeric"
+                                       :name="`lines[${index}][meter_price]`"
+                                       x-model="line.meter_price"
+                                       @input="formatMeterPriceInput($event, line)"
+                                       class="field num w-full !py-2 !px-2 text-sm font-bold text-center bg-white"
+                                       dir="ltr"
+                                       placeholder="نرخ / م">
+                            </td>
+
+                            {{-- کۆی گشتی نرخ --}}
+                            <td style="padding: 6px 6px;">
                                 <div class="relative">
                                     <input type="text" inputmode="numeric" required
-                                           :name="`lines[${index}][unit_price]`"
-                                           x-model="line.unit_price"
-                                           @input="formatInput($event, line)"
-                                           class="field num w-full !py-2 !px-3 text-sm font-bold text-center bg-white"
+                                           :name="`lines[${index}][line_total]`"
+                                           x-model="line.line_total"
+                                           @input="formatLineTotalInput($event, line)"
+                                           class="field num w-full !py-2 !px-3 text-sm font-black text-center bg-slate-50 focus:bg-white text-blue-700"
                                            dir="ltr"
                                            placeholder="0">
+                                    <input type="hidden" :name="`lines[${index}][unit_price]`" :value="line.line_total || line.meter_price || ''">
                                 </div>
                             </td>
 
                             {{-- سڕینەوە --}}
-                            <td style="text-align: center; padding: 6px;">
+                            <td style="text-align: center; padding: 6px 2px;">
                                 <button type="button" @click="removeLine(index)" class="inline-flex items-center justify-center size-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                                         x-show="lines.length > 1" title="سڕینەوە">✕</button>
                             </td>
@@ -491,7 +519,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
 
         addLine() {
             this.lines.push({
-                description: '', image: '', preview: null, unit_price: '', note: '',
+                description: '', image: '', preview: null, meter: '', meter_price: '', unit_price: '', line_total: '', note: '',
             });
         },
 
@@ -515,8 +543,38 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
             if (this.lines.length > 1) {
                 this.lines.splice(index, 1);
             } else {
-                this.lines[0] = { description: '', image: '', preview: null, unit_price: '', note: '' };
+                this.lines[0] = { description: '', image: '', preview: null, meter: '', meter_price: '', unit_price: '', line_total: '', note: '' };
             }
+        },
+
+        calculateLineTotal(line) {
+            let m = parseFloat(line.meter) || 0;
+            let mp = parseFloat((line.meter_price || '0').toString().replace(/,/g, '')) || 0;
+            if (m > 0 && mp > 0) {
+                let tot = Math.round(m * mp);
+                line.line_total = tot.toLocaleString('en-US');
+                line.unit_price = line.line_total;
+            }
+        },
+
+        formatMeterPriceInput(e, line) {
+            let clean = e.target.value.replace(/[^0-9.]/g, '');
+            let parts = clean.split('.');
+            if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+            let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+            let dec = parts.length > 1 ? '.' + parts[1] : '';
+            line.meter_price = int ? int + dec : '';
+            this.calculateLineTotal(line);
+        },
+
+        formatLineTotalInput(e, line) {
+            let clean = e.target.value.replace(/[^0-9.]/g, '');
+            let parts = clean.split('.');
+            if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+            let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+            let dec = parts.length > 1 ? '.' + parts[1] : '';
+            line.line_total = int ? int + dec : '';
+            line.unit_price = line.line_total;
         },
 
         applyCustomerDiscount() {
@@ -527,17 +585,8 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
             }
         },
 
-        formatInput(e, line) {
-            let clean = e.target.value.replace(/[^0-9.]/g, '');
-            let parts = clean.split('.');
-            if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
-            let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
-            let dec = parts.length > 1 ? '.' + parts[1] : '';
-            line.unit_price = int ? int + dec : '';
-        },
-
         linePrice(line) {
-            let p = parseFloat(line.unit_price.toString().replace(/,/g, '')) || 0;
+            let p = parseFloat((line.line_total || line.unit_price || '0').toString().replace(/,/g, '')) || 0;
             return p;
         },
 

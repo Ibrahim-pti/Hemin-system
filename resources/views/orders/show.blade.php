@@ -93,10 +93,22 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="num text-[--color-ink-soft]">{{ $line->measurement_label }}</td>
+                            <td class="num text-[--color-ink-soft]">
+                                @if ($line->has_meter)
+                                    {{ fmt_qty($line->meter) }} مەتر
+                                @else
+                                    {{ $line->measurement_label }}
+                                @endif
+                            </td>
                             <td class="num">{{ fmt_qty($line->qty) }}</td>
-                            <td class="num">{{ fmt_qty($line->computed_qty) }} {{ $line->mode_unit }}</td>
-                            <td class="num">{{ fmt_money($line->unit_price, $order->currency) }}</td>
+                            <td class="num">
+                                @if ($line->has_meter)
+                                    {{ fmt_qty($line->meter) }} م
+                                @else
+                                    {{ fmt_qty($line->computed_qty) }} {{ $line->mode_unit }}
+                                @endif
+                            </td>
+                            <td class="num">{{ fmt_money($line->has_meter ? $line->meter_price : $line->unit_price, $order->currency) }}</td>
                             <td class="num font-medium">{{ fmt_money($line->line_total, $order->currency) }}</td>
                         </tr>
                     @endforeach

@@ -236,9 +236,12 @@ class OrderController extends Controller
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.description' => ['required', 'string', 'max:255'],
+            'lines.*.meter' => ['nullable', 'numeric', 'min:0'],
+            'lines.*.meter_price' => ['nullable'],
+            'lines.*.unit_price' => ['nullable'],
+            'lines.*.line_total' => ['nullable'],
             'lines.*.image' => ['nullable', 'image', 'max:5120'],
             'lines.*.existing_image' => ['nullable', 'string'],
-            'lines.*.unit_price' => ['required'],
             'lines.*.note' => ['nullable', 'string', 'max:255'],
         ], [
             'lines.required' => 'لانیکەم یەک دێڕ زیاد بکە.',
@@ -248,6 +251,9 @@ class OrderController extends Controller
             'customer_id' => 'کڕیار',
             'address_snapshot' => 'ناونیشان',
             'lines.*.description' => 'ناوەڕۆک / ناوی شتەکە',
+            'lines.*.meter' => 'مەتر',
+            'lines.*.meter_price' => 'نرخی بە مەتر',
+            'lines.*.line_total' => 'کۆی گشتی دێڕ',
             'lines.*.image' => 'وێنە',
             'lines.*.unit_price' => 'نرخ',
             'discount_amount' => 'داشکاندن',
@@ -296,13 +302,27 @@ class OrderController extends Controller
 
     private function lineTotal(array $line): float
     {
-        return (float) str_replace(',', '', (string) ($line['unit_price'] ?? 0));
+        $meter = !empty($line['meter']) ? (float) str_replace(',', '', (string) $line['meter']) : 0;
+        $meterPrice = !empty($line['meter_price']) ? (float) str_replace(',', '', (string) $line['meter_price']) : 0;
+
+        if ($meter > 0 && $meterPrice > 0) {
+            return round($meter * $meterPrice, 2);
+        }
+
+        return (float) str_replace(',', '', (string) ($line['line_total'] ?? ($line['unit_price'] ?? 0)));
     }
 
     private function syncLines(Order $order, array $lines, array $lineFiles = []): void
     {
         foreach ($lines as $index => $line) {
-            $unitPrice = (float) str_replace(',', '', (string) ($line['unit_price'] ?? 0));
+            $meter = !empty($line['meter']) ? (float) str_replace(',', '', (string) $line['meter']) : null;
+            $meterPrice = !empty($line['meter_price']) ? (float) str_replace(',', '', (string) $line['meter_price']) : null;
+
+            $lineTotal = ($meter !== null && $meter > 0 && $meterPrice !== null && $meterPrice > 0)
+                ? round($meter * $meterPrice, 2)
+                : (float) str_replace(',', '', (string) ($line['line_total'] ?? ($line['unit_price'] ?? 0)));
+
+            $unitPrice = ($meterPrice !== null && $meterPrice > 0) ? $meterPrice : $lineTotal;
 
             $imagePath = null;
             if (isset($lineFiles[$index]['image']) && $lineFiles[$index]['image']->isValid()) {
@@ -316,13 +336,15 @@ class OrderController extends Controller
                 'description' => $line['description'],
                 'image' => $imagePath,
                 'item_id' => $line['item_id'] ?? null,
-                'pricing_mode' => 'count',
-                'width' => null,
+                'pricing_mode' => ($meter !== null && $meter > 0) ? 'length' : 'count',
+                'meter' => $meter,
+                'meter_price' => $meterPrice,
+                'width' => $meter,
                 'height' => null,
-                'qty' => 1,
-                'computed_qty' => 1,
+                'qty' => $meter ?: 1,
+                'computed_qty' => $meter ?: 1,
                 'unit_price' => $unitPrice,
-                'line_total' => $unitPrice,
+                'line_total' => $lineTotal,
                 'note' => $line['note'] ?? null,
             ]);
         }
