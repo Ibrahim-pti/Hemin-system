@@ -198,7 +198,7 @@ class WorkshopController extends Controller
         $monthStart = $today->copy()->startOfMonth()->toDateString();
         $monthEnd = $today->copy()->endOfMonth()->toDateString();
 
-        $rangeType = $request->input('range_type', 'this_month');
+        $rangeType = $request->input('range_type', 'this_week');
 
         $weekOffset = (int) $request->input('week_offset', 0);
         if ($request->has('week_offset')) {
@@ -206,39 +206,31 @@ class WorkshopController extends Controller
             $targetWeek = $today->copy()->addWeeks($weekOffset);
             $from = $targetWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
             $to = $targetWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
-            // سەرەمانگ بۆ سەرەمانگ: نابێت بچێتە ناو مانگی تر لە کاتی هەفتەی ئێستادا
-            if ($weekOffset === 0) {
-                $from = max($from, $monthStart);
-                $to = min($to, $monthEnd);
-            }
         } elseif ($request->filled('from') && $request->filled('to')) {
             $from = $request->date('from')->toDateString();
             $to = $request->date('to')->toDateString();
             $rangeType = 'custom';
         } else {
             switch ($rangeType) {
-                case 'this_week':
-                    $from = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
-                    $to = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
-                    // سەرەمانگ بۆ سەرەمانگ: تا بەرواری مانگی پێشوو دەرنەکەوێت
-                    $from = max($from, $monthStart);
-                    $to = min($to, $monthEnd);
-                    break;
-                case 'last_week':
-                    $lastWeek = $today->copy()->subWeek();
-                    $from = $lastWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
-                    $to = $lastWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+                case 'this_month':
+                    $from = $monthStart;
+                    $to = $monthEnd;
                     break;
                 case 'last_month':
                     $lastMonth = $today->copy()->subMonth();
                     $from = $lastMonth->copy()->startOfMonth()->toDateString();
                     $to = $lastMonth->copy()->endOfMonth()->toDateString();
                     break;
-                case 'this_month':
+                case 'last_week':
+                    $lastWeek = $today->copy()->subWeek();
+                    $from = $lastWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
+                    $to = $lastWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+                    break;
+                case 'this_week':
                 default:
-                    $rangeType = 'this_month';
-                    $from = $monthStart;
-                    $to = $monthEnd;
+                    $rangeType = 'this_week';
+                    $from = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
+                    $to = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
                     break;
             }
         }
