@@ -265,6 +265,9 @@ class WorkshopController extends Controller
         $days = [];
         foreach ($period as $dt) {
             $dateStr = $dt->toDateString();
+            if (Attendance::isWeeklyHoliday($dateStr)) {
+                continue; // پشووی هەفتانە (وەک هەینی) لە خشتەی کارکردندا دەوامی نییە و دانانرێت
+            }
             $days[] = [
                 'date' => $dateStr,
                 'day_name' => $kurdishDays[$dt->dayOfWeek],
@@ -273,7 +276,7 @@ class WorkshopController extends Controller
                 'month_num' => $dt->format('n'),
                 'day_of_week' => $dt->dayOfWeek,
                 'is_today' => $dt->isToday(),
-                'is_holiday' => Attendance::isWeeklyHoliday($dateStr),
+                'is_holiday' => false,
             ];
         }
 
@@ -920,6 +923,13 @@ class WorkshopController extends Controller
             ->whereDate('work_date', $date)
             ->first();
 
+        if (Attendance::isWeeklyHoliday($date)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'ئەم ڕۆژە پشووی هەفتانەی کارگەیە و ناتوانرێت دەوامی لێ تۆمار بکرێت.',
+            ], 422);
+        }
+
         // سوڕانەوەی دۆخ بە یەک کلیک: هاتووە -> نیو ڕۆژ -> نەهاتووە -> خاڵی -> هاتووە
         if (! $status) {
             $currentStatus = $attendance?->status;
@@ -1015,6 +1025,13 @@ class WorkshopController extends Controller
 
         $employee = Employee::findOrFail($validated['employee_id']);
         $date = $validated['work_date'];
+
+        if (Attendance::isWeeklyHoliday($date) && $validated['status'] !== 'delete') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'ئەم ڕۆژە پشووی هەفتانەی کارگەیە و ناتوانرێت دەوامی لێ تۆمار بکرێت.',
+            ], 422);
+        }
 
         $attendance = Attendance::where('employee_id', $employee->id)
             ->whereDate('work_date', $date)
@@ -1252,6 +1269,13 @@ class WorkshopController extends Controller
 
         $date = $validated['work_date'];
         $status = $validated['status'];
+
+        if (Attendance::isWeeklyHoliday($date)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'ئەمڕۆ پشووی هەفتانەی کارگەیە و ناتوانرێت دەوامی بەکۆمەڵی لێ تۆمار بکرێت.',
+            ], 422);
+        }
         $employees = Employee::active()->get();
 
         DB::transaction(function () use ($employees, $date, $status) {
