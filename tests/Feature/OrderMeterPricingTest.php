@@ -91,7 +91,7 @@ class OrderMeterPricingTest extends TestCase
         $printRes = $this->get("/orders/{$order->id}/print");
         $printRes->assertStatus(200);
         $printRes->assertSee('دەرگای ئاسنی سەرەکی');
-        $printRes->assertSee('5.5 م');
+        $printRes->assertSee('5.5 مەتر');
         $printRes->assertSee('40,000');
         $printRes->assertSee('220,000');
     }
