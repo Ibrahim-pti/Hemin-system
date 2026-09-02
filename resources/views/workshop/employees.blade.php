@@ -232,9 +232,9 @@
                 </div>
             </div>
 
-            {{-- چوار کارتی حیساباتی خۆکار --}}
+            {{-- کارتی حیساباتی خۆکار --}}
             <div class="p-3.5 bg-slate-50 border-b border-slate-200 shrink-0">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-center text-xs">
                     {{-- ١. ڕۆژانی دەوام --}}
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
                         <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی هاتوو لە مانگدا</div>
@@ -249,13 +249,6 @@
                         <div class="text-[10px] text-teal-800 font-bold">پارەی هەیە (شایستە)</div>
                         <div class="text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
                         <div class="text-[9px] text-slate-400 mt-0.5">حەقدەست + زیادە - سزا</div>
-                    </div>
-
-                    {{-- ٣. چەند براوە (پێشەکی) --}}
-                    <div class="bg-white p-2.5 rounded-xl border border-purple-200 shadow-2xs">
-                        <div class="text-[10px] text-purple-800 font-bold">چەند براوە (پێشەکی)</div>
-                        <div class="text-base font-black text-purple-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_paid ?? 0) + ' د.ع'"></div>
-                        <div class="text-[9px] text-slate-400 mt-0.5">لە قاصەوە دراوە</div>
                     </div>
 
                     {{-- ٤. باڵانسی ماوە / دۆخی پارەدان --}}
