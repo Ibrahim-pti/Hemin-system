@@ -274,36 +274,56 @@
                         <span>📅</span>
                         <span>تۆماری دەوامی ڕۆژانەی مانگ</span>
                     </h3>
-                    <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs bg-white">
                         <table class="w-full text-right">
-                            <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-center">
+                            <thead class="bg-slate-100/80 text-slate-700 font-black border-b border-slate-200 text-xs">
                                 <tr>
-                                    <th class="p-2 text-right">بەروار</th>
-                                    <th class="p-2">دۆخ</th>
-                                    <th class="p-2">هاتن / چوون</th>
-                                    <th class="p-2">کاتی زیادە</th>
-                                    <th class="p-2">تاخیربوون</th>
-                                    <th class="p-2 text-right">تێبینی</th>
+                                    <th class="py-2.5 px-3 text-right">ڕۆژ و بەروار</th>
+                                    <th class="py-2.5 px-3 text-center">دۆخی دەوام</th>
+                                    <th class="py-2.5 px-3 text-center">کاتی زیادە</th>
+                                    <th class="py-2.5 px-3 text-right">تێبینی / خەرجی</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 font-medium">
                                 <template x-for="item in (drawerData?.attendances || [])" :key="item.id">
-                                    <tr class="hover:bg-slate-50 text-center">
-                                        <td class="p-2 font-mono font-bold text-slate-800 text-right" x-text="item.work_date"></td>
-                                        <td class="p-2">
-                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                                  :class="item.status === 'present' ? 'bg-emerald-100 text-emerald-800' : (item.status === 'half_day' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')"
+                                    <tr class="hover:bg-slate-50/80 transition-colors">
+                                        <td class="py-2.5 px-3 text-right">
+                                            <span class="font-bold text-slate-800 text-xs" x-text="item.day_name || ''"></span>
+                                            <span class="text-[11px] font-mono text-slate-400 mr-1.5" x-text="item.work_date"></span>
+                                        </td>
+                                        <td class="py-2.5 px-3 text-center">
+                                            <span class="px-2.5 py-0.5 rounded-md text-[11px] font-black inline-block shadow-2xs"
+                                                  :class="item.status === 'present' ? 'bg-emerald-600 text-white' : (item.status === 'half_day' ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white')"
                                                   x-text="item.status_label"></span>
                                         </td>
-                                        <td class="p-2 font-mono text-slate-600" x-text="(item.check_in || '—') + ' - ' + (item.check_out || '—')"></td>
-                                        <td class="p-2 font-mono text-blue-700" x-text="item.overtime_hours > 0 ? item.overtime_hours + ' ک' : '—'"></td>
-                                        <td class="p-2 font-mono text-rose-700" x-text="item.late_minutes > 0 ? item.late_minutes + ' خ' : '—'"></td>
-                                        <td class="p-2 text-slate-600 text-right" x-text="item.note || '—'"></td>
+                                        <td class="py-2.5 px-3 text-center font-mono text-xs">
+                                            <template x-if="item.overtime_hours > 0">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md font-black bg-blue-50 text-blue-700 border border-blue-200"
+                                                      x-text="'+ ' + item.overtime_hours + ' کاتژمێر'"></span>
+                                            </template>
+                                            <template x-if="!item.overtime_hours || item.overtime_hours <= 0">
+                                                <span class="text-slate-300 font-bold">—</span>
+                                            </template>
+                                        </td>
+                                        <td class="py-2.5 px-3 text-right text-xs">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <template x-if="item.fuel_expense > 0">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200"
+                                                          x-text="'بەنزین: ' + formatNumber(item.fuel_expense) + ' د.ع'"></span>
+                                                </template>
+                                                <template x-if="item.note">
+                                                    <span class="text-slate-600 font-medium" x-text="item.note"></span>
+                                                </template>
+                                                <template x-if="(!item.fuel_expense || item.fuel_expense <= 0) && !item.note">
+                                                    <span class="text-slate-300 font-bold">—</span>
+                                                </template>
+                                            </div>
+                                        </td>
                                     </tr>
                                 </template>
                                 <template x-if="!drawerData?.attendances || drawerData.attendances.length === 0">
                                     <tr>
-                                        <td colspan="6" class="p-3 text-center text-slate-400 font-bold">هیچ تۆمارێک نییە.</td>
+                                        <td colspan="4" class="p-4 text-center text-slate-400 font-bold">هیچ تۆمارێکی دەوام بۆ ئەم مانگە نییە.</td>
                                     </tr>
                                 </template>
                             </tbody>

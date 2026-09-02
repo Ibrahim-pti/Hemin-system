@@ -1206,21 +1206,30 @@ class WorkshopController extends Controller
                 'total_paid' => $totalPaid,
                 'remaining_balance' => $remainingBalance,
             ],
-            'attendances' => $attendances->map(fn ($a) => [
-                'id' => $a->id,
-                'work_date' => $a->work_date?->format('Y/m/d'),
-                'status' => $a->status,
-                'status_label' => $a->status_label,
-                'check_in' => $a->check_in ? substr($a->check_in, 0, 5) : '',
-                'check_out' => $a->check_out ? substr($a->check_out, 0, 5) : '',
-                'hours' => (float) $a->hours,
-                'overtime_hours' => (float) $a->overtime_hours,
-                'late_minutes' => (int) $a->late_minutes,
-                'fuel_expense' => (float) $a->fuel_expense,
-                'deduction_amount' => (float) $a->deduction_amount,
-                'bonus_amount' => (float) $a->bonus_amount,
-                'note' => $a->note,
-            ])->values()->all(),
+            'attendances' => $attendances->map(function ($a) {
+                $kurdishDays = [
+                    0 => 'یەکشەممە',
+                    1 => 'دووشەممە',
+                    2 => 'سێشەممە',
+                    3 => 'چوارشەممە',
+                    4 => 'پێنجشەممە',
+                    5 => 'هەینی',
+                    6 => 'شەممە',
+                ];
+                $dayOfWeek = $a->work_date ? ($kurdishDays[$a->work_date->dayOfWeek] ?? '') : '';
+                return [
+                    'id' => $a->id,
+                    'work_date' => $a->work_date?->format('Y/m/d'),
+                    'day_name' => $dayOfWeek,
+                    'status' => $a->status,
+                    'status_label' => $a->status_label,
+                    'overtime_hours' => (float) $a->overtime_hours,
+                    'fuel_expense' => (float) $a->fuel_expense,
+                    'deduction_amount' => (float) $a->deduction_amount,
+                    'bonus_amount' => (float) $a->bonus_amount,
+                    'note' => $a->note,
+                ];
+            })->values()->all(),
             'payments' => $payments->map(fn ($p) => [
                 'id' => $p->id,
                 'voucher_no' => $p->voucher_no,
