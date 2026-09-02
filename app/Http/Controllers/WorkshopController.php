@@ -218,6 +218,11 @@ class WorkshopController extends Controller
                     $from = $today->copy()->startOfMonth()->toDateString();
                     $to = $today->copy()->endOfMonth()->toDateString();
                     break;
+                case 'last_month':
+                    $lastMonth = $today->copy()->subMonth();
+                    $from = $lastMonth->copy()->startOfMonth()->toDateString();
+                    $to = $lastMonth->copy()->endOfMonth()->toDateString();
+                    break;
                 case 'this_week':
                 default:
                     $rangeType = 'this_week';
