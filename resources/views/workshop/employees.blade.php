@@ -192,14 +192,11 @@
 
     {{-- ٤. بەشی وردەکاری تەواوی وەستا و حیساباتی خۆکار (Worker Details Drawer/Modal) --}}
     <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-        <div @click.away="showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+        <div @click.away="if (!showPaymentModal && !showEditWageModal && !showCellModal) showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             
             {{-- سەرپەڕە --}}
             <div class="p-4 sm:p-5 bg-teal-800 text-white flex items-center justify-between gap-3 shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-2xl bg-teal-700 text-white flex items-center justify-center font-black text-lg shrink-0">
-                        <span x-text="selectedEmployee?.name?.charAt(0)"></span>
-                    </div>
+                <div class="flex items-center gap-2">
                     <div>
                         <div class="flex items-center gap-2">
                             <h2 class="text-base sm:text-lg font-black text-white" x-text="selectedEmployee?.name"></h2>
@@ -219,7 +216,7 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button type="button" @click="openPaymentModal(selectedEmployee)"
+                    <button type="button" @click.stop="openPaymentModal(selectedEmployee)"
                             class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-emerald-500 hover:bg-emerald-600 text-white shadow-md cursor-pointer flex items-center gap-1.5 transition-all">
                         <span>💸</span>
                         <span>پێدانی پارە</span>
@@ -456,7 +453,7 @@
     </div>
 
     {{-- ٦. مۆداڵی پێدانی پارە و شایستە (Payment Modal) --}}
-    <div x-show="showPaymentModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
+    <div x-show="showPaymentModal" x-cloak class="fixed inset-0 z-60 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
         <div @click.away="showPaymentModal = false" class="bg-white rounded-3xl w-full max-w-sm shadow-2xl border border-slate-200 overflow-hidden text-xs">
             <form @submit.prevent="savePayment()">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
