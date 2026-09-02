@@ -33,9 +33,9 @@
                     <span class="absolute right-2 text-slate-400 pointer-events-none text-xs">📅</span>
                     <select x-model="rangeType" @change="setRange(rangeType)"
                             class="bg-white text-slate-800 font-black text-xs pr-7 pl-5 py-1.5 rounded-xl border border-slate-200 hover:border-teal-600 focus:outline-hidden focus:ring-2 focus:ring-teal-500/20 cursor-pointer shadow-2xs transition-all appearance-none">
+                        <option value="this_month">ئەم مانگە (سەرەمانگ بۆ سەرەمانگ)</option>
                         <option value="this_week">ئەم هەفتەیە</option>
                         <option value="last_week">هەفتەی پێشوو</option>
-                        <option value="this_month">ئەم مانگە</option>
                         <option value="last_month">مانگی پێشوو</option>
                     </select>
                     <span class="absolute left-2 text-slate-400 pointer-events-none text-[9px]">▼</span>
