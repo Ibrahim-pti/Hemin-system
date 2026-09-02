@@ -240,8 +240,12 @@
                             </td>
 
                             {{-- ژمارە / مەتر --}}
-                            <td class="num text-center font-semibold text-slate-800">
-                                {{ $line->has_meter ? (fmt_qty($line->meter) . ' مەتر') : fmt_qty($line->qty) }}
+                            <td dir="rtl" class="text-center font-semibold text-slate-800">
+                                @if ($line->has_meter)
+                                    <span dir="rtl">&#8207;{{ fmt_qty($line->meter) }} مەتر</span>
+                                @else
+                                    <span class="num">{{ fmt_qty($line->qty) }}</span>
+                                @endif
                             </td>
 
                             {{-- نرخ --}}

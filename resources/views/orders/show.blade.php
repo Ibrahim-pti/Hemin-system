@@ -93,19 +93,19 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="num text-[--color-ink-soft]">
+                            <td class="text-center" dir="rtl">
                                 @if ($line->has_meter)
-                                    {{ fmt_qty($line->meter) }} مەتر
+                                    <span dir="rtl">&#8207;{{ fmt_qty($line->meter) }} مەتر</span>
                                 @else
-                                    {{ $line->measurement_label }}
+                                    <span class="num text-[--color-ink-soft]">{{ $line->measurement_label }}</span>
                                 @endif
                             </td>
                             <td class="num">{{ fmt_qty($line->qty) }}</td>
-                            <td class="num">
+                            <td class="text-center" dir="rtl">
                                 @if ($line->has_meter)
-                                    {{ fmt_qty($line->meter) }} م
+                                    <span dir="rtl">&#8207;{{ fmt_qty($line->meter) }} مەتر</span>
                                 @else
-                                    {{ fmt_qty($line->computed_qty) }} {{ $line->mode_unit }}
+                                    <span class="num">{{ fmt_qty($line->computed_qty) }} {{ $line->mode_unit }}</span>
                                 @endif
                             </td>
                             <td class="num">{{ fmt_money($line->has_meter ? $line->meter_price : $line->unit_price, $order->currency) }}</td>
