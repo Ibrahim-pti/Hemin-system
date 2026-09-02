@@ -251,5 +251,74 @@ class WorkshopEmployeeAdvancedTest extends TestCase
             ],
         ]);
     }
+
+    public function test_home_visit_overtime_and_named_expenses()
+    {
+        $this->actingAs($this->admin);
+
+        // ڕێکخستنی کاتی زیادەی کارگە (5,000) و کاتی زیادەی ماڵان (8,000)
+        $this->postJson('/workshop/settings', [
+            'workshop_work_hours' => 8,
+            'workshop_weekly_holiday' => 'friday',
+            'workshop_overtime_hourly_rate' => 5000,
+            'workshop_home_visit_hourly_rate' => 8000,
+        ])->assertStatus(200);
+
+        $employee = Employee::create([
+            'name' => 'وەستا هەردی',
+            'job_title' => 'master',
+            'salary_type' => 'daily',
+            'daily_wage' => 30000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $today = now()->toDateString();
+
+        // پاشەکەوتکردنی دێتەلی خانەی ڕۆژ بە چوونە ماڵان و ناوی سەرفیات (بەنزین)
+        $res = $this->postJson('/workshop/employees/save-cell-detail', [
+            'employee_id' => $employee->id,
+            'work_date' => $today,
+            'status' => 'present',
+            'overtime_hours' => 3,
+            'trip_destination' => 'ماڵی کاک ئاراس',
+            'exit_reason' => 'بەنزینی ئۆتۆمبێل',
+            'fuel_expense' => 15000,
+            'note' => 'دانانی دەرگای سەرەکی',
+        ]);
+
+        $res->assertStatus(200);
+        $res->assertJson([
+            'ok' => true,
+            'attendance' => [
+                'status' => 'present',
+                'overtime_hours' => 3,
+                'trip_destination' => 'ماڵی کاک ئاراس',
+                'exit_reason' => 'بەنزینی ئۆتۆمبێل',
+                'fuel_expense' => 15000,
+            ],
+        ]);
+
+        // پشکنینی ڕاپۆرتی مانگانە:
+        // حەقدەستی ڕۆژ = ٣٠،٠٠٠
+        // زیادەی ماڵان = ٣ * ٨،٠٠٠ = ٢٤،٠٠٠ (لەبری ٥،٠٠٠ی کارگە)
+        // سەرفیاتی بەنزین = ١٥،٠٠٠
+        // کۆی گشتی شایستە = ٣٠،٠٠٠ + ٢٤،٠٠٠ + ١٥،٠٠٠ = ٦٩،٠٠٠ د.ع
+        $monthStr = now()->format('Y-m');
+        $monthRes = $this->getJson("/workshop/employees/{$employee->id}/month-details?month={$monthStr}");
+        $monthRes->assertStatus(200);
+        $monthRes->assertJson([
+            'ok' => true,
+            'stats' => [
+                'base_earned' => 30000,
+                'overtime_earned' => 24000,
+                'total_fuel' => 15000,
+                'total_earned' => 69000,
+            ],
+        ]);
+        
+        $this->assertEquals('ماڵی کاک ئاراس', $monthRes->json('attendances.0.trip_destination'));
+        $this->assertEquals('بەنزینی ئۆتۆمبێل', $monthRes->json('attendances.0.exit_reason'));
+    }
 }
 

@@ -287,6 +287,7 @@ class WorkshopController extends Controller
             'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
             'overtime_hourly_rate' => (float) Setting::get('workshop_overtime_hourly_rate', 0),
             'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
+            'home_visit_hourly_rate' => (float) Setting::get('workshop_home_visit_hourly_rate', 0),
             'half_day_deduction_type' => Setting::get('workshop_half_day_deduction_type', 'percentage'),
             'half_day_deduction_rate' => (float) Setting::get('workshop_half_day_deduction_rate', 0),
             'absent_deduction_type' => Setting::get('workshop_absent_deduction_type', 'none'),
@@ -395,10 +396,22 @@ class WorkshopController extends Controller
             }
             $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $halfDayEarned);
             $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
-            $overtimeHourlyRate = $shiftSettings['overtime_hourly_rate'] > 0
+            $stdOvertimeRate = $shiftSettings['overtime_hourly_rate'] > 0
                 ? $shiftSettings['overtime_hourly_rate']
                 : ($hourlyWage * $shiftSettings['overtime_multiplier']);
-            $overtimeEarned = round($totalOvertime * $overtimeHourlyRate, 2);
+            $homeOvertimeRate = $shiftSettings['home_visit_hourly_rate'] > 0
+                ? $shiftSettings['home_visit_hourly_rate']
+                : $stdOvertimeRate;
+
+            $overtimeEarned = 0.0;
+            foreach ($days as $d) {
+                $dAtt = $allAtts->get($d['date']);
+                if ($dAtt && (float) $dAtt->overtime_hours > 0) {
+                    $rate = (! empty($dAtt->trip_destination)) ? $homeOvertimeRate : $stdOvertimeRate;
+                    $overtimeEarned += ((float) $dAtt->overtime_hours * $rate);
+                }
+            }
+            $overtimeEarned = round($overtimeEarned, 2);
 
             // حیساباتی سزای غیاببوونی کامل
             $calculatedAbsentPenalty = 0.0;
@@ -455,7 +468,14 @@ class WorkshopController extends Controller
                 $monthAbsentPenalty = $monthAbsent * $effectiveDailyWage;
             }
 
-            $monthOvertimeEarned = round($monthOvertime * $overtimeHourlyRate, 2);
+            $monthOvertimeEarned = 0.0;
+            foreach ($monthAtts as $mAtt) {
+                if ((float) $mAtt->overtime_hours > 0) {
+                    $rate = (! empty($mAtt->trip_destination)) ? $homeOvertimeRate : $stdOvertimeRate;
+                    $monthOvertimeEarned += ((float) $mAtt->overtime_hours * $rate);
+                }
+            }
+            $monthOvertimeEarned = round($monthOvertimeEarned, 2);
             $monthTotalEarned = round($monthBaseEarned + $monthOvertimeEarned + $monthFuel + $monthBonus - ($monthDeductions + $monthAbsentPenalty), 2);
 
             $monthPayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $monthStart && $p->paid_at->toDateString() <= $monthEnd);
@@ -785,6 +805,7 @@ class WorkshopController extends Controller
             'workshop_work_start' => ['nullable', 'string'],
             'workshop_work_end' => ['nullable', 'string'],
             'workshop_overtime_multiplier' => ['nullable', 'numeric'],
+            'workshop_home_visit_hourly_rate' => ['nullable', 'numeric', 'min:0'],
             'workshop_half_day_deduction_type' => ['nullable', 'string'],
             'workshop_half_day_deduction_rate' => ['nullable', 'numeric', 'min:0'],
             'workshop_absent_deduction_type' => ['nullable', 'string'],
@@ -1178,6 +1199,7 @@ class WorkshopController extends Controller
             'weekly_holiday' => Setting::get('workshop_weekly_holiday', 'friday'),
             'overtime_hourly_rate' => (float) Setting::get('workshop_overtime_hourly_rate', 0),
             'overtime_multiplier' => (float) Setting::get('workshop_overtime_multiplier', 1.0),
+            'home_visit_hourly_rate' => (float) Setting::get('workshop_home_visit_hourly_rate', 0),
             'half_day_deduction_type' => Setting::get('workshop_half_day_deduction_type', 'percentage'),
             'half_day_deduction_rate' => (float) Setting::get('workshop_half_day_deduction_rate', 0),
             'absent_deduction_type' => Setting::get('workshop_absent_deduction_type', 'none'),
@@ -1228,10 +1250,22 @@ class WorkshopController extends Controller
         }
         $baseEarned = round(($presentCount * $effectiveDailyWage) + ($halfDayCount * $halfDayEarned));
         $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
-        $overtimeHourlyRate = $shiftSettings['overtime_hourly_rate'] > 0
+        $stdOvertimeRate = $shiftSettings['overtime_hourly_rate'] > 0
             ? $shiftSettings['overtime_hourly_rate']
             : ($hourlyWage * $shiftSettings['overtime_multiplier']);
-        $overtimeEarned = round($totalOvertime * $overtimeHourlyRate);
+        $homeOvertimeRate = $shiftSettings['home_visit_hourly_rate'] > 0
+            ? $shiftSettings['home_visit_hourly_rate']
+            : $stdOvertimeRate;
+
+        $overtimeEarned = 0.0;
+        foreach ($attendances as $att) {
+            $otHours = (float) $att->overtime_hours;
+            if ($otHours > 0) {
+                $rate = (! empty($att->trip_destination)) ? $homeOvertimeRate : $stdOvertimeRate;
+                $overtimeEarned += ($otHours * $rate);
+            }
+        }
+        $overtimeEarned = round($overtimeEarned);
 
         // هەژمارکردنی سزای غیاببوونی کامل بۆ مانگەکە
         $calculatedAbsentPenalty = 0;
@@ -1317,6 +1351,8 @@ class WorkshopController extends Controller
                     'status' => $a->status,
                     'status_label' => $a->status_label,
                     'overtime_hours' => (float) $a->overtime_hours,
+                    'trip_destination' => $a->trip_destination,
+                    'exit_reason' => $a->exit_reason,
                     'fuel_expense' => (float) $a->fuel_expense,
                     'deduction_amount' => (float) $a->deduction_amount,
                     'bonus_amount' => (float) $a->bonus_amount,

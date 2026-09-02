@@ -333,18 +333,28 @@
                                         </td>
                                         <td class="py-2.5 px-3 text-center font-mono text-xs">
                                             <template x-if="item.overtime_hours > 0">
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md font-black bg-blue-50 text-blue-700 border border-blue-200"
-                                                      x-text="'+ ' + item.overtime_hours + ' کاتژمێر'"></span>
+                                                <div class="flex flex-col items-center gap-0.5">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md font-black bg-blue-50 text-blue-700 border border-blue-200"
+                                                          x-text="'+ ' + item.overtime_hours + ' کاتژمێر'"></span>
+                                                    <template x-if="item.trip_destination">
+                                                        <span class="text-[10px] text-teal-800 font-bold" x-text="'🏠 ' + item.trip_destination"></span>
+                                                    </template>
+                                                </div>
                                             </template>
                                             <template x-if="!item.overtime_hours || item.overtime_hours <= 0">
-                                                <span class="text-slate-300 font-bold">—</span>
+                                                <template x-if="item.trip_destination">
+                                                    <span class="text-[10px] text-teal-800 font-bold" x-text="'🏠 ' + item.trip_destination"></span>
+                                                </template>
+                                                <template x-if="!item.trip_destination">
+                                                    <span class="text-slate-300 font-bold">—</span>
+                                                </template>
                                             </template>
                                         </td>
                                         <td class="py-2.5 px-3 text-right text-xs">
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <template x-if="item.fuel_expense > 0">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200"
-                                                          x-text="'بەنزین: ' + formatNumber(item.fuel_expense) + ' د.ع'"></span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-black bg-purple-50 text-purple-700 border border-purple-200 shadow-2xs"
+                                                          x-text="(item.exit_reason || 'خەرجی') + ': ' + formatNumber(item.fuel_expense) + ' د.ع'"></span>
                                                 </template>
                                                 <template x-if="item.note">
                                                     <span class="text-slate-600 font-medium" x-text="item.note"></span>
@@ -521,7 +531,7 @@
                             class="flex-1 py-2 px-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"
                             :class="settingsTab === 'overtime' ? 'bg-white text-teal-900 shadow-2xs font-black' : 'text-slate-600 hover:bg-slate-200/60'">
                         <span>⭐</span>
-                        <span>کاتی زیادە</span>
+                        <span>کاتی زیادە و ماڵان</span>
                     </button>
                     <button type="button" @click="settingsTab = 'penalty'"
                             class="flex-1 py-2 px-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"
@@ -560,10 +570,10 @@
                         </div>
                     </div>
 
-                    {{-- ٢. بەشی کاتی زیادە --}}
+                    {{-- ٢. بەشی کاتی زیادە و چوونە ماڵان --}}
                     <div x-show="settingsTab === 'overtime'" class="space-y-3.5">
                         <div>
-                            <label class="block mb-1 text-slate-700 font-black">نرخی هەر کاتژمێرێکی کاتی زیادە (د.ع) *</label>
+                            <label class="block mb-1 text-slate-700 font-black">نرخی هەر کاتژمێرێکی کاتی زیادەی کارگە (د.ع) *</label>
                             <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white shadow-2xs">
                                 <input type="text" inputmode="numeric" x-model="settingsForm.workshop_overtime_hourly_rate"
                                        @input="settingsForm.workshop_overtime_hourly_rate = formatMoneyInput($event.target.value)"
@@ -573,7 +583,21 @@
                                     د.ع
                                 </span>
                             </div>
-                            <p class="text-[11px] text-slate-500 font-medium mt-1">بڕی ئەو پارەیەی بۆ هەر کاتژمێرێکی زیادە بۆ کرێکار هەژمار دەکرێت.</p>
+                            <p class="text-[11px] text-slate-500 font-medium mt-1">بڕی ئەو پارەیەی بۆ هەر کاتژمێرێکی زیادە لەناو کارگە بۆ کرێکار هەژمار دەکرێت.</p>
+                        </div>
+
+                        <div class="p-3.5 bg-teal-50/70 rounded-2xl border border-teal-200/80 space-y-2">
+                            <label class="block text-slate-800 font-black">نرخی کاتی کارکردن کاتێک دەچنە ماڵان / دانان (د.ع) *</label>
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white shadow-2xs">
+                                <input type="text" inputmode="numeric" x-model="settingsForm.workshop_home_visit_hourly_rate"
+                                       @input="settingsForm.workshop_home_visit_hourly_rate = formatMoneyInput($event.target.value)"
+                                       placeholder="بۆ نموونە: 7,000"
+                                       class="w-full px-3 py-2 font-mono font-black text-teal-800 focus:outline-hidden text-sm">
+                                <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                    د.ع / کاتژمێر
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 font-medium">ئەگەر کرێکار یان وەستا بچێتە ماڵان بۆ دانان، کاتژمێری زیادەکەی بەم نرخە هەژمار دەکرێت لەبری نرخی ئاسایی.</p>
                         </div>
                     </div>
 
@@ -581,58 +605,33 @@
                     <div x-show="settingsTab === 'penalty'" class="space-y-4">
 
                         {{-- لێبڕینی نیو ڕۆژ دەوام --}}
-                        <div class="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80 space-y-3">
-                            <div>
-                                <label class="block mb-1 text-slate-800 font-black">لێبڕینی نیو ڕۆژ دەوام (Half Day)</label>
-                                <select x-model="settingsForm.workshop_half_day_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-amber-600 shadow-2xs">
-                                    <option value="percentage">نیوەی مووچەی ڕۆژانە (٥٠٪ - ستاندارد)</option>
-                                    <option value="fixed_amount">بڕێکی دیاریکراوی جێگیر (د.ع)</option>
-                                </select>
+                        <div class="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80 space-y-1.5">
+                            <label class="block text-slate-800 font-black">بڕی لێبڕینی نیو دەوام (د.ع) *</label>
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
+                                <input type="text" inputmode="numeric" x-model="settingsForm.workshop_half_day_deduction_rate"
+                                       @input="settingsForm.workshop_half_day_deduction_rate = formatMoneyInput($event.target.value)"
+                                       placeholder="بۆ نموونە: 10,000 (ئەگەر بەتاڵ بێت ٥٠٪)"
+                                       class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
+                                <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                    د.ع
+                                </span>
                             </div>
-
-                            <template x-if="settingsForm.workshop_half_day_deduction_type === 'fixed_amount'">
-                                <div>
-                                    <label class="block mb-1 text-slate-700 font-bold text-xs">بڕی لێبڕین بۆ هەر ڕۆژێکی نیو دەوام (د.ع) *</label>
-                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
-                                        <input type="text" inputmode="numeric" x-model="settingsForm.workshop_half_day_deduction_rate"
-                                               @input="settingsForm.workshop_half_day_deduction_rate = formatMoneyInput($event.target.value)"
-                                               placeholder="10,000"
-                                               class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
-                                        <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
-                                            د.ع
-                                        </span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-500 font-medium mt-1">ئەم بڕە پارەیە لە ڕۆژانەی کارمەند دەبڕدرێت ئەگەر نیو ڕۆژ دەوام بکات.</p>
-                                </div>
-                            </template>
+                            <p class="text-[11px] text-slate-500 font-medium">ئەگەر نرخ بنووسیت ئەم بڕە دەبڕدرێت لە ڕۆژانەی کارمەند، ئەگەر بەتاڵ بێت نیوەی مووچە (٥٠٪) دەبڕدرێت.</p>
                         </div>
 
                         {{-- لێبڕین و سزای غیاببوونی کامل --}}
-                        <div class="p-3.5 bg-rose-50/60 rounded-2xl border border-rose-200/80 space-y-3">
-                            <div>
-                                <label class="block mb-1 text-slate-800 font-black">لێبڕین و سزای غیاببوونی کامل (Full Day Absence)</label>
-                                <select x-model="settingsForm.workshop_absent_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-rose-600 shadow-2xs">
-                                    <option value="none">تەنها بڕینی مووچەی ئەو ڕۆژە (١ ڕۆژ - بێ سزای زیادە)</option>
-                                    <option value="fixed_amount">سزای دارایی جێگیر بۆ هەر ڕۆژێکی غیاب (د.ع)</option>
-                                    <option value="one_day_wage">سزای دوو ڕۆژ مووچە (دوو هێندە دەبڕدرێت)</option>
-                                </select>
+                        <div class="p-3.5 bg-rose-50/60 rounded-2xl border border-rose-200/80 space-y-1.5">
+                            <label class="block text-slate-800 font-black">بڕی لێبڕین / سزای غیاببوونی کامل (د.ع) *</label>
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-rose-600 bg-white shadow-2xs">
+                                <input type="text" inputmode="numeric" x-model="settingsForm.workshop_absent_deduction_rate"
+                                       @input="settingsForm.workshop_absent_deduction_rate = formatMoneyInput($event.target.value)"
+                                       placeholder="بۆ نموونە: 25,000 (ئەگەر بەتاڵ بێت مووچەی ئەو ڕۆژە)"
+                                       class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
+                                <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                    د.ع
+                                </span>
                             </div>
-
-                            <template x-if="settingsForm.workshop_absent_deduction_type === 'fixed_amount'">
-                                <div>
-                                    <label class="block mb-1 text-slate-700 font-bold text-xs">بڕی سزای پارە بۆ هەر ڕۆژێکی غیاببوون (د.ع) *</label>
-                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-rose-600 bg-white shadow-2xs">
-                                        <input type="text" inputmode="numeric" x-model="settingsForm.workshop_absent_deduction_rate"
-                                               @input="settingsForm.workshop_absent_deduction_rate = formatMoneyInput($event.target.value)"
-                                               placeholder="25,000"
-                                               class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
-                                        <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
-                                            د.ع
-                                        </span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-500 font-medium mt-1">سەرەڕای پێنەدانی مووچەی ئەو ڕۆژە، ئەم بڕە سزایەش وەک لێبڕین دادەنرێت.</p>
-                                </div>
-                            </template>
+                            <p class="text-[11px] text-slate-500 font-medium">سەرەڕای پێنەدانی مووچەی ئەو ڕۆژە، ئەم بڕە سزایەش وەک لێبڕین لە شایستەی مانگانە کەم دەکرێتەوە.</p>
                         </div>
 
                         {{-- سزای تاخیربوون لە دەوام --}}
@@ -865,25 +864,53 @@
                         </select>
                     </div>
 
-                    {{-- کاتی زیادە و سەرفیات (بەنزین) --}}
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <div>
-                            <label class="block mb-1 text-slate-600 font-bold">کاتی زیادە</label>
-                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
-                                <input type="number" step="0.5" min="0" x-model="cellForm.overtime_hours"
-                                       placeholder="0"
-                                       class="w-full px-2.5 py-2 font-mono font-black text-blue-700 text-xs focus:outline-hidden">
-                                <span class="bg-slate-100 px-2 flex items-center text-[11px] font-bold text-slate-500 border-r border-slate-200 shrink-0">ک</span>
+                    {{-- کاتی زیادە و چوونە ماڵان --}}
+                    <div class="p-2.5 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-2">
+                        <div class="text-[11px] font-black text-blue-900 flex items-center gap-1">
+                            <span>⏱️</span>
+                            <span>کاتی زیادە و چوونە ماڵان</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">کاتی زیادە (کاتژمێر)</label>
+                                <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-blue-600 bg-white">
+                                    <input type="number" step="0.5" min="0" x-model="cellForm.overtime_hours"
+                                           placeholder="0"
+                                           class="w-full px-2.5 py-1.5 font-mono font-black text-blue-700 text-xs focus:outline-hidden">
+                                    <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">ک</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">چوونە ماڵان / شوێن</label>
+                                <input type="text" x-model="cellForm.trip_destination"
+                                       placeholder="بۆ نموونە: ماڵی حاجی..."
+                                       class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-blue-600">
                             </div>
                         </div>
-                        <div>
-                            <label class="block mb-1 text-slate-600 font-bold">سەرفیات (بەنزین)</label>
-                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
-                                <input type="text" inputmode="numeric" x-model="cellForm.fuel_expense"
-                                       @input="cellForm.fuel_expense = formatMoneyInput($event.target.value)"
-                                       placeholder="0"
-                                       class="w-full px-2.5 py-2 font-mono font-black text-purple-900 text-xs focus:outline-hidden">
-                                <span class="bg-slate-100 px-2 flex items-center text-[11px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
+                    </div>
+
+                    {{-- سەرفیات و خەرجی (ناوی خەرجی + نرخ) --}}
+                    <div class="p-2.5 bg-purple-50/60 rounded-2xl border border-purple-100 space-y-2">
+                        <div class="text-[11px] font-black text-purple-900 flex items-center gap-1">
+                            <span>⛽</span>
+                            <span>خەرجی و سەرفیات (ناوی خەرجی و نرخ)</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">ناوی خەرجی (بەنزین و هتد)</label>
+                                <input type="text" x-model="cellForm.exit_reason"
+                                       placeholder="بۆ نموونە: بەنزین، مەواد..."
+                                       class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-hidden focus:border-purple-600">
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-slate-600 font-bold text-[10px]">بڕی پارە (د.ع)</label>
+                                <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-purple-600 bg-white">
+                                    <input type="text" inputmode="numeric" x-model="cellForm.fuel_expense"
+                                           @input="cellForm.fuel_expense = formatMoneyInput($event.target.value)"
+                                           placeholder="0"
+                                           class="w-full px-2.5 py-1.5 font-mono font-black text-purple-900 text-xs focus:outline-hidden">
+                                    <span class="bg-slate-100 px-2 flex items-center text-[10px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -986,6 +1013,7 @@ function workshopEmployeesApp() {
             workshop_work_hours: {{ $shiftSettings['work_hours'] ?? 8 }},
             workshop_weekly_holiday: '{{ $shiftSettings['weekly_holiday'] ?? "friday" }}',
             workshop_overtime_hourly_rate: {!! json_encode(($shiftSettings['overtime_hourly_rate'] ?? 0) > 0 ? $shiftSettings['overtime_hourly_rate'] : '') !!},
+            workshop_home_visit_hourly_rate: {!! json_encode(($shiftSettings['home_visit_hourly_rate'] ?? 0) > 0 ? $shiftSettings['home_visit_hourly_rate'] : '') !!},
             workshop_overtime_multiplier: {{ $shiftSettings['overtime_multiplier'] ?? 1.0 }},
             workshop_half_day_deduction_type: '{{ $shiftSettings['half_day_deduction_type'] ?? "percentage" }}',
             workshop_half_day_deduction_rate: {!! json_encode(($shiftSettings['half_day_deduction_rate'] ?? 0) > 0 ? $shiftSettings['half_day_deduction_rate'] : '') !!},
@@ -1009,6 +1037,8 @@ function workshopEmployeesApp() {
             check_out: '',
             hours: 0,
             overtime_hours: 0,
+            trip_destination: '',
+            exit_reason: '',
             late_minutes: 0,
             fuel_expense: 0,
             deduction_amount: 0,
@@ -1135,6 +1165,8 @@ function workshopEmployeesApp() {
                 work_date: day.date,
                 status: existing?.status || 'present',
                 overtime_hours: existing?.overtime_hours > 0 ? existing.overtime_hours : '',
+                trip_destination: existing?.trip_destination || '',
+                exit_reason: existing?.exit_reason || '',
                 fuel_expense: existing?.fuel_expense > 0 ? this.formatMoneyInput(existing.fuel_expense) : '',
                 note: existing?.note || ''
             };
@@ -1149,6 +1181,8 @@ function workshopEmployeesApp() {
                     work_date: this.cellForm.work_date,
                     status: this.cellForm.status,
                     overtime_hours: parseFloat(this.cellForm.overtime_hours) || 0,
+                    trip_destination: this.cellForm.trip_destination || '',
+                    exit_reason: this.cellForm.exit_reason || '',
                     fuel_expense: this.cleanMoney(this.cellForm.fuel_expense),
                     note: this.cellForm.note || ''
                 };
@@ -1442,6 +1476,7 @@ function workshopEmployeesApp() {
             try {
                 const payload = { ...this.settingsForm };
                 payload.workshop_overtime_hourly_rate = this.cleanMoney(payload.workshop_overtime_hourly_rate);
+                payload.workshop_home_visit_hourly_rate = this.cleanMoney(payload.workshop_home_visit_hourly_rate);
                 payload.workshop_half_day_deduction_rate = this.cleanMoney(payload.workshop_half_day_deduction_rate);
                 payload.workshop_absent_deduction_rate = this.cleanMoney(payload.workshop_absent_deduction_rate);
                 payload.workshop_late_deduction_rate = this.cleanMoney(payload.workshop_late_deduction_rate);
@@ -1506,24 +1541,31 @@ function workshopEmployeesApp() {
             const wage = row.effective_daily_wage || row.daily_wage;
             let halfDayEarned = wage * 0.5;
             const halfDayDedRate = this.cleanMoney(this.settingsForm.workshop_half_day_deduction_rate);
-            if (this.settingsForm.workshop_half_day_deduction_type === 'fixed_amount' && halfDayDedRate > 0) {
+            if (halfDayDedRate > 0) {
                 halfDayEarned = Math.max(0, wage - halfDayDedRate);
             }
             const baseEarned = (present * wage) + (halfDay * halfDayEarned);
 
             const cleanOtRate = this.cleanMoney(this.settingsForm.workshop_overtime_hourly_rate);
+            const cleanHomeRate = this.cleanMoney(this.settingsForm.workshop_home_visit_hourly_rate);
             const otMultiplier = parseFloat(this.settingsForm.workshop_overtime_multiplier) || 1.0;
-            const otHourlyRate = (cleanOtRate > 0)
+            const stdOtRate = (cleanOtRate > 0)
                 ? cleanOtRate
                 : ((wage / (this.settingsForm.workshop_work_hours || 8)) * otMultiplier);
-            const otEarned = ot * otHourlyRate;
+            const homeOtRate = (cleanHomeRate > 0) ? cleanHomeRate : stdOtRate;
+
+            let otEarned = 0;
+            Object.values(row.cells).forEach(cell => {
+                if (cell && parseFloat(cell.overtime_hours || 0) > 0) {
+                    const rate = (cell.trip_destination && cell.trip_destination.trim()) ? homeOtRate : stdOtRate;
+                    otEarned += parseFloat(cell.overtime_hours) * rate;
+                }
+            });
 
             let absentPenalty = 0;
             const absentDedRate = this.cleanMoney(this.settingsForm.workshop_absent_deduction_rate);
-            if (this.settingsForm.workshop_absent_deduction_type === 'fixed_amount' && absentDedRate > 0) {
+            if (absentDedRate > 0) {
                 absentPenalty = absent * absentDedRate;
-            } else if (this.settingsForm.workshop_absent_deduction_type === 'one_day_wage') {
-                absentPenalty = absent * wage;
             }
 
             row.total_deductions = manualDeduction + absentPenalty;
