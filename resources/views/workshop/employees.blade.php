@@ -125,22 +125,13 @@
                             {{-- زانیاری وەستا --}}
                             <td class="py-3 px-3.5 sticky right-0 bg-white hover:bg-slate-50 z-10 border-l border-slate-200">
                                 <div class="flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-2.5 cursor-pointer overflow-hidden" @click="openEmployeeDrawer(row)">
-                                        <div class="w-8 h-8 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs shrink-0">
-                                            <span x-text="row.name.charAt(0)"></span>
-                                        </div>
-                                        <div class="overflow-hidden">
-                                            <div class="font-black text-slate-900 hover:text-teal-700 leading-tight text-xs sm:text-sm truncate" x-text="row.name"></div>
-                                            <div class="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
-                                                <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-bold text-[10px]" x-text="row.job_title_label"></span>
-                                                <span>•</span>
-                                                <span class="text-teal-800 font-bold" x-text="formatNumber(row.daily_wage) + ' د.ع'"></span>
-                                            </div>
-                                        </div>
+                                    <div class="flex items-center gap-2 cursor-pointer overflow-hidden" @click="openEmployeeDrawer(row)">
+                                        <span class="font-black text-slate-900 hover:text-teal-700 text-xs sm:text-sm" x-text="row.name"></span>
+                                        <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px] border border-slate-200 shrink-0" x-text="row.job_title_label"></span>
                                     </div>
                                     <button type="button" @click="openEditWageModal(row)"
                                             class="p-1.5 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-slate-100 print:hidden transition-colors shrink-0"
-                                            title="دەستکاری مووچە">
+                                            title="دەستکاری مووچە و پیشە">
                                         ✏️
                                     </button>
                                 </div>
