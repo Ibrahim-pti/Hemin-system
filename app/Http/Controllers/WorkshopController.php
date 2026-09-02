@@ -911,25 +911,12 @@ class WorkshopController extends Controller
             ]);
         }
 
-        // ئەگەر دۆخ دیاری نەکرابێت، بە یەک کلیک بەدوای یەکدا دەسوڕێت: سەح -> نیوەڕۆژ -> غائیب -> ئیجازە -> خاڵی
+        // ئەگەر دۆخ دیاری نەکرابێت، تەنها لە نێوان سەح و غائیب دەسوڕێت
         if (! $status) {
-            if (! $attendance || ! $attendance->status) {
+            if (! $attendance || ! $attendance->status || $attendance->status !== 'present') {
                 $status = 'present';
-            } elseif ($attendance->status === 'present') {
-                $status = 'half_day';
-            } elseif ($attendance->status === 'half_day') {
-                $status = 'absent';
-            } elseif ($attendance->status === 'absent') {
-                $status = 'leave';
             } else {
-                $attendance->delete();
-                return response()->json([
-                    'ok' => true,
-                    'status' => null,
-                    'status_label' => 'تۆمارنەکراو',
-                    'attendance' => null,
-                    'message' => "تۆماری ئامادەبوونی {$employee->name} لابرا.",
-                ]);
+                $status = 'absent';
             }
         }
 
