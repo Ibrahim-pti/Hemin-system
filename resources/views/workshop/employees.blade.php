@@ -480,70 +480,192 @@
         </div>
     </div>
 
-    {{-- ٥. مۆداڵی سێتینگی کارگە (Settings Modal) --}}
+    {{-- ٥. مۆداڵی سێتینگی کارگە و مەرجەکانی بەڕێوەبەر (Settings Modal) --}}
     <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden text-xs">
+        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden text-xs">
             
             <form @submit.prevent="saveSettings()">
+                {{-- سەرپەڕە --}}
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
-                        <h2 class="text-base font-black text-white">سێتینگی دەوام و کاتی زیادە</h2>
-                        <p class="text-[11px] text-teal-200">دیاریکردنی کاتژمێری فەرمی و نرخی کاتی زیادە</p>
+                        <h2 class="text-base font-black text-white flex items-center gap-1.5">
+                            <span>⚙️</span>
+                            <span>ڕێکخستنی یاسا و مەرجەکانی دەوام</span>
+                        </h2>
+                        <p class="text-[11px] text-teal-200 mt-0.5">دانانی مەرجەکانی کارکردن، کاتی زیادە و سزاکان لەلایەن بەڕێوەبەر</p>
                     </div>
                     <button type="button" @click="showSettingsModal = false" class="text-teal-200 hover:text-white text-lg font-bold cursor-pointer">✕</button>
                 </div>
 
-                <div class="p-5 space-y-4 font-bold text-slate-700">
-                    {{-- کاتژمێری فەرمی --}}
-                    <div>
-                        <label class="block mb-1.5 text-slate-700 font-black">کاتژمێری فەرمی ڕۆژانە *</label>
-                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-500/20 bg-white transition-all shadow-2xs">
-                            <input type="number" step="0.5" min="1" max="24" x-model="settingsForm.workshop_work_hours" required
-                                   class="w-full px-3.5 py-2.5 font-mono font-bold text-slate-800 focus:outline-hidden text-xs bg-transparent">
-                            <span class="bg-slate-100 px-3.5 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
-                                کاتژمێر
-                            </span>
-                        </div>
-                        <p class="text-[11px] text-slate-400 font-medium mt-1.5 flex items-center gap-1">
-                            <span>ℹ️</span>
-                            <span>کاتی فەرمی ڕۆژانەی کارکردنە</span>
-                        </p>
-                    </div>
-
-                    {{-- نرخی کاتی زیادە --}}
-                    <div>
-                        <label class="block mb-1.5 text-slate-700 font-black">نرخی هەر کاتژمێرێکی کاتی زیادە (د.ع) *</label>
-                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-500/20 bg-white transition-all shadow-2xs">
-                            <input type="text" inputmode="numeric" x-model="settingsForm.workshop_overtime_hourly_rate"
-                                   @input="settingsForm.workshop_overtime_hourly_rate = formatMoneyInput($event.target.value)"
-                                   placeholder="0"
-                                   class="w-full px-3.5 py-2.5 font-mono font-black text-emerald-700 focus:outline-hidden text-sm bg-transparent">
-                            <span class="bg-slate-100 px-3.5 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
-                                د.ع
-                            </span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 font-medium mt-1.5 flex items-center gap-1 leading-relaxed">
-                            <span>💡</span>
-                            <span>ئەگەر لە کاتی فەرمی زیاتر بمێنێتەوە، بۆ هەر کاتژمێرێک ئەم بڕەی بۆ هەژمار دەکرێت</span>
-                        </p>
-                    </div>
-
-                    {{-- پشووی هەفتانە --}}
-                    <div>
-                        <label class="block mb-1.5 text-slate-700 font-black">ڕۆژی پشووی هەفتانە</label>
-                        <select x-model="settingsForm.workshop_weekly_holiday" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 shadow-2xs">
-                            <option value="friday">هەینی</option>
-                            <option value="saturday">شەممە</option>
-                            <option value="thursday">پێنجشەممە</option>
-                            <option value="none">بێ پشوو</option>
-                        </select>
-                    </div>
+                {{-- تابلۆکانی سێتینگ (Tabs) --}}
+                <div class="flex items-center border-b border-slate-200 bg-slate-100/70 p-1.5 gap-1.5 font-bold text-xs">
+                    <button type="button" @click="settingsTab = 'hours'"
+                            class="flex-1 py-2 px-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"
+                            :class="settingsTab === 'hours' ? 'bg-white text-teal-900 shadow-2xs font-black' : 'text-slate-600 hover:bg-slate-200/60'">
+                        <span>⏰</span>
+                        <span>کاتی دەوام</span>
+                    </button>
+                    <button type="button" @click="settingsTab = 'overtime'"
+                            class="flex-1 py-2 px-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"
+                            :class="settingsTab === 'overtime' ? 'bg-white text-teal-900 shadow-2xs font-black' : 'text-slate-600 hover:bg-slate-200/60'">
+                        <span>⭐</span>
+                        <span>کاتی زیادە</span>
+                    </button>
+                    <button type="button" @click="settingsTab = 'penalty'"
+                            class="flex-1 py-2 px-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"
+                            :class="settingsTab === 'penalty' ? 'bg-white text-teal-900 shadow-2xs font-black' : 'text-slate-600 hover:bg-slate-200/60'">
+                        <span>⚠️</span>
+                        <span>سزای تاخیربوون</span>
+                    </button>
                 </div>
 
-                <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+                <div class="p-5 space-y-4 font-bold text-slate-700 max-h-[60vh] overflow-y-auto">
+                    
+                    {{-- ١. بەشی کاتی دەوام و پشوو --}}
+                    <div x-show="settingsTab === 'hours'" class="space-y-3.5">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block mb-1 text-slate-600 font-bold">کاتی دەستپێکردنی بەیانیان</label>
+                                <input type="time" x-model="settingsForm.workshop_work_start"
+                                       class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-slate-600 font-bold">کاتی کۆتایی دەوام</label>
+                                <input type="time" x-model="settingsForm.workshop_work_end"
+                                       class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-slate-700 font-black">کاتژمێری فەرمی ڕۆژانە *</label>
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white shadow-2xs">
+                                <input type="number" step="0.5" min="1" max="24" x-model="settingsForm.workshop_work_hours" required
+                                       class="w-full px-3 py-2 font-mono font-bold text-slate-800 focus:outline-hidden">
+                                <span class="bg-slate-100 px-3 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
+                                    کاتژمێر
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 font-medium mt-1">بڕی کاتژمێرێکە کە کرێکار دەبێت لە ڕۆژێکدا تەواوی بکات.</p>
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-slate-700 font-black">ڕۆژی پشووی هەفتانەی کارگە</label>
+                            <select x-model="settingsForm.workshop_weekly_holiday" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 shadow-2xs">
+                                <option value="friday">هەینی</option>
+                                <option value="saturday">شەممە</option>
+                                <option value="thursday">پێنجشەممە</option>
+                                <option value="sunday">یەکشەممە</option>
+                                <option value="none">بێ پشوو (هەموو ڕۆژێ کارکردنە)</option>
+                            </select>
+                            <p class="text-[11px] text-slate-400 font-medium mt-1">لە ڕۆژی پشوودا سەحی ڕۆژانە دادەخرێت و پشوو هەژمار دەکرێت.</p>
+                        </div>
+                    </div>
+
+                    {{-- ٢. بەشی کاتی زیادە --}}
+                    <div x-show="settingsTab === 'overtime'" class="space-y-3.5">
+                        <div>
+                            <label class="block mb-1 text-slate-700 font-black">نرخی هەر کاتژمێرێکی کاتی زیادە (د.ع) *</label>
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white shadow-2xs">
+                                <input type="text" inputmode="numeric" x-model="settingsForm.workshop_overtime_hourly_rate"
+                                       @input="settingsForm.workshop_overtime_hourly_rate = formatMoneyInput($event.target.value)"
+                                       placeholder="0"
+                                       class="w-full px-3 py-2 font-mono font-black text-emerald-700 focus:outline-hidden text-sm">
+                                <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                    د.ع
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر کاتی زیادە بە پارەی جێگیر بێت بۆ هەر کاتژمێرێک.</p>
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-slate-700 font-black">ڕێژەی لێکدانی کاتی زیادە (Multiplier)</label>
+                            <select x-model="settingsForm.workshop_overtime_multiplier" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 shadow-2xs">
+                                <option value="1.0">1.0x (نرخی کاتژمێری ئاسایی)</option>
+                                <option value="1.25">1.25x (کاتژمێر و چوارەک)</option>
+                                <option value="1.5">1.5x (کاتژمێر و نیو - ستانداردی کارگەکان)</option>
+                                <option value="2.0">2.0x (دوو هێندە)</option>
+                            </select>
+                            <p class="text-[11px] text-slate-400 font-medium mt-1">ئەگەر کرێکار بەپێی مووچەی خۆی کاتی زیادەی بۆ هەژمار بکرێت.</p>
+                        </div>
+                    </div>
+
+                    {{-- ٣. بەشی یاسا و سزای تاخیربوون --}}
+                    <div x-show="settingsTab === 'penalty'" class="space-y-3.5">
+                        <div>
+                            <label class="block mb-1 text-slate-700 font-black">خولەکی لێخۆشبوون لە تاخیربوون (Grace Period)</label>
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white shadow-2xs">
+                                <input type="number" min="0" max="120" x-model="settingsForm.workshop_late_grace_minutes"
+                                       class="w-full px-3 py-2 font-mono font-bold text-slate-800 focus:outline-hidden">
+                                <span class="bg-slate-100 px-3 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
+                                    خولەک
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 font-medium mt-1">ئەگەر کرێکار تا ئەمەندە خولەکە دواکەوت، سزای لەسەر نادرێت.</p>
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-slate-700 font-black">شێوازی سزادانی تاخیربوون لە دەوام</label>
+                            <select x-model="settingsForm.workshop_late_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 shadow-2xs">
+                                <option value="none">بێ سزای دارایی (تەنها خولەکی تاخیربوون تۆمار بکرێت)</option>
+                                <option value="fixed_amount">بڕینی بڕێکی دیاریکراو بۆ هەر ڕۆژێکی تاخیربوون</option>
+                                <option value="weekly_threshold">سزا لە ئەگەری دووبارەبوونەوە لە هەفتەیەکدا</option>
+                            </select>
+                        </div>
+
+                        <template x-if="settingsForm.workshop_late_deduction_type === 'fixed_amount'">
+                            <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 space-y-2">
+                                <label class="block text-slate-700 font-black">بڕی سزای پارە بۆ هەر ڕۆژێک تاخیربوون (د.ع) *</label>
+                                <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
+                                    <input type="text" inputmode="numeric" x-model="settingsForm.workshop_late_deduction_rate"
+                                           @input="settingsForm.workshop_late_deduction_rate = formatMoneyInput($event.target.value)"
+                                           placeholder="5,000"
+                                           class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
+                                    <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                        د.ع
+                                    </span>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="settingsForm.workshop_late_deduction_type === 'weekly_threshold'">
+                            <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 space-y-3">
+                                <div>
+                                    <label class="block mb-1 text-slate-700 font-black">مەرج: چەند ڕۆژ تاخیربوون لە هەفتەدا؟ *</label>
+                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
+                                        <input type="number" min="1" max="6" x-model="settingsForm.workshop_late_weekly_threshold_days"
+                                               class="w-full px-3 py-2 font-mono font-bold text-slate-800 focus:outline-hidden">
+                                        <span class="bg-slate-100 px-3 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
+                                            ڕۆژ لە هەفتە
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر لە هەفتەیەکدا ئەم ژمارەیە یان زیاتر دواکەوت سزای دەدرێت.</p>
+                                </div>
+
+                                <div>
+                                    <label class="block mb-1 text-slate-700 font-black">بڕی سزای شکاندنی مەرجەکە (د.ع)</label>
+                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white shadow-2xs">
+                                        <input type="text" inputmode="numeric" x-model="settingsForm.workshop_late_weekly_penalty_amount"
+                                               @input="settingsForm.workshop_late_weekly_penalty_amount = formatMoneyInput($event.target.value)"
+                                               placeholder="ئەگەر بەتاڵ بێت مووچەی ڕۆژێک دەبڕدرێت"
+                                               class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
+                                        <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
+                                            د.ع
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر دیاری نەکرێت، سیستەمەکە یەک مووچەی ڕۆژانەی دەبڕێت.</p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                </div>
+
+                {{-- بەشی دوگمەکان --}}
+                <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
                     <button type="button" @click="showSettingsModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer transition-all">داخستن</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800 shadow-2xs cursor-pointer transition-all">
-                        پاشەکەوتکردن
+                    <button type="submit" class="px-5 py-2 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800 shadow-2xs cursor-pointer transition-all flex items-center gap-1.5">
+                        <span>💾</span>
+                        <span>پاشەکەوتکردنی مەرجەکان</span>
                     </button>
                 </div>
             </form>
@@ -824,10 +946,19 @@ function workshopEmployeesApp() {
         drawerData: null,
 
         showSettingsModal: false,
+        settingsTab: 'hours',
         settingsForm: {
-            workshop_work_hours: {{ $shiftSettings['work_hours'] }},
+            workshop_work_start: '{{ $shiftSettings['work_start'] ?? "08:00" }}',
+            workshop_work_end: '{{ $shiftSettings['work_end'] ?? "17:00" }}',
+            workshop_work_hours: {{ $shiftSettings['work_hours'] ?? 8 }},
+            workshop_weekly_holiday: '{{ $shiftSettings['weekly_holiday'] ?? "friday" }}',
             workshop_overtime_hourly_rate: {!! json_encode(($shiftSettings['overtime_hourly_rate'] ?? 0) > 0 ? $shiftSettings['overtime_hourly_rate'] : '') !!},
-            workshop_weekly_holiday: '{{ $shiftSettings['weekly_holiday'] }}'
+            workshop_overtime_multiplier: {{ $shiftSettings['overtime_multiplier'] ?? 1.0 }},
+            workshop_late_grace_minutes: {{ $shiftSettings['late_grace_minutes'] ?? 15 }},
+            workshop_late_deduction_type: '{{ $shiftSettings['late_deduction_type'] ?? "none" }}',
+            workshop_late_deduction_rate: {!! json_encode(($shiftSettings['late_deduction_rate'] ?? 0) > 0 ? $shiftSettings['late_deduction_rate'] : '') !!},
+            workshop_late_weekly_threshold_days: {{ $shiftSettings['late_weekly_threshold_days'] ?? 2 }},
+            workshop_late_weekly_penalty_amount: {!! json_encode(($shiftSettings['late_weekly_penalty_amount'] ?? 0) > 0 ? $shiftSettings['late_weekly_penalty_amount'] : '') !!}
         },
 
         showCellModal: false,
@@ -1274,6 +1405,9 @@ function workshopEmployeesApp() {
             try {
                 const payload = { ...this.settingsForm };
                 payload.workshop_overtime_hourly_rate = this.cleanMoney(payload.workshop_overtime_hourly_rate);
+                payload.workshop_late_deduction_rate = this.cleanMoney(payload.workshop_late_deduction_rate);
+                payload.workshop_late_weekly_penalty_amount = this.cleanMoney(payload.workshop_late_weekly_penalty_amount);
+
                 const res = await fetch('{{ route('workshop.settings') }}', {
                     method: 'POST',
                     headers: {
@@ -1287,6 +1421,7 @@ function workshopEmployeesApp() {
                 const data = await res.json();
                 if (data.ok) {
                     this.showToast(data.message, 'success');
+                    this.showSettingsModal = false;
                     setTimeout(() => window.location.reload(), 1000);
                 } else {
                     this.showToast(data.message || 'هەڵە لە پاشەکەوتکردنی سێتینگ', 'error');
