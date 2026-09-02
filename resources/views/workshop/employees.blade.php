@@ -258,13 +258,34 @@
                         <div class="text-[9px] text-slate-400 mt-0.5">لە قاصەوە دراوە</div>
                     </div>
 
-                    {{-- ٤. باڵانسی ماوە --}}
-                    <div class="bg-white p-2.5 rounded-xl border border-amber-300 shadow-2xs">
-                        <div class="text-[10px] text-amber-800 font-bold">باڵانسی ماوە لای کارگە</div>
-                        <div class="text-base font-black font-mono mt-0.5"
-                             :class="(drawerData?.stats?.remaining_balance ?? 0) > 0 ? 'text-amber-900' : 'text-slate-600'"
-                             x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></div>
-                        <div class="text-[9px] text-slate-400 mt-0.5">ماوە بۆی بدرێت</div>
+                    {{-- ٤. باڵانسی ماوە / دۆخی پارەدان --}}
+                    <div class="p-2.5 rounded-xl border shadow-2xs transition-all flex flex-col justify-between"
+                         :class="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0 ? 'bg-emerald-50/70 border-emerald-300' : 'bg-white border-amber-300'">
+                        <div class="text-[10px] font-bold"
+                             :class="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0 ? 'text-emerald-800' : 'text-amber-800'">
+                            <span x-text="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0 ? 'دۆخی حیساباتی مانگ' : 'باڵانسی ماوە لای کارگە'"></span>
+                        </div>
+
+                        <template x-if="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0">
+                            <div class="mt-0.5">
+                                <div class="text-sm sm:text-base font-black text-emerald-700 flex items-center justify-center gap-1">
+                                    <span>✓</span>
+                                    <span>پارەکەی دراوە</span>
+                                </div>
+                                <div class="text-[9px] text-emerald-600 font-bold mt-0.5">تەواوی پارەی ئەم مانگە دراوە</div>
+                            </div>
+                        </template>
+
+                        <template x-if="!((drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0)">
+                            <div class="mt-0.5">
+                                <div class="text-base font-black font-mono"
+                                     :class="(drawerData?.stats?.remaining_balance ?? 0) > 0 ? 'text-amber-900' : 'text-slate-600'"
+                                     x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">
+                                    <span x-text="(drawerData?.stats?.remaining_balance ?? 0) > 0 ? 'ماوە بۆی بدرێت' : 'هیچ شایستەیەک نییە'"></span>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -388,6 +409,12 @@
                                 <span>💰 دانانی شایستە:</span>
                                 <span class="font-mono" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></span>
                             </button>
+                        </template>
+                        <template x-if="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0">
+                            <span class="py-1.5 px-3 rounded-xl bg-emerald-100 text-emerald-800 font-black text-xs flex items-center gap-1 shrink-0 shadow-2xs">
+                                <span>✓</span>
+                                <span>پارەکەی دراوە</span>
+                            </span>
                         </template>
                     </div>
 
