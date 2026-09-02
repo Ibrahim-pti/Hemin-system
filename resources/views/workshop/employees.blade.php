@@ -111,117 +111,74 @@
                             </th>
                         @endforeach
 
-                        {{-- کۆڵۆمە کۆکراوەکان --}}
-                        <th class="py-2 px-2 min-w-[55px] border-l border-slate-200 bg-emerald-50 text-emerald-900">سەح</th>
-                        <th class="py-2 px-2.5 min-w-[85px] border-l border-slate-200 bg-teal-50 text-teal-950">شایستە</th>
-                        <th class="py-2 px-2.5 min-w-[80px] border-l border-slate-200 bg-purple-50 text-purple-950">دراوە</th>
-                        <th class="py-2 px-2.5 min-w-[85px] border-l border-slate-200 bg-amber-50 text-amber-950">ماوە</th>
-                        <th class="py-2 px-2 min-w-[95px] print:hidden">کردار</th>
+                        {{-- کردارەکان --}}
+                        <th class="py-2.5 px-3 min-w-[120px] text-center print:hidden">کردارەکان</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium">
                     <template x-for="row in filteredEmployees" :key="row.id">
-                        <tr class="hover:bg-slate-50 transition-colors">
+                        <tr class="hover:bg-slate-50/80 transition-colors">
                             
                             {{-- زانیاری وەستا --}}
-                            <td class="py-2 px-3 sticky right-0 bg-white hover:bg-slate-50 z-10 border-l border-slate-200">
-                                <div class="flex items-center justify-between gap-1.5">
+                            <td class="py-3 px-3.5 sticky right-0 bg-white hover:bg-slate-50 z-10 border-l border-slate-200">
+                                <div class="flex items-center justify-between gap-2">
                                     <div class="cursor-pointer" @click="openEmployeeDrawer(row)">
-                                        <div class="font-black text-slate-900 hover:text-teal-700 leading-tight" x-text="row.name"></div>
-                                        <div class="text-[10px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                                            <span class="font-bold text-slate-600" x-text="row.job_title_label"></span>
+                                        <div class="font-black text-slate-900 hover:text-teal-700 leading-tight text-xs sm:text-sm" x-text="row.name"></div>
+                                        <div class="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
+                                            <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-bold" x-text="row.job_title_label"></span>
                                             <span>•</span>
-                                            <span class="text-teal-800 font-bold" x-text="formatNumber(row.daily_wage)"></span>
+                                            <span class="text-teal-800 font-bold" x-text="formatNumber(row.daily_wage) + ' د.ع'"></span>
                                         </div>
                                     </div>
                                     <button type="button" @click="openEditWageModal(row)"
-                                            class="p-1 rounded text-slate-300 hover:text-slate-600 hover:bg-slate-100 print:hidden"
+                                            class="p-1.5 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-slate-100 print:hidden transition-colors"
                                             title="دەستکاری مووچە">
                                         ✏️
                                     </button>
                                 </div>
                             </td>
 
-                            {{-- خانەکانی ڕۆژەکان بە ستایلی خاوێن و سادە --}}
+                            {{-- خانەکانی ڕۆژەکان بە ستایلی مۆدێرن و فراوان --}}
                             <template x-for="day in days" :key="day.date">
-                                <td class="p-1 text-center border-l border-slate-100 relative group"
-                                    :class="day.is_today ? 'bg-amber-50/40' : (day.is_holiday ? 'bg-slate-100/40' : '')">
+                                <td class="p-1.5 text-center border-l border-slate-100 relative group"
+                                    :class="day.is_today ? 'bg-amber-50/50' : (day.is_holiday ? 'bg-slate-100/40' : '')">
                                     
                                     <div @click="toggleCell(row.id, day.date)"
                                          @contextmenu.prevent="openCellDetailModal(row, day)"
-                                         class="w-full h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all text-xs font-black select-none"
+                                         class="w-full h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all text-xs font-black select-none border"
                                          :class="getCellStyle(row.cells[day.date])">
                                         <span x-text="getCellDisplay(row.cells[day.date])"></span>
                                     </div>
 
                                     {{-- ئایکۆنی دەستکاری ورد لەسەر هۆڤەر --}}
                                     <button type="button" @click.stop="openCellDetailModal(row, day)"
-                                            class="absolute top-0.5 left-0.5 opacity-0 group-hover:opacity-100 p-0.5 bg-white/90 rounded text-[9px] text-slate-500 hover:text-teal-700 shadow-2xs print:hidden">
+                                            class="absolute top-1 left-1 opacity-0 group-hover:opacity-100 p-1 bg-white rounded-md text-[10px] text-slate-500 hover:text-teal-700 shadow-xs border border-slate-200 print:hidden transition-all"
+                                            title="دەستکاری کاتژمێری هاتن و زیادە">
                                         ⚙️
                                     </button>
                                 </td>
                             </template>
 
-                            {{-- سەح --}}
-                            <td class="py-2 px-1 text-center font-mono font-black text-emerald-800 border-l border-slate-100 bg-emerald-50/20">
-                                <span class="text-xs" x-text="row.present_count"></span>
-                                <template x-if="row.half_day_count > 0">
-                                    <span class="text-[9px] text-amber-700 block font-normal" x-text="'+' + row.half_day_count + 'ن'"></span>
-                                </template>
-                            </td>
-
-                            {{-- شایستە --}}
-                            <td class="py-2 px-2 text-center font-mono font-black text-teal-950 border-l border-slate-100 bg-teal-50/20 text-xs">
-                                <span x-text="formatNumber(row.total_earned)"></span>
-                            </td>
-
-                            {{-- دراوە --}}
-                            <td class="py-2 px-2 text-center font-mono font-bold text-purple-900 border-l border-slate-100 bg-purple-50/20 text-xs">
-                                <span x-text="formatNumber(row.total_paid)"></span>
-                            </td>
-
-                            {{-- ماوە --}}
-                            <td class="py-2 px-2 text-center font-mono font-black border-l border-slate-100 bg-amber-50/20 text-xs"
-                                :class="row.remaining_balance > 0 ? 'text-amber-900' : 'text-slate-500'">
-                                <span x-text="formatNumber(row.remaining_balance)"></span>
-                            </td>
-
-                            {{-- کردارەکان --}}
-                            <td class="py-1.5 px-2 text-center print:hidden">
-                                <div class="flex items-center justify-center gap-1">
+                            {{-- کردارەکان: دێتەل و پێشەکی --}}
+                            <td class="py-2.5 px-3 text-center print:hidden">
+                                <div class="flex items-center justify-center gap-1.5">
                                     <button type="button" @click="openEmployeeDrawer(row)"
-                                            class="px-2 py-1 rounded-lg text-[11px] font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-all cursor-pointer">
-                                        دێتەل
+                                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-all cursor-pointer flex items-center gap-1"
+                                            title="بینینی دێتەلی تەواو، حیسابات و ڕۆژەکانی مانگ">
+                                        <span>👁️</span>
+                                        <span>دێتەل</span>
                                     </button>
                                     <button type="button" @click="openPaymentModal(row)"
-                                            class="p-1 px-1.5 rounded-lg text-[11px] font-bold bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 transition-all cursor-pointer"
-                                            title="دانی پێشەکی">
-                                        💸
+                                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 transition-all cursor-pointer flex items-center gap-1"
+                                            title="دانی پێشەکی لە قاصە">
+                                        <span>💸</span>
+                                        <span>پێشەکی</span>
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     </template>
                 </tbody>
-
-                {{-- هێڵی کۆی گشتی --}}
-                <tfoot>
-                    <tr class="bg-slate-100/90 font-black text-slate-800 border-t border-slate-200 text-center">
-                        <td class="py-2 px-3 text-right sticky right-0 bg-slate-100 border-l border-slate-200 text-xs">
-                            کۆ
-                        </td>
-                        @foreach($days as $d)
-                            <td class="py-1.5 px-1 font-mono text-xs border-l border-slate-200 {{ $d['is_today'] ? 'bg-amber-100/40' : '' }}">
-                                <span class="text-emerald-800 font-black">{{ $dayTotals[$d['date']]['present'] }}</span>
-                            </td>
-                        @endforeach
-                        <td class="py-2 px-1 font-mono text-emerald-900 border-l border-slate-200 text-xs">{{ $totalPresentManDays }}</td>
-                        <td class="py-2 px-2 font-mono text-teal-950 border-l border-slate-200 text-xs">{{ number_format($totalEarnedAll) }}</td>
-                        <td class="py-2 px-2 font-mono text-purple-950 border-l border-slate-200 text-xs">{{ number_format($totalPaidAll) }}</td>
-                        <td class="py-2 px-2 font-mono text-amber-950 border-l border-slate-200 text-xs">{{ number_format($totalRemainingAll) }}</td>
-                        <td class="py-2 print:hidden"></td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
@@ -805,22 +762,22 @@ function workshopEmployeesApp() {
         },
 
         getCellStyle(cell) {
-            if (!cell || !cell.status) return 'text-slate-300 hover:text-slate-500 hover:bg-slate-100';
-            if (cell.status === 'present') return 'bg-emerald-600 text-white font-black shadow-2xs';
-            if (cell.status === 'half_day') return 'bg-amber-500 text-white font-black shadow-2xs';
-            if (cell.status === 'absent') return 'bg-rose-500 text-white font-black shadow-2xs';
-            if (cell.status === 'leave') return 'bg-sky-500 text-white font-black shadow-2xs';
-            if (cell.status === 'holiday') return 'bg-slate-200 text-slate-600';
-            return 'text-slate-300';
+            if (!cell || !cell.status) return 'text-slate-300 border-dashed border-slate-200 hover:border-slate-300 hover:text-slate-500 hover:bg-slate-50';
+            if (cell.status === 'present') return 'bg-emerald-600 border-emerald-600 text-white font-black shadow-2xs hover:bg-emerald-700';
+            if (cell.status === 'half_day') return 'bg-amber-500 border-amber-500 text-white font-black shadow-2xs hover:bg-amber-600';
+            if (cell.status === 'absent') return 'bg-rose-500 border-rose-500 text-white font-black shadow-2xs hover:bg-rose-600';
+            if (cell.status === 'leave') return 'bg-sky-500 border-sky-500 text-white font-black shadow-2xs hover:bg-sky-600';
+            if (cell.status === 'holiday') return 'bg-slate-200 border-slate-300 text-slate-600';
+            return 'text-slate-300 border-slate-200';
         },
 
         getCellDisplay(cell) {
             if (!cell || !cell.status) return '—';
-            if (cell.status === 'present') return 'سەح';
-            if (cell.status === 'half_day') return 'نیوە';
-            if (cell.status === 'absent') return 'غائیب';
-            if (cell.status === 'leave') return 'مۆڵەت';
-            if (cell.status === 'holiday') return 'پشوو';
+            if (cell.status === 'present') return 'سەح ✔️';
+            if (cell.status === 'half_day') return 'نیوە ⏳';
+            if (cell.status === 'absent') return 'غائیب ❌';
+            if (cell.status === 'leave') return 'مۆڵەت 🏖️';
+            if (cell.status === 'holiday') return 'پشوو 🌴';
             return '—';
         },
 
