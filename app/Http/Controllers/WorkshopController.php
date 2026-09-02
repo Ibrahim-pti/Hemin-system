@@ -919,6 +919,19 @@ class WorkshopController extends Controller
             ->whereDate('work_date', $date)
             ->first();
 
+        // سوڕانەوەی دۆخ بە یەک کلیک: ئامادە (سەح) -> نیوە دەوام (نیو دان) -> غائیب -> خاڵی -> سەح
+        if (! $status) {
+            if (! $attendance || ! $attendance->status) {
+                $status = 'present';
+            } elseif ($attendance->status === 'present') {
+                $status = 'half_day';
+            } elseif ($attendance->status === 'half_day') {
+                $status = 'absent';
+            } else {
+                $status = 'delete';
+            }
+        }
+
         if ($status === 'delete') {
             if ($attendance) {
                 $attendance->delete();
@@ -930,15 +943,6 @@ class WorkshopController extends Controller
                 'attendance' => null,
                 'message' => "تۆماری ئامادەبوونی {$employee->name} سڕدرایەوە.",
             ]);
-        }
-
-        // ئەگەر دۆخ دیاری نەکرابێت، تەنها لە نێوان سەح و غائیب دەسوڕێت
-        if (! $status) {
-            if (! $attendance || ! $attendance->status || $attendance->status !== 'present') {
-                $status = 'present';
-            } else {
-                $status = 'absent';
-            }
         }
 
         if (! $attendance) {

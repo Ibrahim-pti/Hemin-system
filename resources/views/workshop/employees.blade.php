@@ -87,7 +87,8 @@
             </div>
 
             <div class="flex items-center gap-3 text-[11px] font-bold text-slate-500 flex-wrap">
-                <span class="flex items-center gap-1 text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> سەح</span>
+                <span class="flex items-center gap-1 text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> سەح (تەواو)</span>
+                <span class="flex items-center gap-1 text-amber-700"><span class="w-2 h-2 rounded-full bg-amber-500"></span> نیوە دەوام (نیو دان)</span>
                 <span class="flex items-center gap-1 text-rose-700"><span class="w-2 h-2 rounded-full bg-rose-500"></span> غائیب</span>
                 <span class="text-slate-400 font-normal hidden sm:inline">| کلیک لەسەر خانە بکە بۆ گۆڕینی دۆخ</span>
             </div>
@@ -629,8 +630,9 @@
                 <div class="p-3.5 space-y-3 font-bold text-slate-700">
                     <div>
                         <label class="block mb-1 text-slate-600">دۆخی ئامادەبوون</label>
-                        <select x-model="cellForm.status" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white">
-                            <option value="present">سەح (ئامادەبوو) ✔️</option>
+                        <select x-model="cellForm.status" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            <option value="present">سەح (تەواو) ✔️</option>
+                            <option value="half_day">نیوە دەوام (نیو دان) 🌗</option>
                             <option value="absent">غائیب (نەهاتوو) ❌</option>
                             <option value="delete">سڕینەوە (خاڵی) 🗑️</option>
                         </select>
@@ -777,6 +779,7 @@ function workshopEmployeesApp() {
         getCellStyle(cell) {
             if (!cell || !cell.status) return 'text-slate-300 border-dashed border-slate-200 hover:border-slate-300 hover:text-slate-500 hover:bg-slate-50';
             if (cell.status === 'present') return 'bg-emerald-600 border-emerald-600 text-white font-black shadow-2xs hover:bg-emerald-700';
+            if (cell.status === 'half_day') return 'bg-amber-500 border-amber-500 text-white font-black shadow-2xs hover:bg-amber-600';
             if (cell.status === 'absent') return 'bg-rose-500 border-rose-500 text-white font-black shadow-2xs hover:bg-rose-600';
             return 'text-slate-300 border-slate-200';
         },
@@ -784,6 +787,7 @@ function workshopEmployeesApp() {
         getCellDisplay(cell) {
             if (!cell || !cell.status) return '—';
             if (cell.status === 'present') return 'سەح ✔️';
+            if (cell.status === 'half_day') return 'نیو دان 🌗';
             if (cell.status === 'absent') return 'غائیب ❌';
             return '—';
         },
