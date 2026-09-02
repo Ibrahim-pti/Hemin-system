@@ -97,8 +97,8 @@
                 <thead>
                     <tr class="bg-slate-100/90 text-slate-700 font-black border-b border-slate-200 text-center">
                         {{-- وەستا --}}
-                        <th class="py-3 px-4 text-right sticky right-0 bg-slate-100 z-10 w-56 sm:w-64 border-l border-slate-200">
-                            وەستا / کارمەند
+                        <th class="py-3 px-3 text-right sticky right-0 bg-slate-100 z-10 w-36 sm:w-44 border-l border-slate-200">
+                            وەستا
                         </th>
 
                         {{-- ڕۆژەکان (شەممە تا هەینی) بە قەبارەی یەکسان و ڕێک --}}
@@ -114,26 +114,19 @@
                             </th>
                         @endforeach
 
-                        {{-- کردارەکان --}}
-                        <th class="py-3 px-3 w-40 sm:w-44 text-center print:hidden">کردارەکان</th>
+                        {{-- کردارەکان بە قەبارەی کەم و ئایکۆن --}}
+                        <th class="py-3 px-2 w-28 sm:w-32 text-center print:hidden">کردارەکان</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium">
                     <template x-for="row in filteredEmployees" :key="row.id">
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             
-                            {{-- زانیاری وەستا --}}
-                            <td class="py-3 px-3.5 sticky right-0 bg-white hover:bg-slate-50 z-10 border-l border-slate-200">
-                                <div class="flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-2 cursor-pointer overflow-hidden" @click="openEmployeeDrawer(row)">
-                                        <span class="font-black text-slate-900 hover:text-teal-700 text-xs sm:text-sm" x-text="row.name"></span>
-                                        <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px] border border-slate-200 shrink-0" x-text="row.job_title_label"></span>
-                                    </div>
-                                    <button type="button" @click="openEditWageModal(row)"
-                                            class="p-1.5 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-slate-100 print:hidden transition-colors shrink-0"
-                                            title="دەستکاری مووچە و پیشە">
-                                        ✏️
-                                    </button>
+                            {{-- زانیاری وەستا (کۆمپاکت: پیشە لە پێشەوە، دواتر ناو) --}}
+                            <td class="py-2.5 px-3 sticky right-0 bg-white hover:bg-slate-50 z-10 border-l border-slate-200">
+                                <div class="flex items-center gap-1.5 cursor-pointer overflow-hidden" @click="openEmployeeDrawer(row)">
+                                    <span class="px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 font-bold text-[10px] border border-teal-200 shrink-0" x-text="row.job_title_label"></span>
+                                    <span class="font-black text-slate-900 hover:text-teal-700 text-xs truncate" x-text="row.name"></span>
                                 </div>
                             </td>
 
@@ -158,20 +151,23 @@
                                 </td>
                             </template>
 
-                            {{-- کردارەکان: وردەکاری و سڕینەوە --}}
-                            <td class="py-2.5 px-3 text-center print:hidden">
-                                <div class="flex items-center justify-center gap-1.5">
+                            {{-- کردارەکان: بەس ئایکۆن بۆ ئەوەی جێ نەگرێت --}}
+                            <td class="py-2 px-2 text-center print:hidden">
+                                <div class="flex items-center justify-center gap-1">
                                     <button type="button" @click="openEmployeeDrawer(row)"
-                                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-all cursor-pointer flex items-center gap-1"
-                                            title="بینینی وردەکاری و حیساباتی خۆکاری مانگ">
-                                        <span>👁️</span>
-                                        <span>وردەکاری</span>
+                                            class="w-7 h-7 rounded-lg text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-all cursor-pointer flex items-center justify-center shadow-2xs"
+                                            title="بینینی وردەکاری و حیساباتی خۆکار">
+                                        👁️
+                                    </button>
+                                    <button type="button" @click="openEditWageModal(row)"
+                                            class="w-7 h-7 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer flex items-center justify-center shadow-2xs"
+                                            title="دەستکاری مووچە و پیشەی وەستا">
+                                        ✏️
                                     </button>
                                     <button type="button" @click="confirmDeleteEmployee(row)"
-                                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer flex items-center gap-1"
+                                            class="w-7 h-7 rounded-lg text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer flex items-center justify-center shadow-2xs"
                                             title="سڕینەوەی ئەم وەستایە">
-                                        <span>🗑️</span>
-                                        <span>سڕینەوە</span>
+                                        🗑️
                                     </button>
                                 </div>
                             </td>
