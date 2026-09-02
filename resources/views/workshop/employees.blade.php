@@ -57,14 +57,8 @@
             </div>
         </div>
 
-        {{-- لای چەپ: دوگمەکانی کردار (سەحی ئەمڕۆ، وەستای نوێ، سێتینگ) --}}
+        {{-- لای چەپ: دوگمەکانی کردار (وەستای نوێ، سێتینگ) --}}
         <div class="flex items-center gap-2 shrink-0">
-            {{-- سەحی هەمووان بۆ ئەمڕۆ --}}
-            <button type="button" @click="batchMarkToday()"
-                    class="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer">
-                <span>✔️</span>
-                <span>سەحی ئەمڕۆ</span>
-            </button>
 
             {{-- زیادکردنی وەستا --}}
             <button type="button" @click="openNewEmployeeModal()"
