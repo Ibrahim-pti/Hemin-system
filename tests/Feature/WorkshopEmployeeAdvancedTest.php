@@ -71,21 +71,21 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $res1->assertStatus(200);
         $res1->assertJson(['ok' => true, 'status' => 'present']);
 
-        // 2. Toggle to half_day
+        // 2. Toggle to absent
         $res2 = $this->postJson('/workshop/employees/toggle-cell', [
             'employee_id' => $employee->id,
             'work_date' => $today,
         ]);
         $res2->assertStatus(200);
-        $res2->assertJson(['ok' => true, 'status' => 'half_day']);
+        $res2->assertJson(['ok' => true, 'status' => 'absent']);
 
-        // 3. Toggle to absent
+        // 3. Toggle back to present
         $res3 = $this->postJson('/workshop/employees/toggle-cell', [
             'employee_id' => $employee->id,
             'work_date' => $today,
         ]);
         $res3->assertStatus(200);
-        $res3->assertJson(['ok' => true, 'status' => 'absent']);
+        $res3->assertJson(['ok' => true, 'status' => 'present']);
 
         // 4. Save detailed cell
         $resSave = $this->postJson('/workshop/employees/save-cell-detail', [
