@@ -561,18 +561,7 @@
                                     د.ع
                                 </span>
                             </div>
-                            <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر کاتی زیادە بە پارەی جێگیر بێت بۆ هەر کاتژمێرێک.</p>
-                        </div>
-
-                        <div>
-                            <label class="block mb-1 text-slate-700 font-black">ڕێژەی لێکدانی کاتی زیادە (Multiplier)</label>
-                            <select x-model="settingsForm.workshop_overtime_multiplier" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 shadow-2xs">
-                                <option value="1.0">1.0x (نرخی کاتژمێری ئاسایی)</option>
-                                <option value="1.25">1.25x (کاتژمێر و چوارەک)</option>
-                                <option value="1.5">1.5x (کاتژمێر و نیو - ستانداردی کارگەکان)</option>
-                                <option value="2.0">2.0x (دوو هێندە)</option>
-                            </select>
-                            <p class="text-[11px] text-slate-400 font-medium mt-1">ئەگەر کرێکار بەپێی مووچەی خۆی کاتی زیادەی بۆ هەژمار بکرێت.</p>
+                            <p class="text-[11px] text-slate-500 font-medium mt-1">بڕی ئەو پارەیەی بۆ هەر کاتژمێرێکی زیادە بۆ کرێکار هەژمار دەکرێت.</p>
                         </div>
                     </div>
 
@@ -1450,9 +1439,11 @@ function workshopEmployeesApp() {
 
             const wage = row.effective_daily_wage || row.daily_wage;
             const baseEarned = (present * wage) + (halfDay * wage * 0.5);
-            const otHourlyRate = (this.settingsForm.workshop_overtime_hourly_rate > 0)
-                ? this.settingsForm.workshop_overtime_hourly_rate
-                : (wage / (this.settingsForm.workshop_work_hours || 8));
+            const cleanOtRate = this.cleanMoney(this.settingsForm.workshop_overtime_hourly_rate);
+            const otMultiplier = parseFloat(this.settingsForm.workshop_overtime_multiplier) || 1.0;
+            const otHourlyRate = (cleanOtRate > 0)
+                ? cleanOtRate
+                : ((wage / (this.settingsForm.workshop_work_hours || 8)) * otMultiplier);
             const otEarned = ot * otHourlyRate;
 
             row.total_deductions = manualDeduction;
