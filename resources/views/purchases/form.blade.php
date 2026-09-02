@@ -333,23 +333,11 @@
                     </div>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2 pt-3 border-t border-slate-100">
-                    {{-- داشکاندن --}}
-                    <div>
-                        <label class="label text-xs" for="discount_amount">داشکاندن (د.ع)</label>
-                        <input id="discount_amount" name="discount_amount" type="text" inputmode="numeric"
-                               class="field num font-bold w-full"
-                               dir="ltr"
-                               x-model="discount"
-                               @input="formatDiscount($event)"
-                               placeholder="0">
-                        <p class="mt-1 text-xs text-[--color-ink-soft]">
-                            ئەگەر فرۆشیار داشکاندنی کردووە، بڕەکەی لێرە بنووسە.
-                        </p>
-                    </div>
+                <input type="hidden" name="discount_amount" value="0">
 
+                <div class="pt-3 border-t border-slate-100">
                     {{-- بڕی پارەی دراو ئەگەر بەشێکی دراوە بوو --}}
-                    <div x-show="paymentType === 'partial'" x-transition>
+                    <div x-show="paymentType === 'partial'" x-transition class="max-w-md">
                         <label class="label text-xs font-bold text-amber-700" for="paid_amount">بڕی پارەی دراو ئێستا (د.ع)</label>
                         <input id="paid_amount" name="paid_amount" type="text" inputmode="numeric"
                                class="field num font-bold text-amber-700 w-full"
@@ -360,12 +348,12 @@
                     </div>
 
                     {{-- پەیامی ڕوونکردنەوە ئەگەر نەقد یان قەرز بوو --}}
-                    <div x-show="paymentType === 'cash'" class="sm:col-span-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl p-3 text-xs font-bold flex items-center gap-2">
+                    <div x-show="paymentType === 'cash'" class="bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl p-3 text-xs font-bold flex items-center gap-2">
                         <span>✓</span>
                         <span>ئەم پسوولەیە بە شێوەی حازری (نەقد) تۆمار دەکرێت و هیچ قەرزێک بۆ فرۆشیار تۆمار نابێت.</span>
                     </div>
 
-                    <div x-show="paymentType === 'debt'" class="sm:col-span-2 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl p-3 text-xs font-bold flex items-center gap-2">
+                    <div x-show="paymentType === 'debt'" class="bg-rose-50 text-rose-800 border border-rose-200 rounded-xl p-3 text-xs font-bold flex items-center gap-2">
                         <span>⚠️</span>
                         <span>تەواوی بڕی پسوولەکە بە قەرز بۆ فرۆشیار تۆمار دەکرێت لە بەشی قەرزەکاندا.</span>
                     </div>
@@ -376,17 +364,7 @@
         {{-- کارتی پوختەی کۆی گشتی و ماوە --}}
         <div class="card">
             <div class="card-body space-y-2.5 text-sm">
-                <div class="flex justify-between items-center">
-                    <span class="text-[--color-ink-soft]">کۆی مەوادەکان</span>
-                    <span class="num font-semibold text-slate-800" x-text="money(subtotal())">0 د.ع</span>
-                </div>
-
-                <div class="flex justify-between items-center" x-show="cleanNum(discount) > 0">
-                    <span class="text-rose-600">داشکاندن</span>
-                    <span class="num font-semibold text-rose-600" x-text="'- ' + money(cleanNum(discount))">0 د.ع</span>
-                </div>
-
-                <div class="flex justify-between items-center border-t border-[--color-line] pt-2 text-base font-bold text-slate-900">
+                <div class="flex justify-between items-center text-base font-bold text-slate-900">
                     <span>کۆی گشتی کڕین</span>
                     <span class="num text-lg" x-text="money(total())">0 د.ع</span>
                 </div>
@@ -588,7 +566,7 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
         },
 
         total() {
-            return Math.max(0, this.subtotal() - this.cleanNum(this.discount));
+            return this.subtotal();
         },
 
         remaining() {
