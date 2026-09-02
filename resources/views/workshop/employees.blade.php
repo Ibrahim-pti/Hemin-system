@@ -196,14 +196,14 @@
         <div @click.away="showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             
             {{-- سەرپەڕە --}}
-            <div class="p-4 sm:p-5 bg-teal-800 text-white flex items-center justify-between gap-3">
+            <div class="p-4 sm:p-5 bg-teal-800 text-white flex items-center justify-between gap-3 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-teal-700 text-white flex items-center justify-center font-black text-lg shrink-0">
+                    <div class="w-11 h-11 rounded-2xl bg-teal-700 text-white flex items-center justify-center font-black text-lg shrink-0">
                         <span x-text="selectedEmployee?.name?.charAt(0)"></span>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h2 class="text-base font-black text-white" x-text="selectedEmployee?.name"></h2>
+                            <h2 class="text-base sm:text-lg font-black text-white" x-text="selectedEmployee?.name"></h2>
                             <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-teal-700 text-teal-200" x-text="selectedEmployee?.job_title_label"></span>
                         </div>
                         <div class="text-xs text-teal-200 font-mono mt-0.5">
@@ -218,13 +218,44 @@
                         <input type="month" x-model="selectedMonth" @change="loadEmployeeMonthDetails()"
                                class="bg-transparent text-white text-xs font-mono font-bold cursor-pointer focus:outline-hidden">
                     </div>
-                    <button type="button" @click="showEmployeeDrawer = false" class="text-teal-200 hover:text-white text-lg font-bold p-1">✕</button>
+                    <button type="button" @click="showEmployeeDrawer = false" class="text-teal-200 hover:text-white text-xl font-bold p-1 leading-none cursor-pointer">✕</button>
                 </div>
             </div>
 
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                    <div class="text-[10px] text-amber-800 font-bold">باڵانسی ماوە</div>
-                    <div class="text-base font-black text-amber-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? selectedEmployee?.month_summary?.remaining ?? 0) + ' د.ع'"></div>
+            {{-- چوار کارتی حیساباتی خۆکار --}}
+            <div class="p-3.5 bg-slate-50 border-b border-slate-200 shrink-0">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                    {{-- ١. ڕۆژانی دەوام --}}
+                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                        <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی هاتوو لە مانگدا</div>
+                        <div class="text-base font-black text-emerald-800 font-mono mt-0.5" x-text="(drawerData?.stats?.present_count ?? 0) + ' ڕۆژ'"></div>
+                        <template x-if="(drawerData?.stats?.half_day_count ?? 0) > 0">
+                            <div class="text-[10px] text-amber-700 font-bold mt-0.5" x-text="'+ ' + drawerData.stats.half_day_count + ' نیوە'"></div>
+                        </template>
+                    </div>
+
+                    {{-- ٢. پارەی هەیە (شایستە) --}}
+                    <div class="bg-white p-2.5 rounded-xl border border-teal-200 shadow-2xs">
+                        <div class="text-[10px] text-teal-800 font-bold">پارەی هەیە (شایستە)</div>
+                        <div class="text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
+                        <div class="text-[9px] text-slate-400 mt-0.5">حەقدەست + زیادە - سزا</div>
+                    </div>
+
+                    {{-- ٣. چەند براوە (پێشەکی) --}}
+                    <div class="bg-white p-2.5 rounded-xl border border-purple-200 shadow-2xs">
+                        <div class="text-[10px] text-purple-800 font-bold">چەند براوە (پێشەکی)</div>
+                        <div class="text-base font-black text-purple-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_paid ?? 0) + ' د.ع'"></div>
+                        <div class="text-[9px] text-slate-400 mt-0.5">لە قاصەوە دراوە</div>
+                    </div>
+
+                    {{-- ٤. باڵانسی ماوە --}}
+                    <div class="bg-white p-2.5 rounded-xl border border-amber-300 shadow-2xs">
+                        <div class="text-[10px] text-amber-800 font-bold">باڵانسی ماوە لای کارگە</div>
+                        <div class="text-base font-black font-mono mt-0.5"
+                             :class="(drawerData?.stats?.remaining_balance ?? 0) > 0 ? 'text-amber-900' : 'text-slate-600'"
+                             x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></div>
+                        <div class="text-[9px] text-slate-400 mt-0.5">ماوە بۆی بدرێت</div>
+                    </div>
                 </div>
             </div>
 
@@ -282,7 +313,7 @@
                             <span>پێشەکی و پارەدان لە قاصە</span>
                         </h3>
                         <button type="button" @click="openPaymentModal(selectedEmployee)"
-                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-800">
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-800 cursor-pointer">
                             + دانی پێشەکی
                         </button>
                     </div>
@@ -318,9 +349,9 @@
             </div>
 
             {{-- ژێرپەڕە --}}
-            <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                <button type="button" @click="showEmployeeDrawer = false" class="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200">داخستن</button>
-                <button type="button" @click="openPaymentModal(selectedEmployee)" class="px-4 py-1.5 rounded-xl text-xs font-black bg-purple-700 text-white shadow-2xs">
+            <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+                <button type="button" @click="showEmployeeDrawer = false" class="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 cursor-pointer">داخستن</button>
+                <button type="button" @click="openPaymentModal(selectedEmployee)" class="px-4 py-1.5 rounded-xl text-xs font-black bg-purple-700 hover:bg-purple-800 text-white shadow-2xs cursor-pointer">
                     💸 دانی پێشەکی
                 </button>
             </div>
