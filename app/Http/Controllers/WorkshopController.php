@@ -1159,16 +1159,16 @@ class WorkshopController extends Controller
         $lateDaysCount = $attendances->where('late_minutes', '>', 0)->count();
 
         $effectiveDailyWage = $employee->effective_daily_wage;
-        $baseEarned = ($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5);
+        $baseEarned = round(($presentCount * $effectiveDailyWage) + ($halfDayCount * $effectiveDailyWage * 0.5));
         $hourlyWage = $shiftSettings['work_hours'] > 0 ? ($effectiveDailyWage / $shiftSettings['work_hours']) : 0;
         $overtimeHourlyRate = $shiftSettings['overtime_hourly_rate'] > 0
             ? $shiftSettings['overtime_hourly_rate']
             : ($hourlyWage * $shiftSettings['overtime_multiplier']);
-        $overtimeEarned = round($totalOvertime * $overtimeHourlyRate, 2);
+        $overtimeEarned = round($totalOvertime * $overtimeHourlyRate);
 
         // هەژمارکردنی یاسای تاخیربوونی کارگە بۆ مانگەکە
         $calculatedLatePenalty = 0;
-        $lateDeductionType = Setting::get('workshop_late_deduction_type', 'weekly_threshold');
+        $lateDeductionType = Setting::get('workshop_late_deduction_type', 'none');
         $lateDeductionRate = (float) Setting::get('workshop_late_deduction_rate', 0);
         $weeklyThresholdDays = (int) Setting::get('workshop_late_weekly_threshold_days', 2);
         $weeklyPenaltyAmount = (float) Setting::get('workshop_late_weekly_penalty_amount', 0);
@@ -1182,11 +1182,11 @@ class WorkshopController extends Controller
             $calculatedLatePenalty = $lateDaysCount * $lateDeductionRate;
         }
 
-        $allDeductions = round($totalDeductions + $calculatedLatePenalty, 2);
-        $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $allDeductions, 2);
+        $allDeductions = round($totalDeductions + $calculatedLatePenalty);
+        $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $allDeductions);
 
-        $totalPaid = (float) $payments->sum('amount_iqd');
-        $remainingBalance = round($totalEarned - $totalPaid, 2);
+        $totalPaid = round((float) $payments->sum('amount_iqd'));
+        $remainingBalance = round($totalEarned - $totalPaid);
 
         return response()->json([
             'ok' => true,

@@ -663,36 +663,33 @@
                         </select>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
+                    {{-- کاتی زیادە و سەرفیات (بەنزین) --}}
+                    <div class="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label class="block mb-0.5 text-slate-600">کاتی هاتن</label>
-                            <input type="time" x-model="cellForm.check_in"
-                                   class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-mono font-bold">
+                            <label class="block mb-1 text-slate-600 font-bold">کاتی زیادە</label>
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
+                                <input type="number" step="0.5" min="0" x-model="cellForm.overtime_hours"
+                                       placeholder="0"
+                                       class="w-full px-2.5 py-2 font-mono font-black text-blue-700 text-xs focus:outline-hidden">
+                                <span class="bg-slate-100 px-2 flex items-center text-[11px] font-bold text-slate-500 border-r border-slate-200 shrink-0">ک</span>
+                            </div>
                         </div>
                         <div>
-                            <label class="block mb-0.5 text-slate-600">کاتی چوون</label>
-                            <input type="time" x-model="cellForm.check_out"
-                                   class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-mono font-bold">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block mb-0.5 text-slate-600">کاتی زیادە (ک/ژ)</label>
-                            <input type="number" step="0.5" min="0" x-model="cellForm.overtime_hours"
-                                   class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-mono font-bold">
-                        </div>
-                        <div>
-                            <label class="block mb-0.5 text-slate-600">سەرفیات (د.ع)</label>
-                            <input type="number" step="500" min="0" x-model="cellForm.fuel_expense"
-                                   class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-mono font-bold">
+                            <label class="block mb-1 text-slate-600 font-bold">سەرفیات (بەنزین)</label>
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
+                                <input type="text" inputmode="numeric" x-model="cellForm.fuel_expense"
+                                       @input="cellForm.fuel_expense = formatMoneyInput($event.target.value)"
+                                       placeholder="0"
+                                       class="w-full px-2.5 py-2 font-mono font-black text-purple-900 text-xs focus:outline-hidden">
+                                <span class="bg-slate-100 px-2 flex items-center text-[11px] font-bold text-slate-500 border-r border-slate-200 shrink-0">د.ع</span>
+                            </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block mb-0.5 text-slate-600">تێبینی</label>
-                        <input type="text" x-model="cellForm.note"
-                               class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium">
+                        <label class="block mb-1 text-slate-600 font-bold">تێبینی</label>
+                        <input type="text" x-model="cellForm.note" placeholder="تێبینی بۆ ئەم ڕۆژە..."
+                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-medium text-xs focus:outline-hidden focus:border-teal-600">
                     </div>
                 </div>
 
@@ -854,13 +851,8 @@ function workshopEmployeesApp() {
                 employee_id: row.id,
                 work_date: day.date,
                 status: existing?.status || 'present',
-                check_in: existing?.check_in || '{{ $shiftSettings['work_start'] }}',
-                check_out: existing?.check_out || '{{ $shiftSettings['work_end'] }}',
-                hours: existing?.hours || {{ $shiftSettings['work_hours'] }},
-                overtime_hours: existing?.overtime_hours || 0,
-                late_minutes: existing?.late_minutes || 0,
-                fuel_expense: existing?.fuel_expense || 0,
-                deduction_amount: existing?.deduction_amount || 0,
+                overtime_hours: existing?.overtime_hours > 0 ? existing.overtime_hours : '',
+                fuel_expense: existing?.fuel_expense > 0 ? this.formatMoneyInput(existing.fuel_expense) : '',
                 note: existing?.note || ''
             };
 
@@ -869,6 +861,15 @@ function workshopEmployeesApp() {
 
         async saveCellDetail() {
             try {
+                const payload = {
+                    employee_id: this.cellForm.employee_id,
+                    work_date: this.cellForm.work_date,
+                    status: this.cellForm.status,
+                    overtime_hours: parseFloat(this.cellForm.overtime_hours) || 0,
+                    fuel_expense: this.cleanMoney(this.cellForm.fuel_expense),
+                    note: this.cellForm.note || ''
+                };
+
                 const res = await fetch('{{ route('workshop.employees.save-cell-detail') }}', {
                     method: 'POST',
                     headers: {
@@ -876,7 +877,7 @@ function workshopEmployeesApp() {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(this.cellForm)
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await res.json();
@@ -886,7 +887,12 @@ function workshopEmployeesApp() {
                         row.cells[this.cellForm.work_date] = data.attendance;
                         this.recalculateRow(row);
                     }
+                    if (this.showEmployeeDrawer && this.selectedEmployee?.id === this.cellForm.employee_id) {
+                        this.loadEmployeeMonthDetails();
+                    }
                     this.showCellModal = false;
+                } else if (data.message) {
+                    alert(data.message);
                 }
             } catch (e) {
                 alert('هەڵە لە پاشەکەوتکردندا');
