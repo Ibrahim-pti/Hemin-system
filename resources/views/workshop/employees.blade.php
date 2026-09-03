@@ -117,7 +117,7 @@
                     📋
                 </div>
                 <div class="min-w-0">
-                    <h1 class="text-[11px] sm:text-base font-black text-slate-900 leading-tight truncate">جەدوەلی ئامادەبوونی کارمەندان</h1>
+                    <h1 class="text-[11px] sm:text-base font-black text-slate-900 leading-tight truncate">جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان</h1>
                     <p class="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate hidden sm:block">تۆمارکردنی ئامادەبوون، کاتی زیادە و غیابات</p>
                 </div>
             </div>
