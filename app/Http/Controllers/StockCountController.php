@@ -52,12 +52,13 @@ class StockCountController extends Controller
 
             foreach ($items as $item) {
                 $unitPrice = $item->last_cost > 0 ? $item->last_cost : ($item->sale_price ?? 0);
+                $systemQty = (float) $item->stockQty((int) $data['warehouse_id']);
 
                 StockCountItem::create([
                     'stock_count_id' => $count->id,
                     'item_id' => $item->id,
-                    'system_qty' => $item->stockQty((int) $data['warehouse_id']),
-                    'counted_qty' => null,
+                    'system_qty' => $systemQty,
+                    'counted_qty' => $systemQty,
                     'difference' => 0,
                     'unit_price' => $unitPrice,
                 ]);
@@ -94,18 +95,18 @@ class StockCountController extends Controller
                 $rawVal = isset($counted[$line->id]) ? str_replace(',', '', (string) $counted[$line->id]) : null;
                 $rawPrice = isset($prices[$line->id]) ? str_replace(',', '', (string) $prices[$line->id]) : null;
 
-                $val = ($rawVal === '' || $rawVal === null) ? null : (float) $rawVal;
+                $val = ($rawVal === '' || $rawVal === null) ? (float) $line->system_qty : (float) $rawVal;
                 $price = ($rawPrice === '' || $rawPrice === null) ? (float) $line->unit_price : (float) $rawPrice;
 
                 $line->update([
                     'counted_qty' => $val,
-                    'difference' => $val === null ? 0 : $val - (float) $line->system_qty,
+                    'difference' => $val - (float) $line->system_qty,
                     'unit_price' => $price,
                 ]);
             }
         });
 
-        return back()->with('ok', 'ژمارە و نرخەکان پاشەکەوتکران.');
+        return back()->with('ok', 'ژمارە و نرخەکان بە سەرکەوتوویی پاشەکەوتکران.');
     }
 
     /** پەسەندکردن — جیاوازییەکان دەبنە جوڵەی ڕاستکردنەوە لە مەخزەندا. */
@@ -115,13 +116,17 @@ class StockCountController extends Controller
             return back()->with('err', 'پێشتر پەسەندکراوە.');
         }
 
-        if ($count->items()->whereNull('counted_qty')->exists()) {
-            return back()->with('err', 'هێشتا هەندێک کاڵا ژمێردراو نەکراون — سەرەتا هەموویان پڕبکەرەوە.');
+        // دڵنیابوونەوە لەوەی هەموو دێڕەکان ژمارەیان هەبێت
+        foreach ($count->items()->whereNull('counted_qty')->get() as $line) {
+            $line->update([
+                'counted_qty' => $line->system_qty,
+                'difference' => 0,
+            ]);
         }
 
         $this->stock->postStockCount($count);
 
-        return back()->with('ok', 'جەردەکە پەسەندکرا و مەخزەن ڕاستکرایەوە.');
+        return back()->with('ok', 'جەردەکە بە سەرکەوتوویی پەسەندکرا و باڵانسی کۆگا بە تەواوی ڕاستکرایەوە.');
     }
 
     public function destroy(StockCount $count)
