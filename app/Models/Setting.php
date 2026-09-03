@@ -27,6 +27,11 @@ class Setting extends Model
         Cache::forget(self::CACHE_KEY);
     }
 
+    public static function set(string $key, mixed $value): void
+    {
+        static::put($key, $value);
+    }
+
     /** هەموو ڕێکخستنەکان وەک ئارەیەک — کاش دەکرێت. */
     public static function all_(): array
     {

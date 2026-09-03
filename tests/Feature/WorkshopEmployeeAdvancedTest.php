@@ -24,6 +24,7 @@ class WorkshopEmployeeAdvancedTest extends TestCase
 
         $this->admin = User::where('email', 'admin@hemin.krd')->firstOrFail();
         $this->storekeeper = User::where('email', 'kogha@hemin.krd')->firstOrFail();
+        Setting::set('workshop_weekly_holiday', 'none');
     }
 
     public function test_workshop_manager_can_update_shift_and_late_penalty_settings()

@@ -24,6 +24,7 @@ class SystemWorkflowsTest extends TestCase
     {
         parent::setUp();
         $this->seed();
+        \App\Models\Setting::set('workshop_weekly_holiday', 'none');
         $this->admin = User::where('email', 'admin@hemin.krd')->firstOrFail();
         $this->storekeeper = User::where('email', 'kogha@hemin.krd')->firstOrFail();
     }
