@@ -26,8 +26,10 @@
         </a>
 
         {{-- داخستنی مۆبایل --}}
-        <button type="button" @click="mobileOpen = false" class="flex sm:hidden p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer" title="داخستن">
-            <svg style="width: 1.25rem; height: 1.25rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button type="button" @click="mobileOpen = false"
+                class="flex sm:hidden size-8 shrink-0 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer active:scale-95"
+                title="داخستن">
+            <svg style="width: 1.15rem; height: 1.15rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
         </button>
@@ -45,6 +47,7 @@
                 $isDashboard = request()->routeIs('dashboard') || ($isWasta && request()->routeIs('workshop.index'));
             @endphp
             <a href="{{ route($dashRoute) }}"
+               @click="if (window.innerWidth < 640) mobileOpen = false"
                style="display: flex; align-items: center; gap: 0.55rem; padding: 0.32rem 0.45rem; border-radius: 0.55rem; font-size: 0.74rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isDashboard ? 'background: rgba(59,130,246,0.14); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
                class="sidebar-link {{ $isDashboard ? 'active-link' : '' }}">
                 <span style="display: flex; width: 1.75rem; height: 1.75rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.45rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.22); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
@@ -130,6 +133,7 @@
                                     : request()->routeIs(...explode('|', $item['route']));
                             @endphp
                             <a href="{{ $item['href'] }}"
+                               @click="if (window.innerWidth < 640) mobileOpen = false"
                                style="display: flex; align-items: center; gap: 0.55rem; padding: 0.32rem 0.45rem; border-radius: 0.55rem; font-size: 0.74rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"
                                class="sidebar-link {{ $isActive ? 'active-link' : '' }}">
                                 <span style="display: flex; width: 1.75rem; height: 1.75rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.45rem; {{ $isActive ? 'background: ' . $section['activeIconBg'] . '; color: ' . $section['activeIconColor'] . ';' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">

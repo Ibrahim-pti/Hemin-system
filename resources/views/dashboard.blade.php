@@ -6,10 +6,40 @@
     @media (max-width: 768px) {
         .dash-kpi-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            gap: 0.75rem !important;
+            gap: 0.625rem !important;
+        }
+        .dash-kpi-grid > div {
+            padding: 0.85rem 1rem !important;
+            border-radius: 0.85rem !important;
+        }
+        .dash-kpi-grid .num {
+            font-size: 1.35rem !important;
         }
         .dash-tables-grid {
             grid-template-columns: 1fr !important;
+        }
+        .dash-sales-boxes {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+    }
+    @media (max-width: 480px) {
+        .dash-kpi-grid {
+            grid-template-columns: 1fr !important;
+            gap: 0.5rem !important;
+        }
+        .dash-kpi-grid > div[style*="grid-column: span 2"] {
+            grid-column: span 1 !important;
+        }
+        .dash-actions-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.5rem !important;
+        }
+        .dash-actions-grid a {
+            justify-content: center !important;
+            padding: 0.65rem 0.5rem !important;
+            font-size: 0.78rem !important;
         }
     }
 </style>
@@ -243,7 +273,7 @@
             <span>دۆخی گشتی و فرۆش</span>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="dash-sales-boxes" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             {{-- سندوقی فرۆشی ئەمڕۆ --}}
             <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 0.85rem; padding: 1.25rem; text-align: center;">
                 <div style="font-size: 0.8rem; font-weight: 700; color: #9f1239; margin-bottom: 0.35rem;">فرۆشی ئەمڕۆ</div>
@@ -269,7 +299,7 @@
             <span>کردارە خێراکان</span>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <div class="dash-actions-grid" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
             @if (auth()->user()->can('manage_orders'))
                 <a href="{{ route('orders.create') }}"
                    style="background: #2563eb; color: #ffffff; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">

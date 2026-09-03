@@ -14,23 +14,34 @@
     <style>
         /* Mobile sidebar rules (< 640px) */
         @media (max-width: 639px) {
+            body.mobile-sidebar-open {
+                overflow: hidden !important;
+            }
             #main-sidebar {
                 position: fixed !important;
                 top: 0 !important;
                 right: 0 !important;
                 bottom: 0 !important;
                 height: 100vh !important;
-                width: 17rem !important;
-                min-width: 17rem !important;
-                z-index: 50 !important;
-                transform: translateX(100%) !important;
-                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                height: 100dvh !important;
+                width: 16rem !important;
+                max-width: 82vw !important;
+                min-width: 0 !important;
+                z-index: 99999 !important;
+                transform: translateX(105%) !important;
+                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s !important;
+                box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5) !important;
+                visibility: hidden !important;
             }
             #main-sidebar.mobile-open {
                 transform: translateX(0) !important;
+                visibility: visible !important;
             }
-            #main-sidebar [x-show="sidebarOpen"] {
+            #main-sidebar [x-show*="sidebarOpen"] {
                 display: block !important;
+            }
+            #mobile-backdrop {
+                z-index: 99990 !important;
             }
         }
         /* Desktop sidebar rules (>= 640px) */
@@ -40,13 +51,14 @@
                 top: 0 !important;
                 height: 100vh !important;
                 transform: none !important;
+                visibility: visible !important;
                 transition: width 0.2s ease, min-width 0.2s ease !important;
             }
             html.sidebar-collapsed aside.sidebar-nav {
-                width: 5rem !important;
-                min-width: 5rem !important;
+                width: 4.5rem !important;
+                min-width: 4.5rem !important;
             }
-            html.sidebar-collapsed aside.sidebar-nav [x-show="sidebarOpen"] {
+            html.sidebar-collapsed aside.sidebar-nav [x-show*="sidebarOpen"] {
                 display: none !important;
             }
         }
@@ -69,6 +81,7 @@
     </style>
 </head>
 <body class="h-full bg-slate-100 text-slate-800 antialiased font-sans"
+      :class="{ 'mobile-sidebar-open': mobileOpen }"
       x-data="{
           sidebarOpen: localStorage.getItem('sidebar_open') !== 'false',
           mobileOpen: false,
@@ -83,7 +96,8 @@
     <div style="display: flex; height: 100vh; width: 100%; overflow: hidden;">
 
         {{-- ── باکدراپی مۆبایل ── --}}
-        <div x-show="mobileOpen"
+        <div id="mobile-backdrop"
+             x-show="mobileOpen"
              x-cloak
              @click="mobileOpen = false"
              x-transition:enter="transition-opacity ease-linear duration-200"
@@ -92,7 +106,7 @@
              x-transition:leave="transition-opacity ease-linear duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             style="position: fixed; inset: 0; z-index: 40; background: rgba(15,23,42,0.6); backdrop-filter: blur(2px);"></div>
+             style="position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(3px);"></div>
 
         {{-- ── مێنیوی سەرەکی (Sidebar) ── --}}
         @include('partials.sidebar')
@@ -101,9 +115,9 @@
         <div style="display: flex; flex: 1; flex-direction: column; overflow: hidden; min-width: 0; background: #f1f5f9;">
 
             {{-- هێڵی سەرەوە (Top Header Bar) --}}
-            <header class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white px-3 sm:px-4 md:px-6 shadow-2xs">
+            <header class="flex h-14 sm:h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white px-3 sm:px-4 md:px-6 shadow-2xs">
                 {{-- دوگمەی تەنیشت و کاتژمێر --}}
-                <div class="flex items-center gap-2 sm:gap-3">
+                <div class="flex items-center gap-2 sm:gap-3 min-w-0">
                     <button type="button"
                             @click="if (window.innerWidth < 640) { mobileOpen = !mobileOpen } else { toggleSidebar() }"
                             class="flex size-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all cursor-pointer active:scale-95"
