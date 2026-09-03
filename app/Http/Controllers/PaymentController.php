@@ -105,6 +105,11 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
+        // لە حاڵەتێکدا ئەگەر لە مۆداڵی قەرزەکانەوە بە party_id هاتبوو
+        if ($request->filled('party_id') && ! $request->filled('customer_id')) {
+            $request->merge(['customer_id' => $request->input('party_id')]);
+        }
+
         // پاککردنەوەی فاریزە (کۆما) لە بڕی پارە و نرخی ئاڵوگۆڕ
         if ($request->filled('amount')) {
             $request->merge([

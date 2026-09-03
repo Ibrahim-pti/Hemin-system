@@ -147,6 +147,15 @@ class DebtController extends Controller
     /** تۆمارکردنی قەرزی کۆن (باڵانسی سەرەتایی) */
     public function storeOldDebt(Request $request)
     {
+        if ($request->input('customer_id') === '__NEW__') {
+            $request->merge(['customer_id' => null]);
+        }
+        if ($request->filled('amount')) {
+            $request->merge([
+                'amount' => (float) str_replace(',', '', (string) $request->input('amount')),
+            ]);
+        }
+
         $data = $request->validate([
             'customer_id' => ['nullable'],
             'new_customer_name' => ['nullable', 'required_without:customer_id', 'string', 'max:255'],
@@ -160,7 +169,7 @@ class DebtController extends Controller
             'new_customer_name.required_without' => 'ناوی کڕیار بنووسە یان کڕیارێک هەڵبژێرە.',
         ]);
 
-        if (!empty($data['customer_id']) && $data['customer_id'] !== '__NEW__') {
+        if (!empty($data['customer_id'])) {
             $customer = Customer::findOrFail($data['customer_id']);
             $customer->opening_balance = (float) $customer->opening_balance + (float) $data['amount'];
             $customer->opening_currency = $data['currency'];

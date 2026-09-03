@@ -17,8 +17,15 @@
             <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0;">قەرزەکان</h1>
         </div>
 
-        {{-- لای چەپ --}}
-        <div></div>
+        {{-- لای چەپ: دوگمەی تۆمارکردنی قەرزی کۆن --}}
+        <div>
+            <button type="button"
+                    @click="openOldDebtModal = true"
+                    style="background: #4f46e5; color: #ffffff; padding: 0.6rem 1.15rem; border-radius: 0.65rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.45rem; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);">
+                <span style="font-size: 1.1rem; font-weight: 900;">+</span>
+                <span>تۆمارکردنی قەرزی کۆن</span>
+            </button>
+        </div>
     </div>
 
     {{-- ٢. کارتە ئامارییەکانی سەرەوە (٣ کارت لە تەنیشت یەک وەک وێنەکە) --}}
@@ -28,7 +35,7 @@
         <div style="background: #ffffff; border-radius: 1rem; padding: 1.25rem; border: 1px solid #fecdd3; border-right: 4px solid #f43f5e; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
             <div>
                 <div class="num" style="font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
-                    {{ fmt_num($totalRemainingDebt) }}
+                    {{ fmt_num($totalRemainingDebt) }} <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">د.ع</span>
                 </div>
                 <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
                     کۆی قەرزی ماوە
@@ -47,7 +54,7 @@
         <div style="background: #ffffff; border-radius: 1rem; padding: 1.25rem; border: 1px solid #a7f3d0; border-right: 4px solid #10b981; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
             <div>
                 <div class="num" style="font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
-                    {{ fmt_num($totalPaid) }}
+                    {{ fmt_num($totalPaid) }} <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">د.ع</span>
                 </div>
                 <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
                     کۆی پارەی دراو
@@ -103,15 +110,22 @@
 
             {{-- چەپ: دوگمەکان --}}
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                {{-- دوگمەی دانەوەی قەرز --}}
-                <button type="button" @click="openPayModal = true"
-                   style="background: #10b981; color: #ffffff; padding: 0.55rem 1.1rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.45rem; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25); transition: all 0.15s;">
-                    <svg style="width: 1.1rem; height: 1.1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="4" width="20" height="16" rx="2"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                    <span>دانەوەی قەرز</span>
-                </button>
+                @if (($customerStats['remaining_debt'] ?? 0) > 0.5)
+                    {{-- دوگمەی وەرگرتنی قەرز تەنها کاتێک قەرزی هەبێت --}}
+                    <button type="button" @click="openPayModal = true"
+                       style="background: #10b981; color: #ffffff; padding: 0.55rem 1.1rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.45rem; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25); transition: all 0.15s;">
+                        <svg style="width: 1.1rem; height: 1.1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <span>وەرگرتنی قەرز</span>
+                    </button>
+                @else
+                    <span style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 0.45rem 0.9rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <span>✓</span>
+                        <span>هیچ قەرزێکی نەماوە (پاکتاوە)</span>
+                    </span>
+                @endif
 
                 {{-- دوگمەی گەڕانەوە --}}
                 <a href="{{ route('debts.index') }}"
@@ -405,7 +419,7 @@
                             <th style="padding: 0.75rem 1rem; text-align: center;">تەلەفۆن</th>
                             <th style="padding: 0.75rem 1rem; text-align: center;">ژمارەی قەرز</th>
                             <th style="padding: 0.75rem 1rem; text-align: center;">کۆی بڕ</th>
-                            <th style="padding: 0.75rem 1rem; text-align: center;">دراو</th>
+                            <th style="padding: 0.75rem 1rem; text-align: center;">پارەی دراو</th>
                             <th style="padding: 0.75rem 1.25rem; text-align: center;">قەرزی ماوە</th>
                             <th style="padding: 0.75rem 1rem; width: 4.5rem; text-align: center;">کردار</th>
                         </tr>
@@ -529,7 +543,7 @@
                 <form method="POST" action="{{ route('payments.store') }}" style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1.1rem;">
                     @csrf
                     <input type="hidden" name="direction" value="in">
-                    <input type="hidden" name="party_kind" value="customer">
+                    <input type="hidden" name="customer_id" value="{{ $selectedCustomer->id }}">
                     <input type="hidden" name="party_id" value="{{ $selectedCustomer->id }}">
                     <input type="hidden" name="currency" value="IQD">
 
@@ -609,6 +623,110 @@
     </template>
     @endif
 
+    {{-- ════════════════════════════════════════════════════════════════════════ --}}
+    {{-- مۆداڵی تۆمارکردنی قەرزی کۆن --}}
+    {{-- ════════════════════════════════════════════════════════════════════════ --}}
+    <template x-teleport="body">
+        <div x-show="openOldDebtModal"
+             x-cloak
+             style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(2px);"
+             @keydown.escape.window="openOldDebtModal = false">
+            <div style="background: #ffffff; border-radius: 1.25rem; width: 100%; max-width: 30rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; margin: auto; position: relative;"
+                 @click.outside="openOldDebtModal = false"
+                 x-data="{ isNewCustomer: false }">
+
+                {{-- سەری مۆداڵ بە شینی تۆخ --}}
+                <div style="padding: 1rem 1.25rem; background: #4f46e5; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
+                    <button type="button" @click="openOldDebtModal = false"
+                            style="background: none; border: none; font-size: 1.25rem; color: #ffffff; cursor: pointer; line-height: 1; opacity: 0.9;">
+                        ✕
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.05rem;">
+                        <span>تۆمارکردنی قەرزی کۆن (سەرەتایی)</span>
+                        <span>📋</span>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('debts.old-debt') }}" style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1.1rem;">
+                    @csrf
+
+                    {{-- کڕیار --}}
+                    <div>
+                        <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                            کڕیار هەڵبژێرە <span style="color: #ef4444;">*</span>
+                        </label>
+                        <select name="customer_id" class="field" style="width: 100%; font-weight: 600;"
+                                @change="isNewCustomer = ($event.target.value === '__NEW__')">
+                            <option value="">— کڕیاری ئێستا هەڵبژێرە —</option>
+                            @foreach ($allCustomersList as $cust)
+                                <option value="{{ $cust->id }}">{{ $cust->name }} {{ $cust->phone ? "({$cust->phone})" : '' }}</option>
+                            @endforeach
+                            <option value="__NEW__">+ کڕیاری نوێ بنووسە...</option>
+                        </select>
+                    </div>
+
+                    {{-- ئەگەر کڕیاری نوێ بێت --}}
+                    <div x-show="isNewCustomer" x-cloak style="display: flex; flex-direction: column; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.85rem;">
+                        <div>
+                            <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; display: block; color: #334155;">
+                                ناوی کڕیاری نوێ <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input type="text" name="new_customer_name" class="field" placeholder="ناوی تەواوی کڕیار..." style="width: 100%;">
+                        </div>
+                        <div>
+                            <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; display: block; color: #334155;">
+                                ژمارەی مۆبایل
+                            </label>
+                            <input type="text" name="new_customer_phone" class="field num" placeholder="0750..." style="width: 100%; text-align: left;" dir="ltr">
+                        </div>
+                    </div>
+
+                    {{-- بڕی قەرز و دراو --}}
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+                        <div>
+                            <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                                بڕی قەرز <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input type="number" step="any" min="0.01" name="amount" class="field num" required
+                                   placeholder="0"
+                                   style="width: 100%; padding: 0.55rem 0.75rem; font-size: 1.15rem; font-weight: 800; text-align: center; color: #dc2626;">
+                        </div>
+                        <div>
+                            <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                                دراو <span style="color: #ef4444;">*</span>
+                            </label>
+                            <select name="currency" class="field" style="width: 100%; font-weight: 700;">
+                                <option value="IQD">د.ع</option>
+                                <option value="USD">$ USD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- تێبینی --}}
+                    <div>
+                        <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                            تێبینی / هۆکاری قەرز
+                        </label>
+                        <textarea name="note" rows="2" class="field" style="width: 100%; resize: vertical; font-size: 0.85rem;" placeholder="قەرزی پێشتر لەسەر کاغەز، باڵانسی کۆن..."></textarea>
+                    </div>
+
+                    {{-- دوگمەکان --}}
+                    <div style="display: flex; justify-content: flex-start; gap: 0.6rem; padding-top: 0.5rem; margin-top: 0.25rem;">
+                        <button type="submit"
+                                style="background: #4f46e5; color: #ffffff; padding: 0.55rem 1.5rem; border-radius: 0.55rem; font-weight: 800; font-size: 0.875rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);">
+                            <span>✓</span>
+                            <span>تۆمارکردن</span>
+                        </button>
+                        <button type="button" @click="openOldDebtModal = false"
+                                style="padding: 0.55rem 1.25rem; border-radius: 0.55rem; background: #ffffff; border: 1px solid #cbd5e1; color: #64748b; font-weight: 700; font-size: 0.875rem; cursor: pointer;">
+                            داخستن
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
 </div>
 
 <script>
@@ -617,6 +735,7 @@ function debtsPage(initialCustomers, initialRemainingDebt = 0) {
         customers: initialCustomers,
         searchQuery: '',
         openPayModal: false,
+        openOldDebtModal: false,
         remainingDebt: initialRemainingDebt,
         payAmount: initialRemainingDebt > 0 ? initialRemainingDebt : '',
 
