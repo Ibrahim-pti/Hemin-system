@@ -204,8 +204,13 @@ class WorkshopController extends Controller
         if ($request->has('week_offset')) {
             $rangeType = 'week_offset';
             $targetWeek = $today->copy()->addWeeks($weekOffset);
-            $from = $targetWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
-            $to = $targetWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+            $wStart = $targetWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY);
+            $wEnd = $targetWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY);
+            if ($weekOffset === 0 && $wStart->month !== $today->month) {
+                $wStart = $today->copy()->startOfMonth();
+            }
+            $from = $wStart->toDateString();
+            $to = $wEnd->toDateString();
         } elseif ($request->filled('from') && $request->filled('to')) {
             $from = $request->date('from')->toDateString();
             $to = $request->date('to')->toDateString();
@@ -213,8 +218,14 @@ class WorkshopController extends Controller
         } else {
             switch ($rangeType) {
                 case 'this_week':
-                    $from = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
-                    $to = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+                    $wStart = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY);
+                    $wEnd = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY);
+                    // ئەگەر دەستپێکی هەفتەکە لە مانگی پێشوو بێت، لە ١ی ئەم مانگەوە دەستپێدەکات
+                    if ($wStart->month !== $today->month) {
+                        $wStart = $today->copy()->startOfMonth();
+                    }
+                    $from = $wStart->toDateString();
+                    $to = $wEnd->toDateString();
                     break;
                 case 'last_week':
                     $lastWeek = $today->copy()->subWeek();
