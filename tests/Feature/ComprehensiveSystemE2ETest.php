@@ -94,11 +94,12 @@ class ComprehensiveSystemE2ETest extends TestCase
     {
         $this->actingAs($this->workshopUser);
 
-        // دەبێت مۆڵەتی بەشی کارگە، دروستکردن، ئامادەباشی و کۆگای هەبێت
+        // دەبێت مۆڵەتی بەشی کارگە، دروستکردن، بینینی مەواد و مەخزەنی هەبێت
         $workshopRoutes = [
             '/workshop/orders',
             '/workshop/materials',
-            '/warehouses',
+            '/items',
+            '/stock',
         ];
 
         foreach ($workshopRoutes as $route) {
@@ -109,10 +110,11 @@ class ComprehensiveSystemE2ETest extends TestCase
             );
         }
 
-        // بەڵام نابێت ڕێگەی پێبدرێت دەستی بگاتە ڕێکخستنی سیستەم و قاسەی پارە
+        // بەڵام نابێت ڕێگەی پێبدرێت دەستی بگاتە ڕێکخستنی سیستەم و قاسەی پارە و بەڕێوەبردنی کۆگاکان
         $forbiddenRoutes = [
             '/settings',
             '/cash',
+            '/warehouses',
         ];
 
         foreach ($forbiddenRoutes as $route) {
@@ -137,7 +139,8 @@ class ComprehensiveSystemE2ETest extends TestCase
         $customer = Customer::create([
             'name' => 'ئارام مەحموود',
             'phone' => '07501112233',
-            'opening_debt' => 50000, // قەرزی سەرەتایی 50,000 د.ع
+            'opening_balance' => 50000, // قەرزی سەرەتایی 50,000 د.ع
+            'opening_currency' => 'IQD',
         ]);
 
         // کڕینی وەسڵێک بە بڕی 150,000 د.ع
@@ -174,7 +177,7 @@ class ComprehensiveSystemE2ETest extends TestCase
         // پشکنینی پەیوەندی بە قەرز: قەرزی کۆن (50,000) + قەرزی ئەم وەسڵە (50,000) = 100,000 د.ع
         $customer->refresh();
         $expectedTotalDebt = 100000.0;
-        $this->assertEquals($expectedTotalDebt, (float) $customer->totalDebtIqd(), 'کۆی قەرزی کڕیار بە دروستی هەژمار نەکراوە.');
+        $this->assertEquals($expectedTotalDebt, (float) $customer->balance(), 'کۆی قەرزی کڕیار بە دروستی هەژمار نەکراوە.');
 
         // پشکنینی تۆماربوونی پارەکە لە حەقدی و قاسە (Payment & Cash Ledger)
         $orderPayment = Payment::where('direction', 'in')
@@ -209,7 +212,7 @@ class ComprehensiveSystemE2ETest extends TestCase
 
         // ئێستا دەبێت کۆی قەرزی کڕیار 50,000 د.ع بێت
         $customer->refresh();
-        $this->assertEquals(50000, (float) $customer->totalDebtIqd(), 'پاش دانەوەی قەرز ماوە ڕاست نییە.');
+        $this->assertEquals(50000, (float) $customer->balance(), 'پاش دانەوەی قەرز ماوە ڕاست نییە.');
     }
 
     /**
