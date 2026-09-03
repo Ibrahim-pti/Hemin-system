@@ -381,9 +381,9 @@
 
     {{-- ٤. بەشی وردەکاری تەواوی وەستا و حیساباتی خۆکار (Worker Details Drawer/Modal) - تەنها بۆ بەڕێوەبەر --}}
     @if($canSeeMoney)
-    <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
         <div @click.away="if (!showEditWageModal && !showCellModal) showEmployeeDrawer = false"
-             class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-3xl flex flex-col border-2 border-slate-300 overflow-hidden">
+             class="modal-sheet bg-white rounded-3xl w-full max-w-3xl flex flex-col border-2 border-slate-300 overflow-hidden">
 
             {{-- سەرپەڕە --}}
             <div class="p-3 sm:p-4 bg-teal-800 text-white shrink-0 space-y-2.5">
@@ -699,8 +699,8 @@
     </div>
 
     {{-- ٥. مۆداڵی سێتینگی کارگە و مەرجەکانی بەڕێوەبەر (Settings Modal) --}}
-    <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-3">
-        <div @click.away="showSettingsModal = false" class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-lg border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
+    <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
+        <div @click.away="showSettingsModal = false" class="modal-sheet bg-white rounded-3xl w-full max-w-lg border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
 
             <form @submit.prevent="saveSettings()" class="flex flex-col min-h-0 flex-1">
                 {{-- سەرپەڕە --}}
@@ -944,8 +944,8 @@
 
 
     {{-- ٧. مۆداڵی وەستای نوێ (New Employee Modal) --}}
-    <div x-show="showNewEmployeeModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-3">
-        <div @click.away="showNewEmployeeModal = false" class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
+    <div x-show="showNewEmployeeModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
+        <div @click.away="showNewEmployeeModal = false" class="modal-sheet bg-white rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
             <form @submit.prevent="saveNewEmployee()" class="flex flex-col min-h-0 flex-1">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
@@ -1015,8 +1015,8 @@
     </div>
 
     {{-- ٨. مۆداڵی دەستکاری مووچە (Edit Wage Modal) --}}
-    <div x-show="showEditWageModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-3">
-        <div @click.away="showEditWageModal = false" class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
+    <div x-show="showEditWageModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
+        <div @click.away="showEditWageModal = false" class="modal-sheet bg-white rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
             <form @submit.prevent="saveEditWage()" class="flex flex-col min-h-0 flex-1">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
@@ -1085,8 +1085,8 @@
     @endif
 
     {{-- ٩. مۆداڵی دەستکاری وردی خانەی سەح (Cell Detail Modal) --}}
-    <div x-show="showCellModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-3">
-        <div @click.away="showCellModal = false" class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
+    <div x-show="showCellModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
+        <div @click.away="showCellModal = false" class="modal-sheet bg-white rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
             <form @submit.prevent="saveCellDetail()" class="flex flex-col min-h-0 flex-1">
                 <div class="p-3.5 bg-teal-800 text-white flex items-center justify-between">
                     <div>
