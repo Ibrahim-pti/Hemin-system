@@ -212,25 +212,35 @@ class SupplierController extends Controller
                 'type' => 'opening',
                 'title' => 'باڵانسی سەرەتایی',
                 'details' => 'باڵانسی تۆمارکراوی سەرەتا',
-                'amount_due' => $supplier->openingIqd(),
+                'total' => (float) $supplier->openingIqd(),
+                'paid' => 0,
+                'remaining' => (float) $supplier->openingIqd(),
+                'amount_due' => (float) $supplier->openingIqd(),
                 'amount_paid' => 0,
+                'status' => 'opening',
                 'currency' => $supplier->opening_currency,
-                'raw_amount' => $supplier->opening_balance,
+                'image' => null,
                 'reference' => null,
             ]);
         }
 
         foreach ($purchases as $p) {
             $itemNames = $p->items->map(fn($i) => ($i->item?->name ?? 'کاڵا') . ' (' . fmt_qty($i->qty) . ' ' . ($i->item?->unit?->name ?? '') . ')')->join('، ');
+            $paid = (float) $p->paidTotal();
+            $remaining = (float) $p->remaining();
+
             $entries->push((object)[
                 'date' => $p->purchase_date?->toDateString(),
                 'type' => 'purchase',
-                'title' => 'پسوولەی کڕین ' . $p->invoice_no,
-                'details' => $itemNames ?: ($p->note ?: 'کڕینی مەواد'),
-                'amount_due' => $p->total_iqd,
+                'title' => 'پسوولەی کڕین #' . $p->invoice_no,
+                'details' => $itemNames ?: ($p->note ?: 'مەوادی هەمەجۆری کارگە'),
+                'total' => (float) $p->total_iqd,
+                'paid' => $paid,
+                'remaining' => $remaining,
+                'amount_due' => $remaining,
                 'amount_paid' => 0,
+                'status' => $remaining <= 0.01 ? 'cash' : ($paid > 0 ? 'partial' : 'debt'),
                 'currency' => $p->currency,
-                'raw_amount' => $p->total,
                 'image' => $p->imageUrl(),
                 'reference' => route('purchases.show', $p),
             ]);
@@ -242,24 +252,38 @@ class SupplierController extends Controller
                 'type' => 'job',
                 'title' => 'ئیشی دەرەکی ' . $j->job_no,
                 'details' => $j->title,
-                'amount_due' => $j->cost_iqd,
+                'total' => (float) $j->cost_iqd,
+                'paid' => 0,
+                'remaining' => (float) $j->cost_iqd,
+                'amount_due' => (float) $j->cost_iqd,
                 'amount_paid' => 0,
+                'status' => 'debt',
                 'currency' => $j->currency,
-                'raw_amount' => $j->cost,
+                'image' => null,
                 'reference' => null,
             ]);
         }
 
+        // تەنها ئەو پارەدانانەی کە بە جیا بۆ دانەوەی قەرز کراون (نەک حازری لەگەڵ خودی کڕینەکە)
         foreach ($payments as $pay) {
+            if ($pay->purchase_id) {
+                // پارەدانی کاتی کڕین پێشتر لەسەر خودی پسوولەکە حیسابکراوە
+                continue;
+            }
+
             $entries->push((object)[
                 'date' => $pay->paid_at?->toDateString(),
                 'type' => 'payment',
-                'title' => 'پارەدان (حەقدی) ' . $pay->voucher_no,
-                'details' => $pay->note ?: 'پارەدانی کاش',
+                'title' => 'پارەدانی قەرز ' . $pay->voucher_no,
+                'details' => $pay->note ?: 'پارەدانی قەرز بە شێوازی نەقد',
+                'total' => 0,
+                'paid' => (float) $pay->amount_iqd,
+                'remaining' => 0,
                 'amount_due' => 0,
-                'amount_paid' => (float)$pay->amount_iqd,
+                'amount_paid' => (float) $pay->amount_iqd,
+                'status' => 'payment',
                 'currency' => $pay->currency,
-                'raw_amount' => $pay->amount,
+                'image' => null,
                 'reference' => route('payments.print', $pay),
             ]);
         }
