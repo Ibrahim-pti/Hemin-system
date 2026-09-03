@@ -28,6 +28,31 @@
             min-width: 4rem !important;
         }
     }
+    /* ستایلەکانی دۆخی دەوام - تەواو ڕوون، تۆخ، جیاکەرەوە و زەق لەسەر هەموو شاشەیەک */
+    .status-badge-present {
+        background-color: #059669 !important;
+        color: #ffffff !important;
+        border: 1.5px solid #047857 !important;
+        font-weight: 900 !important;
+    }
+    .status-badge-half {
+        background-color: #d97706 !important;
+        color: #ffffff !important;
+        border: 1.5px solid #b45309 !important;
+        font-weight: 900 !important;
+    }
+    .status-badge-absent {
+        background-color: #e11d48 !important;
+        color: #ffffff !important;
+        border: 1.5px solid #be123c !important;
+        font-weight: 900 !important;
+    }
+    .status-badge-empty {
+        background-color: #f8fafc !important;
+        color: #94a3b8 !important;
+        border: 1.5px dashed #cbd5e1 !important;
+        font-weight: 800 !important;
+    }
     @media (min-width: 640px) {
         .col-idx {
             display: table-cell !important;
@@ -133,19 +158,19 @@
                        class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-600 bg-white font-medium shadow-2xs">
             </div>
 
-            <div class="flex items-center justify-center sm:justify-end gap-2 text-[10px] sm:text-[11px] font-bold text-slate-600 flex-wrap">
-                <span class="text-[10px] text-slate-400 hidden xs:inline">ڕێبەری ڕەنگەکان:</span>
-                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی کارمەندەکە لە ژێر (ئەمڕۆ) بکە', 'info', 'ڕێنمایی')"
-                      class="cursor-pointer flex items-center gap-1 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-lg text-emerald-800 active:scale-95" title="ڕێبەری ڕەنگ">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> هاتووە
+            <div class="flex items-center justify-center sm:justify-end gap-2 text-[11px] font-bold text-slate-700 flex-wrap">
+                <span class="text-xs text-slate-600 font-black">ڕێبەری ڕەنگەکان:</span>
+                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی ڕۆژی (ئەمڕۆ) بکە بۆ کارمەندەکە', 'info', 'ڕێنمایی')"
+                      class="cursor-pointer status-badge-present px-2.5 py-1 rounded-lg text-white font-black text-xs inline-flex items-center gap-1 active:scale-95 shadow-xs" title="هاتووە">
+                    ✓ هاتووە
                 </span>
-                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی کارمەندەکە لە ژێر (ئەمڕۆ) بکە', 'info', 'ڕێنمایی')"
-                      class="cursor-pointer flex items-center gap-1 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-lg text-amber-800 active:scale-95" title="ڕێبەری ڕەنگ">
-                    <span class="w-2 h-2 rounded-full bg-amber-500"></span> نیو ڕۆژ
+                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی ڕۆژی (ئەمڕۆ) بکە بۆ کارمەندەکە', 'info', 'ڕێنمایی')"
+                      class="cursor-pointer status-badge-half px-2.5 py-1 rounded-lg text-white font-black text-xs inline-flex items-center gap-1 active:scale-95 shadow-xs" title="نیو ڕۆژ">
+                    ◐ نیو ڕۆژ
                 </span>
-                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی کارمەندەکە لە ژێر (ئەمڕۆ) بکە', 'info', 'ڕێنمایی')"
-                      class="cursor-pointer flex items-center gap-1 bg-rose-50 border border-rose-200/60 px-2 py-0.5 rounded-lg text-rose-800 active:scale-95" title="ڕێبەری ڕەنگ">
-                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> نەهاتووە
+                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی ڕۆژی (ئەمڕۆ) بکە بۆ کارمەندەکە', 'info', 'ڕێنمایی')"
+                      class="cursor-pointer status-badge-absent px-2.5 py-1 rounded-lg text-white font-black text-xs inline-flex items-center gap-1 active:scale-95 shadow-xs" title="نەهاتووە">
+                    ✗ نەهاتووە
                 </span>
             </div>
         </div>
@@ -1338,18 +1363,18 @@ function workshopEmployeesApp() {
         },
 
         getCellStyle(cell) {
-            if (!cell || !cell.status) return 'text-slate-300 border-dashed border-slate-200 hover:border-slate-300 hover:text-slate-500 hover:bg-slate-50';
-            if (cell.status === 'present') return 'bg-emerald-600 border-emerald-600 text-white font-black shadow-2xs hover:bg-emerald-700';
-            if (cell.status === 'half_day') return 'bg-amber-500 border-amber-500 text-white font-black shadow-2xs hover:bg-amber-600';
-            if (cell.status === 'absent') return 'bg-rose-500 border-rose-500 text-white font-black shadow-2xs hover:bg-rose-600';
-            return 'text-slate-300 border-slate-200';
+            if (!cell || !cell.status) return 'status-badge-empty hover:bg-slate-100 hover:text-slate-600';
+            if (cell.status === 'present') return 'status-badge-present hover:brightness-110';
+            if (cell.status === 'half_day') return 'status-badge-half hover:brightness-110';
+            if (cell.status === 'absent') return 'status-badge-absent hover:brightness-110';
+            return 'status-badge-empty';
         },
 
         getCellDisplay(cell) {
             if (!cell || !cell.status) return '—';
-            if (cell.status === 'present') return 'هاتووە';
-            if (cell.status === 'half_day') return 'نیو ڕۆژ';
-            if (cell.status === 'absent') return 'نەهاتووە';
+            if (cell.status === 'present') return '✓ هاتووە';
+            if (cell.status === 'half_day') return '◐ نیو ڕۆژ';
+            if (cell.status === 'absent') return '✗ نەهاتووە';
             return '—';
         },
 
