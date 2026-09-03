@@ -1,3 +1,9 @@
+@php
+    $gateImgPath = public_path('images/receipt_gate_thumb.jpg');
+    $canopyImgPath = public_path('images/receipt_canopy_thumb.jpg');
+    $gateImg = file_exists($gateImgPath) ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($gateImgPath)) : '';
+    $canopyImg = file_exists($canopyImgPath) ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($canopyImgPath)) : '';
+@endphp
 <!DOCTYPE html>
 <html lang="ckb" dir="rtl">
 <head>
@@ -7,200 +13,309 @@
     @vite(['resources/css/app.css'])
     <style>
         @page {
-            size: A5 landscape;
-            margin: 8mm;
+            size: A5 portrait;
+            margin: 4mm;
         }
 
         body {
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
             font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
             color: #0f172a;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
 
-        .receipt-card {
-            width: 195mm;
+        .receipt-sheet {
+            width: 148mm;
             max-width: 100%;
             margin: 0 auto;
             background: #ffffff;
-            border: 2px solid #1e3a5f;
-            border-radius: 12px;
-            padding: 20px 26px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            box-sizing: border-box;
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
             position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-sizing: border-box;
         }
 
-        .dotted-line {
-            border-bottom: 1.5px dotted #94a3b8;
-            display: inline-block;
-            min-width: 160px;
+        .inv-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            border: 1.5px solid #1e3a5f;
+        }
+
+        .inv-table th, .inv-table td {
+            border: 1px solid #93c5fd;
+            padding: 4px 6px;
+            font-size: 11.5px;
+        }
+
+        .inv-table th {
+            background-color: #fde8d7 !important;
+            font-weight: 800;
+            color: #1e3a5f;
+            text-align: center;
+            padding: 5px 4px;
+            border: 1px solid #1e3a5f;
         }
 
         @media print {
-            .no-print { display: none !important; }
-            body { background: #fff; padding: 0; }
-            .receipt-card {
-                width: 100%;
-                border: 2px solid #1e3a5f;
-                box-shadow: none;
-                border-radius: 0;
-                padding: 16px 20px;
+            body {
+                background: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .receipt-sheet {
+                width: 100% !important;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 4mm !important;
             }
         }
     </style>
 </head>
-<body class="p-4 sm:p-6">
+<body class="p-3 sm:p-5">
 
-    {{-- دوگمەکانی سەرەوە (تەنها لە شاشە نیشان دەدرێن) --}}
-    <div class="no-print mx-auto mb-5 flex max-w-[195mm] items-center justify-between flex-wrap gap-2">
+    {{-- دوگمەکانی سەرەوە بۆ چاپ و بەڕێوەبردن --}}
+    <div class="no-print mx-auto mb-3 flex max-w-[148mm] items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-            <a href="{{ route('payments.index') }}"
-               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-colors">
-                <span>←</span>
-                <span>گەڕانەوە بۆ لیستی حەقدی</span>
+            <button onclick="window.print()" class="btn btn-primary !py-1.5 !px-4 text-xs shadow-sm cursor-pointer">
+                🖨️ چاپکردنی سەنەد
+            </button>
+            <a href="{{ route('payments.create') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs bg-white border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                + حەقدی نوێ
             </a>
-            <a href="{{ route('payments.create') }}"
-               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold shadow-2xs transition-colors">
-                <span>+</span>
-                <span>وەرگرتنی حەقدی نوێ</span>
+            <a href="{{ route('payments.index') }}" class="btn btn-ghost !py-1.5 !px-3 text-xs bg-white border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                گەڕانەوە
             </a>
         </div>
-
-        <button onclick="window.print()"
-                class="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-sm cursor-pointer transition-colors">
-            <span>🖨️</span>
-            <span>چاپکردنی سەنەد</span>
-        </button>
     </div>
 
-    {{-- پسوولەی فەرمیی حەقدی --}}
-    <div class="receipt-card">
+    @if (session('ok'))
+        <div class="no-print mx-auto mb-3 max-w-[148mm] bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl px-4 py-2 flex items-center justify-between">
+            <span>✓ {{ session('ok') }}</span>
+        </div>
+    @endif
 
-        {{-- سەردێڕ و لۆگۆ --}}
-        <div class="flex items-start justify-between border-b-2 border-[#1e3a5f] pb-4">
-            {{-- تەلەفۆنەکان --}}
-            <div class="text-right text-xs leading-5">
-                <div class="font-bold text-slate-500 mb-0.5">پەیوەندی:</div>
-                <div class="num font-bold text-slate-800" dir="ltr">{{ $settings['company_phone'] ?? '0750 148 4020' }}</div>
-                @if(!empty($settings['company_phone2']))
-                    <div class="num font-bold text-slate-800" dir="ltr">{{ $settings['company_phone2'] }}</div>
-                @endif
-            </div>
-
-            {{-- ناوی کارگە و ناونیشانی سەنەد --}}
-            <div class="text-center">
-                <h1 class="text-2xl font-black text-[#1e3a5f] tracking-tight">
+    <div class="receipt-sheet">
+        <div>
+            {{-- بەشی سەرەوە / سەردێڕ ڕێک وەک وەسڵی فرۆشتن --}}
+            <div>
+                {{-- ناوی کارگە بە سووری تۆخ --}}
+                <h1 class="text-2xl font-black text-[#b91c1c] tracking-tight leading-none text-center mb-1">
                     {{ $settings['company_name'] ?? 'کارگەی ئاسنگەری هێمن' }}
                 </h1>
-                <div class="mt-1.5 inline-flex items-center gap-1.5 bg-[#1e3a5f] text-white px-4 py-1 rounded-full text-xs font-bold shadow-2xs">
-                    <span>🧾</span>
-                    <span>سەنەدی وەرگرتنی پارە (حەقدی موشتەری)</span>
+
+                {{-- وێنەی لای چەپ، دەقەکانی ناوەڕاست، و وێنەی لای ڕاست --}}
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px;">
+                    {{-- وێنەی لای چەپ: دەرگا و مەحەجەرە --}}
+                    <div style="width: 58px; height: 50px; border-radius: 3px; overflow: hidden; border: 1px solid #cbd5e1; flex-shrink: 0; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center;">
+                        @if ($gateImg)
+                            <img src="{{ $gateImg }}" alt="دەرگا و مەحەجەرە" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        @else
+                            <span style="font-size: 9px; font-weight: 700; color: #94a3b8;">دەرگا</span>
+                        @endif
+                    </div>
+
+                    {{-- دەقەکانی ناوەڕاست --}}
+                    <div style="flex: 1; text-align: center; min-width: 0;">
+                        <p style="font-size: 10.5px; font-weight: 800; color: #0f172a; line-height: 1.2; margin: 0;">
+                            بۆ دروست کردنی دەرگا و مەحەجەرە و
+                        </p>
+                        <p style="font-size: 10.5px; font-weight: 800; color: #0f172a; line-height: 1.2; margin: 0;">
+                            کەپر و مەسعەد
+                        </p>
+                        <p style="font-size: 9.5px; font-weight: 700; color: #334155; line-height: 1.2; margin-top: 2px;">
+                            بە شێوازێکی هەندەسی
+                        </p>
+                        <p style="font-size: 11px; font-weight: 800; color: #0f172a; margin-top: 2px;" dir="rtl">
+                            هێمن :
+                            <span class="num" style="font-weight: 800;" dir="ltr">{{ $settings['company_phone2'] ?? '٠٧٥٠١٢٠١١١٠' }}</span>
+                            -
+                            <span class="num" style="font-weight: 800;" dir="ltr">{{ $settings['company_phone'] ?? '٠٧٥٠٤٥٦٨٥٥٦' }}</span>
+                        </p>
+                    </div>
+
+                    {{-- وێنەی لای ڕاست: کەپر و مەسعەد --}}
+                    <div style="width: 58px; height: 50px; border-radius: 3px; overflow: hidden; border: 1px solid #cbd5e1; flex-shrink: 0; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center;">
+                        @if ($canopyImg)
+                            <img src="{{ $canopyImg }}" alt="کەپر و مەسعەد" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        @else
+                            <span style="font-size: 9px; font-weight: 700; color: #94a3b8;">کەپر</span>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- باڕی ناونیشان و ژمارەی سەنەد --}}
+                <div style="margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                    <div style="border: 1px solid #b91c1c; background-color: #ffffff; color: #b91c1c; font-weight: 900; font-size: 11.5px; padding: 2px 8px; border-radius: 2px; flex-shrink: 0;">
+                        سەنەدی حەقدی: <span class="num">{{ $payment->voucher_no }}</span>
+                    </div>
+                    <div style="flex: 1; background-color: #edf2f7; border-top: 1px solid #1e3a5f; border-bottom: 1px solid #1e3a5f; padding: 2px 10px; text-align: center; border-radius: 2px;">
+                        <div style="font-weight: 800; font-size: 11px; color: #1e3a5f;">
+                            {{ $settings['company_address'] ?? 'هەولێر — ١٠٠م بەرامبەر گۆڕستانی شێخ ئەحمەد' }}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {{-- ژمارە و بەروار --}}
-            <div class="text-left text-xs leading-5">
-                <div>
-                    <span class="text-slate-500 font-semibold">ژمارەی سەنەد:</span>
-                    <span class="num font-black text-rose-600 text-sm mr-1">{{ $payment->voucher_no }}</span>
+            {{-- زانیاری کڕیار، ناونیشان، بەروار بە دۆتی تەواوی ڕەش --}}
+            <div style="margin-top: 8px; margin-bottom: 6px; display: flex; align-items: baseline; justify-content: space-between; font-size: 11px; font-weight: 700; color: #0f172a; gap: 8px;">
+                {{-- بەڕێز --}}
+                <div style="display: flex; align-items: baseline; gap: 4px; flex: 1; min-width: 0;">
+                    <span style="color: #0f172a; flex-shrink: 0; user-select: none;">بەڕێز :</span>
+                    <div style="flex: 1; border-bottom: 1.5px dotted #000000; padding: 0 4px; min-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span style="color: #0f172a; font-weight: 800;">{{ $payment->party_label }}</span>
+                    </div>
                 </div>
-                <div class="mt-0.5">
-                    <span class="text-slate-500 font-semibold">بەروار:</span>
-                    <span class="num font-bold text-slate-800 mr-1">{{ fmt_date($payment->paid_at) }}</span>
+
+                {{-- تەلەفۆن --}}
+                @if ($payment->party?->phone)
+                    <div style="display: flex; align-items: baseline; gap: 4px; flex-shrink: 0;">
+                        <span style="color: #0f172a; flex-shrink: 0; user-select: none;">تەلەفۆن :</span>
+                        <div style="border-bottom: 1.5px dotted #000000; padding: 0 4px;">
+                            <span class="num" style="color: #1e293b; font-weight: 700;" dir="ltr">{{ $payment->party->phone }}</span>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- بەروار --}}
+                <div style="display: flex; align-items: baseline; gap: 4px; flex-shrink: 0; width: 130px;">
+                    <span style="color: #0f172a; flex-shrink: 0; user-select: none;">بەروار :</span>
+                    <div style="flex: 1; border-bottom: 1.5px dotted #000000; text-align: center; padding: 0 4px;">
+                        <span class="num" style="color: #0f172a; font-weight: 800;" dir="ltr">
+                            {{ fmt_date($payment->paid_at) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- خشتەی سەرەکی سەنەد --}}
+            <table class="inv-table mt-1">
+                <colgroup>
+                    <col style="width: 25%;">
+                    <col style="width: 35%;">
+                    <col style="width: 20%;">
+                    <col style="width: 20%;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th class="leading-tight">
+                            بڕی پارەی وەرگیراو<br>
+                            <span class="text-[10px] font-bold text-slate-700">
+                                {{ $payment->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                            </span>
+                        </th>
+                        <th style="text-align: center;">ناوەڕۆک و مەبەست</th>
+                        <th>وەسڵی پەیوەندیدار</th>
+                        <th class="leading-tight">تێبینی</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="height: 38px;">
+                        {{-- بڕی پارە --}}
+                        <td class="num text-center font-black text-emerald-800 text-sm bg-emerald-50/40">
+                            {{ fmt_num($payment->amount) }}
+                            <span style="font-size: 10px; font-weight: 700;">{{ $payment->currency === 'USD' ? '$' : 'د.ع' }}</span>
+                        </td>
+
+                        {{-- ناوەڕۆک --}}
+                        <td style="text-align: center; padding: 4px 6px;">
+                            <span class="font-extrabold text-slate-900">وەرگرتنی حەقدی موشتەری</span>
+                        </td>
+
+                        {{-- وەسڵ --}}
+                        <td class="text-center font-bold text-blue-800">
+                            @if ($payment->order)
+                                وەسڵی #{{ $payment->order->invoice_no }}
+                            @else
+                                حسابی گشتی کڕیار
+                            @endif
+                        </td>
+
+                        {{-- تێبینی --}}
+                        <td class="text-center text-xs text-slate-600">
+                            {{ $payment->note ?: '—' }}
+                        </td>
+                    </tr>
+
+                    {{-- ئەگەر بە دۆلار بێت، دێڕی نرخی دۆلار --}}
+                    @if ($payment->currency === 'USD')
+                        <tr style="height: 28px; background-color: #fffbeb;">
+                            <td class="num text-center font-bold text-amber-900 text-xs">
+                                {{ fmt_money($payment->amount_iqd) }}
+                            </td>
+                            <td colspan="3" style="padding: 2px 8px; font-size: 10.5px; font-weight: 700; color: #78350f;">
+                                بە نرخی ١٠٠$ = {{ fmt_num($payment->exchange_rate) }} د.ع (کۆی گشتی بە دینار)
+                            </td>
+                        </tr>
+                    @endif
+
+                    {{-- دێڕی بەتاڵ بۆ شێوازی دەفتەر --}}
+                    @for ($i = 0; $i < ($payment->currency === 'USD' ? 6 : 7); $i++)
+                        <tr style="height: 24px;">
+                            <td>&nbsp;</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    @endfor
+
+                    {{-- بەشی خوارەوە: کۆی گشتی و باڵانسی ماوە --}}
+                    <tr>
+                        <td colspan="4" style="padding: 8px 12px; border: 1.5px solid #1e3a5f; background-color: #ffffff;">
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                {{-- کۆی پارەی وەرگیراو --}}
+                                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; line-height: 1;">
+                                    <span style="font-weight: 900; shrink: 0; color: #047857; transform: translateY(2px);">کۆی پارەی وەرگیراو (دراو)</span>
+                                    <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center; line-height: 1;">
+                                        <span class="num" style="font-weight: 900; font-size: 13px; color: #047857; display: inline-block; transform: translateY(2px);">
+                                            {{ fmt_num($payment->amount) }}
+                                        </span>
+                                    </div>
+                                    <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #047857; transform: translateY(2px);">
+                                        {{ $payment->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                    </span>
+                                </div>
+
+                                {{-- باڵانسی ماوەی کڕیار دوای ئەم حەقدییە --}}
+                                @if ($balance !== null)
+                                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; line-height: 1;">
+                                        <span style="font-weight: 900; shrink: 0; color: {{ $balance > 0 ? '#b91c1c' : '#047857' }}; transform: translateY(2px);">
+                                            باڵانسی ماوەی کڕیار دوای ئەم حەقدییە
+                                        </span>
+                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center; line-height: 1;">
+                                            <span class="num" style="font-weight: 900; font-size: 13px; color: {{ $balance > 0 ? '#b91c1c' : '#047857' }}; display: inline-block; transform: translateY(2px);">
+                                                {{ fmt_num($balance) }}
+                                            </span>
+                                        </div>
+                                        <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a; transform: translateY(2px);">
+                                            دینار {{ $balance > 0 ? '(قەرزە)' : '(پاکتاو)' }}
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            {{-- ژێرەوەی سەنەد: هەڵە دەگەڕێتەوە لە دەستەڕاست و ئیمزا لە لای چەپ --}}
+            <div class="mt-4 mb-2 flex items-center justify-between text-xs px-2">
+                <div class="font-bold text-slate-900 text-xs">
+                    {{ $settings['invoice_footer'] ?? 'هەڵە دەگەڕێتەوە بۆ هەردوو لا' }}
+                </div>
+
+                <div class="flex items-center gap-12 font-bold text-slate-900 text-xs">
+                    <div>ئیمزای موشتەری (پارەدەر)</div>
+                    <div>ئیمزای کارگە (پارەوەرگر)</div>
                 </div>
             </div>
         </div>
-
-        {{-- ناوەڕۆکی سەرەکی سەنەدەکە --}}
-        <div class="mt-5 space-y-4 text-sm">
-
-            {{-- کڕیار --}}
-            <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-700 min-w-[130px]">وەرگیرا لە بەڕێز:</span>
-                <span class="font-extrabold text-slate-900 text-base bg-slate-50 border border-slate-200 px-3 py-1 rounded-lg">
-                    {{ $payment->party_label }}
-                </span>
-            </div>
-
-            {{-- بڕی پارە و نووسین --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center bg-emerald-50/50 border border-emerald-200 p-3.5 rounded-xl">
-                <div class="flex items-center gap-3">
-                    <span class="font-bold text-emerald-900 text-sm">بڕی پارەی وەرگیراو:</span>
-                    <span class="num px-3.5 py-1.5 rounded-lg bg-white border border-emerald-300 text-xl font-black text-emerald-700 shadow-2xs">
-                        {{ fmt_money($payment->amount, $payment->currency) }}
-                    </span>
-                </div>
-
-                <div class="text-xs font-bold text-slate-700">
-                    <span class="text-slate-500">بە نووسین:</span>
-                    <span class="text-slate-900 font-extrabold mr-1">{{ $payment->amount_in_words }}</span>
-                </div>
-            </div>
-
-            {{-- ئەگەر بە دۆلار بێت --}}
-            @if ($payment->currency === 'USD')
-                <div class="text-xs bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1.5 rounded-lg flex items-center justify-between">
-                    <span>نرخی ئاڵوگۆڕ: <strong class="num">{{ fmt_num($payment->exchange_rate) }}</strong></span>
-                    <span>هاوتای بە دینار: <strong class="num text-emerald-700">{{ fmt_money($payment->amount_iqd) }}</strong></span>
-                </div>
-            @endif
-
-            {{-- ئەگەر پەیوەست بێت بە وەسڵێکی دیاریکراو --}}
-            @if ($payment->order)
-                <div class="flex items-center gap-2 text-xs">
-                    <span class="font-bold text-slate-600 min-w-[130px]">لەسەر حسابی وەسڵی:</span>
-                    <span class="font-bold text-blue-800 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
-                        وەسڵی ژمارە #{{ $payment->order->invoice_no }}
-                    </span>
-                </div>
-            @endif
-
-            {{-- تێبینی --}}
-            @if ($payment->note)
-                <div class="flex items-start gap-2 text-xs">
-                    <span class="font-bold text-slate-600 min-w-[130px]">تێبینی:</span>
-                    <span class="text-slate-700 font-medium">{{ $payment->note }}</span>
-                </div>
-            @endif
-
-            {{-- باڵانسی ماوە دوای ئەم حەقدییە --}}
-            @if ($balance !== null)
-                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-lg text-xs font-bold">
-                    <span class="text-slate-600">باڵانسی ماوەی کڕیار دوای ئەم حەقدییە:</span>
-                    <span class="num text-sm font-black {{ $balance > 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                        {{ fmt_money($balance) }}
-                    </span>
-                </div>
-            @endif
-
-        </div>
-
-        {{-- بەشی ئیمزاکان --}}
-        <div class="mt-8 pt-4 border-t border-slate-200 grid grid-cols-3 gap-4 items-end text-xs">
-            <div>
-                <div class="text-slate-600 font-bold mb-5">ئیمزای موشتەری (پارەدەر):</div>
-                <div class="dotted-line w-full"></div>
-            </div>
-
-            <div class="text-center">
-                <div class="text-slate-400 font-semibold text-[11px]">
-                    تۆمارکەر: <strong class="text-slate-700">{{ $payment->user?->name ?? '—' }}</strong>
-                </div>
-            </div>
-
-            <div class="text-left">
-                <div class="text-slate-600 font-bold mb-5">ئیمزای کارگە (پارەوەرگر):</div>
-                <div class="dotted-line w-full"></div>
-            </div>
-        </div>
-
-        {{-- ناونیشانی کارگە لە خوارەوە --}}
-        <div class="mt-4 text-center text-[10px] text-slate-400 font-medium">
-            {{ $settings['company_address'] ?? 'هەولێر — کارگەی ئاسنگەری هێمن' }}
-        </div>
-
     </div>
 
 </body>
