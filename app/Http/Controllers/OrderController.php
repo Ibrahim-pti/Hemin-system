@@ -88,7 +88,7 @@ class OrderController extends Controller
             $customer = Customer::find($data['customer_id']);
 
             $order = Order::create($this->header($data, $customer) + [
-                'invoice_no' => $data['invoice_no'] ?: Order::nextInvoiceNo(),
+                'invoice_no' => ($data['invoice_no'] ?? null) ?: Order::nextInvoiceNo(),
                 'status' => $request->boolean('confirm') ? 'confirmed' : 'draft',
                 'user_id' => auth()->id(),
             ]);
