@@ -231,6 +231,7 @@ class SupplierController extends Controller
                 'amount_paid' => 0,
                 'currency' => $p->currency,
                 'raw_amount' => $p->total,
+                'image' => $p->imageUrl(),
                 'reference' => route('purchases.show', $p),
             ]);
         }

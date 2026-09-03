@@ -195,10 +195,18 @@
                                 </td>
                                 <td class="py-3.5 px-4 whitespace-nowrap">
                                     @if($item->type === 'purchase')
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100">
-                                            <span>🛒</span>
-                                            <span>{{ $item->title }}</span>
-                                        </span>
+                                        <div class="inline-flex items-center gap-2">
+                                            <a href="{{ $item->reference }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
+                                                <span>🛒</span>
+                                                <span>{{ $item->title }}</span>
+                                            </a>
+                                            @if(!empty($item->image))
+                                                <img src="{{ $item->image }}"
+                                                     class="size-8 rounded-lg object-cover border border-slate-200 shadow-2xs hover:scale-125 transition-transform cursor-pointer"
+                                                     onclick="event.stopPropagation(); window.open('{{ $item->image }}', '_blank')"
+                                                     title="کرتە بکە بۆ بینینی وێنەی وەسڵ">
+                                            @endif
+                                        </div>
                                     @elseif($item->type === 'payment')
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100">
                                             <span>💳</span>
@@ -318,7 +326,16 @@
                                     </span>
                                 </td>
                                 <td class="py-3.5 px-4">
-                                    <div class="flex flex-wrap gap-1.5 items-center">
+                                    <div class="flex flex-wrap gap-2 items-center">
+                                        @if($purchase->imageUrl())
+                                            <div class="inline-flex items-center gap-1.5 bg-teal-50 px-2 py-1 rounded-lg border border-teal-200">
+                                                <img src="{{ $purchase->imageUrl() }}"
+                                                     class="size-7 rounded-md object-cover border border-teal-400 cursor-pointer hover:scale-125 transition-transform"
+                                                     onclick="event.stopPropagation(); window.open(this.src, '_blank')"
+                                                     title="کرتە بکە بۆ بینینی وێنەی پسوولە">
+                                                <span class="text-[11px] font-bold text-teal-800">وێنەی وەسڵ</span>
+                                            </div>
+                                        @endif
                                         @foreach($purchase->items as $pItem)
                                             <span class="inline-flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg text-xs border border-slate-200">
                                                 @if($pItem->imageUrl())

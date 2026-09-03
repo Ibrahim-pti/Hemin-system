@@ -7,9 +7,17 @@
     {{-- ١. هێڵی سەرەوە: ناونیشان و دوگمەکان --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
-            <div class="size-12 rounded-2xl bg-linear-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center text-2xl shadow-md shadow-emerald-500/20 shrink-0">
-                🛒
-            </div>
+            @if ($purchase->imageUrl())
+                <div class="relative size-14 rounded-2xl overflow-hidden border-2 border-teal-500 shadow-md shrink-0 cursor-pointer group"
+                     onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')" title="کرتە بکە بۆ بینینی تەواوی وێنەکە">
+                    <img src="{{ $purchase->imageUrl() }}" class="size-full object-cover group-hover:scale-110 transition-transform">
+                    <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center font-bold py-0.5">وێنە</span>
+                </div>
+            @else
+                <div class="size-12 rounded-2xl bg-linear-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center text-2xl shadow-md shadow-emerald-500/20 shrink-0">
+                    🛒
+                </div>
+            @endif
             <div>
                 <div class="flex items-center gap-2 flex-wrap">
                     <h1 class="text-lg sm:text-xl font-black text-slate-900">
@@ -91,10 +99,12 @@
                                 <tr class="hover:bg-slate-50/80 transition-colors">
                                     <td class="p-3.5">
                                         <div class="flex items-center gap-2.5">
-                                            @if ($line->imageUrl())
-                                                <img src="{{ $line->imageUrl() }}"
-                                                     class="size-9 rounded-lg object-cover border border-slate-200 shrink-0 cursor-pointer hover:scale-110 transition-transform"
-                                                     onclick="window.open(this.src, '_blank')">
+                                            @php $rowImg = $line->imageUrl() ?? $purchase->imageUrl(); @endphp
+                                            @if ($rowImg)
+                                                <img src="{{ $rowImg }}"
+                                                      class="size-9 rounded-lg object-cover border border-slate-200 shrink-0 cursor-pointer hover:scale-110 transition-transform"
+                                                      onclick="window.open('{{ $rowImg }}', '_blank')"
+                                                      title="کرتە بکە بۆ بینینی وێنەی وەسڵ">
                                             @endif
                                             <span class="font-black text-slate-900">{{ $line->item?->name }}</span>
                                         </div>
