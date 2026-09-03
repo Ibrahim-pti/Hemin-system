@@ -448,6 +448,85 @@
             </div>
         </div>
 
+        {{-- ٤. ناوچەی هەستیار: سفرکردنەوەی داتاکانی سیستم --}}
+        <div class="rounded-2xl border border-rose-200/90 bg-linear-to-br from-rose-50/40 to-white p-5 sm:p-6 shadow-xs" x-data="{ showResetModal: false }">
+            <div class="flex items-center justify-between border-b border-rose-100 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="size-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm">⚠️</span>
+                    <div>
+                        <h2 class="font-bold text-rose-950 text-sm">سفرکردنەوەی داتاکانی سیستم (Reset Data)</h2>
+                        <p class="text-[11px] text-slate-500">پاککردنەوەی هەموو مامەڵەکان (وەسڵ، کڕین، حەقدی، قەرز، قاسە) بۆ دەستپێکردنی کاری نوێ.</p>
+                    </div>
+                </div>
+
+                <button type="button" @click="showResetModal = true"
+                        class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-all cursor-pointer">
+                    🗑️ سفرکردنەوەی داتا
+                </button>
+            </div>
+
+            <p class="text-[11px] text-slate-600 leading-relaxed">
+                ئەم کردارە هەموو وەسڵ، کڕین، حەقدی، قەرزەکان و جوڵەکانی مەخزەن بە تەواوی سفر دەکاتەوە. پێش دەستپێکردن، سیستەم بە خۆکاری باکەپێکی پارێزراو لە هەموو داتاکانی ئێستا هەڵدەگرێت تا دڵنیابیت هیچ شتێک ون نابێت.
+            </p>
+
+            {{-- مۆداڵی دڵنیابوونەوەی سفرکردنەوە --}}
+            <template x-teleport="body">
+                <div x-show="showResetModal" x-cloak
+                     style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);"
+                     @keydown.escape.window="showResetModal = false">
+
+                    <div style="background: #ffffff; border-radius: 1.25rem; width: 100%; max-width: 28rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; margin: auto; padding: 1.75rem; display: flex; flex-direction: column; gap: 1.1rem;"
+                         @click.outside="showResetModal = false">
+
+                        <div class="flex items-center gap-3">
+                            <div style="width: 3.25rem; height: 3.25rem; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.5rem;">
+                                ⚠️
+                            </div>
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0;">سفرکردنەوەی داتاکانی سیستم</h3>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 0.2rem 0 0 0;">ئایا دڵنیایت لە دەستپێکردن بە سفرکردنەوەی داتاکان؟</p>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 font-bold leading-relaxed">
+                            🛡️ <strong>سیستەمی پاراستن:</strong> پێش سفرکردنەوە، سیستم خۆکارانە باکەپێکی سەلامەت لە هەموو داتاکانی ئێستا هەڵدەگرێت تا ئەگەر پەشیمان بوویتەوە بە یەک کلیک لە لیستی باکەپ بیگەڕێنیتەوە.
+                        </div>
+
+                        <form method="POST" action="{{ route('settings.reset-data') }}" class="space-y-3.5">
+                            @csrf
+
+                            <div>
+                                <label class="label text-xs font-bold text-slate-800 mb-1">
+                                    وشەی نهێنی (پاسۆردی بەڕێوەبەر) <span class="text-rose-600">*</span>
+                                </label>
+                                <input type="password" name="password" required class="field text-xs font-mono" dir="ltr"
+                                       placeholder="وشەی نهێنی بنووسە...">
+                            </div>
+
+                            <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer select-none">
+                                <input type="checkbox" name="wipe_entities" value="1" class="size-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500">
+                                <span class="text-[11px] font-bold text-slate-800">
+                                    سڕینەوەی ناوی کڕیار، دابینکەر و کاڵاکانیش (سفرکردنەوەی ۱۰۰٪)
+                                </span>
+                            </label>
+
+                            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                                <button type="button" @click="showResetModal = false"
+                                        class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer">
+                                    پاشگەزبوونەوە
+                                </button>
+                                <button type="submit"
+                                        class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-colors cursor-pointer">
+                                    بەڵێ، داتاکان سفر بکەرەوە
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </template>
+        </div>
+
     </div>
 
 </div>

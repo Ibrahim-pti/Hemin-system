@@ -227,4 +227,79 @@ class SettingController extends Controller
             return back()->with('err', 'هەڵە لە خاوێنکردنەوە: '.$e->getMessage());
         }
     }
+
+    public function resetData(Request $request)
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ], [
+            'password.required' => 'تکایە وشەی نهێنی (پاسۆرد) بنووسە.',
+            'password.current_password' => 'وشەی نهێنی نادروستە، تکایە وشەی نهێنی بەڕێوەبەر بە دروستی بنووسە.',
+        ]);
+
+        try {
+            // ١. سەرەتا باکەپێکی دڵنیایی ئۆتۆماتیک دروست دەکرێت تا هیچ کات داتا بە هەڵە لەدەست نەچێت
+            $safetyBackup = null;
+            try {
+                $safetyBackup = $this->backups->create(isAuto: true);
+            } catch (\Throwable $backupErr) {
+                // ئەگەر باکەپ نەکرا با پرۆسەکە بەردەوام بێت
+            }
+
+            // ٢. پاککردنەوەی تەیبڵە دارایی و ئیشپێکردنەکان
+            \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+
+            $tables = [
+                'stock_movements',
+                'stock_count_items',
+                'stock_counts',
+                'order_items',
+                'orders',
+                'purchase_items',
+                'purchases',
+                'payments',
+                'cash_transactions',
+                'cash_closings',
+                'external_jobs',
+                'attendances',
+                'activity_log',
+            ];
+
+            foreach ($tables as $table) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($table)) {
+                    \Illuminate\Support\Facades\DB::table($table)->truncate();
+                }
+            }
+
+            // ئەگەر بەکارهێنەر هەڵیبژاردبێت کە کڕیار، دابینکەر و کاڵاکانیش بسڕدرێنەوە
+            if ($request->boolean('wipe_entities')) {
+                foreach (['items', 'customers', 'suppliers', 'employees'] as $table) {
+                    if (\Illuminate\Support\Facades\Schema::hasTable($table)) {
+                        \Illuminate\Support\Facades\DB::table($table)->truncate();
+                    }
+                }
+            } else {
+                // ئەگەر بمێننەوە، قەرز و باڵانسی سەرەتاییان سفر دەکرێتەوە
+                \App\Models\Customer::query()->update(['opening_balance' => 0]);
+                \App\Models\Supplier::query()->update(['opening_balance' => 0]);
+            }
+
+            \App\Models\CashBox::query()->update(['opening_balance' => 0]);
+
+            \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+
+            // ٣. خاوێنکردنەوەی کاش
+            Artisan::call('cache:clear');
+            Artisan::call('view:clear');
+
+            $msg = 'هەموو مامەڵەکان (وەسڵ، کڕین، حەقدی، قەرز، قاسە و جوڵەی کۆگا) بە سەرکەوتوویی سفرکرانەوە.';
+            if ($safetyBackup) {
+                $msg .= " (باکەپێکی دڵنیایی پێشوەختە بە ناوی {$safetyBackup} پارێزرا).";
+            }
+
+            return back()->with('ok', $msg);
+        } catch (\Throwable $e) {
+            return back()->with('err', 'هەڵە لە سفرکردنەوەی داتا: ' . $e->getMessage());
+        }
+    }
 }

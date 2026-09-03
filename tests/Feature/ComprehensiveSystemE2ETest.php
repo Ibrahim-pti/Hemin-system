@@ -339,4 +339,37 @@ class ComprehensiveSystemE2ETest extends TestCase
         $deleted = $backupService->delete($dummyFile);
         $this->assertTrue($deleted);
     }
+
+    /**
+     * ٧. پشکنینی سفرکردنەوەی داتا (Reset Data)
+     */
+    public function test_reset_data_endpoint()
+    {
+        $this->actingAs($this->admin);
+
+        // دروستکردنی داواکاری بۆ تێست
+        Customer::create(['name' => 'کڕیاری تێست', 'phone' => '07500000000']);
+        $this->assertGreaterThan(0, Customer::count());
+
+        // هەڵە لە نووسینی پاسۆرد
+        $failResponse = $this->post(route('settings.reset-data'), [
+            'password' => 'wrong-password',
+        ]);
+        $failResponse->assertSessionHasErrors('password');
+
+        // سەرکەوتوو بە پاسۆردی دروست (admin password in DatabaseSeeder is 'hemin1234')
+        $successResponse = $this->post(route('settings.reset-data'), [
+            'password' => 'hemin1234',
+            'wipe_entities' => '1',
+        ]);
+        $successResponse->assertRedirect();
+        $successResponse->assertSessionHas('ok');
+
+        // پشکنینی ئەوەی داتاکان بە سەرکەوتوویی پاککرانەوە
+        $this->assertEquals(0, Customer::count());
+        $this->assertEquals(0, Order::count());
+        $this->assertEquals(0, Purchase::count());
+        $this->assertEquals(0, Payment::count());
+        $this->assertEquals(0, CashTransaction::count());
+    }
 }

@@ -168,6 +168,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings/backup/{file}', [SettingController::class, 'download'])->name('settings.backup.download');
         Route::delete('/settings/backup/{file}', [SettingController::class, 'deleteBackup'])->name('settings.backup.delete');
         Route::post('/settings/clear-cache', [SettingController::class, 'clearCache'])->name('settings.clear-cache');
+        Route::post('/settings/reset-data', [SettingController::class, 'resetData'])->name('settings.reset-data');
     });
 
     Route::get('/api/exchange-rate/live', [SettingController::class, 'liveRate'])->name('exchange-rate.live');
