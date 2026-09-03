@@ -322,11 +322,11 @@
 
     {{-- ٤. بەشی وردەکاری تەواوی وەستا و حیساباتی خۆکار (Worker Details Drawer/Modal) - تەنها بۆ بەڕێوەبەر --}}
     @if($canSeeMoney)
-    <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-        <div @click.away="if (!showEditWageModal && !showCellModal) showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-slate-200 overflow-hidden">
+    <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
+        <div @click.away="if (!showEditWageModal && !showCellModal) showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col border-2 border-slate-300 overflow-hidden">
             
             {{-- سەرپەڕە --}}
-            <div class="p-4 sm:p-5 bg-teal-800 text-white flex items-center justify-between gap-3 shrink-0">
+            <div class="p-3 sm:p-5 bg-teal-800 text-white flex items-center justify-between gap-2 sm:gap-3 shrink-0">
                 <div class="flex items-center gap-2">
                     <div>
                         <div class="flex items-center gap-2">
@@ -367,7 +367,7 @@
             <div class="p-3.5 bg-slate-50 border-b border-slate-200 shrink-0">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-center text-xs">
                     {{-- ١. ڕۆژانی دەوام --}}
-                    <div class="bg-white p-2.5 rounded-xl border border-slate-200">
+                    <div class="bg-white p-2.5 rounded-xl border-2 border-slate-300">
                         <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی دەوام لە مانگدا</div>
                         <div class="text-base font-black text-emerald-800 font-mono mt-0.5" x-text="(drawerData?.stats?.present_count ?? 0) + ' ڕۆژ ئامادە'"></div>
                         <div class="flex items-center justify-center gap-1.5 flex-wrap mt-0.5">
@@ -381,7 +381,7 @@
                     </div>
 
                     {{-- ٢. پارەی هەیە (شایستە) --}}
-                    <div class="bg-white p-2.5 rounded-xl border border-teal-200">
+                    <div class="bg-white p-2.5 rounded-xl border-2 border-teal-300">
                         <div class="text-[10px] text-teal-800 font-bold">پارەی هەیە (شایستە)</div>
                         <div class="text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
                         <div class="text-[9px] text-slate-400 mt-0.5">
@@ -435,7 +435,7 @@
                         <span>📅</span>
                         <span>تۆماری دەوامی ڕۆژانەی مانگ</span>
                     </h3>
-                    <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white">
+                    <div class="border-2 border-slate-300 rounded-2xl overflow-hidden bg-white">
                         <table class="w-full text-right">
                             <thead class="bg-slate-100/80 text-slate-700 font-black border-b border-slate-200 text-xs">
                                 <tr>
@@ -629,7 +629,7 @@
 
     {{-- ٥. مۆداڵی سێتینگی کارگە و مەرجەکانی بەڕێوەبەر (Settings Modal) --}}
     <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-lg border border-slate-200 overflow-hidden text-xs">
+        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-lg border-2 border-slate-300 overflow-hidden text-xs">
             
             <form @submit.prevent="saveSettings()">
                 {{-- سەرپەڕە --}}
@@ -874,7 +874,7 @@
 
     {{-- ٧. مۆداڵی وەستای نوێ (New Employee Modal) --}}
     <div x-show="showNewEmployeeModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showNewEmployeeModal = false" class="bg-white rounded-3xl w-full max-w-sm border border-slate-200 overflow-hidden text-xs">
+        <div @click.away="showNewEmployeeModal = false" class="bg-white rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs">
             <form @submit.prevent="saveNewEmployee()">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
@@ -942,7 +942,7 @@
 
     {{-- ٨. مۆداڵی دەستکاری مووچە (Edit Wage Modal) --}}
     <div x-show="showEditWageModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showEditWageModal = false" class="bg-white rounded-3xl w-full max-w-sm border border-slate-200 overflow-hidden text-xs">
+        <div @click.away="showEditWageModal = false" class="bg-white rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs">
             <form @submit.prevent="saveEditWage()">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
@@ -1009,7 +1009,7 @@
 
     {{-- ٩. مۆداڵی دەستکاری وردی خانەی سەح (Cell Detail Modal) --}}
     <div x-show="showCellModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showCellModal = false" class="bg-white rounded-3xl w-full max-w-sm border border-slate-200 overflow-hidden text-xs">
+        <div @click.away="showCellModal = false" class="bg-white rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs">
             <form @submit.prevent="saveCellDetail()">
                 <div class="p-3.5 bg-teal-800 text-white flex items-center justify-between">
                     <div>
