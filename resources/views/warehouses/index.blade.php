@@ -22,6 +22,19 @@
                 </p>
             </div>
         </div>
+
+        <div class="flex items-center gap-2 flex-wrap shrink-0">
+            <a href="{{ route('counts.index') }}"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all shadow-2xs">
+                <span>📋</span>
+                <span>جەردی کۆگا</span>
+            </a>
+            <a href="{{ route('warehouses.create') }}"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-xs">
+                <span>+</span>
+                <span>کۆگای نوێ</span>
+            </a>
+        </div>
     </div>
 
     {{-- ٢. ٤ کارتی ئاماری سەرەکی و ڕاستەوخۆ --}}
@@ -118,7 +131,7 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="font-mono font-black text-xs text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
-                                    #{{ $order->id }}
+                                    #{{ $order->invoice_no ?? $order->id }}
                                 </span>
                                 <span class="font-black text-xs text-slate-900">{{ $order->customer?->name ?: 'کڕیاری گشتی' }}</span>
                             </div>
@@ -189,7 +202,7 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="font-mono font-black text-xs text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
-                                    #{{ $order->id }}
+                                    #{{ $order->invoice_no ?? $order->id }}
                                 </span>
                                 <span class="font-black text-xs text-slate-900">{{ $order->customer?->name ?: 'کڕیاری گشتی' }}</span>
                             </div>
@@ -288,13 +301,17 @@
                                 {{ $item->unit?->name ?: 'دانە' }}
                             </td>
                             <td class="p-3.5 text-center">
-                                <span class="font-mono font-black text-xs px-2.5 py-1 rounded-lg {{ $isLow ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-slate-100 text-slate-900 border border-slate-200/60' }}">
+                                <span class="font-mono font-black text-xs px-2.5 py-1 rounded-lg {{ (float) $item->current_stock <= 0 ? 'bg-slate-100 text-slate-500 border border-slate-200' : ($isLow ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-900 border border-slate-200/60') }}">
                                     {{ fmt_num($item->current_stock) }}
                                 </span>
                             </td>
                             <td class="p-3.5 text-center">
-                                @if($isLow)
+                                @if((float) $item->current_stock <= 0)
                                     <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200 inline-block">
+                                        ❌ لە کۆگا نەماوە
+                                    </span>
+                                @elseif($isLow)
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 inline-block">
                                         ⚠️ کەمبووە
                                     </span>
                                 @else

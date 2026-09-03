@@ -33,7 +33,7 @@ class WarehouseController extends Controller
             ->orderBy('name');
 
         $totalItemsCount = \App\Models\Item::active()->count();
-        $allItems = (clone $itemsQuery)->paginate(5)->withQueryString();
+        $allItems = (clone $itemsQuery)->paginate(25)->withQueryString();
 
         $allStockItems = \App\Models\Item::active()->withStock()->get();
         $lowStockItems = $allStockItems->filter(fn ($item) => $item->is_low);
