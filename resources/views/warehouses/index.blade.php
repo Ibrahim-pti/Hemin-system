@@ -5,7 +5,7 @@
 <div class="space-y-5 sm:space-y-6">
 
     {{-- ١. هێڵی سەرەوە: ناونیشان --}}
-    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
+    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
             <div class="size-12 rounded-2xl bg-linear-to-br from-amber-500 via-orange-500 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-md shadow-orange-500/20 shrink-0">
                 🏭
