@@ -156,6 +156,10 @@ class DebtController extends Controller
             ]);
         }
 
+        if (!$request->filled('currency')) {
+            $request->merge(['currency' => 'IQD']);
+        }
+
         $data = $request->validate([
             'customer_id' => ['nullable'],
             'new_customer_name' => ['nullable', 'required_without:customer_id', 'string', 'max:255'],

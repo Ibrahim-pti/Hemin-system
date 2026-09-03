@@ -681,24 +681,19 @@
                         </div>
                     </div>
 
-                    {{-- بڕی قەرز و دراو --}}
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
-                        <div>
-                            <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
-                                بڕی قەرز <span style="color: #ef4444;">*</span>
-                            </label>
+                    {{-- بڕی قەرز (تەنها بە دیناری عێراقی) --}}
+                    <input type="hidden" name="currency" value="IQD">
+                    <div>
+                        <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                            بڕی قەرز (دیناری عێراقی - د.ع) <span style="color: #ef4444;">*</span>
+                        </label>
+                        <div style="position: relative;">
                             <input type="number" step="any" min="0.01" name="amount" class="field num" required
                                    placeholder="0"
-                                   style="width: 100%; padding: 0.55rem 0.75rem; font-size: 1.15rem; font-weight: 800; text-align: center; color: #dc2626;">
-                        </div>
-                        <div>
-                            <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
-                                دراو <span style="color: #ef4444;">*</span>
-                            </label>
-                            <select name="currency" class="field" style="width: 100%; font-weight: 700;">
-                                <option value="IQD">د.ع</option>
-                                <option value="USD">$ USD</option>
-                            </select>
+                                   style="width: 100%; padding: 0.65rem 3.5rem 0.65rem 1rem; font-size: 1.25rem; font-weight: 800; text-align: center; color: #dc2626;">
+                            <span style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); font-weight: 800; color: #64748b; font-size: 0.9rem; pointer-events: none;">
+                                د.ع
+                            </span>
                         </div>
                     </div>
 
