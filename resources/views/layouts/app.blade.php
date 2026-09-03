@@ -146,7 +146,7 @@
                         <span class="text-xs font-bold text-slate-800 hidden sm:inline">{{ auth()->user()->name }}</span>
                     </div>
 
-                    <button @click="$dispatch('open-calculator')" class="btn btn-ghost !px-3 !py-1.5 text-xs text-slate-600 hover:bg-slate-100" title="حاسیبە">
+                    <button @click="$dispatch('open-calculator')" class="btn btn-ghost !px-2.5 sm:!px-3 !py-1.5 text-xs text-slate-600 hover:bg-slate-100 hidden sm:inline-flex" title="حاسیبە">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
                             <rect x="4" y="3" width="16" height="18" rx="2"/>
                             <path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/>
@@ -166,7 +166,7 @@
             </header>
 
             {{-- ناوەڕۆکی پەڕە --}}
-            <main class="flex-1 overflow-y-auto p-4 md:p-6">
+            <main class="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
                 @if (session('ok'))
                     <div class="no-print mb-4 flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                         <svg class="size-5 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">

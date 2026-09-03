@@ -68,7 +68,7 @@
     </div>
 
     {{-- ٢. ٣ کارتی ئاماری سەرەوە --}}
-    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
 
         {{-- ١. کۆی گشتی سەروەت --}}
         <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 1rem; padding: 1.15rem 1.25rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">

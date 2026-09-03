@@ -32,7 +32,7 @@
     {{-- ٢. کارتی فلتەری سەرەوە (کڕیار، لە بەرواری، بۆ بەرواری) --}}
     <div class="no-print" style="background: #ffffff; border-radius: 1rem; padding: 1.25rem 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
         <form method="GET" action="{{ $customer ? route('customers.statement', $customer) : route('statement.index') }}" style="display: flex; flex-direction: column; gap: 1rem;">
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: flex-end;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
 
                 {{-- کڕیار هەڵبژێرە --}}
                 <div>
@@ -166,7 +166,7 @@
             </div>
 
             {{-- ٤ کارتی ئاماری سەرەکی کەشف حساب --}}
-            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
                 {{-- ١. قەرزی پێشوو / باڵانسی سەرەتایی (Purple) --}}
                 <div style="background: #fdf4ff; border: 1.5px solid #f0abfc; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
@@ -231,10 +231,10 @@
         </div>
 
         {{-- ٤. دوو خشتەی تەنیشت یەک (فرۆشتنەکان لە دەستە ڕاست، پارەدانی قەرزەکان لە دەستە چەپ) --}}
-        <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 1.25rem; align-items: start;">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
 
             {{-- خشتەی دەستە ڕاست: فرۆشتنەکان --}}
-            <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden;">
+            <div class="lg:col-span-3 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
                 <div style="padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; color: #1e293b; border-bottom: 1px solid #f8fafc;">
                     <span style="color: #10b981;">🛒</span>
                     <span>فرۆشتنەکان</span>
@@ -318,7 +318,7 @@
             </div>
 
             {{-- خشتەی دەستە چەپ: پارەدانی قەرزەکان --}}
-            <div style="background: #ffffff; border-radius: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden;">
+            <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
                 <div style="padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; color: #1e293b; border-bottom: 1px solid #f8fafc;">
                     <span style="color: #ca8a04;">📁</span>
                     <span>پارەدانی قەرزەکان</span>

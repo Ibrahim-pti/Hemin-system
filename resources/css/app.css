@@ -41,6 +41,9 @@
     font-display: swap;
 }
 
+@source '../views/**/*.blade.php';
+@source '../../resources/views/**/*.blade.php';
+@source '../../app/**/*.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../../vendor/livewire/livewire/src/**/*.blade.php';
@@ -357,6 +360,56 @@
     .btn-danger {
         background-color: var(--color-danger);
         color: #fff;
+    }
+
+    /* دوگمەکانی سەوز و تیڵ بە ڕەنگی دیار و جێگیر */
+    .btn-teal {
+        background-color: #0f766e !important;
+        color: #ffffff !important;
+        border: 1px solid #0d5f58 !important;
+        font-weight: 800 !important;
+    }
+    .btn-teal:hover {
+        background-color: #115e59 !important;
+    }
+
+    .btn-emerald {
+        background-color: #059669 !important;
+        color: #ffffff !important;
+        border: 1px solid #047857 !important;
+        font-weight: 800 !important;
+    }
+    .btn-emerald:hover {
+        background-color: #047857 !important;
+    }
+
+    /* کلاسەکانی گریدی ڕیسپۆنسیڤ */
+    .responsive-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    .responsive-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    @media (max-width: 768px) {
+        .responsive-grid-4 {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 0.75rem !important;
+        }
+        .responsive-grid-3 {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 0.75rem !important;
+        }
+    }
+    @media (max-width: 520px) {
+        .responsive-grid-4,
+        .responsive-grid-3 {
+            grid-template-columns: 1fr !important;
+            gap: 0.65rem !important;
+        }
     }
 
     /* خانەکانی فۆرم */

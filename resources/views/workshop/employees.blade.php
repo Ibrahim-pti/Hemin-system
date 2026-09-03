@@ -64,6 +64,25 @@
         border: 2px dashed #94a3b8 !important;
         font-weight: 800 !important;
     }
+    /* دوگمەی کارمەندی نوێ و سێتینگ بە ستایلی دڵنیا و دیار لە هەموو بارودۆخێکدا */
+    .btn-emp-add {
+        background-color: #0f766e !important;
+        color: #ffffff !important;
+        border: 2px solid #0d5f58 !important;
+        font-weight: 900 !important;
+    }
+    .btn-emp-add:hover {
+        background-color: #115e59 !important;
+    }
+    .btn-emp-settings {
+        background-color: #f8fafc !important;
+        color: #334155 !important;
+        border: 2px solid #cbd5e1 !important;
+        font-weight: 700 !important;
+    }
+    .btn-emp-settings:hover {
+        background-color: #f1f5f9 !important;
+    }
     @media (min-width: 640px) {
         .col-idx {
             display: table-cell !important;
@@ -92,28 +111,28 @@
     <div class="emp-header-card bg-white rounded-2xl p-2.5 sm:p-3.5 border-2 border-slate-300 flex flex-col gap-2.5">
         
         {{-- ڕیزی سەرەوە: ناونیشان + دوگمەی کردارەکان بۆ مۆبایل و دێسکتۆپ --}}
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full">
-            <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-teal-700 text-white flex items-center justify-center text-base sm:text-lg shrink-0 border border-teal-800">
+        <div class="flex items-center justify-between gap-2 w-full">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-teal-700 text-white flex items-center justify-center text-sm sm:text-base shrink-0 border border-teal-800">
                     📋
                 </div>
                 <div class="min-w-0">
-                    <h1 class="text-xs sm:text-base font-black text-slate-900 leading-tight truncate">جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان</h1>
+                    <h1 class="text-[11px] sm:text-base font-black text-slate-900 leading-tight truncate">جەدوەلی ئامادەبوونی کارمەندان</h1>
                     <p class="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate hidden sm:block">تۆمارکردنی ئامادەبوون، کاتی زیادە و غیابات</p>
                 </div>
             </div>
 
             @if($canSeeMoney)
             {{-- دوگمەکانی کردار بۆ بەڕێوەبەر --}}
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <button type="button" @click="openNewEmployeeModal()"
-                        class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black bg-teal-700 hover:bg-teal-800 text-white border border-teal-800 flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer active:scale-95">
+                        class="btn-emp-add px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer active:scale-95">
                     <span>➕</span>
                     <span>کارمەندی نوێ</span>
                 </button>
 
                 <button type="button" @click="showSettingsModal = true"
-                        class="p-1.5 sm:p-2 rounded-xl text-slate-600 hover:bg-slate-100 bg-slate-50 border-2 border-slate-300 transition-all cursor-pointer text-sm"
+                        class="btn-emp-settings p-1.5 sm:p-2 rounded-xl text-slate-700 transition-all cursor-pointer text-sm active:scale-95"
                         title="سێتینگی تاخیربوون و دەوام">
                     ⚙️
                 </button>
@@ -239,7 +258,7 @@
                                     <p class="text-xs text-slate-500 max-w-sm">تکایە سەرەتا کارمەند زیاد بکە تا ناویان لە خشتەکە دەربکەوێت و بتوانی دەوامیان تۆمار بکەیت.</p>
                                     @if($canSeeMoney)
                                     <button type="button" @click="openNewEmployeeModal()"
-                                            class="mt-1 px-4 py-2 rounded-xl text-xs font-black bg-teal-700 hover:bg-teal-800 text-white inline-flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                                            class="btn-emp-add mt-1 px-4 py-2.5 rounded-xl text-xs font-black inline-flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
                                         <span>➕</span>
                                         <span>زیادکردنی کارمەندی نوێ</span>
                                     </button>
@@ -614,7 +633,7 @@
                             <button type="button" @click="drawerTab = 'details'" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 cursor-pointer">
                                 گەڕانەوە
                             </button>
-                            <button type="submit" class="px-6 py-2.5 rounded-xl font-black bg-teal-700 hover:bg-teal-800 text-white cursor-pointer transition-all">
+                            <button type="submit" class="btn-emp-add px-6 py-2.5 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95">
                                 تۆمارکردنی پارەدان
                             </button>
                         </div>
@@ -860,7 +879,7 @@
                 {{-- بەشی دوگمەکان --}}
                 <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
                     <button type="button" @click="showSettingsModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer transition-all">داخستن</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800 cursor-pointer transition-all flex items-center gap-1.5">
+                    <button type="submit" class="btn-emp-add px-5 py-2 rounded-xl font-black text-white cursor-pointer transition-all flex items-center gap-1.5 active:scale-95">
                         <span>💾</span>
                         <span>پاشەکەوتکردنی مەرجەکان</span>
                     </button>
@@ -931,8 +950,8 @@
                 </div>
 
                 <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-                    <button type="button" @click="showNewEmployeeModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200">داخستن</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800">
+                    <button type="button" @click="showNewEmployeeModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer">داخستن</button>
+                    <button type="submit" class="btn-emp-add px-5 py-2 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95">
                         زیادکردن
                     </button>
                 </div>
@@ -997,8 +1016,8 @@
                 </div>
 
                 <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-                    <button type="button" @click="showEditWageModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200">داخستن</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-xl font-black bg-teal-700 text-white hover:bg-teal-800">
+                    <button type="button" @click="showEditWageModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer">داخستن</button>
+                    <button type="submit" class="btn-emp-add px-5 py-2 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95">
                         نوێکردنەوە
                     </button>
                 </div>
@@ -1139,8 +1158,8 @@
                 </div>
 
                 <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-                    <button type="button" @click="showCellModal = false" class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-200">داخستن</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-lg font-black bg-teal-700 text-white hover:bg-teal-800">
+                    <button type="button" @click="showCellModal = false" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-200 font-bold cursor-pointer">داخستن</button>
+                    <button type="submit" class="btn-emp-add px-4 py-1.5 rounded-lg font-black text-white cursor-pointer transition-all active:scale-95">
                         پاشەکەوتکردن
                     </button>
                 </div>

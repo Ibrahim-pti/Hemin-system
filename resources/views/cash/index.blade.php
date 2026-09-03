@@ -46,7 +46,7 @@
     </div>
 
     {{-- ٢. ٤ کارتی ئاماری سەرەکی بە جیاکراوەیی دینار و دۆلار --}}
-    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
         {{-- ١. باڵانسی ئێستای قاسەی دینار --}}
         <div style="background: {{ $iqdBalance >= 0 ? '#f0fdf4' : '#fff1f2' }}; border: 1.5px solid {{ $iqdBalance >= 0 ? '#86efac' : '#fecdd3' }}; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
@@ -135,7 +135,7 @@
     {{-- ٣. کارتی فلتەرکردنی بەروار و جۆری جووڵە --}}
     <div style="background: #ffffff; border-radius: 1.15rem; padding: 1.25rem 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
         <form method="GET" action="{{ route('cash.index') }}" style="display: flex; flex-direction: column; gap: 1rem;">
-            <div style="display: grid; grid-template-columns: 1.5fr 1.5fr 1.5fr 1.5fr auto; gap: 1rem; align-items: flex-end;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-end">
 
                 {{-- لە بەرواری --}}
                 <div>

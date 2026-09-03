@@ -24,7 +24,7 @@
     </div>
 
     {{-- ٢. کارتە ئامارییەکانی سەرەوە (٣ ستوون) --}}
-    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
 
         {{-- ١. کۆی گشتی جەردەکان --}}
         <div style="background: #f0f9ff; border: 1.5px solid #7dd3fc; border-radius: 1rem; padding: 1.15rem 1.25rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
@@ -80,9 +80,9 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('counts.store') }}" style="padding: 1.5rem;">
+        <form method="POST" action="{{ route('counts.store') }}" class="p-4 sm:p-6">
             @csrf
-            <div style="display: grid; grid-template-columns: 1.5fr 1fr 2fr auto; gap: 1.25rem; align-items: flex-end;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
 
                 {{-- کۆگا --}}
                 <div>

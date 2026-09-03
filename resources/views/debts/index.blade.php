@@ -29,7 +29,7 @@
     </div>
 
     {{-- ٢. کارتە ئامارییەکانی سەرەوە (٣ کارت لە تەنیشت یەک وەک وێنەکە) --}}
-    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
 
         {{-- کارتی ١ (دەستە ڕاست): کۆی قەرزی ماوە --}}
         <div style="background: #ffffff; border-radius: 1rem; padding: 1.25rem; border: 1px solid #fecdd3; border-right: 4px solid #f43f5e; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
@@ -142,7 +142,7 @@
         <div style="background: #ffffff; border-radius: 1.25rem; padding: 1.25rem 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
 
             {{-- چوار خانەی ئاماری سەرەکی کڕیار (دەستە چەپ/ناوەڕاست) --}}
-            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; flex: 1; min-width: 20rem;">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 flex-1 w-full">
 
                 {{-- قەرزی چالاک (Yellow) --}}
                 <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 0.75rem; padding: 0.75rem 0.5rem; text-align: center;">

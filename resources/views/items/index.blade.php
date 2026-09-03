@@ -42,7 +42,7 @@
     </div>
 
     {{-- ٢. کارتە ئامارییەکانی سەرەوە (٤ ستوون) --}}
-    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
         {{-- ١. کۆی جۆری مەوادەکان --}}
         <div style="background: #f0f9ff; border: 1.5px solid #7dd3fc; border-radius: 1rem; padding: 1.15rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
@@ -123,7 +123,7 @@
     {{-- ٣. کارتی فلتەرکردنی مەوادەکان --}}
     <div style="background: #ffffff; border-radius: 1.15rem; padding: 1.25rem 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
         <form method="GET" action="{{ route('items.index') }}" style="display: flex; flex-direction: column; gap: 1rem;">
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: flex-end;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
 
                 {{-- ناوی مەواد --}}
                 <div>
