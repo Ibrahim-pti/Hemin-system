@@ -143,11 +143,11 @@
         {{-- فلتەری ماوە و بەروار --}}
         <div class="emp-filter-bar flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 w-full pt-1.5 border-t border-slate-200">
             <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-50 p-1 rounded-2xl border-2 border-slate-300 w-full sm:w-auto justify-between sm:justify-start">
-                {{-- گەڕانەوە بۆ پێشوو --}}
+                {{-- گەڕانەوە بۆ پێشوو (لە ڕاستەوە بۆ چەپ) --}}
                 <button type="button" @click="changeWeekOffset(-1)"
-                        title="پێشوو"
+                        title="پێشوو (ماوەی پێشوو)"
                         class="size-7 sm:size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border-2 border-slate-300 flex items-center justify-center font-bold text-xs transition-all cursor-pointer shrink-0 active:scale-95">
-                    ←
+                    →
                 </button>
 
                 {{-- سێلێکتی فلتەری کات بێ ئایکۆنی تێکەڵبوو --}}
@@ -163,17 +163,17 @@
 
                 {{-- ڕۆیشتن بۆ دواتر --}}
                 <button type="button" @click="changeWeekOffset(1)"
-                        title="دواتر"
+                        title="دواتر (ماوەی داهاتوو)"
                         class="size-7 sm:size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border-2 border-slate-300 flex items-center justify-center font-bold text-xs transition-all cursor-pointer shrink-0 active:scale-95">
-                    →
+                    ←
                 </button>
             </div>
 
-            {{-- بەرواری ئەم ماوەیە --}}
-            <div class="inline-flex items-center justify-center font-mono text-[11px] sm:text-xs font-bold text-teal-950 bg-teal-50 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border-2 border-teal-300 select-text w-full sm:w-auto shrink-0 text-center" dir="ltr">
-                <span>{{ str_replace('-', '/', $from) }}</span>
-                <span class="text-teal-600 font-bold mx-2 text-[11px]">تا</span>
-                <span>{{ str_replace('-', '/', $to) }}</span>
+            {{-- بەرواری ئەم ماوەیە (لە ڕاست بۆ چەپ: لە بەروار تا بەروار) --}}
+            <div class="inline-flex items-center justify-center text-[11px] sm:text-xs font-bold text-teal-950 bg-teal-50 px-3 py-1.5 sm:py-2 rounded-xl border-2 border-teal-300 select-text w-full sm:w-auto shrink-0 text-center" dir="rtl">
+                <span class="font-mono font-bold" dir="ltr">{{ str_replace('-', '/', $from) }}</span>
+                <span class="text-teal-700 font-bold mx-2 text-[11px]">تا</span>
+                <span class="font-mono font-bold" dir="ltr">{{ str_replace('-', '/', $to) }}</span>
             </div>
         </div>
     </div>
@@ -228,12 +228,14 @@
 
                         {{-- ڕۆژەکان (شەممە تا هەینی) --}}
                         @foreach($days as $d)
-                            <th class="col-day py-1.5 sm:py-2 px-0.5 sm:px-1 border-l-2 border-slate-300 {{ $d['is_today'] ? 'bg-amber-200 text-amber-950 font-black border-amber-400' : ($d['is_holiday'] ? 'bg-slate-300/50 text-slate-600' : '') }}">
+                            <th class="col-day py-1.5 sm:py-2 px-0.5 sm:px-1 border-l-2 border-slate-300 {{ $d['is_today'] ? 'bg-amber-200 text-amber-950 font-black border-amber-400' : ($d['is_holiday'] ? 'bg-slate-300/50 text-slate-700' : '') }}">
                                 <div class="flex flex-col items-center leading-tight whitespace-nowrap">
                                     <span class="text-[9px] sm:text-xs font-black">{{ $d['day_name'] }}</span>
                                     <span class="text-[8px] sm:text-[10px] font-mono font-bold opacity-75 mt-0.5">{{ $d['day_short'] }}</span>
                                     @if($d['is_today'])
                                         <span class="text-[7px] sm:text-[9px] font-black px-0.5 sm:px-1.5 py-0.5 mt-0.5 rounded bg-amber-500 text-white leading-none border border-amber-600">ئەمڕۆ</span>
+                                    @elseif($d['is_holiday'])
+                                        <span class="text-[7px] sm:text-[9px] font-black px-0.5 sm:px-1 py-0.5 mt-0.5 rounded bg-slate-400 text-white leading-none">پشوو</span>
                                     @endif
                                 </div>
                             </th>
@@ -893,28 +895,28 @@
 
     {{-- ٧. مۆداڵی وەستای نوێ (New Employee Modal) --}}
     <div x-show="showNewEmployeeModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showNewEmployeeModal = false" class="bg-white rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs">
+        <div @click.away="showNewEmployeeModal = false" class="bg-white rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs shadow-2xl">
             <form @submit.prevent="saveNewEmployee()">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-white">وەستای نوێ</h2>
                         <p class="text-[11px] text-teal-200">تۆمارکردنی وەستا یان کرێکار</p>
                     </div>
-                    <button type="button" @click="showNewEmployeeModal = false" class="text-teal-200 hover:text-white text-lg font-bold">✕</button>
+                    <button type="button" @click="showNewEmployeeModal = false" class="text-teal-200 hover:text-white text-lg font-bold cursor-pointer">✕</button>
                 </div>
 
-                <div class="p-4 space-y-3 font-bold text-slate-700">
+                <div class="p-4 sm:p-5 space-y-3.5 font-bold text-slate-700">
                     <div>
-                        <label class="block mb-1 text-slate-600">ناو *</label>
+                        <label class="block mb-1 text-slate-700 text-xs">ناو <span class="text-rose-500">*</span></label>
                         <input type="text" x-model="newEmpForm.name" required
                                placeholder="ناوی سیانی وەستا یان کرێکار"
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold focus:outline-hidden focus:border-teal-600">
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold focus:outline-hidden focus:border-teal-600 bg-white">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block mb-1 text-slate-600">پیشە</label>
-                            <select x-model="newEmpForm.job_title" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            <label class="block mb-1 text-slate-700 text-xs">پیشە</label>
+                            <select x-model="newEmpForm.job_title" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 cursor-pointer">
                                 <option value="master">وەستا</option>
                                 <option value="porter">حەمەڵ</option>
                                 <option value="helper">یاریدەدەر</option>
@@ -923,8 +925,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block mb-1 text-slate-600">شێوازی مووچە</label>
-                            <select x-model="newEmpForm.salary_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            <label class="block mb-1 text-slate-700 text-xs">شێوازی مووچە</label>
+                            <select x-model="newEmpForm.salary_type" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 cursor-pointer">
                                 <option value="daily">ڕۆژانە</option>
                                 <option value="weekly">حەفتانە</option>
                                 <option value="monthly">مانگانە</option>
@@ -932,26 +934,29 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block mb-1 text-slate-600"
+                            <label class="block mb-1 text-slate-700 text-xs"
                                    x-text="newEmpForm.salary_type === 'monthly' ? 'مووچەی مانگانە *' : (newEmpForm.salary_type === 'weekly' ? 'مووچەی حەفتانە *' : 'مووچەی ڕۆژانە *')"></label>
-                            <input type="text" inputmode="numeric" x-model="newEmpForm.daily_wage"
-                                   @input="newEmpForm.daily_wage = formatMoneyInput($event.target.value)" required
-                                   :placeholder="newEmpForm.salary_type === 'monthly' ? 'بڕی مانگانە' : (newEmpForm.salary_type === 'weekly' ? 'بڕی حەفتانە' : 'بڕی ڕۆژانە')"
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
+                                <input type="text" inputmode="numeric" x-model="newEmpForm.daily_wage"
+                                       @input="newEmpForm.daily_wage = formatMoneyInput($event.target.value)" required
+                                       :placeholder="newEmpForm.salary_type === 'monthly' ? 'بڕی مانگانە' : (newEmpForm.salary_type === 'weekly' ? 'بڕی حەفتانە' : 'بڕی ڕۆژانە')"
+                                       class="w-full px-3 py-2.5 font-mono font-black text-teal-800 text-sm focus:outline-hidden">
+                                <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">د.ع</span>
+                            </div>
                         </div>
                         <div>
-                            <label class="block mb-1 text-slate-600">مۆبایل</label>
+                            <label class="block mb-1 text-slate-700 text-xs">مۆبایل</label>
                             <input type="text" x-model="newEmpForm.phone" placeholder="0750xxxxxxx"
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                                   class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600 bg-white">
                         </div>
                     </div>
                 </div>
 
-                <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-                    <button type="button" @click="showNewEmployeeModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer">داخستن</button>
-                    <button type="submit" class="btn-emp-add px-5 py-2 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95">
+                <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2.5">
+                    <button type="button" @click="showNewEmployeeModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer transition-all">داخستن</button>
+                    <button type="submit" class="btn-emp-add px-6 py-2.5 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95">
                         زیادکردن
                     </button>
                 </div>
@@ -961,27 +966,27 @@
 
     {{-- ٨. مۆداڵی دەستکاری مووچە (Edit Wage Modal) --}}
     <div x-show="showEditWageModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showEditWageModal = false" class="bg-white rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs">
+        <div @click.away="showEditWageModal = false" class="bg-white rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs shadow-2xl">
             <form @submit.prevent="saveEditWage()">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-white" x-text="'دەستکاری: ' + (editWageForm.name || '')"></h2>
                         <p class="text-[11px] text-teal-200">گۆڕینی مووچە و شێوازی پارەدان</p>
                     </div>
-                    <button type="button" @click="showEditWageModal = false" class="text-teal-200 hover:text-white text-lg font-bold">✕</button>
+                    <button type="button" @click="showEditWageModal = false" class="text-teal-200 hover:text-white text-lg font-bold cursor-pointer">✕</button>
                 </div>
 
-                <div class="p-4 space-y-3 font-bold text-slate-700">
+                <div class="p-4 sm:p-5 space-y-3.5 font-bold text-slate-700">
                     <div>
-                        <label class="block mb-1 text-slate-600">ناو *</label>
+                        <label class="block mb-1 text-slate-700 text-xs">ناو <span class="text-rose-500">*</span></label>
                         <input type="text" x-model="editWageForm.name" required
-                               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold focus:outline-hidden focus:border-teal-600">
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold focus:outline-hidden focus:border-teal-600 bg-white">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block mb-1 text-slate-600">پیشە</label>
-                            <select x-model="editWageForm.job_title" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            <label class="block mb-1 text-slate-700 text-xs">پیشە</label>
+                            <select x-model="editWageForm.job_title" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 cursor-pointer">
                                 <option value="master">وەستا</option>
                                 <option value="porter">حەمەڵ</option>
                                 <option value="helper">یاریدەدەر</option>
@@ -990,8 +995,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block mb-1 text-slate-600">شێوازی مووچە</label>
-                            <select x-model="editWageForm.salary_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                            <label class="block mb-1 text-slate-700 text-xs">شێوازی مووچە</label>
+                            <select x-model="editWageForm.salary_type" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600 cursor-pointer">
                                 <option value="daily">ڕۆژانە</option>
                                 <option value="weekly">حەفتانە</option>
                                 <option value="monthly">مانگانە</option>
@@ -999,25 +1004,28 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block mb-1 text-slate-600"
+                            <label class="block mb-1 text-slate-700 text-xs"
                                    x-text="editWageForm.salary_type === 'monthly' ? 'مووچەی مانگانە *' : (editWageForm.salary_type === 'weekly' ? 'مووچەی حەفتانە *' : 'مووچەی ڕۆژانە *')"></label>
-                            <input type="text" inputmode="numeric" x-model="editWageForm.daily_wage"
-                                   @input="editWageForm.daily_wage = formatMoneyInput($event.target.value)" required
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                            <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
+                                <input type="text" inputmode="numeric" x-model="editWageForm.daily_wage"
+                                       @input="editWageForm.daily_wage = formatMoneyInput($event.target.value)" required
+                                       class="w-full px-3 py-2.5 font-mono font-black text-teal-800 text-sm focus:outline-hidden">
+                                <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">د.ع</span>
+                            </div>
                         </div>
                         <div>
-                            <label class="block mb-1 text-slate-600">مۆبایل</label>
+                            <label class="block mb-1 text-slate-700 text-xs">مۆبایل</label>
                             <input type="text" x-model="editWageForm.phone"
-                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600">
+                                   class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:border-teal-600 bg-white">
                         </div>
                     </div>
                 </div>
 
-                <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-                    <button type="button" @click="showEditWageModal = false" class="px-4 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer">داخستن</button>
-                    <button type="submit" class="btn-emp-add px-5 py-2 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95">
+                <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2.5">
+                    <button type="button" @click="showEditWageModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 font-bold cursor-pointer transition-all">داخستن</button>
+                    <button type="submit" class="btn-emp-add px-6 py-2.5 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95">
                         نوێکردنەوە
                     </button>
                 </div>

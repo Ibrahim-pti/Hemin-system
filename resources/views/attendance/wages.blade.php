@@ -23,7 +23,7 @@
 
 <div class="card">
     <div class="card-head flex items-center justify-between">
-        <span>حەقدەست و خەرجی کارمەندان — <span class="num">{{ fmt_date($from) }} تا {{ fmt_date($to) }}</span></span>
+        <span>حەقدەست و خەرجی کارمەندان — <span dir="rtl"><bdi class="num">{{ fmt_date($from) }}</bdi> تا <bdi class="num">{{ fmt_date($to) }}</bdi></span></span>
     </div>
     <div class="overflow-x-auto">
         <table class="table">

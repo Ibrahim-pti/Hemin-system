@@ -152,7 +152,7 @@
                             tick();
                             setInterval(tick, 1000);
                         }
-                    }" class="hidden md:block">
+                    }" class="hidden lg:block">
                         <div class="clock-time font-bold text-sm text-slate-800" dir="ltr" style="text-align: right" x-text="time"></div>
                         <div class="clock-date text-[11px] text-slate-500" x-text="date"></div>
                     </div>

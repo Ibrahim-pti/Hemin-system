@@ -160,16 +160,16 @@
             <span class="font-bold text-slate-800 text-sm">مەوادە کڕدراوەکان</span>
 
             {{-- دوگمەی گۆڕینی شێواز: خێرا یان دانە بە دانە --}}
-            <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
+            <div class="inline-flex w-full sm:w-auto flex-col sm:flex-row rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs font-bold gap-1">
                 <button type="button" @click="setEntryMode('quick')"
                         :class="entryMode === 'quick' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-                        class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5">
+                        class="w-full sm:w-auto justify-center px-3.5 py-2 sm:py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5">
                     <span>⚡</span>
                     <span>تۆماری خێرا (تەنها کۆی نرخ)</span>
                 </button>
                 <button type="button" @click="setEntryMode('itemized')"
                         :class="entryMode === 'itemized' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-                        class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5">
+                        class="w-full sm:w-auto justify-center px-3.5 py-2 sm:py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5">
                     <span>📋</span>
                     <span>وردەکاری مەوادەکان (دانە بە دانە)</span>
                 </button>
@@ -303,31 +303,37 @@
                 {{-- هەڵبژاردنی حازری یان بە قەرز --}}
                 <div>
                     <label class="label font-bold text-xs text-slate-800 mb-1.5">شێوازی پێدانی پارە:</label>
-                    <div class="grid grid-cols-3 gap-2 sm:gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                         {{-- حازری (نەقد) --}}
                         <button type="button" @click="setPaymentType('cash')"
                                 :class="paymentType === 'cash' ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'"
-                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1">
-                            <span class="text-base">💵</span>
-                            <span>حازری (نەقد)</span>
+                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base">💵</span>
+                                <span>حازری (نەقد)</span>
+                            </div>
                             <span class="text-[10px] font-normal" :class="paymentType === 'cash' ? 'text-emerald-100' : 'text-slate-400'">تەواوی پارەکە دراوە</span>
                         </button>
 
                         {{-- بە قەرز --}}
                         <button type="button" @click="setPaymentType('debt')"
                                 :class="paymentType === 'debt' ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-600/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'"
-                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1">
-                            <span class="text-base">⏳</span>
-                            <span>بە قەرز</span>
+                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base">⏳</span>
+                                <span>بە قەرز</span>
+                            </div>
                             <span class="text-[10px] font-normal" :class="paymentType === 'debt' ? 'text-rose-100' : 'text-slate-400'">پارە نەدراوە (قەرز)</span>
                         </button>
 
                         {{-- بەشێکی دراوە (پێشەکی) --}}
                         <button type="button" @click="setPaymentType('partial')"
                                 :class="paymentType === 'partial' ? 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-500/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'"
-                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1">
-                            <span class="text-base">⚖️</span>
-                            <span>بەشێکی دراوە</span>
+                                class="py-2.5 px-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base">⚖️</span>
+                                <span>بەشێکی دراوە</span>
+                            </div>
                             <span class="text-[10px] font-normal" :class="paymentType === 'partial' ? 'text-amber-100' : 'text-slate-400'">نیوە قەرز / پێشەکی</span>
                         </button>
                     </div>
@@ -384,19 +390,19 @@
     </div>
 
     {{-- ٤. دوگمەکانی خوارەوە --}}
-    <div class="flex flex-wrap items-center gap-3 pt-2">
-        <button type="submit" class="btn btn-primary !py-2.5 !px-6 text-sm font-bold shadow-sm bg-blue-600 hover:bg-blue-700 cursor-pointer">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+        <button type="submit" class="btn btn-primary !py-3 sm:!py-2.5 !px-6 text-sm font-bold shadow-sm bg-blue-600 hover:bg-blue-700 cursor-pointer w-full sm:w-auto">
             {{ $purchase->exists ? 'نوێکردنەوەی پسوولەی کڕین' : 'تۆمارکردنی پسوولەی کڕین' }}
         </button>
 
-        <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer font-medium select-none">
+        <label class="flex items-center gap-2 text-xs sm:text-sm text-slate-700 cursor-pointer font-medium select-none bg-white sm:bg-transparent p-2 sm:p-0 rounded-xl border border-slate-200 sm:border-0">
             <input type="checkbox" name="confirm" value="1"
                    class="size-4 rounded border-[--color-line-strong] text-blue-600 focus:ring-blue-500"
                    @checked($purchase->status === 'confirmed' || !$purchase->exists)>
             <span>پەسەندکردن و زیادکردنی مەوادەکان بۆ کۆگا و مەخزەن</span>
         </label>
 
-        <a href="{{ route('purchases.index') }}" class="btn btn-ghost">پاشگەزبوونەوە</a>
+        <a href="{{ route('purchases.index') }}" class="btn btn-ghost w-full sm:w-auto text-center">پاشگەزبوونەوە</a>
     </div>
 </form>
 

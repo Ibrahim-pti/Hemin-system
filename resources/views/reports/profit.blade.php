@@ -14,7 +14,7 @@
             <div class="num mt-2 text-4xl font-bold {{ $profit >= 0 ? 'text-[--color-ok]' : 'text-[--color-danger]' }}">
                 {{ fmt_money($profit) }}
             </div>
-            <div class="num mt-1 text-xs text-[--color-ink-soft]">{{ fmt_date($from) }} — {{ fmt_date($to) }}</div>
+            <div class="mt-1 text-xs text-[--color-ink-soft]" dir="rtl"><bdi class="num">{{ fmt_date($from) }}</bdi> — <bdi class="num">{{ fmt_date($to) }}</bdi></div>
         </div>
     </div>
 

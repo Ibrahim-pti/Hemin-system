@@ -206,9 +206,6 @@ class WorkshopController extends Controller
             $targetWeek = $today->copy()->addWeeks($weekOffset);
             $wStart = $targetWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY);
             $wEnd = $targetWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY);
-            if ($weekOffset === 0 && $wStart->month !== $today->month) {
-                $wStart = $today->copy()->startOfMonth();
-            }
             $from = $wStart->toDateString();
             $to = $wEnd->toDateString();
         } elseif ($request->filled('from') && $request->filled('to')) {
@@ -220,10 +217,6 @@ class WorkshopController extends Controller
                 case 'this_week':
                     $wStart = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY);
                     $wEnd = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY);
-                    // ئەگەر دەستپێکی هەفتەکە لە مانگی پێشوو بێت، لە ١ی ئەم مانگەوە دەستپێدەکات
-                    if ($wStart->month !== $today->month) {
-                        $wStart = $today->copy()->startOfMonth();
-                    }
                     $from = $wStart->toDateString();
                     $to = $wEnd->toDateString();
                     break;
@@ -268,9 +261,6 @@ class WorkshopController extends Controller
         $days = [];
         foreach ($period as $dt) {
             $dateStr = $dt->toDateString();
-            if (Attendance::isWeeklyHoliday($dateStr)) {
-                continue; // پشووی هەفتانە (وەک هەینی) لە خشتەی کارکردندا دەوامی نییە و دانانرێت
-            }
             $days[] = [
                 'date' => $dateStr,
                 'day_name' => $kurdishDays[$dt->dayOfWeek],
@@ -279,7 +269,7 @@ class WorkshopController extends Controller
                 'month_num' => $dt->format('n'),
                 'day_of_week' => $dt->dayOfWeek,
                 'is_today' => $dt->isToday(),
-                'is_holiday' => false,
+                'is_holiday' => Attendance::isWeeklyHoliday($dateStr),
             ];
         }
 
@@ -1153,13 +1143,6 @@ class WorkshopController extends Controller
 
         $employee = Employee::findOrFail($validated['employee_id']);
         $date = $validated['work_date'];
-
-        if (Attendance::isWeeklyHoliday($date) && $validated['status'] !== 'delete') {
-            return response()->json([
-                'ok' => false,
-                'message' => 'ئەم ڕۆژە پشووی هەفتانەی کارگەیە و ناتوانرێت دەوامی لێ تۆمار بکرێت.',
-            ], 422);
-        }
 
         $attendance = Attendance::where('employee_id', $employee->id)
             ->whereDate('work_date', $date)

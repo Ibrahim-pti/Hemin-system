@@ -88,11 +88,11 @@
             {{-- تابی فلتەری چالاک ئەگەر کڕیار دیاریکرابێت --}}
             @if ($customer && (request('from') || request('to')))
                 <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.25rem;">
-                    <span class="num" style="background: #0284c7; color: #ffffff; padding: 0.3rem 0.85rem; border-radius: 0.5rem; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <span style="background: #0284c7; color: #ffffff; padding: 0.3rem 0.85rem; border-radius: 0.5rem; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;" dir="rtl">
                         <svg style="width: 0.85rem; height: 0.85rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
                         </svg>
-                        <span>فلتەر: {{ fmt_date($from) }} بۆ {{ fmt_date($to) }}</span>
+                        <span>فلتەر: <bdi class="num font-bold">{{ fmt_date($from) }}</bdi> بۆ <bdi class="num font-bold">{{ fmt_date($to) }}</bdi></span>
                     </span>
 
                     <a href="{{ route('customers.statement', $customer) }}"
@@ -161,7 +161,7 @@
                 {{-- چەپ --}}
                 <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: #64748b; font-weight: 600;">
                     <span class="num" dir="ltr">{{ $customer->phone ? $customer->phone . ' 📞' : '' }}</span>
-                    <span class="num" dir="ltr">📅 {{ fmt_date($from) }} بۆ {{ fmt_date($to) }}</span>
+                    <span class="font-bold text-slate-700" dir="rtl">📅 <bdi class="num font-bold">{{ fmt_date($from) }}</bdi> <span class="text-slate-500 font-medium">بۆ</span> <bdi class="num font-bold">{{ fmt_date($to) }}</bdi></span>
                 </div>
             </div>
 
