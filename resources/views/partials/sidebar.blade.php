@@ -4,24 +4,24 @@
     id="main-sidebar"
     :class="{ 'mobile-open': mobileOpen }"
     :style="{
-        width: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '5rem') : '',
-        minWidth: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '5rem') : '',
+        width: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '4.75rem') : '',
+        minWidth: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '4.75rem') : '',
     }"
     style="background: #0f172a; border-left: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; display: flex; flex-direction: column; user-select: none;"
     class="no-print sidebar-nav sidebar-no-transition"
     x-init="$nextTick(() => { $el.classList.remove('sidebar-no-transition'); })">
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}
-    <div style="height: 4rem; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;">
-        <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden; text-decoration: none;">
-            <span style="display: flex; width: 2.25rem; height: 2.25rem; align-items: center; justify-content: center; border-radius: 0.75rem; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); font-weight: bold; font-size: 1rem; flex-shrink: 0;">
+    <div style="height: 3.75rem; display: flex; align-items: center; justify-content: space-between; padding: 0 0.875rem; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;">
+        <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.625rem; overflow: hidden; text-decoration: none;">
+            <span style="display: flex; width: 2.1rem; height: 2.1rem; align-items: center; justify-content: center; border-radius: 0.625rem; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); font-weight: 800; font-size: 0.95rem; flex-shrink: 0;">
                 هـ
             </span>
             <div x-show="sidebarOpen || window.innerWidth < 640" style="min-width: 0;">
-                <div style="font-size: 0.85rem; font-weight: 700; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em;">
                     {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}
                 </div>
-                <div style="font-size: 0.68rem; color: #64748b; font-weight: 500;">سیستەمی بەڕێوەبردن</div>
+                <div style="font-size: 0.65rem; color: #64748b; font-weight: 500;">سیستەمی بەڕێوەبردن</div>
             </div>
         </a>
 
@@ -33,8 +33,8 @@
         </button>
     </div>
 
-    {{-- بەشی بەستەرەکانی مێنیو --}}
-    <div class="sidebar-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 1rem 0.75rem 5rem 0.75rem; display: flex; flex-direction: column; gap: 1rem;">
+    {{-- بەشی بەستەرەکانی مێنیو (Compact, perfectly proportioned) --}}
+    <div class="sidebar-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 0.5rem 0.5rem 1rem 0.5rem; display: flex; flex-direction: column; gap: 0.45rem;">
 
         {{-- سەرەکی / داشبۆرد --}}
         <div>
@@ -45,10 +45,10 @@
                 $isDashboard = request()->routeIs('dashboard') || ($isWasta && request()->routeIs('workshop.index'));
             @endphp
             <a href="{{ route($dashRoute) }}"
-               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isDashboard ? 'background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.22);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
+               style="display: flex; align-items: center; gap: 0.625rem; padding: 0.35rem 0.5rem; border-radius: 0.625rem; font-size: 0.76rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isDashboard ? 'background: rgba(59,130,246,0.14); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
                class="sidebar-link {{ $isDashboard ? 'active-link' : '' }}">
-                <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.2); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
-                    @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-4.5'])
+                <span style="display: flex; width: 1.85rem; height: 1.85rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.22); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
+                    @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-4'])
                 </span>
                 <span x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $dashLabel }}</span>
             </a>
@@ -58,10 +58,10 @@
             $sections = [
                 [
                     'title' => 'کارگە و دروستکردن',
-                    'activeBg' => 'rgba(99, 102, 241, 0.12)',
-                    'activeBorder' => 'rgba(99, 102, 241, 0.22)',
+                    'activeBg' => 'rgba(99, 102, 241, 0.14)',
+                    'activeBorder' => 'rgba(99, 102, 241, 0.25)',
                     'activeText' => '#818cf8',
-                    'activeIconBg' => 'rgba(99, 102, 241, 0.2)',
+                    'activeIconBg' => 'rgba(99, 102, 241, 0.22)',
                     'activeIconColor' => '#a5b4fc',
                     'items' => array_values(array_filter([
                         $isWasta ? ['route' => 'workshop.orders', 'href' => route('workshop.orders'), 'label' => 'داواکارییەکانی کارگە', 'icon' => 'orders', 'can' => 'view_workshop'] : null,
@@ -71,10 +71,10 @@
                 ],
                 [
                     'title' => 'کۆگا و جەرد',
-                    'activeBg' => 'rgba(59, 130, 246, 0.12)',
-                    'activeBorder' => 'rgba(59, 130, 246, 0.22)',
+                    'activeBg' => 'rgba(59, 130, 246, 0.14)',
+                    'activeBorder' => 'rgba(59, 130, 246, 0.25)',
                     'activeText' => '#60a5fa',
-                    'activeIconBg' => 'rgba(59, 130, 246, 0.2)',
+                    'activeIconBg' => 'rgba(59, 130, 246, 0.22)',
                     'activeIconColor' => '#93c5fd',
                     'items' => [
                         ['route' => 'counts.*', 'href' => route('counts.index'), 'label' => 'جەردی کۆگا', 'icon' => 'counts', 'can' => 'manage_settings'],
@@ -83,10 +83,10 @@
                 ],
                 [
                     'title' => 'فرۆشتن و دارایی',
-                    'activeBg' => 'rgba(20, 184, 166, 0.12)',
-                    'activeBorder' => 'rgba(20, 184, 166, 0.22)',
+                    'activeBg' => 'rgba(20, 184, 166, 0.14)',
+                    'activeBorder' => 'rgba(20, 184, 166, 0.25)',
                     'activeText' => '#2dd4bf',
-                    'activeIconBg' => 'rgba(20, 184, 166, 0.2)',
+                    'activeIconBg' => 'rgba(20, 184, 166, 0.22)',
                     'activeIconColor' => '#5eead4',
                     'items' => [
                         ['route' => 'orders.*', 'href' => route('orders.index'), 'label' => 'فرۆشتن', 'icon' => 'orders', 'can' => 'manage_orders'],
@@ -100,10 +100,10 @@
                 ],
                 [
                     'title' => 'ڕاپۆرت و سیستەم',
-                    'activeBg' => 'rgba(139, 92, 246, 0.12)',
-                    'activeBorder' => 'rgba(139, 92, 246, 0.22)',
+                    'activeBg' => 'rgba(139, 92, 246, 0.14)',
+                    'activeBorder' => 'rgba(139, 92, 246, 0.25)',
                     'activeText' => '#a78bfa',
-                    'activeIconBg' => 'rgba(139, 92, 246, 0.2)',
+                    'activeIconBg' => 'rgba(139, 92, 246, 0.22)',
                     'activeIconColor' => '#c4b5fd',
                     'items' => [
                         ['route' => 'reports.*', 'href' => route('reports.index'), 'label' => 'ڕاپۆرتەکان', 'icon' => 'reports', 'can' => 'view_reports'],
@@ -119,7 +119,7 @@
             @endphp
             @if (count($visibleItems) > 0)
                 <div>
-                    <div x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="padding: 0 0.625rem; margin-bottom: 0.375rem; font-size: 0.68rem; font-weight: 600; color: #64748b; letter-spacing: 0.04em;">
+                    <div x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="padding: 0.15rem 0.5rem; margin-bottom: 0.15rem; font-size: 0.65rem; font-weight: 700; color: #64748b; letter-spacing: 0.03em;">
                         {{ $section['title'] }}
                     </div>
                     <nav style="display: flex; flex-direction: column; gap: 0.125rem;">
@@ -130,10 +130,10 @@
                                     : request()->routeIs(...explode('|', $item['route']));
                             @endphp
                             <a href="{{ $item['href'] }}"
-                               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border-radius: 0.75rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"
+                               style="display: flex; align-items: center; gap: 0.625rem; padding: 0.35rem 0.5rem; border-radius: 0.625rem; font-size: 0.76rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"
                                class="sidebar-link {{ $isActive ? 'active-link' : '' }}">
-                                <span style="display: flex; width: 2rem; height: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isActive ? 'background: ' . $section['activeIconBg'] . '; color: ' . $section['activeIconColor'] . ';' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
-                                    @include('partials.icon', ['name' => $item['icon'], 'class' => 'size-4.5'])
+                                <span style="display: flex; width: 1.85rem; height: 1.85rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isActive ? 'background: ' . $section['activeIconBg'] . '; color: ' . $section['activeIconColor'] . ';' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
+                                    @include('partials.icon', ['name' => $item['icon'], 'class' => 'size-4'])
                                 </span>
                                 <span x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item['label'] }}</span>
                             </a>

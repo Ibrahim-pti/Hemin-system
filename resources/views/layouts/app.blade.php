@@ -43,10 +43,10 @@
                 transition: width 0.2s ease, min-width 0.2s ease !important;
             }
             html.sidebar-collapsed aside.sidebar-nav {
-                width: 5rem !important;
-                min-width: 5rem !important;
+                width: 4.75rem !important;
+                min-width: 4.75rem !important;
             }
-            html.sidebar-collapsed aside.sidebar-nav [x-show="sidebarOpen"] {
+            html.sidebar-collapsed aside.sidebar-nav [x-show*="sidebarOpen"] {
                 display: none !important;
             }
         }
