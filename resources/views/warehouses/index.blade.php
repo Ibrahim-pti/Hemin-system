@@ -285,7 +285,7 @@
                             $isLow = $item->is_low;
                         @endphp
                         <tr class="hover:bg-slate-50/80 transition-colors"
-                            x-show="!search || '{{ strtolower($item->name) }}'.includes(search.toLowerCase()) || '{{ strtolower($item->barcode) }}'.includes(search.toLowerCase())">
+                            x-show="!search || '{{ strtolower($item->name ?? '') }}'.includes(search.toLowerCase()) || '{{ strtolower($item->barcode ?? '') }}'.includes(search.toLowerCase())">
                             <td class="p-3.5 text-center font-mono font-bold text-slate-400">
                                 {{ $allItems->firstItem() ? ($allItems->firstItem() + $index) : ($index + 1) }}
                             </td>
