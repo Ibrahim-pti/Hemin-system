@@ -137,7 +137,7 @@
                 </div>
 
                 {{-- ڕیزی ٢: یەکە (لەگەڵ بژاردەی زیادکردن لە ناو درۆپداون)، بڕ، تێچووی کڕین و بەرواری کڕین (٤ ستوون) --}}
-                <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem;">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
                     {{-- یەکە --}}
                     <div>

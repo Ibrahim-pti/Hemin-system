@@ -120,7 +120,7 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="table w-full">
+            <table class="table w-full min-w-[650px]">
                 <thead>
                     <tr class="bg-slate-50/80 text-xs text-slate-700 font-bold border-b border-[--color-line]">
                         <th style="width: 54px; text-align: center; padding: 10px 4px;">وێنە</th>
