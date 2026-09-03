@@ -76,15 +76,17 @@ class PaymentController extends Controller
 
         $orders = Order::where('status', '!=', 'cancelled')
             ->whereNotIn('status', ['draft'])
+            ->with(['payments'])
             ->latest('order_date')
             ->latest('id')
             ->limit(200)
-            ->get(['id', 'invoice_no', 'customer_id', 'total', 'currency', 'order_date'])
+            ->get()
             ->map(fn ($o) => [
                 'id' => $o->id,
                 'invoice_no' => $o->invoice_no,
                 'customer_id' => $o->customer_id,
                 'total' => (float) $o->total,
+                'remaining' => max(0, (float) $o->remaining()),
                 'currency' => $o->currency,
                 'order_date' => $o->order_date ? $o->order_date->format('Y-m-d') : '',
             ]);
@@ -103,6 +105,18 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
+        // پاککردنەوەی فاریزە (کۆما) لە بڕی پارە و نرخی ئاڵوگۆڕ
+        if ($request->filled('amount')) {
+            $request->merge([
+                'amount' => (float) str_replace(',', '', (string) $request->input('amount')),
+            ]);
+        }
+        if ($request->filled('exchange_rate')) {
+            $request->merge([
+                'exchange_rate' => (float) str_replace(',', '', (string) $request->input('exchange_rate')),
+            ]);
+        }
+
         $data = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
             'order_id' => ['nullable', 'exists:orders,id'],

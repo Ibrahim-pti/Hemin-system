@@ -157,7 +157,7 @@
                             {{-- وەسڵی پەیوەندیدار --}}
                             <td class="py-3.5 px-4 text-center">
                                 @if ($payment->order)
-                                    <a href="{{ route('orders.print', $payment->order) }}" target="_blank"
+                                    <a href="{{ route('orders.print', $payment->order) }}"
                                        class="inline-flex items-center gap-1 font-mono text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-md hover:bg-blue-100 transition-colors">
                                         <span>📄</span>
                                         <span>وەسڵی {{ $payment->order->invoice_no }}</span>
@@ -185,7 +185,7 @@
                             {{-- کردار --}}
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1.5">
-                                    <a href="{{ route('payments.print', $payment) }}" target="_blank"
+                                    <a href="{{ route('payments.print', $payment) }}"
                                        class="inline-flex items-center gap-1 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold shadow-2xs transition-colors"
                                        title="چاپ">
                                         <span>🖨️</span>

@@ -103,7 +103,7 @@
                     <option value="">— تەواوی حسابی موشتەری (گشتی) —</option>
                     <template x-for="ord in filteredOrders" :key="ord.id">
                         <option :value="ord.id"
-                                x-text="'وەسڵی #' + ord.invoice_no + ' — بڕ: ' + (ord.currency === 'USD' ? '$' + Number(ord.total).toLocaleString('en-US') : Number(ord.total).toLocaleString('en-US') + ' د.ع')"
+                                x-text="'وەسڵی #' + ord.invoice_no + ' — ماوە: ' + (ord.remaining > 0 ? Number(ord.remaining).toLocaleString('en-US') + ' د.ع' : 'تەواوی پارەکەی دراوە') + ' (کۆی گشتی: ' + Number(ord.total).toLocaleString('en-US') + ' ' + (ord.currency === 'USD' ? '$' : 'د.ع') + ')'"
                                 :selected="selectedOrder == ord.id">
                         </option>
                     </template>
@@ -256,6 +256,10 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
 
         get currentTargetDebt() {
             if (this.selectedOrderObj) {
+                const rem = parseFloat(this.selectedOrderObj.remaining);
+                if (!isNaN(rem) && rem >= 0) {
+                    return rem;
+                }
                 return parseFloat(this.selectedOrderObj.total) || 0;
             }
             if (this.currency === 'USD') {
@@ -286,6 +290,9 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
                     }
                     if (ord.currency) {
                         this.currency = ord.currency;
+                    }
+                    if (ord.remaining > 0 && (!this.amount || this.amount == 0)) {
+                        this.amount = ord.remaining;
                     }
                 }
             }
