@@ -21,7 +21,21 @@ class CashController extends Controller
         $boxes = CashBox::where('is_active', true)->get();
         $defaultBox = $boxes->where('currency', 'IQD')->first() ?? $boxes->first();
 
-        // هەژمارکردنی باڵانسی ڕاستەوخۆی هەموو قاسەکان
+        $iqdBox = $boxes->where('currency', 'IQD')->first() ?? $defaultBox;
+        $usdBox = $boxes->where('currency', 'USD')->first();
+
+        // ژماردنی ئاماری دینار بە جیا
+        $iqdBalance = $iqdBox ? $iqdBox->balance() : 0;
+        $iqdIn = $iqdBox ? (float) $iqdBox->transactions()->where('direction', 'in')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount') : 0;
+        $iqdOut = $iqdBox ? (float) $iqdBox->transactions()->where('direction', 'out')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount') : 0;
+        $iqdNet = $iqdIn - $iqdOut;
+
+        // ژماردنی ئاماری دۆلار بە جیا (بۆ ئەوەی تێکەڵ بە دینار نەبێت)
+        $usdBalance = $usdBox ? $usdBox->balance() : 0;
+        $usdIn = $usdBox ? (float) $usdBox->transactions()->where('direction', 'in')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount') : 0;
+        $usdOut = $usdBox ? (float) $usdBox->transactions()->where('direction', 'out')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount') : 0;
+        $usdNet = $usdIn - $usdOut;
+
         $boxStats = $boxes->map(function (CashBox $box) use ($dateFrom, $dateTo) {
             $currentBalance = $box->balance();
             $periodIn = (float) $box->transactions()->where('direction', 'in')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount');
@@ -50,7 +64,25 @@ class CashController extends Controller
 
         $transactions = $query->latest('occurred_at')->latest('id')->paginate(50)->withQueryString();
 
-        return view('cash.index', compact('boxes', 'defaultBox', 'boxStats', 'transactions', 'dateFrom', 'dateTo', 'boxId', 'direction'));
+        return view('cash.index', compact(
+            'boxes', 'defaultBox', 'boxStats', 'transactions', 'dateFrom', 'dateTo', 'boxId', 'direction',
+            'iqdBox', 'usdBox', 'iqdBalance', 'iqdIn', 'iqdOut', 'iqdNet',
+            'usdBalance', 'usdIn', 'usdOut', 'usdNet'
+        ));
+    }
+
+    /** دەستکاری سەرمایەی سەرەتایی قاسە. */
+    public function updateOpeningBalance(Request $request)
+    {
+        $data = $request->validate([
+            'cash_box_id' => ['required', 'exists:cash_boxes,id'],
+            'opening_balance' => ['required', 'numeric'],
+        ]);
+
+        $box = CashBox::findOrFail($data['cash_box_id']);
+        $box->update(['opening_balance' => $data['opening_balance']]);
+
+        return back()->with('ok', 'سەرمایەی سەرەتایی ' . $box->name . ' بە سەرکەوتوویی نوێکرایەوە.');
     }
 
     /** تێکردنی پارە یان دەرهێنانی پارە (خەرجی / کێشکردن بۆ کەسێک). */

@@ -40,36 +40,35 @@
                     @click="showWithdrawModal = true"
                     style="background: #e11d48; color: #ffffff; padding: 0.6rem 1.25rem; border-radius: 0.65rem; font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);">
                 <span>📤</span>
-                <span>دەرهێنانی پارە (خەرجی / کێشکردن)</span>
+                <span>دەرهێنانی پارە (خەرجی)</span>
             </button>
         </div>
     </div>
 
-    {{-- ٢. ٤ کارتی ئاماری سەرەکی --}}
+    {{-- ٢. ٤ کارتی ئاماری سەرەکی بە جیاکراوەیی دینار و دۆلار --}}
     <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
 
         {{-- ١. باڵانسی ئێستای قاسەی دینار --}}
-        @php
-            $iqdBox = $boxes->where('currency', 'IQD')->first();
-            $iqdBalance = $iqdBox ? $iqdBox->balance() : 0;
-            $usdBox = $boxes->where('currency', 'USD')->first();
-            $usdBalance = $usdBox ? $usdBox->balance() : 0;
-        @endphp
-        <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
-            <div style="color: #16a34a; margin-bottom: 0.15rem;">
+        <div style="background: {{ $iqdBalance >= 0 ? '#f0fdf4' : '#fff1f2' }}; border: 1.5px solid {{ $iqdBalance >= 0 ? '#86efac' : '#fecdd3' }}; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+            <div style="color: {{ $iqdBalance >= 0 ? '#16a34a' : '#dc2626' }}; margin-bottom: 0.15rem;">
                 <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="2" y="6" width="20" height="12" rx="2"/>
                     <circle cx="12" cy="12" r="2"/>
                     <path d="M6 12h.01M18 12h.01"/>
                 </svg>
             </div>
-            <div style="font-size: 0.8rem; font-weight: 700; color: #166534;">باڵانسی ئێستای قاسە (دینار)</div>
-            <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #15803d; line-height: 1.2;">
-                {{ fmt_num($iqdBalance) }} <span style="font-size: 0.8rem; font-weight: 700;">دینار</span>
+            <div style="font-size: 0.8rem; font-weight: 700; color: {{ $iqdBalance >= 0 ? '#166534' : '#9f1239' }};">باڵانسی ئێستای قاسە (دینار)</div>
+            <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $iqdBalance >= 0 ? '#15803d' : '#dc2626' }}; line-height: 1.2;">
+                {{ fmt_num($iqdBalance) }} <span style="font-size: 0.8rem; font-weight: 700;">د.ع</span>
             </div>
+            @if ($iqdBalance < 0)
+                <span style="font-size: 0.72rem; color: #b91c1c; font-weight: 700; background: #fee2e2; padding: 0.15rem 0.5rem; border-radius: 0.35rem; margin-top: 0.2rem;">
+                    ⚠️ کورتهێنانی قاسە (پارەی دەرچوو لە هاتوو زیاترە)
+                </span>
+            @endif
         </div>
 
-        {{-- ٢. کۆی پارەی هاتووی ماوەکە --}}
+        {{-- ٢. کۆی پارەی هاتووی دینار --}}
         <div style="background: #f0f9ff; border: 1.5px solid #7dd3fc; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
             <div style="color: #0284c7; margin-bottom: 0.15rem;">
                 <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -79,11 +78,11 @@
             </div>
             <div style="font-size: 0.8rem; font-weight: 700; color: #075985;">پارەی هاتوو (فرۆشتن + داهات)</div>
             <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #0369a1; line-height: 1.2;">
-                +{{ fmt_num($boxStats->sum('periodIn')) }} <span style="font-size: 0.8rem; font-weight: 700;">دینار</span>
+                +{{ fmt_num($iqdIn) }} <span style="font-size: 0.8rem; font-weight: 700;">د.ع</span>
             </div>
         </div>
 
-        {{-- ٣. کۆی پارەی ڕۆیشتووی ماوەکە --}}
+        {{-- ٣. کۆی پارەی دەرچووی دینار (کڕین + خەرجی + مووچە) --}}
         <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
             <div style="color: #e11d48; margin-bottom: 0.15rem;">
                 <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -91,14 +90,14 @@
                     <line x1="12" y1="9" x2="12" y2="21"/>
                 </svg>
             </div>
-            <div style="font-size: 0.8rem; font-weight: 700; color: #9f1239;">پارەی دەرکراو (خەرجی + بردن)</div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: #9f1239;">پارەی دەرچوو (خەرجی + کڕین)</div>
             <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #dc2626; line-height: 1.2;">
-                -{{ fmt_num($boxStats->sum('periodOut')) }} <span style="font-size: 0.8rem; font-weight: 700;">دینار</span>
+                {{ fmt_num($iqdOut) }} <span style="font-size: 0.8rem; font-weight: 700;">د.ع</span>
             </div>
         </div>
 
         {{-- ٤. باڵانسی دۆلار یان پوختەی ماوەکە --}}
-        @if ($usdBox && $usdBalance != 0)
+        @if ($usdBox && ($usdBalance != 0 || $usdIn != 0 || $usdOut != 0))
             <div style="background: #faf5ff; border: 1.5px solid #d8b4fe; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
                 <div style="color: #9333ea; margin-bottom: 0.15rem;">
                     <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -107,22 +106,26 @@
                     </svg>
                 </div>
                 <div style="font-size: 0.8rem; font-weight: 700; color: #6b21a8;">باڵانسی قاسەی دۆلار</div>
-                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #7e22ce; line-height: 1.2;">
-                    ${{ fmt_num($usdBalance) }}
+                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $usdBalance >= 0 ? '#7e22ce' : '#dc2626' }}; line-height: 1.2;">
+                    {{ $usdBalance < 0 ? '-' : '' }}${{ fmt_num(abs($usdBalance)) }}
                 </div>
+                @if ($usdOut > 0)
+                    <div style="font-size: 0.72rem; color: #6b21a8; font-weight: 700; margin-top: 0.2rem;">
+                        خەرجکراو: ${{ fmt_num($usdOut) }}
+                    </div>
+                @endif
             </div>
         @else
-            @php $periodNet = $boxStats->sum('periodNet'); @endphp
-            <div style="background: {{ $periodNet >= 0 ? '#f0fdf4' : '#fff1f2' }}; border: 1.5px solid {{ $periodNet >= 0 ? '#86efac' : '#fecdd3' }}; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
-                <div style="color: {{ $periodNet >= 0 ? '#16a34a' : '#e11d48' }}; margin-bottom: 0.15rem;">
+            <div style="background: {{ $iqdNet >= 0 ? '#f0fdf4' : '#fff1f2' }}; border: 1.5px solid {{ $iqdNet >= 0 ? '#86efac' : '#fecdd3' }}; border-radius: 1rem; padding: 1.15rem 1.1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                <div style="color: {{ $iqdNet >= 0 ? '#16a34a' : '#e11d48' }}; margin-bottom: 0.15rem;">
                     <svg style="width: 1.6rem; height: 1.6rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v8M8 12h8"/>
                     </svg>
                 </div>
-                <div style="font-size: 0.8rem; font-weight: 700; color: {{ $periodNet >= 0 ? '#166534' : '#9f1239' }};">پوختەی جووڵەی ماوەکە</div>
-                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $periodNet >= 0 ? '#15803d' : '#dc2626' }}; line-height: 1.2;">
-                    {{ $periodNet >= 0 ? '+' : '' }}{{ fmt_num($periodNet) }} <span style="font-size: 0.8rem; font-weight: 700;">دینار</span>
+                <div style="font-size: 0.8rem; font-weight: 700; color: {{ $iqdNet >= 0 ? '#166534' : '#9f1239' }};">پوختەی جووڵەی ماوەکە</div>
+                <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $iqdNet >= 0 ? '#15803d' : '#dc2626' }}; line-height: 1.2;">
+                    {{ $iqdNet >= 0 ? '+' : '' }}{{ fmt_num($iqdNet) }} <span style="font-size: 0.8rem; font-weight: 700;">د.ع</span>
                 </div>
             </div>
         @endif
@@ -269,16 +272,26 @@
                                 @endif
                             </td>
 
-                            {{-- تێبینی --}}
+                            {{-- تێبینی و بەستەر --}}
                             <td style="padding: 0.9rem 1.25rem; text-align: right; color: #64748b; font-size: 0.82rem;">
-                                {{ $t->note ?: '—' }}
+                                @if ($ref instanceof \App\Models\Payment && $ref->purchase_id)
+                                    <a href="{{ route('purchases.show', $ref->purchase_id) }}" style="color: #2563eb; font-weight: 700; text-decoration: none;">
+                                        {{ $t->note ?: 'پسوولەی کڕین' }}
+                                    </a>
+                                @elseif ($ref instanceof \App\Models\Payment && $ref->order_id)
+                                    <a href="{{ route('orders.print', $ref->order_id) }}" style="color: #2563eb; font-weight: 700; text-decoration: none;">
+                                        {{ $t->note ?: 'وەسڵی فرۆشتن' }}
+                                    </a>
+                                @else
+                                    {{ $t->note ?: '—' }}
+                                @endif
                             </td>
 
                             {{-- بڕی پارە --}}
                             <td class="num" style="padding: 0.9rem 1.25rem; text-align: center; font-weight: 900; font-size: 1.05rem; color: {{ $isIn ? '#15803d' : '#dc2626' }};">
                                 {{ $isIn ? '+' : '-' }}{{ fmt_num($t->amount) }}
                                 <span style="font-size: 0.75rem; font-weight: 700; color: #64748b;">
-                                    {{ $t->cashBox?->currency ?? 'IQD' }}
+                                    {{ ($t->cashBox?->currency ?? 'IQD') === 'USD' ? '$' : 'د.ع' }}
                                 </span>
                             </td>
 

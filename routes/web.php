@@ -120,6 +120,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:manage_cash')->group(function () {
         Route::get('/cash', [CashController::class, 'index'])->name('cash.index');
         Route::post('/cash/transaction', [CashController::class, 'storeTransaction'])->name('cash.transaction');
+        Route::post('/cash/opening-balance', [CashController::class, 'updateOpeningBalance'])->name('cash.opening-balance');
         Route::post('/cash/close', [CashController::class, 'close'])->name('cash.close');
     });
 
