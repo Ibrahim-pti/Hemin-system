@@ -8,9 +8,9 @@
        بەبێ هیچ سکرۆڵێکی ئاسۆیی بگونجێت. لەسەر مانگ خۆکار سکرۆڵ دەکات. */
     .att-wrap {
         --idx-w: 0rem;
-        --name-w: 5.4rem;
-        --day-w: 2.7rem;
-        --act-w: 0rem;
+        --name-w: 4.9rem;
+        --day-w: 2.3rem;
+        --act-w: 4.6rem;
     }
     .att-table {
         table-layout: fixed;
@@ -20,7 +20,15 @@
     .col-idx { display: none; }
     .col-name { width: var(--name-w); }
     .col-day  { width: var(--day-w); }
-    .col-actions { display: none; }
+    .col-actions { width: var(--act-w); }
+
+    @media (min-width: 480px) {
+        .att-wrap {
+            --name-w: 7rem;
+            --day-w: 3.1rem;
+            --act-w: 5.5rem;
+        }
+    }
 
     @media (min-width: 640px) {
         .att-wrap {
@@ -30,7 +38,6 @@
             --act-w: 6.5rem;
         }
         .col-idx { display: table-cell; width: var(--idx-w); }
-        .col-actions { display: table-cell; width: var(--act-w); }
     }
 
     /* خانەی ڕۆژ — بەرزی جێگیر تا هەموو ڕیزەکان یەکسان بن */
@@ -261,7 +268,8 @@
                         @foreach($days as $d)
                             <th class="col-day py-1.5 px-0.5 border-l border-slate-200 {{ $d['is_today'] ? 'bg-amber-100 text-amber-950 border-l-2 border-amber-300' : '' }}">
                                 <div class="flex flex-col items-center leading-tight">
-                                    <span class="text-[9px] sm:text-[11px] font-black truncate max-w-full">{{ $d['day_name'] }}</span>
+                                    <span class="sm:hidden text-[9px] font-black truncate max-w-full">{{ $d['day_name_short'] }}</span>
+                                    <span class="hidden sm:inline text-[11px] font-black truncate max-w-full">{{ $d['day_name'] }}</span>
                                     <span class="text-[8px] sm:text-[10px] font-mono font-bold text-slate-500 mt-0.5" dir="ltr">{{ $d['day_short'] }}</span>
                                     @if($d['is_today'])
                                         <span class="text-[7px] sm:text-[9px] font-black px-1 py-0.5 mt-0.5 rounded bg-amber-500 text-white leading-none">ئەمڕۆ</span>
@@ -271,7 +279,7 @@
                         @endforeach
 
                         @if($canSeeMoney)
-                        <th class="col-actions py-2 px-2 text-center font-black text-slate-800 border-r-2 border-slate-300 print:hidden">کردارەکان</th>
+                        <th class="col-actions py-2 px-1 sm:px-2 text-center font-black text-slate-800 border-r-2 border-slate-300 text-[10px] sm:text-xs print:hidden">کردارەکان</th>
                         @endif
                     </tr>
                 </thead>
@@ -349,17 +357,17 @@
                             </template>
 
                             @if($canSeeMoney)
-                            {{-- کردارەکان — تەنها لەسەر دێسکتۆپ (لەسەر مۆبایل لە پەنجەرەی وردەکاریدان) --}}
-                            <td class="col-actions py-1.5 px-2 text-center border-r-2 border-slate-300 print:hidden">
-                                <div class="flex items-center justify-center gap-1">
+                            {{-- کردارەکان — لە هەموو شاشەیەکدا دیارن، تەنها قەبارەیان دەگۆڕێت --}}
+                            <td class="col-actions py-1.5 px-0.5 sm:px-2 text-center border-r-2 border-slate-300 print:hidden">
+                                <div class="flex items-center justify-center gap-0.5 sm:gap-1">
                                     <button type="button" @click="openEmployeeDrawer(row)"
-                                            class="size-7 rounded-lg text-xs bg-teal-50 hover:bg-teal-100 text-teal-800 border-2 border-teal-300 transition-all cursor-pointer flex items-center justify-center"
+                                            class="size-6 sm:size-7 rounded-lg text-[10px] sm:text-xs bg-teal-50 hover:bg-teal-100 text-teal-800 border-2 border-teal-300 transition-all cursor-pointer flex items-center justify-center shrink-0"
                                             title="وردەکاری و حیسابات">👁️</button>
                                     <button type="button" @click="openEditWageModal(row)"
-                                            class="size-7 rounded-lg text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 transition-all cursor-pointer flex items-center justify-center"
+                                            class="size-6 sm:size-7 rounded-lg text-[10px] sm:text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 transition-all cursor-pointer flex items-center justify-center shrink-0"
                                             title="دەستکاری مووچە و پیشە">✏️</button>
                                     <button type="button" @click="confirmDeleteEmployee(row)"
-                                            class="size-7 rounded-lg text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-300 transition-all cursor-pointer flex items-center justify-center"
+                                            class="size-6 sm:size-7 rounded-lg text-[10px] sm:text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-300 transition-all cursor-pointer flex items-center justify-center shrink-0"
                                             title="سڕینەوەی کارمەند">🗑️</button>
                                 </div>
                             </td>

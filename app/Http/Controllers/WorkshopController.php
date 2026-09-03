@@ -192,6 +192,68 @@ class WorkshopController extends Controller
     }
 
     /** لاپەڕەی جەدوەلی سەحی ڕۆژانە و حیساباتی وەستا و حەمەڵەکان */
+    /**
+     * پارچەکردنی مانگێک بۆ هەفتە: ١-٧، ٨-١٤، ١٥-٢١، ٢٢-٢٨، ٢٩-کۆتایی مانگ.
+     * هەفتە هەرگیز لە مانگێکەوە ناچێتە مانگێکی تر — هەمیشە لە یەکی مانگەوە دەستپێدەکات.
+     *
+     * @return array<int, array{0: string, 1: string}>
+     */
+    private function monthWeekChunks(\Carbon\Carbon $anyDayOfMonth): array
+    {
+        $cursor = $anyDayOfMonth->copy()->startOfMonth();
+        $monthEnd = $anyDayOfMonth->copy()->endOfMonth();
+
+        $chunks = [];
+        while ($cursor->lte($monthEnd)) {
+            $chunkEnd = $cursor->copy()->addDays(6)->min($monthEnd);
+            $chunks[] = [$cursor->toDateString(), $chunkEnd->toDateString()];
+            $cursor = $chunkEnd->copy()->addDay();
+        }
+
+        return $chunks;
+    }
+
+    /**
+     * دۆزینەوەی هەفتەی بەندکراو بە مانگەوە، بەپێی دووری لە هەفتەی ئێستاوە.
+     * ئەگەر لە یەکەم هەفتەی مانگدا بچیتە دواوە، دەچێتە دوا هەفتەی مانگی پێشوو.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function weekRangeInMonth(\Carbon\Carbon $today, int $offset): array
+    {
+        $monthCursor = $today->copy()->startOfMonth();
+        $chunks = $this->monthWeekChunks($monthCursor);
+
+        // ئێستا لە چەندەمین هەفتەی ئەم مانگەداین؟
+        $todayStr = $today->toDateString();
+        $index = 0;
+        foreach ($chunks as $i => [$cFrom, $cTo]) {
+            if ($todayStr >= $cFrom && $todayStr <= $cTo) {
+                $index = $i;
+                break;
+            }
+        }
+
+        $index += $offset;
+
+        // ڕۆیشتن بۆ مانگی پێشوو یان داهاتوو ئەگەر لە سنووری ئەم مانگە دەرچوو
+        $guard = 0;
+        while ($index < 0 && $guard++ < 200) {
+            $monthCursor = $monthCursor->subMonth();
+            $chunks = $this->monthWeekChunks($monthCursor);
+            $index += count($chunks);
+        }
+        while ($index >= count($chunks) && $guard++ < 200) {
+            $index -= count($chunks);
+            $monthCursor = $monthCursor->addMonth();
+            $chunks = $this->monthWeekChunks($monthCursor);
+        }
+
+        $index = max(0, min($index, count($chunks) - 1));
+
+        return $chunks[$index];
+    }
+
     public function employees(Request $request): View
     {
         $today = now();
@@ -235,9 +297,7 @@ class WorkshopController extends Controller
             $from = $target->copy()->startOfMonth()->toDateString();
             $to = $target->copy()->endOfMonth()->toDateString();
         } else {
-            $target = $today->copy()->addWeeks($offset);
-            $from = $target->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
-            $to = $target->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+            [$from, $to] = $this->weekRangeInMonth($today, $offset);
         }
 
         // بۆ گونجاندن لەگەڵ کۆدی کۆن
@@ -262,6 +322,17 @@ class WorkshopController extends Controller
             6 => 'شەممە',
         ];
 
+        // ناوی کورت بۆ شاشەی باریک — ستوونەکان تەنگن
+        $kurdishDaysShort = [
+            0 => 'یەک',
+            1 => 'دوو',
+            2 => 'سێ',
+            3 => 'چوار',
+            4 => 'پێنج',
+            5 => 'هەینی',
+            6 => 'شەم',
+        ];
+
         $period = \Carbon\CarbonPeriod::create($from, $to);
         $days = [];
         $holidayDays = [];
@@ -277,6 +348,7 @@ class WorkshopController extends Controller
             $days[] = [
                 'date' => $dateStr,
                 'day_name' => $kurdishDays[$dt->dayOfWeek],
+                'day_name_short' => $kurdishDaysShort[$dt->dayOfWeek],
                 'day_short' => $dt->format('m/d'),
                 'day_num' => $dt->format('j'),
                 'month_num' => $dt->format('n'),

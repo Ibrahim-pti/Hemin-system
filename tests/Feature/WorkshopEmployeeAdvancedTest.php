@@ -506,13 +506,38 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $res = $this->get('/workshop/employees');
         $res->assertStatus(200);
 
-        // بای دیفەولت دەبێت حەفتە بە حەفتە بێت و لە شەممەوە دەستپێبکات
+        // بای دیفەولت دەبێت حەفتە بە حەفتە بێت
         $this->assertEquals('week', $res->viewData('mode'));
         $this->assertEquals(0, $res->viewData('offset'));
-        $this->assertEquals(
-            now()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString(),
-            $res->viewData('from')
-        );
+
+        // هەفتەکە هەرگیز لە مانگێکەوە ناچێتە مانگێکی تر
+        $from = \Carbon\Carbon::parse($res->viewData('from'));
+        $to = \Carbon\Carbon::parse($res->viewData('to'));
+        $this->assertEquals(now()->month, $from->month);
+        $this->assertEquals(now()->month, $to->month);
+        $this->assertTrue($from->lte(now()) && $to->gte(now()));
+
+        // دەستپێکی هەفتەکان هەمیشە ١، ٨، ١٥، ٢٢ یان ٢٩ی مانگە
+        $this->assertContains($from->day, [1, 8, 15, 22, 29]);
+    }
+
+    public function test_weeks_never_cross_month_boundaries()
+    {
+        $this->actingAs($this->admin);
+
+        // یەکەم هەفتەی مانگ هەمیشە لە یەکی مانگەوە دەستپێدەکات
+        $weeksBack = (int) ceil(now()->day / 7) - 1;
+        $first = $this->get('/workshop/employees?mode=week&offset=' . (-$weeksBack));
+        $first->assertStatus(200);
+        $this->assertEquals(now()->startOfMonth()->toDateString(), $first->viewData('from'));
+
+        // یەک هەفتە دواتر بۆ دواوە دەچێتە دوا هەفتەی مانگی پێشوو
+        $prev = $this->get('/workshop/employees?mode=week&offset=' . (-$weeksBack - 1));
+        $prev->assertStatus(200);
+        $prevFrom = \Carbon\Carbon::parse($prev->viewData('from'));
+        $prevTo = \Carbon\Carbon::parse($prev->viewData('to'));
+        $this->assertEquals(now()->subMonthNoOverflow()->month, $prevFrom->month);
+        $this->assertEquals(now()->subMonthNoOverflow()->endOfMonth()->toDateString(), $prevTo->toDateString());
     }
 
     public function test_weekly_holiday_column_is_hidden_from_the_ledger()
@@ -527,7 +552,7 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $days = $res->viewData('days');
 
         // هەینی پشووە — بۆیە نابێت هیچ ستوونێکی بۆ نیشان بدرێت
-        $this->assertCount(6, $days);
+        $this->assertNotEmpty($days);
         foreach ($days as $day) {
             $this->assertNotEquals(
                 'Friday',
@@ -547,20 +572,23 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $res = $this->get('/workshop/employees?mode=week&offset=0');
         $res->assertStatus(200);
 
-        $this->assertCount(7, $res->viewData('days'));
+        // هەفتەیەکی تەواو ٧ ڕۆژە (بێجگە لە دوا هەفتەی مانگ کە کورتترە)
+        $from = \Carbon\Carbon::parse($res->viewData('from'));
+        $expected = min(7, $from->copy()->endOfMonth()->day - $from->day + 1);
+        $this->assertCount($expected, $res->viewData('days'));
     }
 
     public function test_range_can_be_shifted_by_week_and_switched_to_month()
     {
         $this->actingAs($this->admin);
 
-        // هەفتەی پێشوو
+        // هەفتەی پێشوو — هەر لەناو ماوەی ڕێکخراوی مانگدا دەمێنێتەوە
         $prev = $this->get('/workshop/employees?mode=week&offset=-1');
         $prev->assertStatus(200);
-        $this->assertEquals(
-            now()->subWeek()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString(),
-            $prev->viewData('from')
-        );
+        $prevTo = \Carbon\Carbon::parse($prev->viewData('to'));
+        $this->assertTrue($prevTo->lt(\Carbon\Carbon::parse(
+            $this->get('/workshop/employees?mode=week&offset=0')->viewData('from')
+        )));
 
         // گۆڕین بۆ مانگ بە مانگ
         $month = $this->get('/workshop/employees?mode=month&offset=0');
