@@ -8,7 +8,7 @@
         minWidth: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '5rem') : '',
     }"
     style="background: #0f172a; border-left: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; display: flex; flex-direction: column; user-select: none;"
-    class="sidebar-nav sidebar-no-transition"
+    class="no-print sidebar-nav sidebar-no-transition"
     x-init="$nextTick(() => { $el.classList.remove('sidebar-no-transition'); })">
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}

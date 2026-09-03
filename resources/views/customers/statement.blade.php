@@ -2,6 +2,18 @@
 @section('title', $customer ? 'کەشف حیسابی — ' . $customer->name : 'کەشف حیسابی')
 
 @section('content')
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+</style>
 <div style="display: flex; flex-direction: column; gap: 1.25rem;">
 
     {{-- ١. سەردێڕی سەرەوە: کەشف حیسابی --}}
@@ -29,7 +41,7 @@
                         <span>کڕیار هەڵبژێرە</span>
                     </label>
                     <select name="customer_id"
-                            onchange="if(this.value) { window.location.href='/customers/' + this.value + '/statement?from={{ request('from') }}&to={{ request('to') }}'; } else { window.location.href='{{ route('statement.index') }}'; }"
+                            onchange="const f = document.querySelector('input[name=from]')?.value || ''; const t = document.querySelector('input[name=to]')?.value || ''; if(this.value) { window.location.href='/customers/' + this.value + '/statement?from=' + f + '&to=' + t; } else { window.location.href='{{ route('statement.index') }}'; }"
                             class="field"
                             style="width: 100%; font-weight: 700; color: #1e293b;">
                         <option value="">-- کڕیار هەڵبژێرە --</option>
@@ -153,10 +165,24 @@
                 </div>
             </div>
 
-            {{-- ٤ کارتی ئاماری سەرەکی وەک وێنەکە --}}
+            {{-- ٤ کارتی ئاماری سەرەکی کەشف حساب --}}
             <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
 
-                {{-- ١. کۆی کڕینەکانی (Green) --}}
+                {{-- ١. قەرزی پێشوو / باڵانسی سەرەتایی (Purple) --}}
+                <div style="background: #fdf4ff; border: 1.5px solid #f0abfc; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                    <div style="color: #a855f7; margin-bottom: 0.15rem;">
+                        <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #86198f;">قەرزی پێشوو (سەرەتایی)</div>
+                    <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #9333ea; line-height: 1.2;">
+                        {{ fmt_num($openingBalance) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
+                    </div>
+                </div>
+
+                {{-- ٢. فرۆشتنەکان لەم ماوەیەدا (Green) --}}
                 <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
                     <div style="color: #16a34a; margin-bottom: 0.15rem;">
                         <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -165,13 +191,13 @@
                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
                         </svg>
                     </div>
-                    <div style="font-size: 0.82rem; font-weight: 700; color: #166534;">کۆی کڕینەکانی</div>
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #166534;">فرۆشتنەکان (لەم ماوەیەدا)</div>
                     <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #15803d; line-height: 1.2;">
-                        {{ fmt_num($totalPurchases) }} <span style="font-size: 0.85rem; font-weight: 700;">دینار</span>
+                        {{ fmt_num($totalOrdersAmount ?? ($totalPurchases - $openingBalance)) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
                     </div>
                 </div>
 
-                {{-- ٢. پارەی دراو (Blue) --}}
+                {{-- ٣. پارەی دراو / حەقدی (Blue) --}}
                 <div style="background: #f0f9ff; border: 1.5px solid #7dd3fc; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
                     <div style="color: #0284c7; margin-bottom: 0.15rem;">
                         <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -180,26 +206,13 @@
                             <path d="M6 12h.01M18 12h.01"/>
                         </svg>
                     </div>
-                    <div style="font-size: 0.82rem; font-weight: 700; color: #075985;">پارەی دراو</div>
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #075985;">پارەی دراو (حەقدی)</div>
                     <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #0369a1; line-height: 1.2;">
-                        {{ fmt_num($totalPaid) }} <span style="font-size: 0.85rem; font-weight: 700;">دینار</span>
+                        {{ fmt_num($totalPaid) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
                     </div>
                 </div>
 
-                {{-- ٣. پارەدانی قەرز (Yellow / Orange) --}}
-                <div style="background: #fefce8; border: 1.5px solid #fde047; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
-                    <div style="color: #ca8a04; margin-bottom: 0.15rem;">
-                        <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                        </svg>
-                    </div>
-                    <div style="font-size: 0.82rem; font-weight: 700; color: #854d0e;">پارەدانی قەرز</div>
-                    <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #b45309; line-height: 1.2;">
-                        {{ fmt_num($debtPayments) }} <span style="font-size: 0.85rem; font-weight: 700;">دینار</span>
-                    </div>
-                </div>
-
-                {{-- ٤. قەرزی ماوە (Teal or Red) --}}
+                {{-- ٤. قەرزی ماوە (Red or Green) --}}
                 <div style="background: {{ $remainingDebt > 0 ? '#fff1f2' : '#f0fdf4' }}; border: 1.5px solid {{ $remainingDebt > 0 ? '#fecdd3' : '#a7f3d0' }}; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
                     <div style="color: {{ $remainingDebt > 0 ? '#e11d48' : '#10b981' }}; margin-bottom: 0.15rem;">
                         <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -207,9 +220,9 @@
                             <line x1="1" y1="10" x2="23" y2="10"/>
                         </svg>
                     </div>
-                    <div style="font-size: 0.82rem; font-weight: 700; color: {{ $remainingDebt > 0 ? '#9f1239' : '#166534' }};">قەرزی ماوە</div>
+                    <div style="font-size: 0.82rem; font-weight: 700; color: {{ $remainingDebt > 0 ? '#9f1239' : '#166534' }};">قەرزی ماوەی کۆتایی</div>
                     <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $remainingDebt > 0 ? '#dc2626' : '#15803d' }}; line-height: 1.2;">
-                        {{ fmt_num($remainingDebt) }} <span style="font-size: 0.85rem; font-weight: 700;">دینار</span>
+                        {{ fmt_num($remainingDebt) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
                     </div>
                 </div>
 
@@ -317,7 +330,7 @@
                             <tr style="border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 0.75rem; font-weight: 700;">
                                 <th style="padding: 0.75rem 0.85rem; text-align: center;">بەروار</th>
                                 <th style="padding: 0.75rem 0.85rem; text-align: center;">بڕی پارەدان</th>
-                                <th style="padding: 0.75rem 0.85rem; text-align: center;">کۆی قەرز</th>
+                                <th style="padding: 0.75rem 0.85rem; text-align: center;">وەسڵی پەیوەندیدار</th>
                                 <th style="padding: 0.75rem 0.85rem; text-align: center;">تێبینی</th>
                                 <th style="padding: 0.75rem 0.85rem; width: 3rem; text-align: center;">وەسڵ</th>
                             </tr>
@@ -338,9 +351,15 @@
                                         {{ fmt_num($payment->amount_iqd) }}
                                     </td>
 
-                                    {{-- کۆی قەرز --}}
-                                    <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; color: #64748b; font-size: 0.85rem;">
-                                        {{ $payment->order ? fmt_num($payment->order->total_iqd) : '—' }}
+                                    {{-- وەسڵی پەیوەندیدار --}}
+                                    <td style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 700; color: #2563eb; font-size: 0.85rem;">
+                                        @if ($payment->order)
+                                            <a href="{{ route('orders.print', $payment->order) }}" style="color: #2563eb; text-decoration: none;">
+                                                وەسڵی #{{ $payment->order->invoice_no }}
+                                            </a>
+                                        @else
+                                            <span style="color: #64748b; font-weight: 500;">حسابی گشتی</span>
+                                        @endif
                                     </td>
 
                                     {{-- تێبینی --}}

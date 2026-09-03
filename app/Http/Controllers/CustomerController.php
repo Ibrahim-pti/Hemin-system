@@ -166,6 +166,7 @@ class CustomerController extends Controller
             'orders' => $orders,
             'payments' => $payments,
             'openingBalance' => $openingBalance,
+            'totalOrdersAmount' => $totalOrdersAmount,
             'totalPurchases' => $totalPurchases,
             'totalPaid' => $totalPaidAmount,
             'debtPayments' => $debtPayments,
