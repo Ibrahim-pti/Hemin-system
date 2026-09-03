@@ -4,24 +4,24 @@
     id="main-sidebar"
     :class="{ 'mobile-open': mobileOpen }"
     :style="{
-        width: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '4.75rem') : '',
-        minWidth: (window.innerWidth >= 640) ? (sidebarOpen ? '16rem' : '4.75rem') : '',
+        width: (window.innerWidth >= 640) ? (sidebarOpen ? '13.5rem' : '4.5rem') : '',
+        minWidth: (window.innerWidth >= 640) ? (sidebarOpen ? '13.5rem' : '4.5rem') : '',
     }"
     style="background: #0f172a; border-left: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; display: flex; flex-direction: column; user-select: none;"
     class="no-print sidebar-nav sidebar-no-transition"
     x-init="$nextTick(() => { $el.classList.remove('sidebar-no-transition'); })">
 
     {{-- سەری مێنیو: لۆگۆ و ناوی کارگە --}}
-    <div style="height: 3.75rem; display: flex; align-items: center; justify-content: space-between; padding: 0 0.875rem; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;">
-        <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.625rem; overflow: hidden; text-decoration: none;">
-            <span style="display: flex; width: 2.1rem; height: 2.1rem; align-items: center; justify-content: center; border-radius: 0.625rem; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); font-weight: 800; font-size: 0.95rem; flex-shrink: 0;">
+    <div style="height: 3.75rem; display: flex; align-items: center; justify-content: space-between; padding: 0 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;">
+        <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 0.55rem; overflow: hidden; text-decoration: none;">
+            <span style="display: flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 0.5rem; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); font-weight: 800; font-size: 0.9rem; flex-shrink: 0;">
                 هـ
             </span>
             <div x-show="sidebarOpen || window.innerWidth < 640" style="min-width: 0;">
-                <div style="font-size: 0.82rem; font-weight: 700; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em;">
+                <div style="font-size: 0.79rem; font-weight: 700; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em;">
                     {{ \App\Models\Setting::get('company_name', 'کارگەی هێمن') }}
                 </div>
-                <div style="font-size: 0.65rem; color: #64748b; font-weight: 500;">سیستەمی بەڕێوەبردن</div>
+                <div style="font-size: 0.62rem; color: #64748b; font-weight: 500;">سیستەمی بەڕێوەبردن</div>
             </div>
         </a>
 
@@ -33,8 +33,8 @@
         </button>
     </div>
 
-    {{-- بەشی بەستەرەکانی مێنیو (Compact, perfectly proportioned) --}}
-    <div class="sidebar-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 0.5rem 0.5rem 1rem 0.5rem; display: flex; flex-direction: column; gap: 0.45rem;">
+    {{-- بەشی بەستەرەکانی مێنیو (Sleek and Slim) --}}
+    <div class="sidebar-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 0.4rem 0.45rem 1rem 0.45rem; display: flex; flex-direction: column; gap: 0.4rem;">
 
         {{-- سەرەکی / داشبۆرد --}}
         <div>
@@ -45,10 +45,10 @@
                 $isDashboard = request()->routeIs('dashboard') || ($isWasta && request()->routeIs('workshop.index'));
             @endphp
             <a href="{{ route($dashRoute) }}"
-               style="display: flex; align-items: center; gap: 0.625rem; padding: 0.35rem 0.5rem; border-radius: 0.625rem; font-size: 0.76rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isDashboard ? 'background: rgba(59,130,246,0.14); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
+               style="display: flex; align-items: center; gap: 0.55rem; padding: 0.32rem 0.45rem; border-radius: 0.55rem; font-size: 0.74rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isDashboard ? 'background: rgba(59,130,246,0.14); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25);' : 'color: #94a3b8; border: 1px solid transparent;' }}"
                class="sidebar-link {{ $isDashboard ? 'active-link' : '' }}">
-                <span style="display: flex; width: 1.85rem; height: 1.85rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.22); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
-                    @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-4'])
+                <span style="display: flex; width: 1.75rem; height: 1.75rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.45rem; {{ $isDashboard ? 'background: rgba(59,130,246,0.22); color: #93c5fd;' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
+                    @include('partials.icon', ['name' => 'dashboard', 'class' => 'size-3.5'])
                 </span>
                 <span x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $dashLabel }}</span>
             </a>
@@ -130,10 +130,10 @@
                                     : request()->routeIs(...explode('|', $item['route']));
                             @endphp
                             <a href="{{ $item['href'] }}"
-                               style="display: flex; align-items: center; gap: 0.625rem; padding: 0.35rem 0.5rem; border-radius: 0.625rem; font-size: 0.76rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"
+                               style="display: flex; align-items: center; gap: 0.55rem; padding: 0.32rem 0.45rem; border-radius: 0.55rem; font-size: 0.74rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; {{ $isActive ? 'background: ' . $section['activeBg'] . '; color: ' . $section['activeText'] . '; border: 1px solid ' . $section['activeBorder'] . ';' : 'color: #94a3b8; border: 1px solid transparent;' }}"
                                class="sidebar-link {{ $isActive ? 'active-link' : '' }}">
-                                <span style="display: flex; width: 1.85rem; height: 1.85rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.5rem; {{ $isActive ? 'background: ' . $section['activeIconBg'] . '; color: ' . $section['activeIconColor'] . ';' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
-                                    @include('partials.icon', ['name' => $item['icon'], 'class' => 'size-4'])
+                                <span style="display: flex; width: 1.75rem; height: 1.75rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 0.45rem; {{ $isActive ? 'background: ' . $section['activeIconBg'] . '; color: ' . $section['activeIconColor'] . ';' : 'background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.04);' }}">
+                                    @include('partials.icon', ['name' => $item['icon'], 'class' => 'size-3.5'])
                                 </span>
                                 <span x-show="sidebarOpen || mobileOpen || window.innerWidth < 640" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item['label'] }}</span>
                             </a>
