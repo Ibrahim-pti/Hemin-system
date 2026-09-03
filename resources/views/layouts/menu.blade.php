@@ -129,6 +129,10 @@
                         </svg>
                     </button>
 
+                    <h1 class="truncate text-sm sm:text-base font-bold text-slate-800">
+                        @yield('title')
+                    </h1>
+
                     <div x-data="{
                         time: '',
                         date: '',
