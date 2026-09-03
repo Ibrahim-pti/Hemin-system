@@ -100,10 +100,10 @@
                     <span class="absolute right-2 text-slate-400 pointer-events-none text-xs">📅</span>
                     <select x-model="rangeType" @change="setRange(rangeType)"
                             class="w-full sm:w-auto bg-white text-slate-800 font-black text-xs pr-7 pl-5 py-1.5 rounded-xl border border-slate-200 hover:border-teal-600 focus:outline-hidden focus:ring-2 focus:ring-teal-500/20 cursor-pointer shadow-2xs transition-all appearance-none text-center">
-                        <option value="this_week">ئەم هەفتەیە (حەفتە بە حەفتە)</option>
                         <option value="this_month">ئەم مانگە (سەرەمانگ بۆ سەرەمانگ)</option>
-                        <option value="last_week">هەفتەی پێشوو</option>
+                        <option value="this_week">ئەم هەفتەیە (حەفتە بە حەفتە)</option>
                         <option value="last_month">مانگی پێشوو</option>
+                        <option value="last_week">هەفتەی پێشوو</option>
                     </select>
                     <span class="absolute left-2 text-slate-400 pointer-events-none text-[9px]">▼</span>
                 </div>
@@ -1295,6 +1295,14 @@ function workshopEmployeesApp() {
         },
 
         changeWeekOffset(diff) {
+            if (this.rangeType === 'this_month' || this.rangeType === 'last_month') {
+                if (diff < 0) {
+                    window.location.href = `{{ route('workshop.employees') }}?range_type=last_month`;
+                } else {
+                    window.location.href = `{{ route('workshop.employees') }}?range_type=this_month`;
+                }
+                return;
+            }
             const newOffset = this.weekOffset + diff;
             window.location.href = `{{ route('workshop.employees') }}?week_offset=${newOffset}`;
         },

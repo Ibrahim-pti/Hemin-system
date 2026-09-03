@@ -497,7 +497,7 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $this->assertEquals(45000, $adminMatrix[0]['daily_wage']);
     }
 
-    public function test_employees_page_defaults_to_this_week()
+    public function test_employees_page_defaults_to_this_month()
     {
         $this->actingAs($this->admin);
 
@@ -505,14 +505,9 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $res = $this->get('/workshop/employees');
         $res->assertStatus(200);
 
-        // دەبێت بای دیفەولت ئەم هەفتەیە (this_week) بێت
-        $this->assertEquals('this_week', $res->viewData('rangeType'));
-
-        // دەبێت ٦ ڕۆژی کاری هەفتە لە شەممە تا پێنجشەممە بگرێتەوە (هەینی پشووی هەفتانەیە)
-        $days = $res->viewData('days');
-        $this->assertCount(6, $days);
-        $this->assertEquals('شەممە', $days[0]['day_name']);
-        $this->assertEquals('پێنجشەممە', $days[5]['day_name']);
+        // دەبێت بای دیفەولت ئەم مانگە (this_month) بێت و لە ١ی مانگەوە دەستپێبکات
+        $this->assertEquals('this_month', $res->viewData('rangeType'));
+        $this->assertEquals(now()->startOfMonth()->toDateString(), $res->viewData('from'));
     }
 }
 

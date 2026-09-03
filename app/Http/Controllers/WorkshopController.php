@@ -198,7 +198,7 @@ class WorkshopController extends Controller
         $monthStart = $today->copy()->startOfMonth()->toDateString();
         $monthEnd = $today->copy()->endOfMonth()->toDateString();
 
-        $rangeType = $request->input('range_type', 'this_week');
+        $rangeType = $request->input('range_type', 'this_month');
 
         $weekOffset = (int) $request->input('week_offset', 0);
         if ($request->has('week_offset')) {
@@ -212,25 +212,25 @@ class WorkshopController extends Controller
             $rangeType = 'custom';
         } else {
             switch ($rangeType) {
-                case 'this_month':
-                    $from = $monthStart;
-                    $to = $monthEnd;
-                    break;
-                case 'last_month':
-                    $lastMonth = $today->copy()->subMonth();
-                    $from = $lastMonth->copy()->startOfMonth()->toDateString();
-                    $to = $lastMonth->copy()->endOfMonth()->toDateString();
+                case 'this_week':
+                    $from = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
+                    $to = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
                     break;
                 case 'last_week':
                     $lastWeek = $today->copy()->subWeek();
                     $from = $lastWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
                     $to = $lastWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
                     break;
-                case 'this_week':
+                case 'last_month':
+                    $lastMonth = $today->copy()->subMonth();
+                    $from = $lastMonth->copy()->startOfMonth()->toDateString();
+                    $to = $lastMonth->copy()->endOfMonth()->toDateString();
+                    break;
+                case 'this_month':
                 default:
-                    $rangeType = 'this_week';
-                    $from = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
-                    $to = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+                    $rangeType = 'this_month';
+                    $from = $monthStart;
+                    $to = $monthEnd;
                     break;
             }
         }
