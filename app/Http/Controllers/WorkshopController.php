@@ -198,46 +198,51 @@ class WorkshopController extends Controller
         $monthStart = $today->copy()->startOfMonth()->toDateString();
         $monthEnd = $today->copy()->endOfMonth()->toDateString();
 
-        $rangeType = $request->input('range_type', 'this_month');
+        // ── دیاریکردنی ماوەی پیشاندان ──
+        // بنەڕەت: حەفتە بە حەفتە. mode = week|month، offset = ژمارەی حەفتە/مانگ لە ئێستاوە.
+        $mode = $request->input('mode');
+        $offset = (int) $request->input('offset', 0);
+        $isCustom = false;
 
-        $weekOffset = (int) $request->input('week_offset', 0);
-        if ($request->has('week_offset')) {
-            $rangeType = 'week_offset';
-            $targetWeek = $today->copy()->addWeeks($weekOffset);
-            $wStart = $targetWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY);
-            $wEnd = $targetWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY);
-            $from = $wStart->toDateString();
-            $to = $wEnd->toDateString();
-        } elseif ($request->filled('from') && $request->filled('to')) {
-            $from = $request->date('from')->toDateString();
-            $to = $request->date('to')->toDateString();
-            $rangeType = 'custom';
-        } else {
-            switch ($rangeType) {
-                case 'this_week':
-                    $wStart = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY);
-                    $wEnd = $today->copy()->endOfWeek(\Carbon\Carbon::FRIDAY);
-                    $from = $wStart->toDateString();
-                    $to = $wEnd->toDateString();
-                    break;
-                case 'last_week':
-                    $lastWeek = $today->copy()->subWeek();
-                    $from = $lastWeek->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
-                    $to = $lastWeek->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
-                    break;
-                case 'last_month':
-                    $lastMonth = $today->copy()->subMonth();
-                    $from = $lastMonth->copy()->startOfMonth()->toDateString();
-                    $to = $lastMonth->copy()->endOfMonth()->toDateString();
-                    break;
-                case 'this_month':
-                default:
-                    $rangeType = 'this_month';
-                    $from = $monthStart;
-                    $to = $monthEnd;
-                    break;
+        // پاراستنی گونجاندن لەگەڵ لینکە کۆنەکان (range_type / week_offset)
+        if (! $mode) {
+            if ($request->has('week_offset')) {
+                $mode = 'week';
+                $offset = (int) $request->input('week_offset', 0);
+            } elseif ($request->filled('from') && $request->filled('to')) {
+                $isCustom = true;
+                $mode = 'week';
+            } else {
+                $mode = match ($request->input('range_type')) {
+                    'this_month', 'last_month' => 'month',
+                    default => 'week',
+                };
+                $offset = match ($request->input('range_type')) {
+                    'last_month', 'last_week' => -1,
+                    default => 0,
+                };
             }
         }
+
+        $mode = in_array($mode, ['week', 'month'], true) ? $mode : 'week';
+        $offset = max(-120, min(120, $offset));
+
+        if ($isCustom) {
+            $from = $request->date('from')->toDateString();
+            $to = $request->date('to')->toDateString();
+        } elseif ($mode === 'month') {
+            $target = $today->copy()->startOfMonth()->addMonths($offset);
+            $from = $target->copy()->startOfMonth()->toDateString();
+            $to = $target->copy()->endOfMonth()->toDateString();
+        } else {
+            $target = $today->copy()->addWeeks($offset);
+            $from = $target->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString();
+            $to = $target->copy()->endOfWeek(\Carbon\Carbon::FRIDAY)->toDateString();
+        }
+
+        // بۆ گونجاندن لەگەڵ کۆدی کۆن
+        $rangeType = $isCustom ? 'custom' : $mode;
+        $weekOffset = $offset;
 
         // دڵنیابوونەوە لەوەی لە ٣٥ ڕۆژ زیاتر نەبێت بۆ ڕێگری لە قورسایی جەدوەل
         $fromDate = \Carbon\Carbon::parse($from);
@@ -259,8 +264,16 @@ class WorkshopController extends Controller
 
         $period = \Carbon\CarbonPeriod::create($from, $to);
         $days = [];
+        $holidayDays = [];
         foreach ($period as $dt) {
             $dateStr = $dt->toDateString();
+
+            // ڕۆژی پشووی هەفتانە (وەک هەینی) کاری تێدا ناکرێت — بۆیە هەر نیشان نادرێت
+            if (Attendance::isWeeklyHoliday($dateStr)) {
+                $holidayDays[] = $kurdishDays[$dt->dayOfWeek];
+                continue;
+            }
+
             $days[] = [
                 'date' => $dateStr,
                 'day_name' => $kurdishDays[$dt->dayOfWeek],
@@ -269,9 +282,10 @@ class WorkshopController extends Controller
                 'month_num' => $dt->format('n'),
                 'day_of_week' => $dt->dayOfWeek,
                 'is_today' => $dt->isToday(),
-                'is_holiday' => Attendance::isWeeklyHoliday($dateStr),
+                'is_holiday' => false,
             ];
         }
+        $holidayLabel = implode(' و ', array_values(array_unique($holidayDays)));
 
         $canSeeMoney = auth()->user()?->isAdmin() ?? false;
 
@@ -612,6 +626,9 @@ class WorkshopController extends Controller
             'to',
             'rangeType',
             'weekOffset',
+            'mode',
+            'offset',
+            'holidayLabel',
             'shiftSettings',
             'totalEmployeesCount',
             'totalPresentManDays',

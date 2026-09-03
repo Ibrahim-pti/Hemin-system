@@ -545,6 +545,62 @@ aside::-webkit-scrollbar {
 }
 
 
+/* ── بنەمای ڕیسپۆنسیڤی گشتی بۆ هەموو لاپەڕەکان ────────────────────
+   ئەم چینە دڵنیایی دەدات کە هیچ لاپەڕەیەک لەسەر مۆبایل بە پانی نەڕوات
+   و هیچ ناوەڕۆکێک لە دەرەوەی شاشەکە ون نەبێت.                        */
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+}
+
+img, svg, video, canvas, iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* خشتەکان هەمیشە لەناو باکسی خۆیاندا سکرۆڵ دەکەن، نەک لاپەڕەکە */
+.overflow-x-auto,
+.table-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    max-width: 100%;
+}
+
+@media (max-width: 640px) {
+    /* دەقی درێژ (وەک ئیمەیل و ناوی درێژ) خشتەکە ناپچڕێنێت */
+    td, th {
+        overflow-wrap: anywhere;
+    }
+    td.num, th.num, .font-mono {
+        overflow-wrap: normal;
+    }
+
+    /* iOS خۆکار زووم ناکات کاتێک قەبارەی فۆنتی خانەکان ١٦px بێت */
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* دوگمە و لینکەکان بە قەبارەیەکی گونجاو بۆ پەنجە */
+    .btn {
+        min-height: 2.25rem;
+    }
+
+    /* کارتەکان لەسەر مۆبایل کەمتر بۆشاییان دەبێت */
+    .card-body { padding: 0.75rem; }
+    .table th, .table td { padding: 0.5rem 0.55rem; }
+
+    /* سەری کارت — ناونیشان و دوگمە بۆ خوارەوە دەڕژێن لە جیاتی چەقاندن */
+    .card-head {
+        padding: 0.7rem 0.85rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
 /* ── چاپ — وەسڵ و حەقدی ──────────────────────────────────────────── */
 @media print {
     .no-print {

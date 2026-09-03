@@ -201,7 +201,7 @@ class SystemWorkflowsTest extends TestCase
         $matrixViewRes = $this->get('/workshop/employees?range_type=this_week');
         $matrixViewRes->assertStatus(200);
         $matrixViewRes->assertSee('وەستا کامەران');
-        $matrixViewRes->assertSee('جەدوەلی ئامادەبوونی ڕۆژانە');
+        $matrixViewRes->assertSee('دەفتەری دەوامی کارمەندان');
 
         // Toggle cell endpoint
         $toggleRes = $this->postJson('/workshop/employees/toggle-cell', [

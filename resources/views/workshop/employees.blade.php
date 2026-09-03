@@ -3,43 +3,48 @@
 
 @section('content')
 <style>
-    @media (max-width: 639px) {
-        .col-idx { display: none !important; }
-        .col-name {
-            right: 0 !important;
-            width: 5rem !important;
-            min-width: 5rem !important;
-            max-width: 5rem !important;
-            font-size: 0.68rem !important;
-            padding: 0.3rem 0.25rem !important;
-        }
-        .col-day {
-            width: 3.2rem !important;
-            min-width: 3.2rem !important;
-            padding: 0.15rem 0.1rem !important;
-        }
-        .cell-box {
-            height: 2rem !important;
-            border-radius: 0.4rem !important;
-            font-size: 0.6rem !important;
-        }
-        .col-actions {
-            width: 3.5rem !important;
-            min-width: 3.5rem !important;
-        }
-        /* باشترکردنی مۆبایل - بچووککردنی هەدەرەکان */
-        .emp-header-card {
-            padding: 0.65rem !important;
-        }
-        .emp-header-card h1 {
-            font-size: 0.8rem !important;
-        }
-        .emp-filter-bar {
-            flex-direction: column !important;
-            gap: 0.5rem !important;
-        }
+    /* ── پێوانەی ستوونەکانی دەفتەری دەوام ──
+       لەسەر مۆبایل ستوونەکان تەنیا ئەوەندە باریک دەبنەوە کە هەفتەیەک (٦ ڕۆژ)
+       بەبێ هیچ سکرۆڵێکی ئاسۆیی بگونجێت. لەسەر مانگ خۆکار سکرۆڵ دەکات. */
+    .att-wrap {
+        --idx-w: 0rem;
+        --name-w: 5.4rem;
+        --day-w: 2.7rem;
+        --act-w: 0rem;
     }
-    /* ستایلەکانی دۆخی دەوام - تەواو ڕوون، تۆخ، جیاکەرەوە و زەق لەسەر هەموو شاشەیەک */
+    .att-table {
+        table-layout: fixed;
+        width: 100%;
+        min-width: calc(var(--idx-w) + var(--name-w) + var(--act-w) + (var(--days, 7) * var(--day-w)));
+    }
+    .col-idx { display: none; }
+    .col-name { width: var(--name-w); }
+    .col-day  { width: var(--day-w); }
+    .col-actions { display: none; }
+
+    @media (min-width: 640px) {
+        .att-wrap {
+            --idx-w: 3rem;
+            --name-w: 11rem;
+            --day-w: 4.9rem;
+            --act-w: 6.5rem;
+        }
+        .col-idx { display: table-cell; width: var(--idx-w); }
+        .col-actions { display: table-cell; width: var(--act-w); }
+    }
+
+    /* خانەی ڕۆژ — بەرزی جێگیر تا هەموو ڕیزەکان یەکسان بن */
+    .cell-box {
+        height: 2.1rem;
+        border-radius: 0.5rem;
+        font-size: 0.72rem;
+        line-height: 1;
+    }
+    @media (min-width: 640px) {
+        .cell-box { height: 2.5rem; border-radius: 0.65rem; font-size: 0.75rem; }
+    }
+
+    /* ستایلەکانی دۆخی دەوام — ڕوون، تۆخ و جیاکەرەوە لەسەر هەموو شاشەیەک */
     .status-badge-present {
         background-color: #059669 !important;
         color: #ffffff !important;
@@ -59,209 +64,234 @@
         font-weight: 900 !important;
     }
     .status-badge-empty {
-        background-color: #f1f5f9 !important;
-        color: #64748b !important;
-        border: 2px dashed #94a3b8 !important;
+        background-color: #f8fafc !important;
+        color: #94a3b8 !important;
+        border: 2px dashed #cbd5e1 !important;
         font-weight: 800 !important;
     }
-    /* دوگمەی کارمەندی نوێ و سێتینگ بە ستایلی دڵنیا و دیار لە هەموو بارودۆخێکدا */
+
+    /* دوگمەکان — ڕەنگیان لە هەموو بارودۆخێکدا جێگیرە */
     .btn-emp-add {
         background-color: #0f766e !important;
         color: #ffffff !important;
         border: 2px solid #0d5f58 !important;
         font-weight: 900 !important;
     }
-    .btn-emp-add:hover {
-        background-color: #115e59 !important;
-    }
+    .btn-emp-add:hover { background-color: #115e59 !important; }
+
     .btn-emp-settings {
-        background-color: #f8fafc !important;
+        background-color: #ffffff !important;
         color: #334155 !important;
         border: 2px solid #cbd5e1 !important;
         font-weight: 700 !important;
     }
-    .btn-emp-settings:hover {
-        background-color: #f1f5f9 !important;
+    .btn-emp-settings:hover { background-color: #f1f5f9 !important; }
+
+    /* دوگمەی گۆڕینی ماوە (هەفتە / مانگ) */
+    .seg-btn {
+        border: 2px solid transparent;
+        font-weight: 900;
+        color: #475569;
+        background: transparent;
     }
-    @media (min-width: 640px) {
-        .col-idx {
-            display: table-cell !important;
-            right: 0 !important;
-            width: 3rem !important;
-            min-width: 3rem !important;
-        }
-        .col-name {
-            right: 3rem !important;
-            width: 10rem !important;
-            min-width: 10rem !important;
-        }
-        .col-day {
-            width: 5rem !important;
-            min-width: 4.5rem !important;
-        }
-        .cell-box {
-            height: 2.5rem !important;
-        }
+    .seg-btn.is-active {
+        background-color: #0f766e !important;
+        border-color: #0d5f58 !important;
+        color: #ffffff !important;
     }
+
+    /* سکرۆڵی ئاسۆیی نەرم لەسەر مۆبایل */
+    .att-scroll {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+
+    /* ئایکۆنی دەستکاری ورد — تەنها بە هۆڤەر لەسەر دێسکتۆپ */
+    .cell-td:hover .cell-gear { opacity: 1; }
+
+    /* پەنجەرەکان لەسەر مۆبایل — بەرزی ڕاستەقینەی شاشە (dvh) بۆ ئەوەی سەری بارەکە نەیشارێتەوە */
+    .modal-sheet { max-height: 92vh; max-height: 92dvh; }
 </style>
 
 <div x-data="workshopEmployeesApp()" x-init="init()" class="space-y-3 sm:space-y-3.5 select-none" dir="rtl">
 
-    {{-- ١. هێڵی سەرەوە: پەرتکراو بە شێوازی مۆدێرن و تەواو ڕیسپۆنسیڤ --}}
-    <div class="emp-header-card bg-white rounded-2xl p-2.5 sm:p-3.5 border-2 border-slate-300 flex flex-col gap-2.5">
-        
-        {{-- ڕیزی سەرەوە: ناونیشان + دوگمەی کردارەکان بۆ مۆبایل و دێسکتۆپ --}}
-        <div class="flex items-center justify-between gap-2 w-full">
-            <div class="flex items-center gap-2 min-w-0">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-teal-700 text-white flex items-center justify-center text-sm sm:text-base shrink-0 border border-teal-800">
+    {{-- ١. هێڵی سەرەوە: ناونیشان، کردارەکان و فلتەری ماوە --}}
+    <div class="bg-white rounded-2xl border-2 border-slate-300 overflow-hidden">
+
+        {{-- ڕیزی سەرەوە: ناونیشان + دوگمەی کردارەکان --}}
+        <div class="flex items-center justify-between gap-2 p-2.5 sm:p-3.5">
+            <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                <div class="size-8 sm:size-10 rounded-xl bg-teal-700 text-white flex items-center justify-center text-sm sm:text-lg shrink-0 border-2 border-teal-800">
                     📋
                 </div>
                 <div class="min-w-0">
-                    <h1 class="text-[11px] sm:text-base font-black text-slate-900 leading-tight truncate">جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان</h1>
-                    <p class="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate hidden sm:block">تۆمارکردنی ئامادەبوون، کاتی زیادە و غیابات</p>
+                    <h1 class="text-xs sm:text-base font-black text-slate-900 leading-tight truncate">دەفتەری دەوامی کارمەندان</h1>
+                    <p class="text-[10px] sm:text-[11px] text-slate-500 font-bold mt-0.5 truncate">
+                        تۆمارکردنی ئامادەبوون، کاتی زیادە و غیابات
+                    </p>
                 </div>
             </div>
 
             @if($canSeeMoney)
-            {{-- دوگمەکانی کردار بۆ بەڕێوەبەر --}}
             <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <button type="button" @click="openNewEmployeeModal()"
-                        class="btn-emp-add px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer active:scale-95">
-                    <span>➕</span>
+                        class="btn-emp-add px-2.5 sm:px-3.5 h-9 rounded-xl text-[11px] sm:text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                    <span class="text-sm leading-none">＋</span>
                     <span>کارمەندی نوێ</span>
                 </button>
 
                 <button type="button" @click="showSettingsModal = true"
-                        class="btn-emp-settings p-1.5 sm:p-2 rounded-xl text-slate-700 transition-all cursor-pointer text-sm active:scale-95"
-                        title="سێتینگی تاخیربوون و دەوام">
+                        class="btn-emp-settings size-9 rounded-xl flex items-center justify-center transition-all cursor-pointer text-sm active:scale-95"
+                        title="ڕێکخستنی یاساکانی دەوام">
                     ⚙️
                 </button>
             </div>
             @endif
         </div>
 
-        {{-- فلتەری ماوە و بەروار --}}
-        <div class="emp-filter-bar flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 w-full pt-1.5 border-t border-slate-200">
-            <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-50 p-1 rounded-2xl border-2 border-slate-300 w-full sm:w-auto justify-between sm:justify-start">
-                {{-- گەڕانەوە بۆ پێشوو (لە ڕاستەوە بۆ چەپ) --}}
-                <button type="button" @click="changeWeekOffset(-1)"
-                        title="پێشوو (ماوەی پێشوو)"
-                        class="size-7 sm:size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border-2 border-slate-300 flex items-center justify-center font-bold text-xs transition-all cursor-pointer shrink-0 active:scale-95">
-                    →
+        {{-- فلتەری ماوە: هەفتە / مانگ + گەڕان بۆ پێشوو و دواتر --}}
+        <div class="border-t-2 border-slate-200 bg-slate-50 p-2 sm:p-2.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+
+            {{-- ١. جۆری ماوە --}}
+            <div class="flex items-center gap-1 bg-white p-1 rounded-xl border-2 border-slate-300 shrink-0">
+                <button type="button" @click="goRange('week', 0)"
+                        class="seg-btn flex-1 sm:flex-initial px-3 sm:px-4 h-8 rounded-lg text-[11px] sm:text-xs cursor-pointer transition-all active:scale-95"
+                        :class="mode === 'week' ? 'is-active' : 'hover:bg-slate-100'">
+                    حەفتە بە حەفتە
                 </button>
-
-                {{-- سێلێکتی فلتەری کات بێ ئایکۆنی تێکەڵبوو --}}
-                <div class="flex-1 sm:flex-initial">
-                    <select x-model="rangeType" @change="setRange(rangeType)"
-                            class="w-full sm:w-auto bg-white text-slate-800 font-black text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border-2 border-slate-300 hover:border-teal-600 focus:outline-hidden cursor-pointer transition-all text-center">
-                        <option value="this_month">ئەم مانگە (سەرەمانگ بۆ سەرەمانگ)</option>
-                        <option value="this_week">ئەم هەفتەیە (حەفتە بە حەفتە)</option>
-                        <option value="last_month">مانگی پێشوو</option>
-                        <option value="last_week">هەفتەی پێشوو</option>
-                    </select>
-                </div>
-
-                {{-- ڕۆیشتن بۆ دواتر --}}
-                <button type="button" @click="changeWeekOffset(1)"
-                        title="دواتر (ماوەی داهاتوو)"
-                        class="size-7 sm:size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border-2 border-slate-300 flex items-center justify-center font-bold text-xs transition-all cursor-pointer shrink-0 active:scale-95">
-                    ←
+                <button type="button" @click="goRange('month', 0)"
+                        class="seg-btn flex-1 sm:flex-initial px-3 sm:px-4 h-8 rounded-lg text-[11px] sm:text-xs cursor-pointer transition-all active:scale-95"
+                        :class="mode === 'month' ? 'is-active' : 'hover:bg-slate-100'">
+                    مانگ بە مانگ
                 </button>
             </div>
 
-            {{-- بەرواری ئەم ماوەیە (لە ڕاست بۆ چەپ: لە بەروار تا بەروار) --}}
-            <div class="inline-flex items-center justify-center text-[11px] sm:text-xs font-bold text-teal-950 bg-teal-50 px-3 py-1.5 sm:py-2 rounded-xl border-2 border-teal-300 select-text w-full sm:w-auto shrink-0 text-center" dir="rtl">
-                <span class="font-mono font-bold" dir="ltr">{{ str_replace('-', '/', $from) }}</span>
-                <span class="text-teal-700 font-bold mx-2 text-[11px]">تا</span>
-                <span class="font-mono font-bold" dir="ltr">{{ str_replace('-', '/', $to) }}</span>
+            {{-- ٢. گەڕان لە نێوان ماوەکان + بەرواری ئێستا --}}
+            <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                <button type="button" @click="shiftRange(-1)"
+                        :title="mode === 'week' ? 'هەفتەی پێشوو' : 'مانگی پێشوو'"
+                        class="size-8 shrink-0 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border-2 border-slate-300 flex items-center justify-center font-black text-sm transition-all cursor-pointer active:scale-95">
+                    →
+                </button>
+
+                <div class="flex-1 min-w-0 flex items-center justify-center gap-1.5 h-8 px-2 rounded-xl border-2 border-teal-300 bg-teal-50 text-teal-950 select-text">
+                    <span class="font-mono font-black text-[11px] sm:text-xs" dir="ltr">{{ str_replace('-', '/', $from) }}</span>
+                    <span class="text-teal-600 font-bold text-[10px]">تا</span>
+                    <span class="font-mono font-black text-[11px] sm:text-xs" dir="ltr">{{ str_replace('-', '/', $to) }}</span>
+                </div>
+
+                <button type="button" @click="shiftRange(1)"
+                        :title="mode === 'week' ? 'هەفتەی داهاتوو' : 'مانگی داهاتوو'"
+                        class="size-8 shrink-0 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border-2 border-slate-300 flex items-center justify-center font-black text-sm transition-all cursor-pointer active:scale-95">
+                    ←
+                </button>
+
+                <template x-if="offset !== 0">
+                    <button type="button" @click="goRange(mode, 0)"
+                            class="h-8 px-2.5 shrink-0 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border-2 border-amber-300 font-black text-[11px] transition-all cursor-pointer active:scale-95">
+                        ئەمڕۆ
+                    </button>
+                </template>
             </div>
         </div>
     </div>
 
-    {{-- جەدوەلی سەحی ڕۆژانە --}}
-    <div class="bg-white rounded-2xl border-2 border-slate-300 overflow-hidden">
-        
+    {{-- ٢. کورتەی خێرای ئەم ماوەیە --}}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+        <div class="bg-white rounded-2xl border-2 border-slate-300 px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2">
+            <span class="text-[10px] sm:text-[11px] font-black text-slate-500 truncate">کارمەند</span>
+            <span class="font-mono font-black text-base sm:text-lg text-slate-900" x-text="filteredEmployees.length"></span>
+        </div>
+        <div class="bg-white rounded-2xl border-2 border-emerald-300 px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2">
+            <span class="text-[10px] sm:text-[11px] font-black text-emerald-700 truncate">ئامادە</span>
+            <span class="font-mono font-black text-base sm:text-lg text-emerald-800" x-text="rangeTotals.present"></span>
+        </div>
+        <div class="bg-white rounded-2xl border-2 border-amber-300 px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2">
+            <span class="text-[10px] sm:text-[11px] font-black text-amber-700 truncate">نیو ڕۆژ</span>
+            <span class="font-mono font-black text-base sm:text-lg text-amber-800" x-text="rangeTotals.half"></span>
+        </div>
+        <div class="bg-white rounded-2xl border-2 border-rose-300 px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2">
+            <span class="text-[10px] sm:text-[11px] font-black text-rose-700 truncate">غیاب</span>
+            <span class="font-mono font-black text-base sm:text-lg text-rose-800" x-text="rangeTotals.absent"></span>
+        </div>
+    </div>
+
+    {{-- ٣. جەدوەلی سەحی ڕۆژانە --}}
+    <div class="att-wrap bg-white rounded-2xl border-2 border-slate-300 overflow-hidden" style="--days: {{ max(count($days), 1) }};">
+
         {{-- بارێکی باریک بۆ گەڕان و هێماکان --}}
-        <div class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 border-b-2 border-slate-300 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 sm:gap-2 bg-slate-100">
-            <div class="flex items-center gap-2 flex-1 w-full sm:max-w-xs">
-                <input type="text" x-model="searchQuery" placeholder="🔍 گەڕان بە ناوی کارمەند..."
-                       class="w-full text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border-2 border-slate-300 focus:outline-hidden focus:border-teal-600 bg-white font-medium">
+        <div class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 border-b-2 border-slate-300 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-50">
+            <div class="relative flex-1 w-full sm:max-w-xs">
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">🔍</span>
+                <input type="text" x-model="searchQuery" placeholder="گەڕان بە ناوی کارمەند..."
+                       class="w-full h-9 text-[11px] sm:text-xs pr-8 pl-2.5 rounded-xl border-2 border-slate-300 focus:outline-hidden focus:border-teal-600 bg-white font-bold">
             </div>
 
-            <div class="flex items-center justify-center sm:justify-end gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-bold text-slate-700 flex-wrap">
-                <span class="text-[10px] sm:text-xs text-slate-600 font-black hidden sm:inline">ڕێبەری ڕەنگەکان:</span>
-                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی ڕۆژی (ئەمڕۆ) بکە بۆ کارمەندەکە', 'info', 'ڕێنمایی')"
-                      class="cursor-pointer status-badge-present px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-white font-black text-[10px] sm:text-xs inline-flex items-center gap-0.5 sm:gap-1 active:scale-95" title="هاتووە">
-                    ✓ هاتووە
-                </span>
-                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی ڕۆژی (ئەمڕۆ) بکە بۆ کارمەندەکە', 'info', 'ڕێنمایی')"
-                      class="cursor-pointer status-badge-half px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-white font-black text-[10px] sm:text-xs inline-flex items-center gap-0.5 sm:gap-1 active:scale-95" title="نیو ڕۆژ">
-                    ◐ نیو ڕۆژ
-                </span>
-                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی ڕۆژی (ئەمڕۆ) بکە بۆ کارمەندەکە', 'info', 'ڕێنمایی')"
-                      class="cursor-pointer status-badge-absent px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-white font-black text-[10px] sm:text-xs inline-flex items-center gap-0.5 sm:gap-1 active:scale-95" title="نەهاتووە">
-                    ✗ نەهاتووە
-                </span>
+            <div class="flex items-center justify-center sm:justify-end gap-1.5 flex-wrap">
+                <span class="status-badge-present px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] inline-flex items-center gap-1">✓ هاتووە</span>
+                <span class="status-badge-half px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] inline-flex items-center gap-1">◐ نیو ڕۆژ</span>
+                <span class="status-badge-absent px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] inline-flex items-center gap-1">✗ نەهاتووە</span>
             </div>
         </div>
 
-        {{-- ئاگاداری پەنجەڕاکێشان لەسەر مۆبایل --}}
-        <div class="sm:hidden px-3 py-1 bg-teal-50/80 border-b border-teal-100 text-[10px] text-teal-800 font-bold flex items-center justify-between">
-            <span>👈 پەنجە بە لای چەپدا ڕابکێشە بۆ بینینی هەموو ڕۆژەکان</span>
-            <span class="font-mono text-[9px] text-teal-600">دەستکاری تەنها ئەمڕۆیە</span>
+        {{-- ڕێنمایی کورت --}}
+        <div class="px-2.5 sm:px-3.5 py-1.5 bg-teal-50 border-b-2 border-teal-100 text-[10px] sm:text-[11px] text-teal-900 font-bold flex items-center justify-between gap-2">
+            <span class="truncate">👆 کلیک لە خانەی <b>ئەمڕۆ</b> بکە بۆ گۆڕینی دۆخ — دووەم کلیک بۆ وردەکاری</span>
+            @if(!empty($holidayLabel))
+                <span class="shrink-0 text-[9px] sm:text-[10px] px-2 py-0.5 rounded-md bg-white border border-teal-200 text-teal-700 whitespace-nowrap">{{ $holidayLabel }} پشووە</span>
+            @endif
         </div>
 
-        {{-- خشتەی سەرەکی بە شێوازێکی زۆر ڕێک و ڕیسپۆنسیڤ --}}
-        <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
-            <table class="w-full min-w-[420px] sm:min-w-[760px] text-right border-collapse text-[11px] sm:text-xs table-fixed">
+        {{-- خشتەی سەرەکی --}}
+        <div class="att-scroll overflow-x-auto">
+            <table class="att-table text-right border-collapse text-[11px] sm:text-xs">
                 <thead>
-                    <tr class="bg-slate-200 text-slate-700 font-black border-b-2 border-slate-300 text-center">
+                    <tr class="bg-slate-100 text-slate-700 border-b-2 border-slate-300 text-center">
                         {{-- ژمارەی ڕیزبەند (#) --}}
-                        <th class="col-idx py-2.5 sm:py-3 px-1.5 sm:px-2 text-center sticky bg-slate-200 z-20 border-l-2 border-slate-300 font-mono text-slate-600 font-black">
+                        <th class="col-idx py-2.5 px-1 text-center bg-slate-100 border-l-2 border-slate-200 font-mono text-slate-500 font-black">
                             #
                         </th>
 
-                        {{-- ناو (لە ناوەڕاست) --}}
-                        <th class="col-name py-1.5 sm:py-3 px-1.5 sm:px-3 text-center sticky bg-slate-200 z-20 border-l-2 border-slate-300 font-black text-slate-700">
+                        {{-- ناو --}}
+                        <th class="col-name py-2 px-1.5 sm:px-3 text-center bg-slate-100 border-l-2 border-slate-300 font-black text-slate-800 text-[11px] sm:text-xs">
                             ناو
                         </th>
 
-                        {{-- ڕۆژەکان (شەممە تا هەینی) --}}
+                        {{-- ڕۆژەکان (بەبێ ڕۆژی پشوو) --}}
                         @foreach($days as $d)
-                            <th class="col-day py-1.5 sm:py-2 px-0.5 sm:px-1 border-l-2 border-slate-300 {{ $d['is_today'] ? 'bg-amber-200 text-amber-950 font-black border-amber-400' : ($d['is_holiday'] ? 'bg-slate-300/50 text-slate-700' : '') }}">
-                                <div class="flex flex-col items-center leading-tight whitespace-nowrap">
-                                    <span class="text-[9px] sm:text-xs font-black">{{ $d['day_name'] }}</span>
-                                    <span class="text-[8px] sm:text-[10px] font-mono font-bold opacity-75 mt-0.5">{{ $d['day_short'] }}</span>
+                            <th class="col-day py-1.5 px-0.5 border-l border-slate-200 {{ $d['is_today'] ? 'bg-amber-100 text-amber-950 border-l-2 border-amber-300' : '' }}">
+                                <div class="flex flex-col items-center leading-tight">
+                                    <span class="text-[9px] sm:text-[11px] font-black truncate max-w-full">{{ $d['day_name'] }}</span>
+                                    <span class="text-[8px] sm:text-[10px] font-mono font-bold text-slate-500 mt-0.5" dir="ltr">{{ $d['day_short'] }}</span>
                                     @if($d['is_today'])
-                                        <span class="text-[7px] sm:text-[9px] font-black px-0.5 sm:px-1.5 py-0.5 mt-0.5 rounded bg-amber-500 text-white leading-none border border-amber-600">ئەمڕۆ</span>
-                                    @elseif($d['is_holiday'])
-                                        <span class="text-[7px] sm:text-[9px] font-black px-0.5 sm:px-1 py-0.5 mt-0.5 rounded bg-slate-400 text-white leading-none">پشوو</span>
+                                        <span class="text-[7px] sm:text-[9px] font-black px-1 py-0.5 mt-0.5 rounded bg-amber-500 text-white leading-none">ئەمڕۆ</span>
                                     @endif
                                 </div>
                             </th>
                         @endforeach
 
                         @if($canSeeMoney)
-                        {{-- کردارەکان تەنها بۆ بەڕێوەبەر --}}
-                        <th class="col-actions py-3 px-2 text-center print:hidden">کردارەکان</th>
+                        <th class="col-actions py-2 px-2 text-center font-black text-slate-800 border-r-2 border-slate-300 print:hidden">کردارەکان</th>
                         @endif
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 font-medium">
+                <tbody class="font-medium">
                     {{-- ئەگەر هیچ کارمەندێک نەبوو --}}
                     <template x-if="filteredEmployees.length === 0">
                         <tr>
-                            <td :colspan="days.length + (isAdmin ? 2 : 1)" class="py-12 px-4 text-center bg-white">
-                                <div class="flex flex-col items-center justify-center gap-3">
-                                    <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center text-3xl border border-teal-200/80">
+                            <td :colspan="days.length + (isAdmin ? 3 : 2)" class="py-10 px-4 text-center bg-white">
+                                <div class="flex flex-col items-center justify-center gap-2.5">
+                                    <div class="size-14 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center text-3xl border-2 border-teal-200">
                                         👷
                                     </div>
-                                    <div class="text-sm font-black text-slate-800">هیچ کارمەندێک لە سیستەمدا نییە</div>
-                                    <p class="text-xs text-slate-500 max-w-sm">تکایە سەرەتا کارمەند زیاد بکە تا ناویان لە خشتەکە دەربکەوێت و بتوانی دەوامیان تۆمار بکەیت.</p>
+                                    <div class="text-sm font-black text-slate-800" x-text="searchQuery.trim() ? 'هیچ کارمەندێک بەم ناوە نەدۆزرایەوە' : 'هیچ کارمەندێک لە سیستەمدا نییە'"></div>
+                                    <p class="text-[11px] text-slate-500 max-w-xs font-bold leading-relaxed" x-show="!searchQuery.trim()">
+                                        تکایە سەرەتا کارمەند زیاد بکە تا ناویان لە خشتەکە دەربکەوێت و بتوانی دەوامیان تۆمار بکەیت.
+                                    </p>
                                     @if($canSeeMoney)
-                                    <button type="button" @click="openNewEmployeeModal()"
-                                            class="btn-emp-add mt-1 px-4 py-2.5 rounded-xl text-xs font-black inline-flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                                        <span>➕</span>
+                                    <button type="button" @click="openNewEmployeeModal()" x-show="!searchQuery.trim()"
+                                            class="btn-emp-add mt-1 px-4 py-2.5 rounded-xl text-xs inline-flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                                        <span>＋</span>
                                         <span>زیادکردنی کارمەندی نوێ</span>
                                     </button>
                                     @endif
@@ -270,67 +300,67 @@
                         </tr>
                     </template>
 
-                    {{-- خشتەی کارمەندان --}}
+                    {{-- ڕیزی کارمەندان --}}
                     <template x-for="(row, index) in filteredEmployees" :key="row.id">
-                        <tr class="hover:bg-slate-50/80 transition-colors group">
-                            
+                        <tr class="border-b border-slate-200 last:border-b-0 hover:bg-slate-50 transition-colors emp-row">
+
                             {{-- ژمارەی ڕیزبەند --}}
-                            <td class="col-idx py-2 px-1.5 text-center sticky bg-white group-hover:bg-slate-50 z-10 border-l-2 border-slate-300 font-mono font-bold text-slate-500 text-xs">
+                            <td class="col-idx py-1.5 px-1 text-center border-l-2 border-slate-200 font-mono font-bold text-slate-400 text-[11px]">
                                 <span x-text="index + 1"></span>
                             </td>
 
                             {{-- ناوی کارمەند --}}
-                            <td class="col-name py-1.5 sm:py-2 px-1.5 sm:px-3 text-center sticky bg-white group-hover:bg-slate-50 z-10 border-l-2 border-slate-300">
-                                <div :class="isAdmin ? 'cursor-pointer hover:text-teal-700' : 'cursor-default'" class="overflow-hidden text-center" @click="isAdmin ? openEmployeeDrawer(row) : null">
-                                    <span class="font-black text-slate-900 text-[11px] sm:text-sm truncate block text-center" x-text="row.name"></span>
-                                </div>
+                            <td class="col-name py-1.5 px-1.5 sm:px-3 border-l-2 border-slate-300">
+                                <button type="button"
+                                        @click="isAdmin ? openEmployeeDrawer(row) : null"
+                                        :class="isAdmin ? 'cursor-pointer hover:text-teal-700' : 'cursor-default'"
+                                        class="w-full text-center min-w-0">
+                                    <span class="font-black text-slate-900 text-[11px] sm:text-sm truncate block leading-tight" x-text="row.name"></span>
+                                    <span class="hidden sm:block text-[10px] text-slate-400 font-bold truncate" x-text="row.job_title_label"></span>
+                                </button>
                             </td>
 
-                            {{-- خانەکانی ڕۆژەکان بە شێوازێکی مۆدێرن و یەکسان --}}
+                            {{-- خانەکانی ڕۆژەکان --}}
                             <template x-for="day in days" :key="day.date">
-                                <td class="col-day p-0.5 sm:p-1.5 text-center border-l border-slate-200 relative group"
-                                    :class="day.is_today ? 'bg-amber-50 border-l-2 border-amber-300' : (day.is_holiday ? 'bg-slate-100/40' : '')">
-                                    
+                                <td class="col-day p-0.5 sm:p-1 text-center border-l border-slate-200 relative cell-td"
+                                    :class="day.is_today ? 'bg-amber-50/70 border-l-2 border-amber-200' : ''">
+
                                     <div @click="day.is_today ? toggleCell(row.id, day.date) : null"
                                          @contextmenu.prevent="if (day.is_today) openCellDetailModal(row, day)"
-                                         class="cell-box w-full rounded-xl flex items-center justify-center transition-all text-[10px] sm:text-xs font-black select-none"
+                                         :title="day.is_today ? 'کلیک بۆ گۆڕینی دۆخ' : 'تەنها دەوامی ئەمڕۆ دەگۆڕدرێت'"
+                                         class="cell-box w-full flex items-center justify-center transition-all font-black select-none"
                                          :class="[
                                             getCellStyle(row.cells[day.date]),
-                                            day.is_today ? 'cursor-pointer hover:scale-[1.03] active:scale-95' : 'cursor-not-allowed opacity-85'
+                                            day.is_today ? 'cursor-pointer active:scale-95' : 'cursor-not-allowed opacity-70'
                                          ]">
-                                        <span x-text="getCellDisplay(row.cells[day.date])"></span>
+                                        <span class="hidden sm:inline" x-text="getCellDisplay(row.cells[day.date])"></span>
+                                        <span class="sm:hidden text-sm" x-text="getCellIcon(row.cells[day.date])"></span>
                                     </div>
 
-                                    {{-- ئایکۆنی دەستکاری ورد لەسەر هۆڤەر (تەنها بۆ ئەمڕۆ) --}}
+                                    {{-- دەستکاری ورد (تەنها بۆ ئەمڕۆ، لەسەر دێسکتۆپ بە هۆڤەر) --}}
                                     <template x-if="day.is_today">
                                         <button type="button" @click.stop="openCellDetailModal(row, day)"
-                                                class="absolute top-0.5 left-0.5 opacity-0 group-hover:opacity-100 p-0.5 bg-white rounded-md text-[9px] text-slate-500 hover:text-teal-700 border-2 border-slate-300 print:hidden transition-all cursor-pointer"
-                                                title="دەستکاری کاتژمێری زیادە و سەرفیات">
-                                            ⚙️
+                                                class="hidden sm:flex absolute top-1 left-1 size-4 opacity-0 cell-gear items-center justify-center bg-white rounded text-[8px] text-slate-500 hover:text-teal-700 border border-slate-300 print:hidden transition-opacity cursor-pointer"
+                                                title="دەستکاری کاتی زیادە و خەرجی">
+                                            ⚙
                                         </button>
                                     </template>
                                 </td>
                             </template>
 
                             @if($canSeeMoney)
-                            {{-- کردارەکان: تەنها بۆ بەڕێوەبەر بە ئایکۆن --}}
-                            <td class="py-1.5 sm:py-2 px-1 sm:px-2 text-center print:hidden">
+                            {{-- کردارەکان — تەنها لەسەر دێسکتۆپ (لەسەر مۆبایل لە پەنجەرەی وردەکاریدان) --}}
+                            <td class="col-actions py-1.5 px-2 text-center border-r-2 border-slate-300 print:hidden">
                                 <div class="flex items-center justify-center gap-1">
                                     <button type="button" @click="openEmployeeDrawer(row)"
-                                            class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg text-[10px] sm:text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 border-2 border-teal-300 transition-all cursor-pointer flex items-center justify-center"
-                                            title="بینینی وردەکاری و حیساباتی خۆکار">
-                                        👁️
-                                    </button>
+                                            class="size-7 rounded-lg text-xs bg-teal-50 hover:bg-teal-100 text-teal-800 border-2 border-teal-300 transition-all cursor-pointer flex items-center justify-center"
+                                            title="وردەکاری و حیسابات">👁️</button>
                                     <button type="button" @click="openEditWageModal(row)"
-                                            class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg text-[10px] sm:text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 transition-all cursor-pointer flex items-center justify-center"
-                                            title="دەستکاری مووچە و پیشەی کارمەند">
-                                        ✏️
-                                    </button>
+                                            class="size-7 rounded-lg text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 transition-all cursor-pointer flex items-center justify-center"
+                                            title="دەستکاری مووچە و پیشە">✏️</button>
                                     <button type="button" @click="confirmDeleteEmployee(row)"
-                                            class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg text-[10px] sm:text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-300 transition-all cursor-pointer flex items-center justify-center"
-                                            title="سڕینەوەی ئەم کارمەندە">
-                                        🗑️
-                                    </button>
+                                            class="size-7 rounded-lg text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-300 transition-all cursor-pointer flex items-center justify-center"
+                                            title="سڕینەوەی کارمەند">🗑️</button>
                                 </div>
                             </td>
                             @endif
@@ -343,50 +373,62 @@
 
     {{-- ٤. بەشی وردەکاری تەواوی وەستا و حیساباتی خۆکار (Worker Details Drawer/Modal) - تەنها بۆ بەڕێوەبەر --}}
     @if($canSeeMoney)
-    <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
-        <div @click.away="if (!showEditWageModal && !showCellModal) showEmployeeDrawer = false" class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col border-2 border-slate-300 overflow-hidden">
-            
+    <div x-show="showEmployeeDrawer" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div @click.away="if (!showEditWageModal && !showCellModal) showEmployeeDrawer = false"
+             class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-3xl flex flex-col border-2 border-slate-300 overflow-hidden">
+
             {{-- سەرپەڕە --}}
-            <div class="p-3 sm:p-5 bg-teal-800 text-white flex items-center justify-between gap-2 sm:gap-3 shrink-0">
-                <div class="flex items-center gap-2">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h2 class="text-base sm:text-lg font-black text-white" x-text="selectedEmployee?.name"></h2>
-                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-teal-700 text-teal-200" x-text="selectedEmployee?.job_title_label"></span>
+            <div class="p-3 sm:p-4 bg-teal-800 text-white shrink-0 space-y-2.5">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <h2 class="text-sm sm:text-lg font-black text-white truncate" x-text="selectedEmployee?.name"></h2>
+                            <span class="shrink-0 px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-bold bg-teal-700 text-teal-100" x-text="selectedEmployee?.job_title_label"></span>
                         </div>
-                        <div class="text-xs text-teal-200 font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+                        <div class="text-[11px] sm:text-xs text-teal-200 mt-1 flex items-center gap-1.5 flex-wrap">
                             <span x-text="selectedEmployee?.salary_type === 'monthly' ? 'مووچەی مانگانە:' : (selectedEmployee?.salary_type === 'weekly' ? 'مووچەی حەفتانە:' : 'مووچەی ڕۆژانە:')"></span>
-                            <b class="text-white font-bold text-sm" x-text="formatNumber(selectedEmployee?.daily_wage) + ' د.ع'"></b>
-                            <span class="text-[10px] bg-teal-900/80 text-teal-200 px-1.5 py-0.5 rounded font-bold" x-text="selectedEmployee?.salary_type_label || (selectedEmployee?.salary_type === 'monthly' ? 'مانگانە' : (selectedEmployee?.salary_type === 'weekly' ? 'حەفتانە' : 'ڕۆژانە'))"></span>
+                            <b class="text-white font-black font-mono" x-text="formatNumber(selectedEmployee?.daily_wage) + ' د.ع'"></b>
                             <template x-if="selectedEmployee?.salary_type === 'monthly' || selectedEmployee?.salary_type === 'weekly'">
-                                <span class="text-[11px] text-teal-300 font-normal">
-                                    (ڕۆژانەی هاوتا: <span class="font-bold text-white" x-text="formatNumber(selectedEmployee?.effective_daily_wage)"></span> د.ع)
+                                <span class="text-[10px] sm:text-[11px] text-teal-300">
+                                    (ڕۆژانەی هاوتا: <span class="font-bold text-white font-mono" x-text="formatNumber(selectedEmployee?.effective_daily_wage)"></span> د.ع)
                                 </span>
                             </template>
                         </div>
                     </div>
+
+                    <div class="flex items-center gap-1 shrink-0">
+                        {{-- دەستکاری و سڕینەوە — گرنگە بۆ مۆبایل چونکە ستوونی کردارەکان شاراوەیە --}}
+                        <button type="button" @click="openEditWageModal(selectedEmployee)"
+                                class="size-8 rounded-xl bg-teal-700 hover:bg-teal-600 text-white flex items-center justify-center text-xs cursor-pointer transition-all active:scale-95"
+                                title="دەستکاری مووچە و پیشە">✏️</button>
+                        <button type="button" @click="confirmDeleteEmployee(selectedEmployee)"
+                                class="size-8 rounded-xl bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center text-xs cursor-pointer transition-all active:scale-95"
+                                title="سڕینەوەی کارمەند">🗑️</button>
+                        <button type="button" @click="showEmployeeDrawer = false"
+                                class="size-8 rounded-xl bg-teal-900/70 hover:bg-teal-900 text-teal-100 hover:text-white flex items-center justify-center text-base font-bold cursor-pointer transition-all">✕</button>
+                    </div>
                 </div>
 
+                {{-- کردار و هەڵبژاردنی مانگ --}}
                 <div class="flex items-center gap-2">
                     <button type="button" @click="toggleDrawerPayment()"
-                            class="px-3.5 py-1.5 rounded-xl text-xs font-black cursor-pointer flex items-center gap-1.5 transition-all"
+                            class="flex-1 sm:flex-initial px-3.5 h-9 rounded-xl text-[11px] sm:text-xs font-black cursor-pointer flex items-center justify-center gap-1.5 transition-all active:scale-95"
                             :class="drawerTab === 'payment' ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'">
                         <span x-text="drawerTab === 'payment' ? '📋' : '💸'"></span>
                         <span x-text="drawerTab === 'payment' ? 'بینینی دەوام' : 'پێدانی پارە'"></span>
                     </button>
 
-                    <div class="flex items-center gap-1.5 bg-teal-900/90 px-2.5 py-1 rounded-xl border border-teal-700">
-                        <span class="text-[11px] text-teal-200 font-bold">مانگ:</span>
+                    <div class="flex items-center gap-1.5 bg-teal-900/80 px-2.5 h-9 rounded-xl border border-teal-700 shrink-0">
+                        <span class="text-[10px] sm:text-[11px] text-teal-200 font-bold">مانگ:</span>
                         <input type="month" x-model="selectedMonth" @change="loadEmployeeMonthDetails()"
-                               class="bg-transparent text-white text-xs font-mono font-bold cursor-pointer focus:outline-hidden">
+                               class="bg-transparent text-white text-[11px] sm:text-xs font-mono font-bold cursor-pointer focus:outline-hidden w-[7.5rem]">
                     </div>
-                    <button type="button" @click="showEmployeeDrawer = false" class="text-teal-200 hover:text-white text-xl font-bold p-1 leading-none cursor-pointer">✕</button>
                 </div>
             </div>
 
             {{-- کارتی حیساباتی خۆکار --}}
-            <div class="p-3.5 bg-slate-50 border-b border-slate-200 shrink-0">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-center text-xs">
+            <div class="p-2.5 sm:p-3.5 bg-slate-50 border-b-2 border-slate-200 shrink-0">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 text-center text-xs">
                     {{-- ١. ڕۆژانی دەوام --}}
                     <div class="bg-white p-2.5 rounded-xl border-2 border-slate-300">
                         <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی دەوام لە مانگدا</div>
@@ -456,8 +498,8 @@
                         <span>📅</span>
                         <span>تۆماری دەوامی ڕۆژانەی مانگ</span>
                     </h3>
-                    <div class="border-2 border-slate-300 rounded-2xl overflow-hidden bg-white">
-                        <table class="w-full text-right">
+                    <div class="border-2 border-slate-300 rounded-2xl overflow-x-auto att-scroll bg-white">
+                        <table class="w-full min-w-[34rem] text-right">
                             <thead class="bg-slate-100/80 text-slate-700 font-black border-b border-slate-200 text-xs">
                                 <tr>
                                     <th class="py-2.5 px-3 text-right">ڕۆژ و بەروار</th>
@@ -530,8 +572,8 @@
                             <span>وەسڵەکانی پارەدان لە قاصە</span>
                         </h3>
                     </div>
-                    <div class="border border-slate-200 rounded-xl overflow-hidden">
-                        <table class="w-full text-right">
+                    <div class="border-2 border-slate-300 rounded-2xl overflow-x-auto att-scroll bg-white">
+                        <table class="w-full min-w-[26rem] text-right">
                             <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-center">
                                 <tr>
                                     <th class="p-2 text-right">ژ.وەسڵ</th>
@@ -649,10 +691,10 @@
     </div>
 
     {{-- ٥. مۆداڵی سێتینگی کارگە و مەرجەکانی بەڕێوەبەر (Settings Modal) --}}
-    <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showSettingsModal = false" class="bg-white rounded-3xl w-full max-w-lg border-2 border-slate-300 overflow-hidden text-xs">
-            
-            <form @submit.prevent="saveSettings()">
+    <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-3">
+        <div @click.away="showSettingsModal = false" class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-lg border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
+
+            <form @submit.prevent="saveSettings()" class="flex flex-col min-h-0 flex-1">
                 {{-- سەرپەڕە --}}
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
@@ -687,7 +729,7 @@
                     </button>
                 </div>
 
-                <div class="p-5 space-y-4 font-bold text-slate-700 max-h-[60vh] overflow-y-auto">
+                <div class="p-4 sm:p-5 space-y-4 font-bold text-slate-700 flex-1 min-h-0 overflow-y-auto">
                     
                     {{-- ١. بەشی کاتی دەوام و پشوو --}}
                     <div x-show="settingsTab === 'hours'" class="space-y-3.5">
@@ -894,9 +936,9 @@
 
 
     {{-- ٧. مۆداڵی وەستای نوێ (New Employee Modal) --}}
-    <div x-show="showNewEmployeeModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showNewEmployeeModal = false" class="bg-white rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs shadow-2xl">
-            <form @submit.prevent="saveNewEmployee()">
+    <div x-show="showNewEmployeeModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-3">
+        <div @click.away="showNewEmployeeModal = false" class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
+            <form @submit.prevent="saveNewEmployee()" class="flex flex-col min-h-0 flex-1">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-white">وەستای نوێ</h2>
@@ -905,7 +947,7 @@
                     <button type="button" @click="showNewEmployeeModal = false" class="text-teal-200 hover:text-white text-lg font-bold cursor-pointer">✕</button>
                 </div>
 
-                <div class="p-4 sm:p-5 space-y-3.5 font-bold text-slate-700">
+                <div class="p-4 sm:p-5 space-y-3.5 font-bold text-slate-700 flex-1 min-h-0 overflow-y-auto">
                     <div>
                         <label class="block mb-1 text-slate-700 text-xs">ناو <span class="text-rose-500">*</span></label>
                         <input type="text" x-model="newEmpForm.name" required
@@ -965,9 +1007,9 @@
     </div>
 
     {{-- ٨. مۆداڵی دەستکاری مووچە (Edit Wage Modal) --}}
-    <div x-show="showEditWageModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showEditWageModal = false" class="bg-white rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs shadow-2xl">
-            <form @submit.prevent="saveEditWage()">
+    <div x-show="showEditWageModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-3">
+        <div @click.away="showEditWageModal = false" class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
+            <form @submit.prevent="saveEditWage()" class="flex flex-col min-h-0 flex-1">
                 <div class="p-4 bg-teal-800 text-white flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-white" x-text="'دەستکاری: ' + (editWageForm.name || '')"></h2>
@@ -976,7 +1018,7 @@
                     <button type="button" @click="showEditWageModal = false" class="text-teal-200 hover:text-white text-lg font-bold cursor-pointer">✕</button>
                 </div>
 
-                <div class="p-4 sm:p-5 space-y-3.5 font-bold text-slate-700">
+                <div class="p-4 sm:p-5 space-y-3.5 font-bold text-slate-700 flex-1 min-h-0 overflow-y-auto">
                     <div>
                         <label class="block mb-1 text-slate-700 text-xs">ناو <span class="text-rose-500">*</span></label>
                         <input type="text" x-model="editWageForm.name" required
@@ -1035,9 +1077,9 @@
     @endif
 
     {{-- ٩. مۆداڵی دەستکاری وردی خانەی سەح (Cell Detail Modal) --}}
-    <div x-show="showCellModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3">
-        <div @click.away="showCellModal = false" class="bg-white rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs">
-            <form @submit.prevent="saveCellDetail()">
+    <div x-show="showCellModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-3">
+        <div @click.away="showCellModal = false" class="modal-sheet bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm border-2 border-slate-300 overflow-hidden text-xs flex flex-col">
+            <form @submit.prevent="saveCellDetail()" class="flex flex-col min-h-0 flex-1">
                 <div class="p-3.5 bg-teal-800 text-white flex items-center justify-between">
                     <div>
                         <h2 class="text-sm font-black text-white" x-text="(activeCellEmployee?.name || '')"></h2>
@@ -1046,7 +1088,7 @@
                     <button type="button" @click="showCellModal = false" class="text-teal-200 hover:text-white text-lg font-bold">✕</button>
                 </div>
 
-                <div class="p-3.5 space-y-3 font-bold text-slate-700">
+                <div class="p-3.5 space-y-3 font-bold text-slate-700 flex-1 min-h-0 overflow-y-auto">
                     <div>
                         <label class="block mb-1 text-slate-600">دۆخی ئامادەبوون</label>
                         <select x-model="cellForm.status" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
@@ -1184,7 +1226,7 @@
          x-transition:leave-start="opacity-100 translate-y-0 scale-100"
          x-transition:leave-end="opacity-0 translate-y-6 scale-95"
          x-cloak
-         class="fixed bottom-6 right-6 z-[9999] max-w-md rounded-2xl p-4 flex items-center gap-3 border text-xs font-bold text-white select-none backdrop-blur-md transition-all"
+         class="fixed bottom-3 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[9999] sm:max-w-md rounded-2xl p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 border text-xs font-bold text-white select-none backdrop-blur-md transition-all"
          :class="toast.type === 'error' ? 'bg-rose-900/95 border-rose-700' : 'bg-slate-900/95 border-teal-500/60'">
         
         <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-base font-black"
@@ -1206,8 +1248,8 @@
 function workshopEmployeesApp() {
     return {
         isAdmin: {{ $canSeeMoney ? 'true' : 'false' }},
-        rangeType: '{{ $rangeType }}',
-        weekOffset: {{ $weekOffset ?? 0 }},
+        mode: '{{ $mode }}',
+        offset: {{ $offset ?? 0 }},
         from: '{{ $from }}',
         to: '{{ $to }}',
         searchQuery: '',
@@ -1383,28 +1425,36 @@ function workshopEmployeesApp() {
             });
         },
 
-        setRange(type) {
-            window.location.href = `{{ route('workshop.employees') }}?range_type=${type}`;
+        /* کۆی ئامادەبوون، نیو ڕۆژ و غیاب بۆ ئەم ماوەیە */
+        get rangeTotals() {
+            let present = 0, half = 0, absent = 0;
+            this.filteredEmployees.forEach(row => {
+                this.days.forEach(day => {
+                    const cell = row.cells[day.date];
+                    if (!cell) return;
+                    if (cell.status === 'present') present++;
+                    else if (cell.status === 'half_day') half++;
+                    else if (cell.status === 'absent') absent++;
+                });
+            });
+            return { present, half, absent };
         },
 
-        changeWeekOffset(diff) {
-            if (this.rangeType === 'this_month' || this.rangeType === 'last_month') {
-                if (diff < 0) {
-                    window.location.href = `{{ route('workshop.employees') }}?range_type=last_month`;
-                } else {
-                    window.location.href = `{{ route('workshop.employees') }}?range_type=this_month`;
-                }
-                return;
-            }
-            const newOffset = this.weekOffset + diff;
-            window.location.href = `{{ route('workshop.employees') }}?week_offset=${newOffset}`;
+        /* گۆڕینی جۆری ماوە (هەفتە / مانگ) */
+        goRange(mode, offset) {
+            window.location.href = `{{ route('workshop.employees') }}?mode=${mode}&offset=${offset}`;
+        },
+
+        /* ڕۆیشتن بۆ ماوەی پێشوو (-1) یان داهاتوو (+1) */
+        shiftRange(diff) {
+            this.goRange(this.mode, this.offset + diff);
         },
 
         getCellStyle(cell) {
-            if (!cell || !cell.status) return 'status-badge-empty hover:bg-slate-100 hover:text-slate-600';
-            if (cell.status === 'present') return 'status-badge-present hover:brightness-110';
-            if (cell.status === 'half_day') return 'status-badge-half hover:brightness-110';
-            if (cell.status === 'absent') return 'status-badge-absent hover:brightness-110';
+            if (!cell || !cell.status) return 'status-badge-empty';
+            if (cell.status === 'present') return 'status-badge-present';
+            if (cell.status === 'half_day') return 'status-badge-half';
+            if (cell.status === 'absent') return 'status-badge-absent';
             return 'status-badge-empty';
         },
 
@@ -1414,6 +1464,15 @@ function workshopEmployeesApp() {
             if (cell.status === 'half_day') return '◐ نیو ڕۆژ';
             if (cell.status === 'absent') return '✗ نەهاتووە';
             return '—';
+        },
+
+        /* هێمای کورت بۆ شاشەی بچووک */
+        getCellIcon(cell) {
+            if (!cell || !cell.status) return '–';
+            if (cell.status === 'present') return '✓';
+            if (cell.status === 'half_day') return '◐';
+            if (cell.status === 'absent') return '✗';
+            return '–';
         },
 
         async toggleCell(empId, date) {
@@ -1599,6 +1658,10 @@ function workshopEmployeesApp() {
                 const data = await res.json();
                 if (data.ok) {
                     this.matrix = this.matrix.filter(e => e.id !== row.id);
+                    if (this.selectedEmployee?.id === row.id) {
+                        this.showEmployeeDrawer = false;
+                        this.selectedEmployee = null;
+                    }
                     this.showToast(data.message, 'success');
                 } else {
                     this.showToast(data.message || 'هەڵە لە سڕینەوەدا', 'error');

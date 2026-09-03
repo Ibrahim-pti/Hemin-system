@@ -430,9 +430,9 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $viewRes->assertStatus(200);
         $this->assertFalse($viewRes->viewData('canSeeMoney'));
         $viewRes->assertSee('وەستا سامان');
-        $viewRes->assertSee('جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان');
+        $viewRes->assertSee('دەفتەری دەوامی کارمەندان');
         // نابێت دوگمە و دەسەڵاتە داراییەکانی لای بەڕێوەبەر ببینێت
-        $viewRes->assertDontSee('سێتینگی تاخیربوون و دەوام');
+        $viewRes->assertDontSee('ڕێکخستنی یاساکانی دەوام');
         $viewRes->assertDontSee('ڕێکخستنی یاسا و مەرجەکانی دەوام');
         $viewRes->assertDontSee('کردارەکان');
 
@@ -490,7 +490,7 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $adminViewRes = $this->get('/workshop/employees');
         $adminViewRes->assertStatus(200);
         $this->assertTrue($adminViewRes->viewData('canSeeMoney'));
-        $adminViewRes->assertSee('سێتینگی تاخیربوون و دەوام');
+        $adminViewRes->assertSee('ڕێکخستنی یاساکانی دەوام');
         $adminViewRes->assertSee('ڕێکخستنی یاسا و مەرجەکانی دەوام');
         $adminViewRes->assertSee('کردارەکان');
 
@@ -498,17 +498,75 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $this->assertEquals(45000, $adminMatrix[0]['daily_wage']);
     }
 
-    public function test_employees_page_defaults_to_this_month()
+    public function test_employees_page_defaults_to_this_week()
     {
         $this->actingAs($this->admin);
 
-        // سەردانیکردنی لاپەڕە بەبێ دیاریکردنی range_type
+        // سەردانیکردنی لاپەڕە بەبێ دیاریکردنی هیچ فلتەرێک
         $res = $this->get('/workshop/employees');
         $res->assertStatus(200);
 
-        // دەبێت بای دیفەولت ئەم مانگە (this_month) بێت و لە ١ی مانگەوە دەستپێبکات
-        $this->assertEquals('this_month', $res->viewData('rangeType'));
-        $this->assertEquals(now()->startOfMonth()->toDateString(), $res->viewData('from'));
+        // بای دیفەولت دەبێت حەفتە بە حەفتە بێت و لە شەممەوە دەستپێبکات
+        $this->assertEquals('week', $res->viewData('mode'));
+        $this->assertEquals(0, $res->viewData('offset'));
+        $this->assertEquals(
+            now()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString(),
+            $res->viewData('from')
+        );
+    }
+
+    public function test_weekly_holiday_column_is_hidden_from_the_ledger()
+    {
+        $this->actingAs($this->admin);
+
+        \App\Models\Setting::set('workshop_weekly_holiday', 'friday');
+
+        $res = $this->get('/workshop/employees?mode=week&offset=0');
+        $res->assertStatus(200);
+
+        $days = $res->viewData('days');
+
+        // هەینی پشووە — بۆیە نابێت هیچ ستوونێکی بۆ نیشان بدرێت
+        $this->assertCount(6, $days);
+        foreach ($days as $day) {
+            $this->assertNotEquals(
+                'Friday',
+                \Carbon\Carbon::parse($day['date'])->format('l'),
+                'ڕۆژی پشووی هەفتانە نابێت لە خشتەکەدا دەربکەوێت.'
+            );
+            $this->assertFalse($day['is_holiday']);
+        }
+    }
+
+    public function test_all_days_are_shown_when_there_is_no_weekly_holiday()
+    {
+        $this->actingAs($this->admin);
+
+        \App\Models\Setting::set('workshop_weekly_holiday', 'none');
+
+        $res = $this->get('/workshop/employees?mode=week&offset=0');
+        $res->assertStatus(200);
+
+        $this->assertCount(7, $res->viewData('days'));
+    }
+
+    public function test_range_can_be_shifted_by_week_and_switched_to_month()
+    {
+        $this->actingAs($this->admin);
+
+        // هەفتەی پێشوو
+        $prev = $this->get('/workshop/employees?mode=week&offset=-1');
+        $prev->assertStatus(200);
+        $this->assertEquals(
+            now()->subWeek()->startOfWeek(\Carbon\Carbon::SATURDAY)->toDateString(),
+            $prev->viewData('from')
+        );
+
+        // گۆڕین بۆ مانگ بە مانگ
+        $month = $this->get('/workshop/employees?mode=month&offset=0');
+        $month->assertStatus(200);
+        $this->assertEquals('month', $month->viewData('mode'));
+        $this->assertEquals(now()->startOfMonth()->toDateString(), $month->viewData('from'));
     }
 }
 
