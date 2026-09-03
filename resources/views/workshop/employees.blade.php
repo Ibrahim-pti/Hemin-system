@@ -53,31 +53,31 @@
 <div x-data="workshopEmployeesApp()" x-init="init()" class="space-y-3 sm:space-y-3.5 select-none" dir="rtl">
 
     {{-- ١. هێڵی سەرەوە: پەرتکراو بە شێوازی مۆدێرن و تەواو ڕیسپۆنسیڤ --}}
-    <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200 shadow-2xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+    <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200 shadow-2xs flex flex-col gap-3">
         
-        {{-- ڕیزی یەکەم: ناونیشان + دوگمەی کردارەکان بۆ مۆبایل و دێسکتۆپ --}}
-        <div class="flex items-center justify-between gap-2.5 w-full lg:w-auto">
+        {{-- ڕیزی سەرەوە: ناونیشان + دوگمەی کردارەکان بۆ مۆبایل و دێسکتۆپ --}}
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full">
             <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-9 h-9 rounded-xl bg-teal-700 text-white flex items-center justify-center text-lg shrink-0 shadow-xs">
                     📋
                 </div>
                 <div class="min-w-0">
-                    <h1 class="text-xs sm:text-base font-black text-slate-900 leading-tight truncate">جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان</h1>
+                    <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight truncate">جەدوەلی ئامادەبوونی ڕۆژانەی کارمەندان</h1>
                     <p class="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate">تۆمارکردنی ئامادەبوون، کاتی زیادە و غیابات</p>
                 </div>
             </div>
 
             @if($canSeeMoney)
             {{-- دوگمەکانی کردار بۆ بەڕێوەبەر --}}
-            <div class="flex items-center gap-1.5 shrink-0">
+            <div class="flex items-center gap-2 shrink-0">
                 <button type="button" @click="openNewEmployeeModal()"
-                        class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-black bg-teal-800 hover:bg-teal-900 text-white shadow-2xs flex items-center gap-1 transition-all cursor-pointer">
-                    <span>+</span>
-                    <span>کارمەند</span>
+                        class="px-3 py-2 rounded-xl text-xs font-black bg-teal-700 hover:bg-teal-800 text-white shadow-sm flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                    <span>➕</span>
+                    <span>کارمەندی نوێ</span>
                 </button>
 
                 <button type="button" @click="showSettingsModal = true"
-                        class="p-1.5 sm:p-2 rounded-xl text-slate-600 hover:bg-slate-100 bg-slate-50 border border-slate-200 transition-all cursor-pointer text-xs sm:text-sm shadow-2xs"
+                        class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 bg-slate-50 border border-slate-200 transition-all cursor-pointer text-sm shadow-2xs"
                         title="سێتینگی تاخیربوون و دەوام">
                     ⚙️
                 </button>
@@ -86,40 +86,38 @@
         </div>
 
         {{-- فلتەری ماوە و بەروار --}}
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-2 w-full lg:w-auto">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 w-full pt-1.5 border-t border-slate-100">
             <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-2xl border border-slate-200 shadow-2xs w-full sm:w-auto justify-between sm:justify-start">
-                {{-- گەڕانەوە بۆ هەفتەی پێشوو --}}
+                {{-- گەڕانەوە بۆ پێشوو --}}
                 <button type="button" @click="changeWeekOffset(-1)"
-                        title="هەفتەی پێشوو"
-                        class="size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs shadow-2xs transition-all cursor-pointer shrink-0">
+                        title="پێشوو"
+                        class="size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs shadow-2xs transition-all cursor-pointer shrink-0 active:scale-95">
                     ←
                 </button>
 
-                {{-- سێلێکتی فلتەری کات --}}
-                <div class="relative flex items-center flex-1 sm:flex-initial">
-                    <span class="absolute right-2 text-slate-400 pointer-events-none text-xs">📅</span>
+                {{-- سێلێکتی فلتەری کات بێ ئایکۆنی تێکەڵبوو --}}
+                <div class="flex-1 sm:flex-initial">
                     <select x-model="rangeType" @change="setRange(rangeType)"
-                            class="w-full sm:w-auto bg-white text-slate-800 font-black text-xs pr-7 pl-5 py-1.5 rounded-xl border border-slate-200 hover:border-teal-600 focus:outline-hidden focus:ring-2 focus:ring-teal-500/20 cursor-pointer shadow-2xs transition-all appearance-none text-center">
+                            class="w-full sm:w-auto bg-white text-slate-800 font-black text-xs px-3 py-2 rounded-xl border border-slate-200 hover:border-teal-600 focus:outline-hidden focus:ring-2 focus:ring-teal-500/20 cursor-pointer shadow-2xs transition-all text-center">
                         <option value="this_month">ئەم مانگە (سەرەمانگ بۆ سەرەمانگ)</option>
                         <option value="this_week">ئەم هەفتەیە (حەفتە بە حەفتە)</option>
                         <option value="last_month">مانگی پێشوو</option>
                         <option value="last_week">هەفتەی پێشوو</option>
                     </select>
-                    <span class="absolute left-2 text-slate-400 pointer-events-none text-[9px]">▼</span>
                 </div>
 
-                {{-- ڕۆیشتن بۆ هەفتەی دواتر --}}
+                {{-- ڕۆیشتن بۆ دواتر --}}
                 <button type="button" @click="changeWeekOffset(1)"
-                        title="هەفتەی دواتر"
-                        class="size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs shadow-2xs transition-all cursor-pointer shrink-0">
+                        title="دواتر"
+                        class="size-8 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs shadow-2xs transition-all cursor-pointer shrink-0 active:scale-95">
                     →
                 </button>
             </div>
 
             {{-- بەرواری ئەم ماوەیە --}}
-            <div class="flex items-center justify-center whitespace-nowrap font-mono text-[11px] font-bold text-teal-950 bg-teal-50/80 px-2.5 py-1.5 rounded-xl border border-teal-200/80 shadow-2xs select-text w-full sm:w-auto shrink-0" dir="ltr">
+            <div class="inline-flex items-center justify-center font-mono text-xs font-bold text-teal-950 bg-teal-50/90 px-3 py-2 rounded-xl border border-teal-200/80 shadow-2xs select-text w-full sm:w-auto shrink-0 text-center" dir="ltr">
                 <span>{{ str_replace('-', '/', $from) }}</span>
-                <span class="text-teal-600 font-bold mx-1.5 text-[10px]">تا</span>
+                <span class="text-teal-600 font-bold mx-2 text-[11px]">تا</span>
                 <span>{{ str_replace('-', '/', $to) }}</span>
             </div>
         </div>
@@ -129,17 +127,26 @@
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         
         {{-- بارێکی باریک بۆ گەڕان و هێماکان --}}
-        <div class="px-3 sm:px-3.5 py-2 sm:py-2.5 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-50/60">
+        <div class="px-3 sm:px-3.5 py-2.5 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-50/60">
             <div class="flex items-center gap-2 flex-1 w-full sm:max-w-xs">
                 <input type="text" x-model="searchQuery" placeholder="🔍 گەڕان بە ناوی کارمەند..."
-                       class="w-full text-xs px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-600 bg-white font-medium shadow-2xs">
+                       class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-600 bg-white font-medium shadow-2xs">
             </div>
 
-            <div class="flex items-center justify-center sm:justify-end gap-2 sm:gap-2.5 text-[10px] sm:text-[11px] font-bold text-slate-600 flex-wrap">
-                <span class="flex items-center gap-1 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-lg text-emerald-800"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> هاتووە</span>
-                <span class="flex items-center gap-1 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-lg text-amber-800"><span class="w-2 h-2 rounded-full bg-amber-500"></span> نیو ڕۆژ</span>
-                <span class="flex items-center gap-1 bg-rose-50 border border-rose-200/60 px-2 py-0.5 rounded-lg text-rose-800"><span class="w-2 h-2 rounded-full bg-rose-500"></span> نەهاتووە</span>
-                <span class="text-amber-800 font-bold hidden md:inline">| دەستکاری تەنها بۆ (ئەمڕۆ) چالاکە</span>
+            <div class="flex items-center justify-center sm:justify-end gap-2 text-[10px] sm:text-[11px] font-bold text-slate-600 flex-wrap">
+                <span class="text-[10px] text-slate-400 hidden xs:inline">ڕێبەری ڕەنگەکان:</span>
+                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی کارمەندەکە لە ژێر (ئەمڕۆ) بکە', 'info', 'ڕێنمایی')"
+                      class="cursor-pointer flex items-center gap-1 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-lg text-emerald-800 active:scale-95" title="ڕێبەری ڕەنگ">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> هاتووە
+                </span>
+                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی کارمەندەکە لە ژێر (ئەمڕۆ) بکە', 'info', 'ڕێنمایی')"
+                      class="cursor-pointer flex items-center gap-1 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-lg text-amber-800 active:scale-95" title="ڕێبەری ڕەنگ">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span> نیو ڕۆژ
+                </span>
+                <span @click="showToast('بۆ تۆمارکردنی دەوام، لە خشتەکەی خوارەوە کلیک لە خانەی کارمەندەکە لە ژێر (ئەمڕۆ) بکە', 'info', 'ڕێنمایی')"
+                      class="cursor-pointer flex items-center gap-1 bg-rose-50 border border-rose-200/60 px-2 py-0.5 rounded-lg text-rose-800 active:scale-95" title="ڕێبەری ڕەنگ">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> نەهاتووە
+                </span>
             </div>
         </div>
 
@@ -184,6 +191,29 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium">
+                    {{-- ئەگەر هیچ کارمەندێک نەبوو --}}
+                    <template x-if="filteredEmployees.length === 0">
+                        <tr>
+                            <td :colspan="days.length + (isAdmin ? 2 : 1)" class="py-12 px-4 text-center bg-white">
+                                <div class="flex flex-col items-center justify-center gap-3">
+                                    <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center text-3xl border border-teal-200/80 shadow-xs">
+                                        👷
+                                    </div>
+                                    <div class="text-sm font-black text-slate-800">هیچ کارمەندێک لە سیستەمدا نییە</div>
+                                    <p class="text-xs text-slate-500 max-w-sm">تکایە سەرەتا کارمەند زیاد بکە تا ناویان لە خشتەکە دەربکەوێت و بتوانی دەوامیان تۆمار بکەیت.</p>
+                                    @if($canSeeMoney)
+                                    <button type="button" @click="openNewEmployeeModal()"
+                                            class="mt-1 px-4 py-2 rounded-xl text-xs font-black bg-teal-700 hover:bg-teal-800 text-white shadow-sm inline-flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                                        <span>➕</span>
+                                        <span>زیادکردنی کارمەندی نوێ</span>
+                                    </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+
+                    {{-- خشتەی کارمەندان --}}
                     <template x-for="(row, index) in filteredEmployees" :key="row.id">
                         <tr class="hover:bg-slate-50/80 transition-colors group">
                             
