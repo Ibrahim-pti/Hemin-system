@@ -118,6 +118,49 @@
 
     /* پەنجەرەکان لەسەر مۆبایل — بەرزی ڕاستەقینەی شاشە (dvh) بۆ ئەوەی سەری بارەکە نەیشارێتەوە */
     .modal-sheet { max-height: 92vh; max-height: 92dvh; }
+
+    /* ── سەرپەڕەی پەنجەرەی وردەکاری ──
+       هەموو دوگمەکان یەک زمانی ڕەنگیان هەیە: شەفافی سپی لەسەر تیڵی تۆخ.
+       بەم شێوەیە هیچ ڕەنگێکی تیژ لەگەڵ ڕەنگی سەرپەڕەکە نانێتەوە. */
+    .head-icon-btn {
+        background-color: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: #ffffff;
+        transition: background-color 0.15s, border-color 0.15s;
+    }
+    .head-icon-btn:hover {
+        background-color: rgba(255, 255, 255, 0.24);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+    /* سڕینەوە تەنها لە کاتی هۆڤەردا ئاگادار دەکاتەوە */
+    .head-icon-btn.is-danger:hover {
+        background-color: #be123c;
+        border-color: #9f1239;
+    }
+
+    /* دوگمەی سەرەکی سەرپەڕە — سپی لەسەر تیڵ، ڕوون و بێ ڕەنگی زیادە */
+    .head-action-btn {
+        background-color: #ffffff;
+        border: 1px solid #ffffff;
+        color: #0f766e;
+        font-weight: 900;
+        transition: background-color 0.15s, color 0.15s;
+    }
+    .head-action-btn:hover { background-color: #ccfbf1; }
+    .head-action-btn.is-back {
+        background-color: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.28);
+        color: #ffffff;
+    }
+    .head-action-btn.is-back:hover { background-color: rgba(255, 255, 255, 0.24); }
+
+    /* خانەی هەڵبژاردنی مانگ */
+    .head-month-box {
+        background-color: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: #ffffff;
+    }
+    .head-month-box input { color-scheme: dark; }
 </style>
 
 <div x-data="workshopEmployeesApp()" x-init="init()" class="space-y-3 sm:space-y-3.5 select-none" dir="rtl">
@@ -404,33 +447,34 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-1 shrink-0">
-                        {{-- دەستکاری و سڕینەوە — گرنگە بۆ مۆبایل چونکە ستوونی کردارەکان شاراوەیە --}}
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        {{-- کردارەکان — هەموویان بە یەک ستایلی هێمن، سڕینەوە تەنها لە هۆڤەردا سوور دەبێت --}}
                         <button type="button" @click="openEditWageModal(selectedEmployee)"
-                                class="size-8 rounded-xl bg-teal-700 hover:bg-teal-600 text-white flex items-center justify-center text-xs cursor-pointer transition-all active:scale-95"
+                                class="head-icon-btn size-8 rounded-xl flex items-center justify-center text-xs cursor-pointer active:scale-95"
                                 title="دەستکاری مووچە و پیشە">✏️</button>
                         <button type="button" @click="confirmDeleteEmployee(selectedEmployee)"
-                                class="size-8 rounded-xl bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center text-xs cursor-pointer transition-all active:scale-95"
+                                class="head-icon-btn is-danger size-8 rounded-xl flex items-center justify-center text-xs cursor-pointer active:scale-95"
                                 title="سڕینەوەی کارمەند">🗑️</button>
                         <button type="button" @click="showEmployeeDrawer = false"
-                                class="size-8 rounded-xl bg-teal-900/70 hover:bg-teal-900 text-teal-100 hover:text-white flex items-center justify-center text-base font-bold cursor-pointer transition-all">✕</button>
+                                class="head-icon-btn size-8 rounded-xl flex items-center justify-center text-base font-bold cursor-pointer"
+                                title="داخستن">✕</button>
                     </div>
                 </div>
 
                 {{-- کردار و هەڵبژاردنی مانگ --}}
                 <div class="flex items-center gap-2">
                     <button type="button" @click="toggleDrawerPayment()"
-                            class="flex-1 sm:flex-initial px-3.5 h-9 rounded-xl text-[11px] sm:text-xs font-black cursor-pointer flex items-center justify-center gap-1.5 transition-all active:scale-95"
-                            :class="drawerTab === 'payment' ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'">
+                            class="head-action-btn flex-1 sm:flex-initial px-3.5 h-9 rounded-xl text-[11px] sm:text-xs cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                            :class="drawerTab === 'payment' ? 'is-back' : ''">
                         <span x-text="drawerTab === 'payment' ? '📋' : '💸'"></span>
                         <span x-text="drawerTab === 'payment' ? 'بینینی دەوام' : 'پێدانی پارە'"></span>
                     </button>
 
-                    <div class="flex items-center gap-1.5 bg-teal-900/80 px-2.5 h-9 rounded-xl border border-teal-700 shrink-0">
-                        <span class="text-[10px] sm:text-[11px] text-teal-200 font-bold">مانگ:</span>
+                    <label class="head-month-box flex items-center gap-1.5 px-2.5 h-9 rounded-xl shrink-0 cursor-pointer">
+                        <span class="text-sm leading-none">🗓️</span>
                         <input type="month" x-model="selectedMonth" @change="loadEmployeeMonthDetails()"
-                               class="bg-transparent text-white text-[11px] sm:text-xs font-mono font-bold cursor-pointer focus:outline-hidden w-[7.5rem]">
-                    </div>
+                               class="bg-transparent text-white text-[11px] sm:text-xs font-bold cursor-pointer focus:outline-hidden w-[6.5rem] sm:w-[7.5rem]">
+                    </label>
                 </div>
             </div>
 
@@ -452,8 +496,8 @@
                     </div>
 
                     {{-- ٢. پارەی هەیە (شایستە) --}}
-                    <div class="bg-white p-2.5 rounded-xl border-2 border-teal-300">
-                        <div class="text-[10px] text-teal-800 font-bold">پارەی هەیە (شایستە)</div>
+                    <div class="bg-white p-2.5 rounded-xl border-2 border-slate-300">
+                        <div class="text-[10px] text-slate-500 font-bold">پارەی هەیە (شایستە)</div>
                         <div class="text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
                         <div class="text-[9px] text-slate-400 mt-0.5">
                             <template x-if="(drawerData?.stats?.absent_penalty_deduction ?? 0) > 0">
@@ -466,10 +510,8 @@
                     </div>
 
                     {{-- ٤. باڵانسی ماوە / دۆخی پارەدان --}}
-                    <div class="p-2.5 rounded-xl border transition-all flex flex-col justify-between"
-                         :class="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0 ? 'bg-emerald-50/70 border-emerald-300' : 'bg-white border-amber-300'">
-                        <div class="text-[10px] font-bold"
-                             :class="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0 ? 'text-emerald-800' : 'text-amber-800'">
+                    <div class="bg-white p-2.5 rounded-xl border-2 border-slate-300 flex flex-col justify-between">
+                        <div class="text-[10px] font-bold text-slate-500">
                             <span x-text="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_paid ?? 0) > 0 ? 'دۆخی حیساباتی مانگ' : 'باڵانسی ماوە لای کارگە'"></span>
                         </div>
 
