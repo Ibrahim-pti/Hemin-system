@@ -163,6 +163,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/rate', [SettingController::class, 'storeRate'])->name('settings.rate');
         Route::post('/settings/sync-rate', [SettingController::class, 'syncLiveRate'])->name('settings.sync-rate');
         Route::post('/settings/backup', [SettingController::class, 'backup'])->name('settings.backup');
+        Route::post('/settings/backup/upload', [SettingController::class, 'uploadBackup'])->name('settings.backup.upload');
+        Route::post('/settings/backup/restore/{file}', [SettingController::class, 'restoreBackup'])->name('settings.backup.restore');
         Route::get('/settings/backup/{file}', [SettingController::class, 'download'])->name('settings.backup.download');
         Route::delete('/settings/backup/{file}', [SettingController::class, 'deleteBackup'])->name('settings.backup.delete');
         Route::post('/settings/clear-cache', [SettingController::class, 'clearCache'])->name('settings.clear-cache');

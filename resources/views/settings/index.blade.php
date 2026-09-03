@@ -332,34 +332,81 @@
 
 
         {{-- ٣. باکەپی داتابەیس --}}
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        @php
+            $todayBackup = collect($backups)->first(fn($b) => date('Y-m-d', $b['created_at']) === now()->toDateString());
+        @endphp
+        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs" x-data="{ showUpload: false }">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 mb-4 gap-3">
                 <div class="flex items-center gap-2">
                     <span class="size-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">💾</span>
                     <div>
                         <h2 class="font-bold text-slate-900 text-sm">باکەپی داتابەیس (.sql)</h2>
-                        <p class="text-[11px] text-slate-500">پاراستنی داتا و دروستکردنی کۆپی یەدەگ.</p>
+                        <p class="text-[11px] text-slate-500">پاراستنی داتا و دروستکردنی باکەپی ئۆتۆماتیکی ڕۆژانە.</p>
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('settings.backup') }}">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" @click="showUpload = !showUpload" class="btn btn-ghost !py-1.5 !px-3 text-xs bg-slate-50 border border-slate-200 text-slate-700 font-bold cursor-pointer">
+                        ⬆️ بارکردنی فایل
+                    </button>
+                    <form method="POST" action="{{ route('settings.backup') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-primary !py-1.5 !px-3.5 text-xs font-bold cursor-pointer">
+                            + دروستکردنی باکەپ
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {{-- بارودۆخی باکەپی ئۆتۆماتیکی ڕۆژانە --}}
+            <div class="mb-3.5">
+                @if ($todayBackup)
+                    <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-900 text-xs font-bold flex items-center gap-2">
+                        <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>باکەپی ئۆتۆماتیکی ئەمڕۆ پارێزراوە:</span>
+                        <span class="font-mono text-[11px] text-emerald-700">{{ $todayBackup['name'] }}</span>
+                    </div>
+                @else
+                    <div class="p-3 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs font-bold flex items-center gap-2">
+                        <span class="size-2 rounded-full bg-amber-500"></span>
+                        <span>باکەپی ئۆتۆماتیکی ڕۆژانە چالاکە (لە شەودا یان لەگەڵ یەکەم چوونەژوورەوەی ڕۆژدا وەردەگیرێت).</span>
+                    </div>
+                @endif
+            </div>
+
+            {{-- فۆڕمی ئەپڵۆدکردنی باکەپ --}}
+            <div x-show="showUpload" x-cloak class="mb-4 p-4 rounded-xl border border-indigo-100 bg-indigo-50/30 space-y-2">
+                <div class="text-xs font-bold text-slate-800">بارکردنی فایلی باکەپ لە کۆمپیوتەرەکەتەوە (.sql):</div>
+                <form method="POST" action="{{ route('settings.backup.upload') }}" enctype="multipart/form-data" class="flex items-center gap-2 flex-wrap">
                     @csrf
-                    <button type="submit" class="btn btn-primary !py-1.5 !px-3.5 text-xs font-bold cursor-pointer">
-                        + دروستکردنی باکەپ
+                    <input type="file" name="backup_file" accept=".sql" required class="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs cursor-pointer">
+                        بارکردن
                     </button>
                 </form>
             </div>
 
             <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">
-                باکەپەکان لە بوخچەی <code class="font-mono text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">storage/app/backups</code> هەڵدەگیرێن.
+                باکەپەکان لە سیستەمدا هەڵدەگیرێن و دەتوانیت دایانبگریت یان لە کاتی پێویستدا ڕاستەوخۆ سیستەمەکەیان لێ بگەڕێنیتەوە.
             </p>
 
-            <div class="space-y-2 max-h-64 overflow-y-auto">
+            <div class="space-y-2 max-h-72 overflow-y-auto">
                 @forelse ($backups as $backup)
                     <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors text-xs">
                         <div class="min-w-0 flex-1 pl-2">
-                            <div class="font-mono text-[11px] font-bold text-slate-900 truncate" title="{{ $backup['name'] }}">
-                                {{ $backup['name'] }}
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-mono text-[11px] font-bold text-slate-900 truncate" title="{{ $backup['name'] }}">
+                                    {{ $backup['name'] }}
+                                </span>
+                                @if (str_starts_with($backup['name'], 'auto-'))
+                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                        ڕۆژانەی خۆکار
+                                    </span>
+                                @elseif (str_starts_with($backup['name'], 'imported-'))
+                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-100 text-purple-800">
+                                        هاوردەکراو
+                                    </span>
+                                @endif
                             </div>
                             <div class="flex items-center gap-2 text-[10px] text-slate-500 num mt-0.5">
                                 <span>{{ fmt_num($backup['size'] / 1024) }} KB</span>
@@ -369,11 +416,22 @@
                         </div>
 
                         <div class="flex items-center gap-1.5 shrink-0">
+                            {{-- داگرتن --}}
                             <a href="{{ route('settings.backup.download', $backup['name']) }}"
                                class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors">
                                 داگرتن
                             </a>
 
+                            {{-- گەڕاندنەوە --}}
+                            <form method="POST" action="{{ route('settings.backup.restore', $backup['name']) }}"
+                                  onsubmit="return confirm('⚠️ ئاگاداری: ئایا دڵنیایت لە گەڕاندنەوەی ئەم باکەپە؟\nهەموو داتابەیسی ئێستا دەگەڕێتەوە بۆ بەرواری ئەم فایلە!')">
+                                @csrf
+                                <button type="submit" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 transition-colors cursor-pointer" title="گەڕاندنەوەی داتابەیس">
+                                    گەڕاندنەوە
+                                </button>
+                            </form>
+
+                            {{-- سڕینەوە --}}
                             <form method="POST" action="{{ route('settings.backup.delete', $backup['name']) }}" onsubmit="return confirm('ئایا دڵنیایت لە سڕینەوەی ئەم باکەپە؟')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer" title="سڕینەوە">

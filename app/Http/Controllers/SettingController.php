@@ -172,6 +172,39 @@ class SettingController extends Controller
         return response()->download($path);
     }
 
+    public function uploadBackup(Request $request)
+    {
+        $request->validate([
+            'backup_file' => ['required', 'file'],
+        ], [], ['backup_file' => 'فایلی باکەپ']);
+
+        $file = $request->file('backup_file');
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        if ($ext !== 'sql') {
+            return back()->with('err', 'تکایە تەنها فایلی شێوازی .sql دیاریبکە.');
+        }
+
+        try {
+            $saved = $this->backups->upload($file);
+            return back()->with('ok', "فایلی باکەپ بە سەرکەوتوویی بارکرا: {$saved}");
+        } catch (\Throwable $e) {
+            return back()->with('err', 'هەڵە لە بارکردنی باکەپ: ' . $e->getMessage());
+        }
+    }
+
+    public function restoreBackup(string $file)
+    {
+        try {
+            $this->backups->restore($file);
+            Artisan::call('cache:clear');
+            Artisan::call('view:clear');
+            return back()->with('ok', "داتابەیسی سیستەم بە سەرکەوتوویی لە باکەپی «{$file}» گەڕێندرایەوە.");
+        } catch (\Throwable $e) {
+            return back()->with('err', 'هەڵە لە گەڕاندنەوە: ' . $e->getMessage());
+        }
+    }
+
     public function deleteBackup(string $file)
     {
         if ($this->backups->delete($file)) {
