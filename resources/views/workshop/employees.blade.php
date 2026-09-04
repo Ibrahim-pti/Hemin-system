@@ -8,9 +8,9 @@
        بەبێ هیچ سکرۆڵێکی ئاسۆیی بگونجێت. لەسەر مانگ خۆکار سکرۆڵ دەکات. */
     .att-wrap {
         --idx-w: 0rem;
-        --name-w: 4.9rem;
-        --day-w: 2.3rem;
-        --act-w: 4.6rem;
+        --name-w: 4.4rem;
+        --day-w: 2.2rem;
+        --act-w: 4rem;
     }
     .att-table {
         table-layout: fixed;
@@ -19,25 +19,35 @@
     }
     .col-idx { display: none; }
     .col-name { width: var(--name-w); }
-    .col-day  { width: var(--day-w); }
     .col-actions { width: var(--act-w); }
+
+    /* ستوونی ڕۆژ پانی جێگیری نییە — هەر شوێنێکی زیادەی جەدوەل بۆ ڕۆژەکان دەڕوات،
+       نەک بۆ ستوونی ناو. --day-w تەنها کەمترین پانییە کە لە min-widthـدا دێت. */
+    .col-day { width: auto; }
 
     @media (min-width: 480px) {
         .att-wrap {
-            --name-w: 7rem;
-            --day-w: 3.1rem;
-            --act-w: 5.5rem;
+            --name-w: 5.8rem;
+            --day-w: 3rem;
+            --act-w: 5rem;
         }
     }
 
     @media (min-width: 640px) {
         .att-wrap {
-            --idx-w: 3rem;
-            --name-w: 11rem;
-            --day-w: 4.9rem;
-            --act-w: 6.5rem;
+            --idx-w: 2.6rem;
+            --name-w: 7.5rem;
+            --day-w: 4rem;
+            --act-w: 6rem;
         }
         .col-idx { display: table-cell; width: var(--idx-w); }
+    }
+
+    @media (min-width: 1024px) {
+        .att-wrap {
+            --name-w: 8.5rem;
+            --day-w: 4.6rem;
+        }
     }
 
     /* خانەی ڕۆژ — بەرزی جێگیر تا هەموو ڕیزەکان یەکسان بن */
