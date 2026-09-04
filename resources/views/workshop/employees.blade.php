@@ -921,61 +921,6 @@
                             </div>
                             <p class="text-[11px] text-slate-500 font-medium">سەرەڕای پێنەدانی مووچەی ئەو ڕۆژە، ئەم بڕە سزایەش وەک لێبڕین لە شایستەی مانگانە کەم دەکرێتەوە.</p>
                         </div>
-
-                        {{-- سزای تاخیربوون لە دەوام --}}
-                        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                            <label class="block mb-1 text-slate-800 font-black">شێوازی سزادانی تاخیربوون لە دەوام</label>
-                            <select x-model="settingsForm.workshop_late_deduction_type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
-                                <option value="none">بێ سزای دارایی (تەنها خولەکی تاخیربوون تۆمار بکرێت)</option>
-                                <option value="fixed_amount">بڕینی بڕێکی دیاریکراو بۆ هەر ڕۆژێکی تاخیربوون</option>
-                                <option value="weekly_threshold">سزا لە ئەگەری دووبارەبوونەوە لە هەفتەیەکدا</option>
-                            </select>
-
-                            <template x-if="settingsForm.workshop_late_deduction_type === 'fixed_amount'">
-                                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
-                                    <label class="block text-slate-700 font-bold text-xs">بڕی سزای پارە بۆ هەر ڕۆژێک تاخیربوون (د.ع) *</label>
-                                    <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white">
-                                        <input type="text" inputmode="numeric" x-model="settingsForm.workshop_late_deduction_rate"
-                                               @input="settingsForm.workshop_late_deduction_rate = formatMoneyInput($event.target.value)"
-                                               placeholder="5,000"
-                                               class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
-                                        <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
-                                            د.ع
-                                        </span>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <template x-if="settingsForm.workshop_late_deduction_type === 'weekly_threshold'">
-                                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-3">
-                                    <div>
-                                        <label class="block mb-1 text-slate-700 font-bold text-xs">مەرج: چەند ڕۆژ تاخیربوون لە هەفتەدا؟ *</label>
-                                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white">
-                                            <input type="number" min="1" max="6" x-model="settingsForm.workshop_late_weekly_threshold_days"
-                                                   class="w-full px-3 py-2 font-mono font-bold text-slate-800 focus:outline-hidden">
-                                            <span class="bg-slate-100 px-3 flex items-center text-xs font-bold text-slate-600 border-r border-slate-200 shrink-0">
-                                                ڕۆژ لە هەفتە
-                                            </span>
-                                        </div>
-                                        <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر لە هەفتەیەکدا ئەم ژمارەیە یان زیاتر دواکەوت سزای دەدرێت.</p>
-                                    </div>
-
-                                    <div>
-                                        <label class="block mb-1 text-slate-700 font-bold text-xs">بڕی سزای شکاندنی مەرجەکە (د.ع)</label>
-                                        <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-amber-600 bg-white">
-                                            <input type="text" inputmode="numeric" x-model="settingsForm.workshop_late_weekly_penalty_amount"
-                                                   @input="settingsForm.workshop_late_weekly_penalty_amount = formatMoneyInput($event.target.value)"
-                                                   placeholder="ئەگەر بەتاڵ بێت مووچەی ڕۆژێک دەبڕدرێت"
-                                                   class="w-full px-3 py-2 font-mono font-black text-rose-700 focus:outline-hidden text-sm">
-                                            <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0">
-                                                د.ع
-                                            </span>
-                                        </div>
-                                        <p class="text-[11px] text-slate-500 font-medium mt-1">ئەگەر دیاری نەکرێت، سیستەمەکە یەک مووچەی ڕۆژانەی دەبڕێت.</p>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
                     </div>
 
                 </div>
@@ -1366,10 +1311,10 @@ function workshopEmployeesApp() {
             workshop_absent_deduction_type: '{{ $shiftSettings['absent_deduction_type'] ?? "none" }}',
             workshop_absent_deduction_rate: {!! json_encode(($shiftSettings['absent_deduction_rate'] ?? 0) > 0 ? $shiftSettings['absent_deduction_rate'] : '') !!},
             workshop_late_grace_minutes: {{ $shiftSettings['late_grace_minutes'] ?? 0 }},
-            workshop_late_deduction_type: '{{ $shiftSettings['late_deduction_type'] ?? "none" }}',
-            workshop_late_deduction_rate: {!! json_encode(($shiftSettings['late_deduction_rate'] ?? 0) > 0 ? $shiftSettings['late_deduction_rate'] : '') !!},
-            workshop_late_weekly_threshold_days: {{ $shiftSettings['late_weekly_threshold_days'] ?? 2 }},
-            workshop_late_weekly_penalty_amount: {!! json_encode(($shiftSettings['late_weekly_penalty_amount'] ?? 0) > 0 ? $shiftSettings['late_weekly_penalty_amount'] : '') !!}
+            workshop_late_deduction_type: 'none',
+            workshop_late_deduction_rate: '',
+            workshop_late_weekly_threshold_days: 0,
+            workshop_late_weekly_penalty_amount: ''
         },
 
         customRatesList: {!! json_encode(!empty($shiftSettings['custom_overtime_rates']) ? $shiftSettings['custom_overtime_rates'] : [
@@ -1910,12 +1855,14 @@ function workshopEmployeesApp() {
         async saveSettings() {
             try {
                 const payload = { ...this.settingsForm };
+                payload.workshop_late_deduction_type = 'none';
+                payload.workshop_late_deduction_rate = 0;
+                payload.workshop_late_weekly_threshold_days = 0;
+                payload.workshop_late_weekly_penalty_amount = 0;
                 payload.workshop_overtime_hourly_rate = this.cleanMoney(payload.workshop_overtime_hourly_rate);
                 payload.workshop_home_visit_hourly_rate = this.cleanMoney(payload.workshop_home_visit_hourly_rate);
                 payload.workshop_half_day_deduction_rate = this.cleanMoney(payload.workshop_half_day_deduction_rate);
                 payload.workshop_absent_deduction_rate = this.cleanMoney(payload.workshop_absent_deduction_rate);
-                payload.workshop_late_deduction_rate = this.cleanMoney(payload.workshop_late_deduction_rate);
-                payload.workshop_late_weekly_penalty_amount = this.cleanMoney(payload.workshop_late_weekly_penalty_amount);
                 payload.workshop_custom_overtime_rates = this.customRatesList.map(r => ({
                     name: r.name ? r.name.trim() : '',
                     rate: this.cleanMoney(r.rate),
