@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -14,14 +19,43 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ---- Frontend assets are built here on the runner, not on the VPS ----
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build assets (Vite)
+        run: npm run build
+
+      - name: Verify build output
+        run: test -f public/build/manifest.json
+
+      - name: Upload built assets to server
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "public/build/*"
+          target: "/www/wwwroot/hemin-system.com/public/build"
+          strip_components: 2
+          overwrite: true
+
       - name: Execute deployment commands via SSH
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
+            set -e
             echo "🚀 Starting automated deployment..."
             cd /www/wwwroot/hemin-system.com
 
