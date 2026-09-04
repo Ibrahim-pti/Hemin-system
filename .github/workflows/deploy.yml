@@ -14,26 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ــ CSS و JS لێرە دروست دەکرێن، چونکە public/build لە گیتدا نییە ــ
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install JS dependencies
-        run: npm ci
-
-      - name: Build frontend assets
-        run: npm run build
-
-      - name: Verify build output
-        run: |
-          test -f public/build/manifest.json || { echo "::error::manifest.json نەدۆزرایەوە — بیلدەکە سەرکەوتوو نەبووە"; exit 1; }
-          echo "بیلد ئامادەیە:"
-          ls -la public/build/assets | head -20
-
-      - name: Pull code and install PHP dependencies
+      - name: Execute deployment commands via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -41,7 +22,6 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
-            set -e
             echo "🚀 Starting automated deployment..."
             cd /www/wwwroot/hemin-system.com
 
@@ -56,44 +36,9 @@ jobs:
             # Run database migrations
             php artisan migrate --force
 
-            # بیلدی کۆن نەسڕدرێتەوە — ئەگەر ناردنەکە شکستی هێنا سایتەکە بەبێ CSS نامێنێتەوە
-            mkdir -p public/build/assets
-
-      # ــ ناردنی بیلدی نوێ بۆ سێرڤەر ــ
-      - name: Upload built assets
-        env:
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
-        run: |
-          set -e
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq sshpass
-          sshpass -e scp -r -P "$SSH_PORT" -o StrictHostKeyChecking=no \
-            public/build/. "$SSH_USER@$SSH_HOST:/www/wwwroot/hemin-system.com/public/build/"
-
-      - name: Cache, permissions and restart
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            set -e
-            cd /www/wwwroot/hemin-system.com
-
-            # دڵنیابوونەوە لەوەی بیلدەکە گەیشتووە
-            test -f public/build/manifest.json || { echo "❌ manifest.json نەگەیشتووەتە سێرڤەر"; exit 1; }
-
-            # پاککردنەوەی فایلە کۆنەکانی بیلد (زیاتر لە ٣٠ ڕۆژ) تا کۆنەبنەوە
-            find public/build/assets -type f -mtime +30 -delete 2>/dev/null || true
-
             # Clear and optimize Laravel caches
             php artisan config:cache
             php artisan route:cache
-            php artisan view:clear
             php artisan view:cache
 
             # Fix directory permissions for Nginx and PHP-FPM
