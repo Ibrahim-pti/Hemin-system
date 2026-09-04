@@ -196,15 +196,40 @@ class WorkshopController extends Controller
      * ماوەی هەفتەیەک — هەمیشە لە شەممەوە دەستپێدەکات و ٧ ڕۆژ دەخایەنێت.
      * ڕۆژی پشووی هەفتانە (بنەڕەت: هەینی) لە ستوونەکاندا دەرناکەوێت، بۆیە
      * جەدوەلەکە بە ئاسایی دەبێتە شەممە تا پێنجشەممە.
-     * $offset ژمارەی هەفتەیە لە هەفتەی ئێستاوە (٠ = ئەم هەفتەیە).
+     *
+     * ئەگەر هیچ ڕۆژێکی کاری لەم هەفتەیەدا نەمابێت (وەک ڕۆژی هەینی)، خۆکار
+     * دەچێتە حەفتەی داهاتوو — دەفتەرەکە هەمیشە ڕۆژی کاری پێشەوە پیشان دەدات.
+     *
+     * $offset ژمارەی هەفتەیە لەو حەفتەیەوە (٠ = حەفتەی کارای ئێستا).
      *
      * @return array{0: string, 1: string}
      */
     private function weekRange(\Carbon\Carbon $today, int $offset): array
     {
-        $start = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->addWeeks($offset);
+        $start = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY);
+
+        if (! $this->hasWorkdayLeft($today, $start->copy()->addDays(6))) {
+            $start->addWeek();
+        }
+
+        $start->addWeeks($offset);
 
         return [$start->toDateString(), $start->copy()->addDays(6)->toDateString()];
+    }
+
+    /** ئایا لە $today ـەوە تا $weekEnd ڕۆژێکی کاری ماوە، یان هەمووی پشووە؟ */
+    private function hasWorkdayLeft(\Carbon\Carbon $today, \Carbon\Carbon $weekEnd): bool
+    {
+        $cursor = $today->copy()->startOfDay();
+
+        while ($cursor->lte($weekEnd)) {
+            if (! Attendance::isWeeklyHoliday($cursor->toDateString())) {
+                return true;
+            }
+            $cursor->addDay();
+        }
+
+        return false;
     }
 
     public function employees(Request $request): View

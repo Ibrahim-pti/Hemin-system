@@ -517,8 +517,17 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $to = \Carbon\Carbon::parse($res->viewData('to'));
         $this->assertEquals('Saturday', $from->format('l'));
         $this->assertEquals(6, $from->diffInDays($to));
-        $todayStr = now()->toDateString();
-        $this->assertTrue($from->toDateString() <= $todayStr && $to->toDateString() >= $todayStr);
+        // ماوەکە دەبێت یەکەم ڕۆژی کاری داهاتوو لەخۆبگرێت — ئەمڕۆ، یان ئەگەر
+        // ئەمڕۆ پشوو بێت و هیچ ڕۆژێکی کاری نەمابێت، ڕۆژی کاری دواتر
+        $nextWorkday = now()->copy()->startOfDay();
+        while (\App\Models\Attendance::isWeeklyHoliday($nextWorkday->toDateString())) {
+            $nextWorkday->addDay();
+        }
+        $this->assertTrue(
+            $from->toDateString() <= $nextWorkday->toDateString()
+            && $to->toDateString() >= $nextWorkday->toDateString(),
+            'دەفتەرەکە دەبێت ڕۆژی کاری پێشەوە پیشان بدات.'
+        );
 
         // ناونیشانی نیشاندراو تا پێنجشەممەیە — هەینی پشووە و ستوونی نییە
         $this->assertEquals('Saturday', \Carbon\Carbon::parse($res->viewData('displayFrom'))->format('l'));
