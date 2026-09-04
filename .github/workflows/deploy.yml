@@ -87,10 +87,11 @@ jobs:
             chmod -R 775 storage bootstrap/cache
 
             # Restart PHP-FPM to reload opcache and codebase.
-            # aaPanel names the unit differently per PHP version, so try each.
+            # aaPanel names the unit differently per PHP version, and installs
+            # units for versions it does not serve — so only restart running ones.
             restarted=0
             for svc in php8.3-fpm php8.4-fpm php-fpm-83 php-fpm-84; do
-              if systemctl list-unit-files --no-legend "$svc.service" 2>/dev/null | grep -q .; then
+              if systemctl is-active --quiet "$svc"; then
                 systemctl restart "$svc"
                 echo "♻️  restarted $svc"
                 restarted=1
