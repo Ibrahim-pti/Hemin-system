@@ -39,11 +39,16 @@ jobs:
             done
             echo "🐘 using $PHP ($("$PHP" -r 'echo PHP_VERSION;'))"
 
-            # Built assets are tracked in git, so drop any stale copy before pulling
+            # Built assets are tracked in git. `git reset --hard` restores any that
+            # went missing; never `rm -rf public/build` here — a fast-forward pull
+            # only writes paths the incoming commits touched, so a deleted asset
+            # directory stays deleted and @vite then 500s on every page.
             git config --global --add safe.directory /www/wwwroot/hemin-system.com
             git reset --hard HEAD
-            rm -rf public/build
             git pull origin main
+
+            # Drop build assets left over from older builds (untracked only)
+            git clean -fd public/build
 
             # Install PHP dependencies without dev packages
             COMPOSER="$(command -v composer)"
