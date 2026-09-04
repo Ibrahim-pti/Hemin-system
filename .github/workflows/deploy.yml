@@ -64,8 +64,15 @@ jobs:
             git reset --hard HEAD
             git pull origin main
 
-            # Install PHP dependencies without dev packages
-            composer install --no-dev --optimize-autoloader --no-interaction
+            # Install PHP dependencies without dev packages.
+            # The server's PHP CLI is missing ext-fileinfo, so fall back to
+            # ignoring that platform requirement instead of failing the deploy.
+            if ! composer install --no-dev --optimize-autoloader --no-interaction; then
+              echo "⚠️  composer install failed — retrying without the ext-fileinfo platform check."
+              echo "⚠️  Enable the fileinfo extension for PHP CLI in aaPanel to remove this fallback."
+              composer install --no-dev --optimize-autoloader --no-interaction \
+                --ignore-platform-req=ext-fileinfo
+            fi
 
             # Run database migrations
             php artisan migrate --force
@@ -79,8 +86,24 @@ jobs:
             chown -R www:www /www/wwwroot/hemin-system.com
             chmod -R 775 storage bootstrap/cache
 
-            # Restart PHP-FPM to reload opcache and codebase
-            systemctl restart php8.3-fpm
-            /etc/init.d/nginx reload
+            # Restart PHP-FPM to reload opcache and codebase.
+            # aaPanel names the unit differently per PHP version, so try each.
+            restarted=0
+            for svc in php8.3-fpm php8.4-fpm php-fpm-83 php-fpm-84; do
+              if systemctl list-unit-files --no-legend "$svc.service" 2>/dev/null | grep -q .; then
+                systemctl restart "$svc"
+                echo "♻️  restarted $svc"
+                restarted=1
+              fi
+            done
+            if [ "$restarted" = "0" ]; then
+              echo "⚠️  no php-fpm service matched — restart it manually."
+            fi
+
+            if [ -x /etc/init.d/nginx ]; then
+              /etc/init.d/nginx reload
+            else
+              nginx -s reload
+            fi
 
             echo "✅ Deployment completed successfully!"
