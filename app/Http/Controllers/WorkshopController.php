@@ -193,65 +193,18 @@ class WorkshopController extends Controller
 
     /** لاپەڕەی جەدوەلی سەحی ڕۆژانە و حیساباتی وەستا و حەمەڵەکان */
     /**
-     * پارچەکردنی مانگێک بۆ هەفتە: ١-٧، ٨-١٤، ١٥-٢١، ٢٢-٢٨، ٢٩-کۆتایی مانگ.
-     * هەفتە هەرگیز لە مانگێکەوە ناچێتە مانگێکی تر — هەمیشە لە یەکی مانگەوە دەستپێدەکات.
-     *
-     * @return array<int, array{0: string, 1: string}>
-     */
-    private function monthWeekChunks(\Carbon\Carbon $anyDayOfMonth): array
-    {
-        $cursor = $anyDayOfMonth->copy()->startOfMonth();
-        $monthEnd = $anyDayOfMonth->copy()->endOfMonth();
-
-        $chunks = [];
-        while ($cursor->lte($monthEnd)) {
-            $chunkEnd = $cursor->copy()->addDays(6)->min($monthEnd);
-            $chunks[] = [$cursor->toDateString(), $chunkEnd->toDateString()];
-            $cursor = $chunkEnd->copy()->addDay();
-        }
-
-        return $chunks;
-    }
-
-    /**
-     * دۆزینەوەی هەفتەی بەندکراو بە مانگەوە، بەپێی دووری لە هەفتەی ئێستاوە.
-     * ئەگەر لە یەکەم هەفتەی مانگدا بچیتە دواوە، دەچێتە دوا هەفتەی مانگی پێشوو.
+     * ماوەی هەفتەیەک — هەمیشە لە شەممەوە دەستپێدەکات و ٧ ڕۆژ دەخایەنێت.
+     * ڕۆژی پشووی هەفتانە (بنەڕەت: هەینی) لە ستوونەکاندا دەرناکەوێت، بۆیە
+     * جەدوەلەکە بە ئاسایی دەبێتە شەممە تا پێنجشەممە.
+     * $offset ژمارەی هەفتەیە لە هەفتەی ئێستاوە (٠ = ئەم هەفتەیە).
      *
      * @return array{0: string, 1: string}
      */
-    private function weekRangeInMonth(\Carbon\Carbon $today, int $offset): array
+    private function weekRange(\Carbon\Carbon $today, int $offset): array
     {
-        $monthCursor = $today->copy()->startOfMonth();
-        $chunks = $this->monthWeekChunks($monthCursor);
+        $start = $today->copy()->startOfWeek(\Carbon\Carbon::SATURDAY)->addWeeks($offset);
 
-        // ئێستا لە چەندەمین هەفتەی ئەم مانگەداین؟
-        $todayStr = $today->toDateString();
-        $index = 0;
-        foreach ($chunks as $i => [$cFrom, $cTo]) {
-            if ($todayStr >= $cFrom && $todayStr <= $cTo) {
-                $index = $i;
-                break;
-            }
-        }
-
-        $index += $offset;
-
-        // ڕۆیشتن بۆ مانگی پێشوو یان داهاتوو ئەگەر لە سنووری ئەم مانگە دەرچوو
-        $guard = 0;
-        while ($index < 0 && $guard++ < 200) {
-            $monthCursor = $monthCursor->subMonth();
-            $chunks = $this->monthWeekChunks($monthCursor);
-            $index += count($chunks);
-        }
-        while ($index >= count($chunks) && $guard++ < 200) {
-            $index -= count($chunks);
-            $monthCursor = $monthCursor->addMonth();
-            $chunks = $this->monthWeekChunks($monthCursor);
-        }
-
-        $index = max(0, min($index, count($chunks) - 1));
-
-        return $chunks[$index];
+        return [$start->toDateString(), $start->copy()->addDays(6)->toDateString()];
     }
 
     public function employees(Request $request): View
@@ -297,7 +250,7 @@ class WorkshopController extends Controller
             $from = $target->copy()->startOfMonth()->toDateString();
             $to = $target->copy()->endOfMonth()->toDateString();
         } else {
-            [$from, $to] = $this->weekRangeInMonth($today, $offset);
+            [$from, $to] = $this->weekRange($today, $offset);
         }
 
         // بۆ گونجاندن لەگەڵ کۆدی کۆن
@@ -358,6 +311,11 @@ class WorkshopController extends Controller
             ];
         }
         $holidayLabel = implode(' و ', array_values(array_unique($holidayDays)));
+
+        // ناونیشانی ماوەکە بەپێی ئەو ڕۆژانەیە کە بەڕاستی نیشان دەدرێن — بۆیە
+        // هەفتەیەک وەک «شەممە تا پێنجشەممە» دەردەکەوێت، نەک تا هەینیی پشوو.
+        $displayFrom = $days === [] ? $from : $days[0]['date'];
+        $displayTo = $days === [] ? $to : $days[count($days) - 1]['date'];
 
         $canSeeMoney = auth()->user()?->isAdmin() ?? false;
 
@@ -696,6 +654,8 @@ class WorkshopController extends Controller
             'dayTotals',
             'from',
             'to',
+            'displayFrom',
+            'displayTo',
             'rangeType',
             'weekOffset',
             'mode',
