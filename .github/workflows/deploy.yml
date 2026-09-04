@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -22,31 +23,60 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
+            set -e
             echo "🚀 Starting automated deployment..."
             cd /www/wwwroot/hemin-system.com
 
-            # Stash any untracked local changes on server to avoid conflicts
+            # The default `php` on this box is a CLI build without ext-fileinfo,
+            # which composer refuses to install against. Pick the newest PHP >= 8.3
+            # that has it and run every PHP command through that one.
+            PHP="$(command -v php)"
+            for cand in $(ls -d /www/server/php/*/bin/php 2>/dev/null | sort -rV); do
+              if [ -x "$cand" ] && "$cand" -r 'exit((PHP_VERSION_ID >= 80300 && extension_loaded("fileinfo")) ? 0 : 1);' 2>/dev/null; then
+                PHP="$cand"
+                break
+              fi
+            done
+            echo "🐘 using $PHP ($("$PHP" -r 'echo PHP_VERSION;'))"
+
+            # Built assets are tracked in git, so drop any stale copy before pulling
             git config --global --add safe.directory /www/wwwroot/hemin-system.com
             git reset --hard HEAD
+            rm -rf public/build
             git pull origin main
 
             # Install PHP dependencies without dev packages
-            composer install --no-dev --optimize-autoloader --no-interaction
+            COMPOSER="$(command -v composer)"
+            if ! "$PHP" "$COMPOSER" install --no-dev --optimize-autoloader --no-interaction; then
+              echo "⚠️  composer install failed — retrying with the ext-fileinfo check skipped."
+              "$PHP" "$COMPOSER" install --no-dev --optimize-autoloader --no-interaction \
+                --ignore-platform-req=ext-fileinfo
+            fi
 
             # Run database migrations
-            php artisan migrate --force
+            "$PHP" artisan migrate --force
 
             # Clear and optimize Laravel caches
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            "$PHP" artisan config:cache
+            "$PHP" artisan route:cache
+            "$PHP" artisan view:cache
 
             # Fix directory permissions for Nginx and PHP-FPM
             chown -R www:www /www/wwwroot/hemin-system.com
             chmod -R 775 storage bootstrap/cache
 
-            # Restart PHP-FPM to reload opcache and codebase
-            systemctl restart php8.3-fpm
+            # Restart the running PHP-FPM only — aaPanel also installs units
+            # for PHP versions this server does not serve.
+            restarted=0
+            for svc in php8.3-fpm php8.4-fpm php-fpm-83 php-fpm-84; do
+              if systemctl is-active --quiet "$svc"; then
+                systemctl restart "$svc"
+                echo "♻️  restarted $svc"
+                restarted=1
+              fi
+            done
+            [ "$restarted" = "1" ] || echo "⚠️  no running php-fpm service found — restart it manually."
+
             /etc/init.d/nginx reload
 
             echo "✅ Deployment completed successfully!"
