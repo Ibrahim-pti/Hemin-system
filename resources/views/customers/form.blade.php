@@ -57,13 +57,13 @@
                 @error('address') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
             </div>
 
-            {{-- حیساباتی پێشتر / قەرزی کۆن --}}
+            {{-- حیسابی پێشوو --}}
             <div class="sm:col-span-2 lg:col-span-3 bg-gradient-to-l from-amber-50/70 to-orange-50/50 border border-amber-200/90 rounded-2xl p-4.5 sm:p-5 shadow-xs">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <div class="flex items-center gap-2">
                         <span class="text-base">📜</span>
                         <label class="text-xs font-black text-amber-950" for="opening_balance">
-                            حیساباتی پێشتر / قەرزی کۆن (باڵانسی سەرەتایی)
+                            حیسابی پێشوو (باڵانسی سەرەتایی)
                         </label>
                     </div>
                     <span class="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300/80">
@@ -71,7 +71,7 @@
                     </span>
                 </div>
                 <p class="text-[11px] text-slate-600 mb-3.5 font-medium leading-relaxed">
-                    ئەگەر لە پێشتردا یان لە دەفتەر ئەم کڕیارە حساباتی کۆنی هەبووە دەتوانی بڕەکەی لێرە بنووسیت. <strong class="text-amber-900 font-bold">ئەم بڕە بە هیچ جۆرێک ناچێتە بەشی کارگە بۆ دروستکردن</strong> و کرێکاران وەک داواکاری نوێ نایبینن.
+                    ئەگەر لە پێشتردا یان لە دەفتەر ئەم کڕیارە حیسابی پێشووی هەبووە دەتوانی بڕەکەی لێرە بنووسیت. <strong class="text-amber-900 font-bold">ئەم بڕە بە هیچ جۆرێک ناچێتە بەشی کارگە بۆ دروستکردن</strong> و کرێکاران وەک داواکاری نوێ نایبینن.
                 </p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">

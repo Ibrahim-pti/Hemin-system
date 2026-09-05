@@ -191,7 +191,7 @@ class CustomerOldDebtWithoutWorkshopTest extends TestCase
 
         $response = $this->actingAs($this->user)->get(route('debts.old-debt.create', ['customer_id' => $customer->id]));
         $response->assertOk();
-        $response->assertSee('تۆمارکردنی حیساباتی پێشتر');
+        $response->assertSee('تۆمارکردنی حیسابی پێشوو');
         $response->assertSee('کاک هێمن');
         $response->assertSee('دانانی وێنەی وەسڵەکە');
         $response->assertSee('حازری (پارەدراو)');

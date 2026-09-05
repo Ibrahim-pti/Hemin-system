@@ -239,7 +239,7 @@ class CustomerController extends Controller
             'name' => 'ناو',
             'phone' => 'تەلەفۆن',
             'address' => 'ناونیشان',
-            'opening_balance' => 'قەرزی پێشوو',
+            'opening_balance' => 'حیسابی پێشوو',
             'opening_currency' => 'دراو',
         ]);
 

@@ -9,7 +9,7 @@
         </a>
         <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-sm">
             <span>📜</span>
-            <span>+ قەرزی پێشوو</span>
+            <span>+ حیسابی پێشوو</span>
         </a>
         <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $customer->id]) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
             <span>+</span>
@@ -63,12 +63,12 @@
             </div>
         </div>
 
-        {{-- دوگمەی دەستکاری خێرا و قەرزی کۆن --}}
+        {{-- دوگمەی دەستکاری خێرا و حیسابی پێشوو --}}
         <div class="flex items-center gap-2 flex-wrap">
             <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}"
                class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-500 hover:bg-amber-600 text-white shadow-xs">
                 <span>📜</span>
-                <span>قەرزی پێشوو</span>
+                <span>حیسابی پێشوو</span>
             </a>
             <a href="{{ route('customers.edit', $customer) }}" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold border border-slate-200 hover:bg-slate-100 text-slate-700">
                 ✏️ دەستکاری زانیاری
@@ -78,14 +78,14 @@
 
     {{-- کارتەکانی ئاماری تایبەت بەم کڕیارە --}}
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6 pt-6 border-t border-slate-100">
-        {{-- حیساباتی پێشتر / قەرزی کۆن --}}
+        {{-- حیسابی پێشوو --}}
         <div class="bg-amber-50/70 rounded-xl p-4 border border-amber-200/80 border-r-4 border-r-amber-500 text-center">
             <div class="text-2xl font-black text-amber-900 num">
                 {{ fmt_num((float) $customer->opening_balance) }} {{ $customer->opening_currency === 'USD' ? '$' : 'د.ع' }}
             </div>
             <div class="text-xs font-bold text-amber-800 mt-1 flex items-center justify-center gap-1">
                 <span>📜</span>
-                <span>قەرزی پێشوو</span>
+                <span>حیسابی پێشوو</span>
             </div>
         </div>
 
@@ -189,13 +189,13 @@
     </div>
 </div>
 
-{{-- ٣. لیستی حیساباتی پێشتر و قەرزی کۆن (Old Debts / Prior Accounts Table) --}}
+{{-- ٣. لیستی حیسابی پێشوو (Old Debts / Prior Accounts Table) --}}
 @if ($oldDebts->count() > 0)
 <div class="bg-white rounded-2xl shadow-xs border border-amber-200/80 overflow-hidden mb-6">
     <div class="p-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/40">
         <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
             <span>📜</span>
-            <span>حیساباتی پێشتر و قەرزی کۆن</span>
+            <span>حیسابی پێشوو</span>
             <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 font-mono">
                 {{ $oldDebts->count() }} تۆمار
             </span>
@@ -285,7 +285,7 @@
         <div style="background: #b45309; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
             <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem;">
                 <span style="font-size: 1.25rem;">📜</span>
-                <span>تۆمارکردنی حیساباتی پێشتر بۆ ({{ $customer->name }})</span>
+                <span>تۆمارکردنی حیسابی پێشوو بۆ ({{ $customer->name }})</span>
             </div>
             <button type="button" @click="openOldDebtModal = false"
                     title="داخستن"

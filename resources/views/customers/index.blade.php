@@ -24,11 +24,11 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-            {{-- دوگمەی قەرزی پێشوو --}}
+            {{-- دوگمەی حیسابی پێشوو --}}
             <a href="{{ route('debts.old-debt.create') }}"
                class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white inline-flex items-center gap-1.5 transition-all shadow-sm">
                 <span>📜</span>
-                <span>قەرزی پێشوو</span>
+                <span>حیسابی پێشوو</span>
             </a>
 
             <a href="{{ route('orders.create') }}"
@@ -177,7 +177,7 @@
                                 <div class="flex items-center justify-center gap-1.5">
                                     <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}"
                                        class="px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all"
-                                       title="تۆمارکردنی قەرزی پێشوو">
+                                       title="تۆمارکردنی حیسابی پێشوو">
                                         📜
                                     </a>
                                     <a href="{{ route('customers.show', $customer) }}"
@@ -234,7 +234,7 @@
             <div style="background: #b45309; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
                 <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem;">
                     <span style="font-size: 1.25rem;">📜</span>
-                    <span>تۆمارکردنی حیساباتی پێشتر / قەرزی کۆن</span>
+                    <span>تۆمارکردنی حیسابی پێشوو</span>
                 </div>
                 <button type="button" @click="openOldDebtModal = false"
                         title="داخستن"

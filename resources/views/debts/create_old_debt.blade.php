@@ -239,7 +239,7 @@
 
                     <div x-show="paymentType === 'debt'" class="bg-rose-50 text-rose-800 border border-rose-200 rounded-xl p-3 text-xs font-bold flex items-center gap-2">
                         <span>⚠️</span>
-                        <span>تەواوی ئەم بڕە وەک قەرزی پێشوو لە ئەستۆی کڕیاردا تۆمار دەکرێت.</span>
+                        <span>تەواوی ئەم بڕە وەک حیسابی پێشوو لە ئەستۆی کڕیاردا تۆمار دەکرێت.</span>
                     </div>
                 </div>
             </div>
@@ -277,7 +277,7 @@
     {{-- ٣. دوگمەکانی خوارەوە --}}
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
         <button type="submit" class="btn btn-primary !py-3 sm:!py-2.5 !px-8 text-sm font-bold shadow-sm bg-blue-600 hover:bg-blue-700 cursor-pointer w-full sm:w-auto">
-            ✓ تۆمارکردنی حیساباتی پێشوو
+            ✓ تۆمارکردنی حیسابی پێشوو
         </button>
 
         <a href="{{ url()->previous() ?: route('customers.index') }}" class="btn btn-ghost w-full sm:w-auto text-center">پاشگەزبوونەوە</a>

@@ -168,7 +168,7 @@
             {{-- ٤ کارتی ئاماری سەرەکی کەشف حساب --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
-                {{-- ١. قەرزی پێشوو / باڵانسی سەرەتایی (Purple) --}}
+                {{-- ١. حیسابی پێشوو / باڵانسی سەرەتایی (Purple) --}}
                 <div style="background: #fdf4ff; border: 1.5px solid #f0abfc; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
                     <div style="color: #a855f7; margin-bottom: 0.15rem;">
                         <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -176,7 +176,7 @@
                             <polyline points="12 6 12 12 16 14"/>
                         </svg>
                     </div>
-                    <div style="font-size: 0.82rem; font-weight: 700; color: #86198f;">قەرزی پێشوو (سەرەتایی)</div>
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #86198f;">حیسابی پێشوو (سەرەتایی)</div>
                     <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #9333ea; line-height: 1.2;">
                         {{ fmt_num($openingBalance) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
                     </div>
@@ -412,7 +412,7 @@
                 <div style="padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #fef3c7; background: #fffbeb;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; color: #92400e;">
                         <span>📜</span>
-                        <span>حیساباتی پێشتر و قەرزی کۆن (لە ماوەی دیاریکراودا)</span>
+                        <span>حیسابی پێشوو (لە ماوەی دیاریکراودا)</span>
                     </div>
                     <span style="font-size: 0.75rem; font-weight: 800; color: #b45309; background: #fde68a; padding: 0.2rem 0.65rem; border-radius: 9999px;">
                         {{ $oldDebts->count() }} تۆمار
@@ -438,7 +438,7 @@
                                         {{ fmt_date($debt->date) }}
                                     </td>
                                     <td style="padding: 0.75rem 0.85rem; font-weight: 600; color: #1e293b;">
-                                        {{ $debt->note ?: 'حیساباتی پێشتر' }}
+                                        {{ $debt->note ?: 'حیسابی پێشوو' }}
                                     </td>
                                     <td class="num" style="padding: 0.75rem 0.85rem; text-align: center; font-weight: 800; color: #1e293b;">
                                         {{ fmt_money($debt->amount, $debt->currency) }}

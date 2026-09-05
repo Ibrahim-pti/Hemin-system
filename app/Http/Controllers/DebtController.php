@@ -244,7 +244,7 @@ class DebtController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return back()->with('ok', "حیساباتی پێشتر بۆ ({$customer->name}) بە سەرکەوتوویی تۆمارکرا.");
+        return back()->with('ok', "حیسابی پێشوو بۆ ({$customer->name}) بە سەرکەوتوویی تۆمارکرا.");
     }
 
     /** سڕینەوەی تۆماری قەرزی کۆن */
@@ -256,6 +256,6 @@ class DebtController extends Controller
 
         $oldDebt->delete();
 
-        return back()->with('ok', "حیساباتی پێشتر سڕدرایەوە.");
+        return back()->with('ok', "حیسابی پێشوو سڕدرایەوە.");
     }
 }

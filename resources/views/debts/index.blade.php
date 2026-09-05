@@ -17,12 +17,12 @@
             <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0;">قەرزەکان</h1>
         </div>
 
-        {{-- لای چەپ: دوگمەی تۆمارکردنی قەرزی کۆن --}}
+        {{-- لای چەپ: دوگمەی تۆمارکردنی حیسابی پێشوو --}}
         <div>
             <a href="{{ route('debts.old-debt.create') }}"
                style="background: #4f46e5; color: #ffffff; padding: 0.6rem 1.15rem; border-radius: 0.65rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.45rem; text-decoration: none; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);">
                 <span style="font-size: 1.1rem; font-weight: 900;">📜</span>
-                <span>تۆمارکردنی قەرزی پێشوو</span>
+                <span>تۆمارکردنی حیسابی پێشوو</span>
             </a>
         </div>
     </div>
@@ -638,7 +638,7 @@
                 <div style="padding: 1rem 1.25rem; background: #b45309; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.05rem;">
                         <span style="font-size: 1.25rem;">📜</span>
-                        <span>تۆمارکردنی حیساباتی پێشتر / قەرزی کۆن</span>
+                        <span>تۆمارکردنی حیسابی پێشوو</span>
                     </div>
                     <button type="button" @click="openOldDebtModal = false"
                             title="داخستن"
