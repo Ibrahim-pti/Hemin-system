@@ -175,8 +175,24 @@ class DebtController extends Controller
 
         if (!empty($data['customer_id'])) {
             $customer = Customer::findOrFail($data['customer_id']);
-            $customer->opening_balance = (float) $customer->opening_balance + (float) $data['amount'];
-            $customer->opening_currency = $data['currency'];
+            $prevBal = (float) $customer->opening_balance;
+            $newAmount = (float) $data['amount'];
+
+            if ($prevBal > 0 && $customer->opening_currency !== $data['currency']) {
+                $rate = \App\Models\ExchangeRate::current() ?: 1500;
+                if ($customer->opening_currency === 'IQD' && $data['currency'] === 'USD') {
+                    $addedInCustCurrency = $newAmount * $rate;
+                } elseif ($customer->opening_currency === 'USD' && $data['currency'] === 'IQD') {
+                    $addedInCustCurrency = $newAmount / $rate;
+                } else {
+                    $addedInCustCurrency = $newAmount;
+                }
+                $customer->opening_balance = $prevBal + $addedInCustCurrency;
+            } else {
+                $customer->opening_balance = $prevBal + $newAmount;
+                $customer->opening_currency = $data['currency'];
+            }
+
             if (!empty($data['note'])) {
                 $customer->note = trim(($customer->note ? $customer->note . " | " : "") . $data['note']);
             }
@@ -192,6 +208,6 @@ class DebtController extends Controller
             ]);
         }
 
-        return redirect()->route('debts.index')->with('ok', "قەرزی کۆن بۆ ({$customer->name}) بە سەرکەوتوویی تۆمارکرا.");
+        return back()->with('ok', "قەرزی کۆن بۆ ({$customer->name}) بە سەرکەوتوویی تۆمارکرا.");
     }
 }

@@ -2,7 +2,7 @@
 @section('title', 'کڕیاران')
 
 @section('content')
-<div class="space-y-4 sm:space-y-6">
+<div class="space-y-4 sm:space-y-6" x-data="{ openOldDebtModal: false, selectedCustId: '', isNewCustomer: false, currency: 'IQD' }">
 
     {{-- ١. هێڵی سەرەوە: ناونیشان و دوگمەکانی کردار --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -24,6 +24,13 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
+            {{-- دوگمەی قەرزی پێشوو / حیساباتی کۆن بەبێ ناردن بۆ کارگە --}}
+            <button type="button" @click="openOldDebtModal = true; selectedCustId = ''; isNewCustomer = false;"
+               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white inline-flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
+                <span>📜</span>
+                <span>قەرزی پێشوو (بەبێ کارگە)</span>
+            </button>
+
             <a href="{{ route('orders.create') }}"
                class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 inline-flex items-center gap-1.5 transition-all">
                 <span>➕</span>
@@ -168,6 +175,12 @@
                             {{-- کردارەکان --}}
                             <td class="p-3.5 text-center">
                                 <div class="flex items-center justify-center gap-1.5">
+                                    <button type="button"
+                                            @click="openOldDebtModal = true; selectedCustId = '{{ $customer->id }}'; isNewCustomer = false;"
+                                            class="px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all cursor-pointer"
+                                            title="تۆمارکردنی قەرزی پێشوو (بەبێ کارگە)">
+                                        📜
+                                    </button>
                                     <a href="{{ route('customers.show', $customer) }}"
                                        class="px-2 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
                                        title="پڕۆفایل">
@@ -208,6 +221,116 @@
                 {{ $customers->links() }}
             </div>
         @endif
+    </div>
+
+    {{-- مۆداڵی تۆمارکردنی قەرزی پێشوو / حیساباتی کۆن (بەبێ دروستکردنی داواکاری لە کارگە) --}}
+    <div x-show="openOldDebtModal"
+         x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+         @keydown.escape.window="openOldDebtModal = false">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150"
+             @click.outside="openOldDebtModal = false">
+
+            {{-- سەری مۆداڵ --}}
+            <div class="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-5 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2 font-black text-sm sm:text-base">
+                    <span>📜</span>
+                    <span>تۆمارکردنی حیساباتی پێشتر / قەرزی کۆن</span>
+                </div>
+                <button type="button" @click="openOldDebtModal = false" class="text-white/80 hover:text-white text-xl font-bold leading-none cursor-pointer">
+                    ✕
+                </button>
+            </div>
+
+            {{-- ئاگاداری ڕوون: ئەمە بۆ کارگە ناچێت --}}
+            <div class="bg-amber-50 border-b border-amber-200/80 px-5 py-3 flex items-start gap-2.5 text-xs text-amber-900 leading-relaxed font-medium">
+                <span class="text-base shrink-0">ℹ️</span>
+                <div>
+                    <strong class="font-bold">ئەم بڕە بە هیچ جۆرێک ناچێتە بەشی کارگە بۆ دروستکردن!</strong>
+                    کرێکاران و کارگە وەک داواکاری نوێی دروستکردنی ئاسن نایبینن؛ بەڵکو تەنها وەک باڵانسی سەرەتایی و قەرزی کۆن لە ئەستۆی کڕیاردا تۆمار دەبێت.
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('debts.old-debt') }}" class="p-5 space-y-4">
+                @csrf
+
+                {{-- هەڵبژاردنی کڕیار --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        کڕیار هەڵبژێرە <span class="text-rose-500">*</span>
+                    </label>
+                    <select name="customer_id" x-model="selectedCustId"
+                            @change="isNewCustomer = ($event.target.value === '__NEW__')"
+                            class="field w-full font-bold text-slate-800 rounded-xl">
+                        <option value="">— کڕیارێک هەڵبژێرە —</option>
+                        @foreach ($allCustomers as $cust)
+                            <option value="{{ $cust->id }}">{{ $cust->name }} {{ $cust->phone ? "({$cust->phone})" : '' }}</option>
+                        @endforeach
+                        <option value="__NEW__">➕ کڕیاری نوێ بنووسە...</option>
+                    </select>
+                </div>
+
+                {{-- ئەگەر کڕیاری نوێ هەڵبژێردرابێت --}}
+                <div x-show="isNewCustomer" x-cloak class="space-y-3 bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            ناوی کڕیاری نوێ <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="new_customer_name" class="field w-full rounded-xl text-xs font-bold"
+                               placeholder="ناوی تەواوی کڕیار...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            ژمارەی مۆبایل
+                        </label>
+                        <input type="text" name="new_customer_phone" class="field num w-full rounded-xl text-xs" dir="ltr"
+                               placeholder="0750...">
+                    </div>
+                </div>
+
+                {{-- جۆری دراو و بڕی قەرز --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        بڕی قەرز / حیساباتی پێشتر <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <div class="relative flex-1">
+                            <input type="number" step="any" min="0.01" name="amount" required
+                                   class="field num w-full !py-2.5 !px-3 rounded-xl font-black text-rose-600 text-lg text-center"
+                                   placeholder="0">
+                        </div>
+                        <div class="w-36">
+                            <select name="currency" x-model="currency" class="field w-full !py-2.5 rounded-xl font-bold text-xs text-slate-800">
+                                <option value="IQD">دیناری عێراقی (د.ع)</option>
+                                <option value="USD">دۆلاری ئەمریکی ($)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- تێبینی --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        تێبینی / هۆکاری حیسابەکە
+                    </label>
+                    <textarea name="note" rows="2" class="field w-full rounded-xl text-xs"
+                              placeholder="نموونە: حیساباتی کۆن لە دەفتەر، باڵانسی پێش سیستم..."></textarea>
+                </div>
+
+                {{-- دوگمەکانی ناردن و داخستن --}}
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                    <button type="button" @click="openOldDebtModal = false"
+                            class="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer">
+                        پاشگەزبوونەوە
+                    </button>
+                    <button type="submit"
+                            class="px-5 py-2 text-xs font-black rounded-xl bg-amber-600 hover:bg-amber-700 text-white shadow-sm inline-flex items-center gap-1.5 cursor-pointer">
+                        <span>✓</span>
+                        <span>تۆمارکردن لە حیسابی کڕیار</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
 </div>
