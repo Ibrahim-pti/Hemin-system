@@ -9,7 +9,7 @@
         </a>
         <button type="button" @click="$dispatch('open-old-debt-modal')" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-sm cursor-pointer">
             <span>📜</span>
-            <span>+ قەرزی پێشوو (بەبێ کارگە)</span>
+            <span>+ قەرزی پێشوو</span>
         </button>
         <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $customer->id]) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
             <span>+</span>
@@ -68,7 +68,7 @@
             <button type="button" @click="openOldDebtModal = true"
                     class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-500 hover:bg-amber-600 text-white shadow-xs cursor-pointer">
                 <span>📜</span>
-                <span>قەرزی پێشوو (بەبێ کارگە)</span>
+                <span>قەرزی پێشوو</span>
             </button>
             <a href="{{ route('customers.edit', $customer) }}" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold border border-slate-200 hover:bg-slate-100 text-slate-700">
                 ✏️ دەستکاری زانیاری
@@ -85,7 +85,7 @@
             </div>
             <div class="text-xs font-bold text-amber-800 mt-1 flex items-center justify-center gap-1">
                 <span>📜</span>
-                <span>قەرزی پێشوو (ناچێتە کارگە)</span>
+                <span>قەرزی پێشوو</span>
             </div>
         </div>
 
