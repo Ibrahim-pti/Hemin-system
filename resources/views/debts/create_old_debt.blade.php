@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'تۆمارکردنی حیساباتی پێشتر (قەرزی پێشوو)')
+@section('title', 'تۆمارکردنی حیسابی پێشوو')
 
 @section('content')
 
@@ -32,12 +32,12 @@
         </div>
     @endif
 
-    {{-- ١. زانیاری سەرەکی کڕیار و حیساباتی پێشوو لەگەڵ وێنەی وەسڵ --}}
+    {{-- ١. زانیاری سەرەکی کڕیار و حیسابی پێشوو لەگەڵ وێنەی وەسڵ --}}
     <div class="card">
         <div class="card-head flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="text-lg">📜</span>
-                <span class="font-bold text-slate-800 text-sm">زانیاری کڕیار و حیساباتی پێشتر</span>
+                <span class="font-bold text-slate-800 text-sm">زانیاری کڕیار و حیسابی پێشوو</span>
             </div>
             <a href="{{ url()->previous() ?: route('customers.index') }}" class="btn btn-ghost !py-1 text-xs">گەڕانەوە &larr;</a>
         </div>
