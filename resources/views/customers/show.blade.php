@@ -273,7 +273,7 @@
 </div>
 @endif
 
-{{-- مۆداڵی تۆمارکردنی قەرزی پێشوو / حیساباتی کۆن --}}
+{{-- مۆداڵی تۆمارکردنی حیسابی پێشوو --}}
 <div x-show="openOldDebtModal"
      x-cloak
      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"

@@ -222,7 +222,7 @@
         @endif
     </div>
 
-    {{-- مۆداڵی تۆمارکردنی قەرزی پێشوو / حیساباتی کۆن (بەبێ دروستکردنی داواکاری لە کارگە) --}}
+    {{-- مۆداڵی تۆمارکردنی حیسابی پێشوو (بەبێ دروستکردنی داواکاری لە کارگە) --}}
     <div x-show="openOldDebtModal"
          x-cloak
          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
