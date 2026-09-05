@@ -140,6 +140,7 @@ class PurchaseController extends Controller
                     'direction' => 'out',
                     'amount' => $headerData['paid_amount'],
                     'currency' => $headerData['currency'],
+                    'exchange_rate' => $headerData['exchange_rate'] ?? null,
                     'paid_at' => $headerData['purchase_date'],
                     'party' => Supplier::find($headerData['supplier_id']),
                     'purchase_id' => $purchase->id,
@@ -263,6 +264,9 @@ class PurchaseController extends Controller
         if (isset($input['quick_total'])) {
             $input['quick_total'] = str_replace(',', '', (string) $input['quick_total']);
         }
+        if (isset($input['exchange_rate'])) {
+            $input['exchange_rate'] = str_replace(',', '', (string) $input['exchange_rate']);
+        }
 
         // ئەگەر شێوازی تۆماری خێرا بێت (یان تەنها کۆی وەسڵ نووسرابێت)
         if (($input['entry_mode'] ?? 'itemized') === 'quick' || (!empty($input['quick_total']) && (float) $input['quick_total'] > 0)) {
@@ -303,7 +307,7 @@ class PurchaseController extends Controller
             'supplier_id' => ['nullable'],
             'warehouse_id' => ['required', 'exists:warehouses,id'],
             'purchase_date' => ['required', 'date'],
-            'currency' => ['nullable', 'in:IQD,USD'],
+            'currency' => ['required', 'in:IQD,USD'],
             'exchange_rate' => ['nullable', 'numeric', 'min:0'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
@@ -347,6 +351,16 @@ class PurchaseController extends Controller
         $total = max(0, $subtotal - $discount);
         $currency = $data['currency'] ?? 'IQD';
 
+        $exchangeRate = null;
+        if ($currency === 'USD') {
+            if (!empty($data['exchange_rate'])) {
+                $rawRate = (float) $data['exchange_rate'];
+                $exchangeRate = $rawRate > 5000 ? $rawRate / 100 : $rawRate;
+            } else {
+                $exchangeRate = ExchangeRate::forDate($data['purchase_date']);
+            }
+        }
+
         // شێوازی پارەدان (حازری / نەقد، بە قەرز، یان بەشێکی دراوە)
         $paymentType = $data['payment_type'] ?? null;
         if ($paymentType === 'debt') {
@@ -364,9 +378,7 @@ class PurchaseController extends Controller
             'warehouse_id' => $data['warehouse_id'],
             'purchase_date' => $data['purchase_date'],
             'currency' => $currency,
-            'exchange_rate' => $currency === 'USD'
-                ? ($data['exchange_rate'] ?? ExchangeRate::forDate($data['purchase_date']))
-                : null,
+            'exchange_rate' => $exchangeRate,
             'subtotal' => $subtotal,
             'discount_amount' => $discount,
             'total' => $total,

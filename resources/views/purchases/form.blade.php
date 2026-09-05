@@ -33,16 +33,23 @@
     }
 
     $initialImage = $purchase->imageUrl();
+    $initialCurrency = old('currency', $purchase->currency ?: 'IQD');
+    $defaultRate100 = ($rate ?: \App\Models\ExchangeRate::current() ?: 1500) * 100;
+    if ($defaultRate100 > 500000) $defaultRate100 = $defaultRate100 / 100;
+    $initialExchangeRate = old('exchange_rate', $purchase->exchange_rate
+        ? (float) ($purchase->exchange_rate > 5000 ? $purchase->exchange_rate : $purchase->exchange_rate * 100)
+        : $defaultRate100);
+    $initialExchangeRate = $initialExchangeRate ? number_format($initialExchangeRate) : '150,000';
 @endphp
 
 <form method="POST"
       action="{{ $purchase->exists ? route('purchases.update', $purchase) : route('purchases.store') }}"
       enctype="multipart/form-data"
-      x-data="purchaseForm(@js($initialLines), @js($initialDiscount), @js($initialPaid), @js($initialPaymentType), @js($initialImage))"
+      x-data="purchaseForm(@js($initialLines), @js($initialDiscount), @js($initialPaid), @js($initialPaymentType), @js($initialImage), @js($initialCurrency), @js($initialExchangeRate))"
       class="space-y-4">
     @csrf
     @if ($purchase->exists) @method('PUT') @endif
-    <input type="hidden" name="currency" value="IQD">
+    <input type="hidden" name="currency" :value="currency">
     <input type="hidden" name="entry_mode" :value="entryMode">
     <input type="hidden" name="payment_type" :value="paymentType">
     <input type="hidden" name="remove_image" :value="removeImageFlag ? '1' : '0'">
@@ -105,8 +112,29 @@
                        value="{{ old('purchase_date', $purchase->purchase_date?->toDateString() ?? now()->toDateString()) }}">
             </div>
 
+            {{-- هەڵبژاردنی دراو (دینار یان دۆلار) --}}
+            <div>
+                <label class="label" for="currency_toggle">
+                    دراوی پسوولە <span class="text-[--color-danger]">*</span>
+                </label>
+                <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
+                    <button type="button" @click="setCurrency('IQD')"
+                            :class="currency === 'IQD' ? 'bg-white text-teal-800 shadow-xs ring-1 ring-slate-200' : 'text-slate-600 hover:text-slate-900'"
+                            class="py-2 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                        <span class="text-sm">🇮🇶</span>
+                        <span>دینار (IQD)</span>
+                    </button>
+                    <button type="button" @click="setCurrency('USD')"
+                            :class="currency === 'USD' ? 'bg-white text-teal-800 shadow-xs ring-1 ring-slate-200' : 'text-slate-600 hover:text-slate-900'"
+                            class="py-2 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                        <span class="text-sm">💵</span>
+                        <span>دۆلار ($ USD)</span>
+                    </button>
+                </div>
+            </div>
+
             {{-- تێبینی --}}
-            <div class="sm:col-span-2 lg:col-span-4">
+            <div class="sm:col-span-2 lg:col-span-3">
                 <label class="label" for="note">تێبینی پسوولە</label>
                 <input id="note" name="note" type="text" class="field"
                        placeholder="تێبینی، ژمارەی پسوولەی فرۆشیار یان مەرجەکان..."
@@ -157,7 +185,12 @@
     {{-- ٢. شێوازی تۆمارکردنی مەوادەکان (خێرا یان دانە بە دانە) --}}
     <div class="card overflow-hidden">
         <div class="card-head flex flex-wrap items-center justify-between gap-3">
-            <span class="font-bold text-slate-800 text-sm">مەوادە کڕدراوەکان</span>
+            <div class="flex items-center gap-2.5">
+                <span class="font-bold text-slate-800 text-sm">مەوادە کڕدراوەکان</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold transition-all"
+                      :class="currency === 'USD' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-200'"
+                      x-text="currency === 'USD' ? 'بە دۆلار ($ USD)' : 'بە دینار (IQD)'"></span>
+            </div>
 
             {{-- دوگمەی گۆڕینی شێواز: خێرا یان دانە بە دانە --}}
             <div class="inline-flex w-full sm:w-auto flex-col sm:flex-row rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs font-bold gap-1">
@@ -196,7 +229,7 @@
 
                 <div>
                     <label class="label text-xs font-bold text-slate-800" for="quick_total">
-                        کۆی گشتی نرخی پسوولە (د.ع) <span class="text-red-500">*</span>
+                        کۆی گشتی نرخی پسوولە (<span x-text="currencySymbol()"></span>) <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <input id="quick_total" name="quick_total" type="text" inputmode="numeric"
@@ -214,7 +247,7 @@
         <div x-show="entryMode === 'itemized'">
             <datalist id="items_list">
                 @foreach ($items as $item)
-                    <option value="{{ $item->name }}" data-price="{{ $item->last_cost }}">
+                    <option value="{{ $item->name }}" data-price="{{ $item->last_cost }}" data-currency="{{ $item->cost_currency ?? 'IQD' }}">
                         {{ $item->unit?->name ? '(' . $item->unit->name . ')' : '' }}
                     </option>
                 @endforeach
@@ -227,8 +260,8 @@
                             <th style="width: 44px; text-align: center;">#</th>
                             <th style="text-align: right; padding: 10px 12px;">ناوی کاڵا / مەواد (دەستنووس یان لە لیست)</th>
                             <th style="width: 120px; text-align: center;">بڕ / ژمارە</th>
-                            <th style="width: 180px; text-align: center;">نرخی یەکە (د.ع)</th>
-                            <th style="width: 180px; text-align: center;">کۆی گشتی (د.ع)</th>
+                            <th style="width: 180px; text-align: center;">نرخی یەکە (<span x-text="currencySymbol()"></span>)</th>
+                            <th style="width: 180px; text-align: center;">کۆی گشتی (<span x-text="currencySymbol()"></span>)</th>
                             <th style="text-align: right; padding: 10px 12px;">تێبینی</th>
                             <th style="width: 44px; text-align: center;"></th>
                         </tr>
@@ -344,7 +377,9 @@
                 <div class="pt-3 border-t border-slate-100">
                     {{-- بڕی پارەی دراو ئەگەر بەشێکی دراوە بوو --}}
                     <div x-show="paymentType === 'partial'" x-transition class="max-w-md">
-                        <label class="label text-xs font-bold text-amber-700" for="paid_amount">بڕی پارەی دراو ئێستا (د.ع)</label>
+                        <label class="label text-xs font-bold text-amber-700" for="paid_amount">
+                            بڕی پارەی دراو ئێستا (<span x-text="currencySymbol()"></span>)
+                        </label>
                         <input id="paid_amount" name="paid_amount" type="text" inputmode="numeric"
                                class="field num font-bold text-amber-700 w-full"
                                dir="ltr"
@@ -407,7 +442,7 @@
 </form>
 
 <script>
-function purchaseForm(initialLines, initialDiscount, initialPaid, initialPaymentType, initialImagePreview) {
+function purchaseForm(initialLines, initialDiscount, initialPaid, initialPaymentType, initialImagePreview, initialCurrency, initialExchangeRate) {
     const hasDetailedItems = initialLines && initialLines.length > 1;
 
     return {
@@ -421,12 +456,35 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
         imagePreview: initialImagePreview || null,
         removeImageFlag: false,
 
+        currency: initialCurrency || 'IQD',
+        exchangeRate: initialExchangeRate || '150,000',
+        fetchingRate: false,
+
         init() {
             if (this.paymentType === 'cash') {
                 this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
             } else if (this.paymentType === 'debt') {
                 this.paid = '0';
             }
+        },
+
+        setCurrency(curr) {
+            this.currency = curr;
+            if (curr === 'USD' && (!this.exchangeRate || this.cleanNum(this.exchangeRate) === 0)) {
+                this.fetchLiveRate();
+            }
+            if (this.paymentType === 'cash') {
+                this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+            }
+        },
+
+        ratePerUsd() {
+            const raw = parseFloat((this.exchangeRate || '0').toString().replace(/,/g, '')) || 1500;
+            return raw > 5000 ? (raw / 100) : raw;
+        },
+
+        currencySymbol() {
+            return this.currency === 'USD' ? '$' : 'د.ع';
         },
 
         setEntryMode(mode) {
@@ -452,6 +510,30 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
                     this.paid = '';
                 }
             }
+        },
+
+        formatExchangeRate(e) {
+            let clean = e.target.value.replace(/[^0-9.]/g, '');
+            let parts = clean.split('.');
+            if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+            let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+            let dec = parts.length > 1 ? '.' + parts[1] : '';
+            this.exchangeRate = int ? int + dec : '';
+        },
+
+        fetchLiveRate() {
+            this.fetchingRate = true;
+            fetch('/api/exchange-rate/live')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ok && data.rate_per_100) {
+                        this.exchangeRate = data.rate_per_100.toLocaleString('en-US');
+                    }
+                })
+                .catch(() => {})
+                .finally(() => {
+                    this.fetchingRate = false;
+                });
         },
 
         onImageChange(e) {
@@ -547,9 +629,21 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
             if (datalist && line.item_name) {
                 const option = Array.from(datalist.options).find(opt => opt.value.trim().toLowerCase() === line.item_name.trim().toLowerCase());
                 if (option && option.dataset.price && (!line.unit_price || this.cleanNum(line.unit_price) == 0)) {
-                    line.unit_price = parseFloat(option.dataset.price).toLocaleString('en-US');
-                    if (this.paymentType === 'cash') {
-                        this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+                    let price = parseFloat(option.dataset.price) || 0;
+                    const itemCurr = option.dataset.currency || 'IQD';
+                    if (price > 0) {
+                        if (itemCurr !== this.currency) {
+                            const r = this.ratePerUsd();
+                            if (this.currency === 'USD' && itemCurr === 'IQD' && r > 0) {
+                                price = Math.round((price / r) * 100) / 100;
+                            } else if (this.currency === 'IQD' && itemCurr === 'USD' && r > 0) {
+                                price = Math.round(price * r);
+                            }
+                        }
+                        line.unit_price = (price % 1 !== 0) ? price.toFixed(2) : price.toLocaleString('en-US');
+                        if (this.paymentType === 'cash') {
+                            this.paid = this.total() ? this.total().toLocaleString('en-US') : '';
+                        }
                     }
                 }
             }
@@ -587,6 +681,14 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
 
         money(val) {
             const num = parseFloat(val) || 0;
+            if (this.currency === 'USD') {
+                return '$ ' + num.toLocaleString('en-US', { minimumFractionDigits: (num % 1 !== 0 ? 2 : 0), maximumFractionDigits: 2 });
+            }
+            return num.toLocaleString('en-US') + ' د.ع';
+        },
+
+        moneyIqd(val) {
+            const num = Math.round(parseFloat(val) || 0);
             return num.toLocaleString('en-US') + ' د.ع';
         }
     };

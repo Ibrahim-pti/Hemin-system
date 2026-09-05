@@ -226,8 +226,8 @@ class SupplierController extends Controller
 
         foreach ($purchases as $p) {
             $itemNames = $p->items->map(fn($i) => ($i->item?->name ?? 'کاڵا') . ' (' . fmt_qty($i->qty) . ' ' . ($i->item?->unit?->name ?? '') . ')')->join('، ');
-            $paid = (float) $p->paidTotal();
-            $remaining = (float) $p->remaining();
+            $paid = (float) $p->paidTotalIqd();
+            $remaining = (float) $p->remainingIqd();
 
             $entries->push((object)[
                 'date' => $p->purchase_date?->toDateString(),

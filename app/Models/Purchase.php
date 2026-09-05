@@ -88,12 +88,32 @@ class Purchase extends Model
 
     public function paidTotal(): float
     {
+        if ($this->currency === 'USD') {
+            $rate = (float) ($this->exchange_rate ?: ExchangeRate::forDate($this->purchase_date?->toDateString() ?: now()->toDateString())) ?: 1;
+            return (float) $this->payments()->where('direction', 'out')->get()->sum(function ($p) use ($rate) {
+                if ($p->currency === 'USD') {
+                    return (float) $p->amount;
+                }
+                return $rate > 0 ? (float) $p->amount_iqd / $rate : (float) $p->amount;
+            });
+        }
+
         return (float) $this->payments()->where('direction', 'out')->sum('amount_iqd');
     }
 
     public function remaining(): float
     {
-        return $this->total_iqd - $this->paidTotal();
+        return max(0, (float) $this->total - $this->paidTotal());
+    }
+
+    public function paidTotalIqd(): float
+    {
+        return (float) $this->payments()->where('direction', 'out')->sum('amount_iqd');
+    }
+
+    public function remainingIqd(): float
+    {
+        return max(0, (float) $this->total_iqd - $this->paidTotalIqd());
     }
 
     public static function nextInvoiceNo(): string

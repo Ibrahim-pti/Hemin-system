@@ -227,7 +227,7 @@
                         {{ fmt_num($purchase->total) }}
                     </td>
                     <td colspan="4" class="text-left px-3 text-sm font-bold text-slate-900">
-                        کۆی گشتی پسوولە:
+                        کۆی گشتی پسوولە ({{ $purchase->currency === 'USD' ? 'دۆلار $' : 'دینار' }}):
                     </td>
                 </tr>
 
@@ -241,7 +241,7 @@
                         {{ fmt_num($paid) }}
                     </td>
                     <td colspan="4" class="text-left px-3 text-xs font-bold text-emerald-800">
-                        پارەی دراو (واصلکراو):
+                        پارەی دراو (واصلکراو) ({{ $purchase->currency === 'USD' ? 'دۆلار $' : 'دینار' }}):
                     </td>
                 </tr>
 
@@ -251,7 +251,7 @@
                         {{ fmt_num($remaining) }}
                     </td>
                     <td colspan="4" class="text-left px-3 text-xs font-bold text-slate-900">
-                        ماوە (قەرز):
+                        ماوە (قەرز) ({{ $purchase->currency === 'USD' ? 'دۆلار $' : 'دینار' }}):
                     </td>
                 </tr>
             </tbody>

@@ -183,6 +183,13 @@
                     <span class="font-mono font-bold text-slate-800">{{ fmt_date($purchase->purchase_date) }}</span>
                 </div>
 
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500 font-medium">دراوی پسوولە:</span>
+                    <span class="font-bold {{ $purchase->currency === 'USD' ? 'text-amber-700' : 'text-slate-800' }}">
+                        {{ $purchase->currency === 'USD' ? 'دۆلاری ئەمریکی ($ USD)' : 'دیناری عێراقی (IQD)' }}
+                    </span>
+                </div>
+
                 @if($purchase->note)
                     <div class="pt-2 border-t border-slate-100">
                         <span class="text-slate-400 block mb-1">تێبینی:</span>

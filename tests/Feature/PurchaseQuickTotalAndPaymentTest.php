@@ -121,4 +121,49 @@ class PurchaseQuickTotalAndPaymentTest extends TestCase
         $this->assertEquals(200000, (float) $purchase->paid_amount);
         $this->assertEquals(300000, (float) $purchase->remaining());
     }
+
+    public function test_purchase_can_be_created_in_usd_with_exchange_rate()
+    {
+        $payload = [
+            'entry_mode' => 'quick',
+            'quick_title' => 'مەوادی هەمەجۆر بە دۆلار',
+            'quick_total' => '1,200',
+            'payment_type' => 'cash',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'purchase_date' => now()->toDateString(),
+            'currency' => 'USD',
+            'exchange_rate' => '150,000',
+        ];
+
+        $res = $this->post('/purchases', $payload);
+        $res->assertRedirect();
+
+        $purchase = Purchase::latest('id')->firstOrFail();
+
+        $this->assertEquals('USD', $purchase->currency);
+        $this->assertEquals(1500, (float) $purchase->exchange_rate);
+        $this->assertEquals(1200, (float) $purchase->total);
+        $this->assertEquals(1200, (float) $purchase->paid_amount);
+        $this->assertEquals(0, (float) $purchase->remaining());
+        $this->assertEquals(1800000, (float) $purchase->total_iqd);
+
+        // Payment check
+        $payment = $purchase->payments()->first();
+        $this->assertNotNull($payment);
+        $this->assertEquals('USD', $payment->currency);
+        $this->assertEquals(1200, (float) $payment->amount);
+        $this->assertEquals(1500, (float) $payment->exchange_rate);
+        $this->assertEquals(1800000, (float) $payment->amount_iqd);
+    }
+
+    public function test_purchase_create_page_contains_currency_selector()
+    {
+        $res = $this->get('/purchases/create');
+        $res->assertOk();
+        $res->assertSee('دراوی پسوولە');
+        $res->assertSee('دینار (IQD)');
+        $res->assertSee('دۆلار ($ USD)');
+        $res->assertDontSee('نرخی ١٠٠$ دۆلار');
+    }
 }
