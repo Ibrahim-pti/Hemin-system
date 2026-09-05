@@ -22,9 +22,21 @@ class Payment extends Model
 
     protected $fillable = [
         'voucher_no', 'direction', 'party_type', 'party_id', 'party_name',
-        'order_id', 'purchase_id', 'amount', 'currency', 'exchange_rate',
+        'order_id', 'purchase_id', 'amount', 'currency', 'payment_type', 'exchange_rate',
         'amount_iqd', 'cash_box_id', 'paid_at', 'user_id', 'note',
     ];
+
+    public function isAdvance(): bool
+    {
+        if ($this->payment_type === 'advance') {
+            return true;
+        }
+
+        $note = (string) $this->note;
+        return str_contains($note, 'پێشەکی')
+            || str_contains($note, 'قەرز')
+            || str_contains($note, 'سولفە');
+    }
 
     protected function casts(): array
     {

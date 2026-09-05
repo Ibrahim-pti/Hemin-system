@@ -619,5 +619,101 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $this->assertEquals('month', $month->viewData('mode'));
         $this->assertEquals(now()->startOfMonth()->toDateString(), $month->viewData('from'));
     }
+
+    public function test_workshop_employee_advance_payment_and_salary_deduction()
+    {
+        $this->actingAs($this->admin);
+
+        $employee = Employee::create([
+            'name' => 'سوارە مەنتک',
+            'job_title' => 'master',
+            'salary_type' => 'daily',
+            'daily_wage' => 40000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $cashBox = CashBox::first();
+        $initialBalance = (float) $cashBox->balance();
+
+        // ١. پێدانی پێشەکی / قەرز بە کارمەند
+        $advanceAmount = 50000;
+        $payRes = $this->postJson('/workshop/employees/record-payment', [
+            'employee_id' => $employee->id,
+            'amount' => $advanceAmount,
+            'currency' => 'IQD',
+            'cash_box_id' => $cashBox->id,
+            'paid_at' => now()->toDateString(),
+            'payment_type' => 'advance',
+            'note' => 'پێشەکی بۆ سوارە مەنتک',
+        ]);
+        $payRes->assertStatus(200);
+        $payRes->assertJson([
+            'ok' => true,
+            'payment' => [
+                'payment_type' => 'advance',
+                'type_label' => 'پێشەکی (قەرز)',
+            ],
+        ]);
+
+        // پشکنینی کەمبوونەوەی قاسە
+        $this->assertEquals($initialBalance - $advanceAmount, (float) $cashBox->fresh()->balance());
+
+        // ٢. لە دەستپێکدا هیچ دەوامی نەکردووە، بۆیە قەرزارە بە بڕی 50,000 د.ع (باڵانس -50,000)
+        $monthRes = $this->getJson("/workshop/employees/{$employee->id}/month-details?month=" . now()->format('Y-m'));
+        $monthRes->assertStatus(200);
+        $monthRes->assertJson([
+            'stats' => [
+                'total_earned' => 0,
+                'total_paid' => 50000,
+                'total_advances' => 50000,
+                'remaining_balance' => -50000,
+            ],
+        ]);
+
+        // ٣. دواتر ٢ ڕۆژ دەوام دەکات (٢ ڕۆژ * 40,000 = 80,000 د.ع)
+        Attendance::create([
+            'employee_id' => $employee->id,
+            'work_date' => now()->startOfMonth()->toDateString(),
+            'status' => 'present',
+            'wage_snapshot' => 40000,
+        ]);
+        Attendance::create([
+            'employee_id' => $employee->id,
+            'work_date' => now()->startOfMonth()->addDay()->toDateString(),
+            'status' => 'present',
+            'wage_snapshot' => 40000,
+        ]);
+
+        // ٤. کاتێک دەوامەکە تەواو دەبێت، پێشەکییەکە لە کۆی مووچەکەی کەمدەبێتەوە
+        // شایستە = 80,000 د.ع، پێشەکی = 50,000 د.ع => ماوە بۆی بدرێت تەنها = 30,000 د.ع
+        $monthRes2 = $this->getJson("/workshop/employees/{$employee->id}/month-details?month=" . now()->format('Y-m'));
+        $monthRes2->assertStatus(200);
+        $monthRes2->assertJson([
+            'stats' => [
+                'present_count' => 2,
+                'total_earned' => 80000,
+                'total_paid' => 50000,
+                'total_advances' => 50000,
+                'remaining_balance' => 30000,
+            ],
+        ]);
+
+        // ٥. پشکنینی سڕینەوەی وەسڵ و گەڕانەوەی پارە بۆ قاسە
+        $paymentId = $payRes->json('payment.id');
+        $delRes = $this->deleteJson("/workshop/employees/payments/{$paymentId}");
+        $delRes->assertStatus(200);
+        $this->assertEquals($initialBalance, (float) $cashBox->fresh()->balance());
+
+        // دوای سڕینەوە باڵانسی شایستەی ماوە دەبێتەوە بە 80,000 تەواو
+        $monthRes3 = $this->getJson("/workshop/employees/{$employee->id}/month-details?month=" . now()->format('Y-m'));
+        $monthRes3->assertJson([
+            'stats' => [
+                'total_paid' => 0,
+                'total_advances' => 0,
+                'remaining_balance' => 80000,
+            ],
+        ]);
+    }
 }
 

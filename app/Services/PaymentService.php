@@ -50,6 +50,7 @@ class PaymentService
                 'paid_at' => $paidAt,
                 'user_id' => Auth::id(),
                 'note' => $data['note'] ?? null,
+                'payment_type' => $data['payment_type'] ?? null,
             ]);
 
             if ($payment->cash_box_id) {

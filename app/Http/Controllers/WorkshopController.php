@@ -1450,6 +1450,8 @@ class WorkshopController extends Controller
         $allDeductions = round($totalDeductions + $calculatedLatePenalty + $calculatedAbsentPenalty);
         $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $allDeductions);
 
+        $totalAdvances = (float) $payments->filter(fn ($p) => $p->isAdvance())->sum('amount_iqd');
+        $totalWagesPaid = (float) $payments->filter(fn ($p) => ! $p->isAdvance())->sum('amount_iqd');
         $totalPaid = round((float) $payments->sum('amount_iqd'));
         $remainingBalance = round($totalEarned - $totalPaid);
 
@@ -1487,6 +1489,8 @@ class WorkshopController extends Controller
                 'overtime_earned' => $overtimeEarned,
                 'total_earned' => $totalEarned,
                 'total_paid' => $totalPaid,
+                'total_advances' => $totalAdvances,
+                'total_wages_paid' => $totalWagesPaid,
                 'remaining_balance' => $remainingBalance,
             ],
             'attendances' => $attendances->map(function ($a) {
@@ -1527,6 +1531,8 @@ class WorkshopController extends Controller
                 'amount_iqd' => (float) $p->amount_iqd,
                 'currency' => $p->currency,
                 'paid_at' => $p->paid_at?->format('Y/m/d'),
+                'payment_type' => $p->isAdvance() ? 'advance' : 'wage',
+                'type_label' => $p->isAdvance() ? 'پێشەکی (قەرز)' : 'مووچە',
                 'note' => $p->note,
             ])->values()->all(),
         ]);
@@ -1601,10 +1607,18 @@ class WorkshopController extends Controller
             'currency' => ['nullable', 'in:IQD,USD'],
             'cash_box_id' => ['nullable', 'exists:cash_boxes,id'],
             'paid_at' => ['required', 'date'],
+            'payment_type' => ['nullable', 'in:wage,advance'],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $employee = Employee::findOrFail($validated['employee_id']);
+        $paymentType = $validated['payment_type'] ?? 'wage';
+
+        $defaultNote = $paymentType === 'advance'
+            ? "پێشەکی (قەرز) بۆ {$employee->name}"
+            : "مووچەی {$employee->name}";
+
+        $note = ! empty($validated['note']) ? $validated['note'] : $defaultNote;
 
         $payment = $paymentService->record([
             'direction' => 'out',
@@ -1615,13 +1629,16 @@ class WorkshopController extends Controller
             'cash_box_id' => $validated['cash_box_id'] ?? null,
             'paid_at' => $validated['paid_at'],
             'category' => 'wage',
-            'note' => $validated['note'] ?: "پێشەکی / حەقدەستی {$employee->name}",
+            'payment_type' => $paymentType,
+            'note' => $note,
         ]);
+
+        $typeLabel = $payment->isAdvance() ? 'پێشەکی (قەرز)' : 'مووچە';
 
         if ($request->wantsJson()) {
             return response()->json([
                 'ok' => true,
-                'message' => "بڕی " . number_format($payment->amount) . " {$payment->currency} بە سەرکەوتوویی درا بە {$employee->name}.",
+                'message' => "{$typeLabel} بە بڕی " . number_format($payment->amount) . " {$payment->currency} بە سەرکەوتوویی درا بە {$employee->name}.",
                 'payment' => [
                     'id' => $payment->id,
                     'voucher_no' => $payment->voucher_no,
@@ -1629,6 +1646,8 @@ class WorkshopController extends Controller
                     'amount_iqd' => (float) $payment->amount_iqd,
                     'currency' => $payment->currency,
                     'paid_at' => $payment->paid_at?->format('Y/m/d'),
+                    'payment_type' => $payment->isAdvance() ? 'advance' : 'wage',
+                    'type_label' => $typeLabel,
                     'note' => $payment->note,
                 ],
                 'cash_box' => $payment->cashBox ? [
@@ -1638,7 +1657,27 @@ class WorkshopController extends Controller
             ]);
         }
 
-        return back()->with('ok', "پارەدان بۆ {$employee->name} بە سەرکەوتوویی تۆمارکرا.");
+        return back()->with('ok', "{$typeLabel} بۆ {$employee->name} بە سەرکەوتوویی تۆمارکرا.");
+    }
+
+    /** سڕینەوەی وەسڵی پارەدان/پێشەکی بۆ وەستا لە قاصەدا */
+    public function destroyEmployeePayment(\App\Models\Payment $payment, \App\Services\PaymentService $paymentService)
+    {
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی سڕینەوەی پارەدانی هەیە.');
+        }
+
+        $cashBox = $payment->cashBox;
+        $paymentService->remove($payment);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'وەسڵی پارەدان بە سەرکەوتوویی سڕدرایەوە و باڵانسی قاسە ڕێکخرایەوە.',
+            'cash_box' => $cashBox ? [
+                'id' => $cashBox->id,
+                'balance' => (float) $cashBox->balance(),
+            ] : null,
+        ]);
     }
 
     /** سڕینەوەی وەستا یان کرێکار لە سیستەم */
