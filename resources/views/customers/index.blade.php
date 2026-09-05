@@ -2,7 +2,7 @@
 @section('title', 'کڕیاران')
 
 @section('content')
-<div class="space-y-4 sm:space-y-6" x-data="{ openOldDebtModal: false, selectedCustId: '', isNewCustomer: false, currency: 'IQD' }">
+<div class="space-y-4 sm:space-y-6" x-data="{ openOldDebtModal: false, selectedCustId: '', isNewCustomer: false, currency: 'IQD', debtStatus: 'debt' }">
 
     {{-- ١. هێڵی سەرەوە: ناونیشان و دوگمەکانی کردار --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -231,27 +231,22 @@
         <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150"
              @click.outside="openOldDebtModal = false">
 
-            {{-- سەری مۆداڵ --}}
-            <div class="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-5 py-4 flex items-center justify-between">
-                <div class="flex items-center gap-2 font-black text-sm sm:text-base">
-                    <span>📜</span>
+            {{-- سەری مۆداڵ بە ڕەنگی دیار و ئایکۆنی ڕوونی لابردن --}}
+            <div style="background: #b45309; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem;">
+                    <span style="font-size: 1.25rem;">📜</span>
                     <span>تۆمارکردنی حیساباتی پێشتر / قەرزی کۆن</span>
                 </div>
-                <button type="button" @click="openOldDebtModal = false" class="text-white/80 hover:text-white text-xl font-bold leading-none cursor-pointer">
+                <button type="button" @click="openOldDebtModal = false"
+                        title="داخستن"
+                        style="background: rgba(255, 255, 255, 0.2); border: none; border-radius: 0.5rem; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #ffffff; cursor: pointer; line-height: 1;"
+                        onmouseover="this.style.background='rgba(255, 255, 255, 0.35)'"
+                        onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
                     ✕
                 </button>
             </div>
 
-            {{-- ئاگاداری ڕوون: ئەمە بۆ کارگە ناچێت --}}
-            <div class="bg-amber-50 border-b border-amber-200/80 px-5 py-3 flex items-start gap-2.5 text-xs text-amber-900 leading-relaxed font-medium">
-                <span class="text-base shrink-0">ℹ️</span>
-                <div>
-                    <strong class="font-bold">ئەم بڕە بە هیچ جۆرێک ناچێتە بەشی کارگە بۆ دروستکردن!</strong>
-                    کرێکاران و کارگە وەک داواکاری نوێی دروستکردنی ئاسن نایبینن؛ بەڵکو تەنها وەک باڵانسی سەرەتایی و قەرزی کۆن لە ئەستۆی کڕیاردا تۆمار دەبێت.
-                </div>
-            </div>
-
-            <form method="POST" action="{{ route('debts.old-debt') }}" class="p-5 space-y-4">
+            <form method="POST" action="{{ route('debts.old-debt') }}" enctype="multipart/form-data" class="p-5 space-y-4">
                 @csrf
 
                 {{-- هەڵبژاردنی کڕیار --}}
@@ -288,15 +283,37 @@
                     </div>
                 </div>
 
+                {{-- دۆخی حیساب: قەرزە یان پارەدانی تەواو بووە --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        دۆخی حیساب / پارەدان <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 cursor-pointer transition-all text-xs font-bold select-none"
+                               :class="debtStatus === 'debt' ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'">
+                            <input type="radio" name="status" value="debt" x-model="debtStatus" class="hidden">
+                            <span>⚠️</span>
+                            <span>قەرزە (نەدراوە)</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 cursor-pointer transition-all text-xs font-bold select-none"
+                               :class="debtStatus === 'paid' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'">
+                            <input type="radio" name="status" value="paid" x-model="debtStatus" class="hidden">
+                            <span>✓</span>
+                            <span>پارەدانی تەواو بووە</span>
+                        </label>
+                    </div>
+                </div>
+
                 {{-- جۆری دراو و بڕی قەرز --}}
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                        بڕی قەرز / حیساباتی پێشتر <span class="text-rose-500">*</span>
+                        بڕی پارە <span class="text-rose-500">*</span>
                     </label>
                     <div class="flex items-center gap-2">
                         <div class="relative flex-1">
                             <input type="number" step="any" min="0.01" name="amount" required
-                                   class="field num w-full !py-2.5 !px-3 rounded-xl font-black text-rose-600 text-lg text-center"
+                                   class="field num w-full !py-2.5 !px-3 rounded-xl font-black text-lg text-center"
+                                   :class="debtStatus === 'paid' ? 'text-emerald-700' : 'text-rose-600'"
                                    placeholder="0">
                         </div>
                         <div class="w-36">
@@ -305,6 +322,24 @@
                                 <option value="USD">دۆلاری ئەمریکی ($)</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {{-- بەروار --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">بەروار</label>
+                        <input type="date" name="date" value="{{ date('Y-m-d') }}"
+                               class="field num w-full !py-2 rounded-xl text-xs font-bold text-slate-700">
+                    </div>
+
+                    {{-- وێنەی وەسڵ / بەڵگە --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                            📷 وێنەی وەسڵ / دەفتەر (ئارەزوومەندانە)
+                        </label>
+                        <input type="file" name="image" accept="image/*"
+                               class="field w-full !py-1 text-xs rounded-xl file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 cursor-pointer">
                     </div>
                 </div>
 

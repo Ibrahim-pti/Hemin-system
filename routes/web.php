@@ -115,6 +115,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
         Route::get('/debts', [DebtController::class, 'index'])->name('debts.index');
         Route::post('/debts/old-debt', [DebtController::class, 'storeOldDebt'])->name('debts.old-debt');
+        Route::delete('/debts/old-debt/{oldDebt}', [DebtController::class, 'destroyOldDebt'])->name('debts.old-debt.destroy');
     });
 
     Route::middleware('can:manage_cash')->group(function () {

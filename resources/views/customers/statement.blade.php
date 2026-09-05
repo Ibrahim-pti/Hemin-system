@@ -405,6 +405,77 @@
             </div>
 
         </div>
+
+        {{-- خشتەی حیساباتی پێشتر و قەرزی کۆن لە کەشف حسابدا --}}
+        @if (isset($oldDebts) && $oldDebts->count() > 0)
+            <div class="mt-4 rounded-2xl border border-amber-200/80 bg-white overflow-hidden shadow-xs">
+                <div style="padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #fef3c7; background: #fffbeb;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; color: #92400e;">
+                        <span>📜</span>
+                        <span>حیساباتی پێشتر و قەرزی کۆن (لە ماوەی دیاریکراودا)</span>
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 800; color: #b45309; background: #fde68a; padding: 0.2rem 0.65rem; border-radius: 9999px;">
+                        {{ $oldDebts->count() }} تۆمار
+                    </span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.85rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 0.75rem; font-weight: 700; background: #f8fafc;">
+                                <th style="padding: 0.75rem 0.85rem; text-align: center;">بەروار</th>
+                                <th style="padding: 0.75rem 0.85rem;">تێبینی / هۆکار</th>
+                                <th style="padding: 0.75rem 0.85rem; text-align: center;">بڕی گشتی</th>
+                                <th style="padding: 0.75rem 0.85rem; text-align: center;">پارەدراو</th>
+                                <th style="padding: 0.75rem 0.85rem; text-align: center;">ماوە</th>
+                                <th style="padding: 0.75rem 0.85rem; text-align: center;">دۆخ</th>
+                                <th style="padding: 0.75rem 0.85rem; text-align: center;">وێنەی بەڵگە</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($oldDebts as $debt)
+                                <tr style="border-bottom: 1px solid #f8fafc;">
+                                    <td class="num" style="padding: 0.75rem 0.85rem; text-align: center; color: #475569;">
+                                        {{ fmt_date($debt->date) }}
+                                    </td>
+                                    <td style="padding: 0.75rem 0.85rem; font-weight: 600; color: #1e293b;">
+                                        {{ $debt->note ?: 'حیساباتی پێشتر' }}
+                                    </td>
+                                    <td class="num" style="padding: 0.75rem 0.85rem; text-align: center; font-weight: 800; color: #1e293b;">
+                                        {{ fmt_money($debt->amount, $debt->currency) }}
+                                    </td>
+                                    <td class="num" style="padding: 0.75rem 0.85rem; text-align: center; font-weight: 700; color: #10b981;">
+                                        {{ fmt_money($debt->paid_amount, $debt->currency) }}
+                                    </td>
+                                    <td class="num" style="padding: 0.75rem 0.85rem; text-align: center; font-weight: 800; color: {{ $debt->remaining() > 0 ? '#dc2626' : '#64748b' }};">
+                                        {{ $debt->remaining() > 0 ? fmt_money($debt->remaining(), $debt->currency) : '-' }}
+                                    </td>
+                                    <td style="padding: 0.75rem 0.85rem; text-align: center;">
+                                        @if ($debt->status === 'paid')
+                                            <span style="background: #dcfce7; color: #16a34a; padding: 0.2rem 0.65rem; border-radius: 0.4rem; font-weight: 700; font-size: 0.72rem; display: inline-block;">
+                                                ✓ پارەدانی تەواو بووە
+                                            </span>
+                                        @else
+                                            <span style="background: #fee2e2; color: #dc2626; padding: 0.2rem 0.65rem; border-radius: 0.4rem; font-weight: 700; font-size: 0.72rem; display: inline-block;">
+                                                ⚠️ قەرز
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td style="padding: 0.75rem 0.85rem; text-align: center;">
+                                        @if ($debt->image)
+                                            <a href="{{ asset('storage/' . $debt->image) }}" target="_blank" style="display: inline-block;">
+                                                <img src="{{ asset('storage/' . $debt->image) }}" alt="بەڵگە" style="width: 2.5rem; height: 2.5rem; object-fit: cover; border-radius: 0.5rem; border: 1px solid #cbd5e1;">
+                                            </a>
+                                        @else
+                                            <span style="color: #cbd5e1;">—</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
     @endif
 
 </div>

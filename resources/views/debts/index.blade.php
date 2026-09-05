@@ -633,21 +633,24 @@
              @keydown.escape.window="openOldDebtModal = false">
             <div style="background: #ffffff; border-radius: 1.25rem; width: 100%; max-width: 30rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; margin: auto; position: relative;"
                  @click.outside="openOldDebtModal = false"
-                 x-data="{ isNewCustomer: false }">
+                 x-data="{ isNewCustomer: false, debtStatus: 'debt', currency: 'IQD' }">
 
-                {{-- سەری مۆداڵ بە شینی تۆخ --}}
-                <div style="padding: 1rem 1.25rem; background: #4f46e5; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
+                {{-- سەری مۆداڵ بە ڕەنگی دیار و ئایکۆنی ڕوونی لابردن --}}
+                <div style="padding: 1rem 1.25rem; background: #b45309; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.05rem;">
+                        <span style="font-size: 1.25rem;">📜</span>
+                        <span>تۆمارکردنی حیساباتی پێشتر / قەرزی کۆن</span>
+                    </div>
                     <button type="button" @click="openOldDebtModal = false"
-                            style="background: none; border: none; font-size: 1.25rem; color: #ffffff; cursor: pointer; line-height: 1; opacity: 0.9;">
+                            title="داخستن"
+                            style="background: rgba(255, 255, 255, 0.2); border: none; border-radius: 0.5rem; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #ffffff; cursor: pointer; line-height: 1;"
+                            onmouseover="this.style.background='rgba(255, 255, 255, 0.35)'"
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
                         ✕
                     </button>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.05rem;">
-                        <span>تۆمارکردنی قەرزی کۆن (سەرەتایی)</span>
-                        <span>📋</span>
-                    </div>
                 </div>
 
-                <form method="POST" action="{{ route('debts.old-debt') }}" style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1.1rem;">
+                <form method="POST" action="{{ route('debts.old-debt') }}" enctype="multipart/form-data" style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                     @csrf
 
                     {{-- کڕیار --}}
@@ -681,26 +684,66 @@
                         </div>
                     </div>
 
-                    {{-- بڕی قەرز (تەنها بە دیناری عێراقی) --}}
-                    <input type="hidden" name="currency" value="IQD">
+                    {{-- دۆخی حیساب: قەرز یان پارەدانی تەواو بووە --}}
                     <div>
                         <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
-                            بڕی قەرز (دیناری عێراقی - د.ع) <span style="color: #ef4444;">*</span>
+                            دۆخی حیساب / پارەدان <span style="color: #ef4444;">*</span>
                         </label>
-                        <div style="position: relative;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            <label :style="debtStatus === 'debt' ? 'border: 2px solid #ef4444; background: #fef2f2; color: #b91c1c;' : 'border: 2px solid #e2e8f0; background: #ffffff; color: #475569;'"
+                                   style="padding: 0.6rem; border-radius: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; font-weight: 800; font-size: 0.8rem;">
+                                <input type="radio" name="status" value="debt" x-model="debtStatus" style="display: none;">
+                                <span>⚠️</span>
+                                <span>قەرزە (نەدراوە)</span>
+                            </label>
+                            <label :style="debtStatus === 'paid' ? 'border: 2px solid #10b981; background: #f0fdf4; color: #047857;' : 'border: 2px solid #e2e8f0; background: #ffffff; color: #475569;'"
+                                   style="padding: 0.6rem; border-radius: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; font-weight: 800; font-size: 0.8rem;">
+                                <input type="radio" name="status" value="paid" x-model="debtStatus" style="display: none;">
+                                <span>✓</span>
+                                <span>پارەدانی تەواو بووە</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- بڕی پارە و دراو --}}
+                    <div>
+                        <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
+                            بڕی پارە <span style="color: #ef4444;">*</span>
+                        </label>
+                        <div style="display: flex; gap: 0.5rem;">
                             <input type="number" step="any" min="0.01" name="amount" class="field num" required
                                    placeholder="0"
-                                   style="width: 100%; padding: 0.65rem 3.5rem 0.65rem 1rem; font-size: 1.25rem; font-weight: 800; text-align: center; color: #dc2626;">
-                            <span style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); font-weight: 800; color: #64748b; font-size: 0.9rem; pointer-events: none;">
-                                د.ع
-                            </span>
+                                   :style="debtStatus === 'paid' ? 'color: #047857;' : 'color: #dc2626;'"
+                                   style="flex: 1; padding: 0.65rem 1rem; font-size: 1.25rem; font-weight: 800; text-align: center;">
+                            <select name="currency" x-model="currency" class="field" style="width: 8.5rem; font-weight: 700; font-size: 0.85rem;">
+                                <option value="IQD">دینار (د.ع)</option>
+                                <option value="USD">دۆلار ($)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+                        {{-- بەروار --}}
+                        <div>
+                            <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; display: block; text-align: right; color: #334155;">
+                                بەروار
+                            </label>
+                            <input type="date" name="date" value="{{ date('Y-m-d') }}" class="field num" style="width: 100%; font-size: 0.8rem; font-weight: 700;">
+                        </div>
+
+                        {{-- وێنەی وەسڵ / بەڵگە --}}
+                        <div>
+                            <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; display: block; text-align: right; color: #334155;">
+                                📷 وێنەی وەسڵ / دەفتەر
+                            </label>
+                            <input type="file" name="image" accept="image/*" class="field" style="width: 100%; font-size: 0.75rem; padding: 0.4rem;">
                         </div>
                     </div>
 
                     {{-- تێبینی --}}
                     <div>
                         <label class="label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; text-align: right; color: #334155;">
-                            تێبینی / هۆکاری قەرز
+                            تێبینی / هۆکاری حیسابەکە
                         </label>
                         <textarea name="note" rows="2" class="field" style="width: 100%; resize: vertical; font-size: 0.85rem;" placeholder="قەرزی پێشتر لەسەر کاغەز، باڵانسی کۆن..."></textarea>
                     </div>
@@ -708,13 +751,13 @@
                     {{-- دوگمەکان --}}
                     <div style="display: flex; justify-content: flex-start; gap: 0.6rem; padding-top: 0.5rem; margin-top: 0.25rem;">
                         <button type="submit"
-                                style="background: #4f46e5; color: #ffffff; padding: 0.55rem 1.5rem; border-radius: 0.55rem; font-weight: 800; font-size: 0.875rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);">
+                                style="background: #b45309; color: #ffffff; padding: 0.6rem 1.6rem; border-radius: 0.65rem; font-weight: 800; font-size: 0.875rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 6px rgba(180, 83, 9, 0.3);">
                             <span>✓</span>
-                            <span>تۆمارکردن</span>
+                            <span>تۆمارکردن لە حیسابی کڕیار</span>
                         </button>
                         <button type="button" @click="openOldDebtModal = false"
-                                style="padding: 0.55rem 1.25rem; border-radius: 0.55rem; background: #ffffff; border: 1px solid #cbd5e1; color: #64748b; font-weight: 700; font-size: 0.875rem; cursor: pointer;">
-                            داخستن
+                                style="padding: 0.6rem 1.25rem; border-radius: 0.65rem; background: #ffffff; border: 1px solid #cbd5e1; color: #64748b; font-weight: 700; font-size: 0.875rem; cursor: pointer;">
+                            پاشگەزبوونەوە
                         </button>
                     </div>
                 </form>

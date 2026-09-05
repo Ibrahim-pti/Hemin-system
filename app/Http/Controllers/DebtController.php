@@ -144,7 +144,7 @@ class DebtController extends Controller
         ]);
     }
 
-    /** تۆمارکردنی قەرزی کۆن (باڵانسی سەرەتایی) */
+    /** تۆمارکردنی قەرزی کۆن و حیساباتی پێشتر (لەگەڵ دۆخی پارەدان و وێنە) */
     public function storeOldDebt(Request $request)
     {
         if ($request->input('customer_id') === '__NEW__') {
@@ -155,9 +155,17 @@ class DebtController extends Controller
                 'amount' => (float) str_replace(',', '', (string) $request->input('amount')),
             ]);
         }
+        if ($request->filled('paid_amount')) {
+            $request->merge([
+                'paid_amount' => (float) str_replace(',', '', (string) $request->input('paid_amount')),
+            ]);
+        }
 
         if (!$request->filled('currency')) {
             $request->merge(['currency' => 'IQD']);
+        }
+        if (!$request->filled('status')) {
+            $request->merge(['status' => 'debt']);
         }
 
         $data = $request->validate([
@@ -166,48 +174,76 @@ class DebtController extends Controller
             'new_customer_phone' => ['nullable', 'string', 'max:50'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'currency' => ['required', 'in:IQD,USD'],
+            'status' => ['required', 'in:debt,paid,partial'],
+            'paid_amount' => ['nullable', 'numeric', 'min:0'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'date' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ], [
-            'amount.required' => 'بڕی قەرز بنووسە.',
-            'amount.min' => 'بڕی قەرز دەبێت لە ٠ زیاتر بێت.',
+            'amount.required' => 'بڕی حیساب / قەرز بنووسە.',
+            'amount.min' => 'بڕی پارە دەبێت لە ٠ زیاتر بێت.',
             'new_customer_name.required_without' => 'ناوی کڕیار بنووسە یان کڕیارێک هەڵبژێرە.',
+            'image.image' => 'فایلی هەڵبژێردراو دەبێت وێنە بێت.',
+            'image.max' => 'قەبارەی وێنە نابێت لە ١٠ مێگابایت زیاتر بێت.',
         ]);
 
         if (!empty($data['customer_id'])) {
             $customer = Customer::findOrFail($data['customer_id']);
-            $prevBal = (float) $customer->opening_balance;
-            $newAmount = (float) $data['amount'];
-
-            if ($prevBal > 0 && $customer->opening_currency !== $data['currency']) {
-                $rate = \App\Models\ExchangeRate::current() ?: 1500;
-                if ($customer->opening_currency === 'IQD' && $data['currency'] === 'USD') {
-                    $addedInCustCurrency = $newAmount * $rate;
-                } elseif ($customer->opening_currency === 'USD' && $data['currency'] === 'IQD') {
-                    $addedInCustCurrency = $newAmount / $rate;
-                } else {
-                    $addedInCustCurrency = $newAmount;
-                }
-                $customer->opening_balance = $prevBal + $addedInCustCurrency;
-            } else {
-                $customer->opening_balance = $prevBal + $newAmount;
-                $customer->opening_currency = $data['currency'];
-            }
-
-            if (!empty($data['note'])) {
-                $customer->note = trim(($customer->note ? $customer->note . " | " : "") . $data['note']);
-            }
-            $customer->save();
         } else {
             $customer = Customer::create([
                 'name' => $data['new_customer_name'],
                 'phone' => $data['new_customer_phone'] ?? null,
-                'opening_balance' => $data['amount'],
+                'opening_balance' => 0,
                 'opening_currency' => $data['currency'],
                 'note' => $data['note'] ?? null,
                 'is_active' => true,
             ]);
         }
 
-        return back()->with('ok', "قەرزی کۆن بۆ ({$customer->name}) بە سەرکەوتوویی تۆمارکرا.");
+        $amount = (float) $data['amount'];
+        $status = $data['status'];
+        if ($status === 'paid') {
+            $paidAmount = $amount;
+        } elseif ($status === 'debt') {
+            $paidAmount = (float) ($data['paid_amount'] ?? 0);
+            if ($paidAmount >= $amount) {
+                $status = 'paid';
+            } elseif ($paidAmount > 0) {
+                $status = 'partial';
+            }
+        } else {
+            $paidAmount = (float) ($data['paid_amount'] ?? 0);
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('old_debts', 'public');
+        }
+
+        \App\Models\CustomerOldDebt::create([
+            'customer_id' => $customer->id,
+            'amount' => $amount,
+            'paid_amount' => $paidAmount,
+            'currency' => $data['currency'],
+            'status' => $status,
+            'image' => $imagePath,
+            'note' => $data['note'] ?? null,
+            'date' => $data['date'] ?? now()->toDateString(),
+            'user_id' => auth()->id(),
+        ]);
+
+        return back()->with('ok', "حیساباتی پێشتر بۆ ({$customer->name}) بە سەرکەوتوویی تۆمارکرا.");
+    }
+
+    /** سڕینەوەی تۆماری قەرزی کۆن */
+    public function destroyOldDebt(\App\Models\CustomerOldDebt $oldDebt)
+    {
+        if ($oldDebt->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldDebt->image)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldDebt->image);
+        }
+
+        $oldDebt->delete();
+
+        return back()->with('ok', "حیساباتی پێشتر سڕدرایەوە.");
     }
 }

@@ -80,11 +80,13 @@ class CustomerController extends Controller
             ->latest('id')
             ->get();
 
+        $oldDebts = $customer->oldDebts;
+
         $ordersCount = $orders->count();
         $totalBought = (float) $orders->whereNotIn('status', ['draft', 'cancelled'])->sum(fn ($o) => $o->total_iqd);
         $balance = $customer->balance();
 
-        return view('customers.show', compact('customer', 'orders', 'payments', 'ordersCount', 'totalBought', 'balance'));
+        return view('customers.show', compact('customer', 'orders', 'payments', 'oldDebts', 'ordersCount', 'totalBought', 'balance'));
     }
 
     /**
@@ -143,8 +145,24 @@ class CustomerController extends Controller
             ->orderBy('paid_at', 'asc')
             ->get();
 
-        // باڵانسی سەرەتایی
-        $openingBalance = $customer->openingIqd()
+        // حیساباتی پێشتر و قەرزی کۆن لەم ماوەیەدا
+        $oldDebts = $customer->oldDebts()
+            ->whereBetween('date', [$from, $to])
+            ->orderBy('date', 'asc')
+            ->get();
+
+        // باڵانسی سەرەتایی پێش بەرواری دیاریکراو
+        $oldDebtsBefore = (float) $customer->oldDebts()
+            ->whereDate('date', '<', $from)
+            ->get()
+            ->sum(fn ($d) => $d->remainingIqd());
+
+        $baseOpening = $customer->opening_currency === 'USD'
+            ? (float) $customer->opening_balance * (\App\Models\ExchangeRate::current() ?: 1500)
+            : (float) $customer->opening_balance;
+
+        $openingBalance = $baseOpening
+            + $oldDebtsBefore
             + (float) $customer->orders()
                 ->whereNotIn('status', ['draft', 'cancelled'])
                 ->whereDate('order_date', '<', $from)
@@ -155,8 +173,10 @@ class CustomerController extends Controller
                 ->sum('amount_iqd');
 
         $totalOrdersAmount = (float) $orders->sum(fn ($o) => $o->total_iqd);
-        $totalPurchases = $openingBalance + $totalOrdersAmount;
-        $totalPaidAmount = (float) $payments->sum('amount_iqd');
+        $totalOldDebtsInPeriod = (float) $oldDebts->sum(fn ($d) => $d->totalIqd());
+        $totalPurchases = $openingBalance + $totalOrdersAmount + $totalOldDebtsInPeriod;
+
+        $totalPaidAmount = (float) $payments->sum('amount_iqd') + (float) $oldDebts->sum(fn ($d) => $d->paidIqd());
         $debtPayments = $totalPaidAmount;
         $remainingDebt = max(0, $totalPurchases - $totalPaidAmount);
 
@@ -165,6 +185,7 @@ class CustomerController extends Controller
             'allCustomers' => $allCustomers,
             'orders' => $orders,
             'payments' => $payments,
+            'oldDebts' => $oldDebts,
             'openingBalance' => $openingBalance,
             'totalOrdersAmount' => $totalOrdersAmount,
             'totalPurchases' => $totalPurchases,

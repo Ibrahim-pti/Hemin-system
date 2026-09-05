@@ -24,7 +24,7 @@
 
 @section('content')
 
-<div x-data="{ openOldDebtModal: false, currency: '{{ $customer->opening_currency ?: 'IQD' }}' }"
+<div x-data="{ openOldDebtModal: false, currency: '{{ $customer->opening_currency ?: 'IQD' }}', debtStatus: 'debt' }"
      @open-old-debt-modal.window="openOldDebtModal = true">
 
 {{-- ١. هێرۆی سەرەوەی پڕۆفایل (Profile Hero Card) --}}
@@ -189,6 +189,90 @@
     </div>
 </div>
 
+{{-- ٣. لیستی حیساباتی پێشتر و قەرزی کۆن (Old Debts / Prior Accounts Table) --}}
+@if ($oldDebts->count() > 0)
+<div class="bg-white rounded-2xl shadow-xs border border-amber-200/80 overflow-hidden mb-6">
+    <div class="p-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/40">
+        <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <span>📜</span>
+            <span>حیساباتی پێشتر و قەرزی کۆن</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 font-mono">
+                {{ $oldDebts->count() }} تۆمار
+            </span>
+        </div>
+        <button type="button" @click="openOldDebtModal = true"
+                class="btn !py-1 !px-3 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-xs cursor-pointer">
+            <span>+</span>
+            <span>زیادکردن</span>
+        </button>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="table w-full text-right text-xs">
+            <thead>
+                <tr class="text-slate-500 border-b border-slate-100 bg-slate-50/60 font-bold">
+                    <th class="py-3 px-4 w-12 text-center">#</th>
+                    <th class="py-3 px-4 text-center">بەروار</th>
+                    <th class="py-3 px-4 text-center">بڕی پارە</th>
+                    <th class="py-3 px-4 text-center">دۆخی پارەدان</th>
+                    <th class="py-3 px-4 text-center">وێنەی بەڵگە / وەسڵ</th>
+                    <th class="py-3 px-4">تێبینی</th>
+                    <th class="py-3 px-4 text-center w-24">کردار</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach ($oldDebts as $index => $debt)
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3 px-4 text-center font-mono font-bold text-slate-400">{{ $index + 1 }}</td>
+                        <td class="py-3 px-4 text-center num text-slate-600 font-bold">{{ fmt_date($debt->date) }}</td>
+                        <td class="py-3 px-4 text-center num font-black text-sm {{ $debt->status === 'paid' ? 'text-emerald-700' : 'text-rose-600' }}">
+                            {{ fmt_money($debt->amount, $debt->currency) }}
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            @if ($debt->status === 'paid')
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    ✓ پارەدانی تەواو بووە
+                                </span>
+                            @elseif ($debt->status === 'partial')
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    ماوە: {{ fmt_money($debt->remaining(), $debt->currency) }}
+                                </span>
+                            @else
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                    ⚠️ قەرز (نەدراوە)
+                                </span>
+                            @endif
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            @if ($debt->image)
+                                <a href="{{ asset('storage/' . $debt->image) }}" target="_blank" class="inline-block group" title="کلیک بکە بۆ بینینی وێنەی گەورە">
+                                    <img src="{{ asset('storage/' . $debt->image) }}" alt="بەڵگە" class="size-10 rounded-lg object-cover border border-slate-200 shadow-xs group-hover:scale-110 transition-all">
+                                </a>
+                            @else
+                                <span class="text-slate-300 text-xs">—</span>
+                            @endif
+                        </td>
+                        <td class="py-3 px-4 text-slate-700 font-medium">
+                            {{ $debt->note ?: '—' }}
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <form method="POST" action="{{ route('debts.old-debt.destroy', $debt) }}"
+                                  onsubmit="return confirm('دڵنیایت لە سڕینەوەی ئەم حیسابە؟')" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="px-2 py-1 rounded-lg text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer" title="سڕینەوە">
+                                    🗑️
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
+
 {{-- مۆداڵی تۆمارکردنی قەرزی پێشوو / حیساباتی کۆن --}}
 <div x-show="openOldDebtModal"
      x-cloak
@@ -197,39 +281,56 @@
     <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150"
          @click.outside="openOldDebtModal = false">
 
-        {{-- سەری مۆداڵ --}}
-        <div class="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-5 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-2 font-black text-sm sm:text-base">
-                <span>📜</span>
+        {{-- سەری مۆداڵ بە ڕەنگی دیار و ئایکۆنی ڕوونی لابردن --}}
+        <div style="background: #b45309; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem;">
+                <span style="font-size: 1.25rem;">📜</span>
                 <span>تۆمارکردنی حیساباتی پێشتر بۆ ({{ $customer->name }})</span>
             </div>
-            <button type="button" @click="openOldDebtModal = false" class="text-white/80 hover:text-white text-xl font-bold leading-none cursor-pointer">
+            <button type="button" @click="openOldDebtModal = false"
+                    title="داخستن"
+                    style="background: rgba(255, 255, 255, 0.2); border: none; border-radius: 0.5rem; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #ffffff; cursor: pointer; line-height: 1;"
+                    onmouseover="this.style.background='rgba(255, 255, 255, 0.35)'"
+                    onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
                 ✕
             </button>
         </div>
 
-        {{-- ئاگاداری ڕوون --}}
-        <div class="bg-amber-50 border-b border-amber-200/80 px-5 py-3 flex items-start gap-2.5 text-xs text-amber-900 leading-relaxed font-medium">
-            <span class="text-base shrink-0">ℹ️</span>
-            <div>
-                <strong class="font-bold">ئەم بڕە بە هیچ جۆرێک ناچێتە کارگە و وەسڵی دروستکردنی بۆ دەرناچێت!</strong>
-                ڕاستەوخۆ دەخرێتە سەر باڵانسی پێشوو و قەرزی کۆنی کڕیار.
-            </div>
-        </div>
-
-        <form method="POST" action="{{ route('debts.old-debt') }}" class="p-5 space-y-4">
+        <form method="POST" action="{{ route('debts.old-debt') }}" enctype="multipart/form-data" class="p-5 space-y-4">
             @csrf
             <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+
+            {{-- دۆخی حیساب: قەرزە یان پارەدانی تەواو بووە --}}
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                    دۆخی حیساب / پارەدان <span class="text-rose-500">*</span>
+                </label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 cursor-pointer transition-all text-xs font-bold select-none"
+                           :class="debtStatus === 'debt' ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'">
+                        <input type="radio" name="status" value="debt" x-model="debtStatus" class="hidden">
+                        <span>⚠️</span>
+                        <span>قەرزە (نەدراوە)</span>
+                    </label>
+                    <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 cursor-pointer transition-all text-xs font-bold select-none"
+                           :class="debtStatus === 'paid' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'">
+                        <input type="radio" name="status" value="paid" x-model="debtStatus" class="hidden">
+                        <span>✓</span>
+                        <span>پارەدانی تەواو بووە</span>
+                    </label>
+                </div>
+            </div>
 
             {{-- جۆری دراو و بڕی قەرز --}}
             <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                    بڕی قەرز / حیساباتی پێشتر <span class="text-rose-500">*</span>
+                    بڕی پارە <span class="text-rose-500">*</span>
                 </label>
                 <div class="flex items-center gap-2">
                     <div class="relative flex-1">
                         <input type="number" step="any" min="0.01" name="amount" required
-                               class="field num w-full !py-2.5 !px-3 rounded-xl font-black text-rose-600 text-lg text-center"
+                               class="field num w-full !py-2.5 !px-3 rounded-xl font-black text-lg text-center"
+                               :class="debtStatus === 'paid' ? 'text-emerald-700' : 'text-rose-600'"
                                placeholder="0">
                     </div>
                     <div class="w-36">
@@ -238,6 +339,24 @@
                             <option value="USD">دۆلاری ئەمریکی ($)</option>
                         </select>
                     </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {{-- بەروار --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">بەروار</label>
+                    <input type="date" name="date" value="{{ date('Y-m-d') }}"
+                           class="field num w-full !py-2 rounded-xl text-xs font-bold text-slate-700">
+                </div>
+
+                {{-- وێنەی وەسڵ / بەڵگە --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        📷 وێنەی وەسڵ / دەفتەر (ئارەزوومەندانە)
+                    </label>
+                    <input type="file" name="image" accept="image/*"
+                           class="field w-full !py-1 text-xs rounded-xl file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 cursor-pointer">
                 </div>
             </div>
 

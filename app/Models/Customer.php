@@ -39,14 +39,24 @@ class Customer extends Model
         return $this->morphMany(Payment::class, 'party');
     }
 
-    /** باڵانسی سەرەتایی بە دینار. */
+    public function oldDebts(): HasMany
+    {
+        return $this->hasMany(CustomerOldDebt::class)->latest('date')->latest('id');
+    }
+
+    /** باڵانسی سەرەتایی بە دینار (لەگەڵ حیساباتی پێشتر). */
     public function openingIqd(): float
     {
+        $base = 0.0;
         if ($this->opening_currency === 'USD') {
-            return (float) $this->opening_balance * ExchangeRate::current();
+            $base = (float) $this->opening_balance * (ExchangeRate::current() ?: 1500);
+        } else {
+            $base = (float) $this->opening_balance;
         }
 
-        return (float) $this->opening_balance;
+        $oldDebtsRemaining = (float) $this->oldDebts()->get()->sum(fn ($d) => $d->remainingIqd());
+
+        return $base + $oldDebtsRemaining;
     }
 
     /**
