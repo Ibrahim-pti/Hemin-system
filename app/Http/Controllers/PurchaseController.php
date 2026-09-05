@@ -113,9 +113,14 @@ class PurchaseController extends Controller
     {
         $data = $this->validated($request);
 
+        if (!$request->hasFile('image') && $request->hasFile('image_camera')) {
+            $request->files->set('image', $request->file('image_camera'));
+        }
+
         $imagePath = null;
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            $imagePath = $request->file('image')->store('purchases', 'public');
+        $uploadedFile = $request->file('image') ?? $request->file('image_camera');
+        if ($uploadedFile && $uploadedFile->isValid()) {
+            $imagePath = $uploadedFile->store('purchases', 'public');
         }
 
         $purchase = DB::transaction(function () use ($data, $request, $imagePath) {
@@ -196,8 +201,9 @@ class PurchaseController extends Controller
         $data = $this->validated($request);
 
         $imagePath = $purchase->image;
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            $imagePath = $request->file('image')->store('purchases', 'public');
+        $uploadedFile = $request->file('image') ?? $request->file('image_camera');
+        if ($uploadedFile && $uploadedFile->isValid()) {
+            $imagePath = $uploadedFile->store('purchases', 'public');
         } elseif ($request->boolean('remove_image')) {
             $imagePath = null;
         }
@@ -312,7 +318,8 @@ class PurchaseController extends Controller
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
             'payment_type' => ['nullable', 'in:cash,debt,partial'],
-            'image' => ['nullable', 'image', 'max:10240'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp', 'max:15360'],
+            'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp', 'max:15360'],
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.item_name' => ['nullable', 'string', 'max:255'],

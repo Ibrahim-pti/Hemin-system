@@ -351,12 +351,44 @@
                 </div>
 
                 {{-- وێنەی وەسڵ / بەڵگە --}}
-                <div>
+                <div x-data="{ modalPreview: null }">
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                        📷 وێنەی وەسڵ / دەفتەر (ئارەزوومەندانە)
+                        📷 وێنەی وەسڵ / دەفتەری حیسابات (ئارەزوومەندانە)
                     </label>
-                    <input type="file" name="image" accept="image/*"
-                           class="field w-full !py-1 text-xs rounded-xl file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 cursor-pointer">
+                    <input type="file" id="modal_debt_camera" name="image_camera" accept="image/*" capture="environment" class="sr-only"
+                           @change="const f = $event.target.files[0]; if(f){ const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const g = document.getElementById('modal_debt_gallery'); if(g) g.value = ''; }">
+                    <input type="file" id="modal_debt_gallery" name="image" accept="image/*" class="sr-only"
+                           @change="const f = $event.target.files[0]; if(f){ const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const c = document.getElementById('modal_debt_camera'); if(c) c.value = ''; }">
+
+                    <template x-if="!modalPreview">
+                        <div class="flex items-center gap-2">
+                            <label for="modal_debt_camera"
+                                   class="flex-1 flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs cursor-pointer transition-all active:scale-95 shadow-2xs">
+                                <span>📸</span>
+                                <span>کامێرا</span>
+                            </label>
+                            <label for="modal_debt_gallery"
+                                   class="flex-1 flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer transition-all active:scale-95 shadow-2xs">
+                                <span>🖼️</span>
+                                <span>مۆبایل</span>
+                            </label>
+                        </div>
+                    </template>
+
+                    <template x-if="modalPreview">
+                        <div class="flex items-center justify-between gap-2 p-1.5 rounded-xl border border-amber-300 bg-amber-50/50">
+                            <div class="flex items-center gap-2">
+                                <img :src="modalPreview" class="size-9 rounded-lg object-cover border border-amber-500 shadow-xs">
+                                <span class="text-[11px] font-bold text-emerald-700">✓ وێنە دانرا</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <label for="modal_debt_camera" class="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 rounded-md text-slate-700 cursor-pointer hover:bg-slate-50">کامێرا</label>
+                                <label for="modal_debt_gallery" class="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 rounded-md text-slate-700 cursor-pointer hover:bg-slate-50">مۆبایل</label>
+                                <button type="button" @click="modalPreview = null; const c = document.getElementById('modal_debt_camera'); if(c) c.value = ''; const g = document.getElementById('modal_debt_gallery'); if(g) g.value = '';"
+                                        class="px-2 py-0.5 text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-md cursor-pointer hover:bg-rose-100">✕</button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
 

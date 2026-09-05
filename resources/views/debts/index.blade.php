@@ -731,11 +731,44 @@
                         </div>
 
                         {{-- وێنەی وەسڵ / بەڵگە --}}
-                        <div>
+                        <div x-data="{ modalPreview: null }">
                             <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; display: block; text-align: right; color: #334155;">
-                                📷 وێنەی وەسڵ / دەفتەر
+                                📷 وێنەی وەسڵ / دەفتەری حیسابات
                             </label>
-                            <input type="file" name="image" accept="image/*" class="field" style="width: 100%; font-size: 0.75rem; padding: 0.4rem;">
+                            <input type="file" id="debt_index_camera" name="image_camera" accept="image/*" capture="environment" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
+                                   @change="const f = $event.target.files[0]; if(f){ const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const g = document.getElementById('debt_index_gallery'); if(g) g.value = ''; }">
+                            <input type="file" id="debt_index_gallery" name="image" accept="image/*" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
+                                   @change="const f = $event.target.files[0]; if(f){ const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; }">
+
+                            <template x-if="!modalPreview">
+                                <div style="display: flex; gap: 0.4rem;">
+                                    <label for="debt_index_camera"
+                                           style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.45rem 0.5rem; border-radius: 0.6rem; border: 1px solid #fcd34d; background: #fffbeb; color: #78350f; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+                                        <span>📸</span>
+                                        <span>کامێرا</span>
+                                    </label>
+                                    <label for="debt_index_gallery"
+                                           style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.45rem 0.5rem; border-radius: 0.6rem; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+                                        <span>🖼️</span>
+                                        <span>مۆبایل</span>
+                                    </label>
+                                </div>
+                            </template>
+
+                            <template x-if="modalPreview">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.3rem 0.5rem; border-radius: 0.6rem; border: 1px solid #f59e0b; background: #fffbeb;">
+                                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                        <img :src="modalPreview" style="width: 2rem; height: 2rem; border-radius: 0.4rem; object-fit: cover; border: 1px solid #d97706;">
+                                        <span style="font-size: 0.7rem; font-weight: 700; color: #047857;">✓ وێنە دانرا</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                        <label for="debt_index_camera" style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 0.35rem; color: #334155; cursor: pointer;">کامێرا</label>
+                                        <label for="debt_index_gallery" style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 0.35rem; color: #334155; cursor: pointer;">مۆبایل</label>
+                                        <button type="button" @click="modalPreview = null; const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; const g = document.getElementById('debt_index_gallery'); if(g) g.value = '';"
+                                                style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.35rem; color: #dc2626; cursor: pointer;">✕</button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
 

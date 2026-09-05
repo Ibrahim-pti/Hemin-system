@@ -195,5 +195,41 @@ class CustomerOldDebtWithoutWorkshopTest extends TestCase
         $response->assertSee('کاک هێمن');
         $response->assertSee('دانانی وێنەی وەسڵەکە');
         $response->assertSee('حازری (پارەدراو)');
+        $response->assertSee('هەڵبژاردن لە مۆبایل');
+    }
+
+    public function test_old_debt_can_be_stored_with_camera_image_upload(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $customer = Customer::create([
+            'name' => 'کاک دیاری',
+            'phone' => '07509998877',
+            'opening_balance' => 0,
+            'opening_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $fakePhoto = \Illuminate\Http\UploadedFile::fake()->image('camera_receipt.jpg');
+
+        $response = $this->actingAs($this->user)->post(route('debts.old-debt'), [
+            'customer_id' => $customer->id,
+            'amount' => 75000,
+            'currency' => 'IQD',
+            'status' => 'debt',
+            'image_camera' => $fakePhoto,
+            'note' => 'وێنەی کامێرای مۆبایل',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('customer_old_debts', [
+            'customer_id' => $customer->id,
+            'amount' => 75000,
+            'note' => 'وێنەی کامێرای مۆبایل',
+        ]);
+
+        $oldDebt = \App\Models\CustomerOldDebt::where('customer_id', $customer->id)->first();
+        $this->assertNotNull($oldDebt->image);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($oldDebt->image);
     }
 }

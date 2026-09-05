@@ -180,6 +180,10 @@ class DebtController extends Controller
             $request->merge(['status' => 'debt']);
         }
 
+        if (!$request->hasFile('image') && $request->hasFile('image_camera')) {
+            $request->files->set('image', $request->file('image_camera'));
+        }
+
         $data = $request->validate([
             'customer_id' => ['nullable'],
             'new_customer_name' => ['nullable', 'required_without:customer_id', 'string', 'max:255'],
@@ -188,15 +192,16 @@ class DebtController extends Controller
             'currency' => ['required', 'in:IQD,USD'],
             'status' => ['required', 'in:debt,paid,partial'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp', 'max:15360'],
+            'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp', 'max:15360'],
             'date' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ], [
             'amount.required' => 'بڕی حیساب / قەرز بنووسە.',
             'amount.min' => 'بڕی پارە دەبێت لە ٠ زیاتر بێت.',
             'new_customer_name.required_without' => 'ناوی کڕیار بنووسە یان کڕیارێک هەڵبژێرە.',
-            'image.image' => 'فایلی هەڵبژێردراو دەبێت وێنە بێت.',
-            'image.max' => 'قەبارەی وێنە نابێت لە ١٠ مێگابایت زیاتر بێت.',
+            'image.file' => 'فایلی هەڵبژێردراو دەبێت وێنە بێت.',
+            'image.max' => 'قەبارەی وێنە نابێت لە ١٥ مێگابایت زیاتر بێت.',
         ]);
 
         if (!empty($data['customer_id'])) {
@@ -227,9 +232,10 @@ class DebtController extends Controller
             $paidAmount = (float) ($data['paid_amount'] ?? 0);
         }
 
+        $uploadedImage = $request->file('image') ?? $request->file('image_camera');
         $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('old_debts', 'public');
+        if ($uploadedImage && $uploadedImage->isValid()) {
+            $imagePath = $uploadedImage->store('old_debts', 'public');
         }
 
         \App\Models\CustomerOldDebt::create([

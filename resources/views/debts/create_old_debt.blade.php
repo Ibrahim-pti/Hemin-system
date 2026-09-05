@@ -112,38 +112,54 @@
 
             {{-- وێنەی وەسڵ / دەفتەری حیسابات (فایل یان کامێرا) --}}
             <div class="sm:col-span-2 lg:col-span-4 bg-slate-50/80 p-3.5 rounded-2xl border border-dashed border-slate-300">
-                <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
                         <span class="text-2xl">📸</span>
                         <div>
                             <span class="block text-xs font-bold text-slate-800">وێنەی وەسڵ / دەفتەری حیسابات</span>
-                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە یان لاپەڕەی دەفتەر بە کامێرا بگریت یان فایلەکەی دابنێیت.</span>
+                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت یان لە مۆبایل و ستۆدیۆ هەڵیبژێریت.</span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <input type="file" id="old_debt_image_input" name="image" accept="image/*" class="hidden" @change="onImageChange($event)">
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        {{-- فایل ئینپووتی کامێرا بۆ مۆبایل (capture=environment ڕاستەوخۆ کامێرا دەکاتەوە) --}}
+                        <input type="file" id="old_debt_image_camera" name="image_camera" accept="image/*" capture="environment" class="sr-only" @change="onImageChange($event, 'camera')">
+                        {{-- فایل ئینپووتی ستۆدیۆ و مۆبایل --}}
+                        <input type="file" id="old_debt_image_input" name="image" accept="image/*" class="sr-only" @change="onImageChange($event, 'gallery')">
 
                         <template x-if="imagePreview">
-                            <div class="flex items-center gap-2">
-                                <div class="relative size-12 rounded-xl overflow-hidden border-2 border-amber-600 shadow-xs group">
+                            <div class="flex items-center gap-2.5 bg-white p-2 rounded-xl border border-amber-300 shadow-2xs">
+                                <div class="relative size-12 rounded-lg overflow-hidden border border-amber-500 shadow-xs group shrink-0">
                                     <img :src="imagePreview" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="window.open(imagePreview, '_blank')" title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
                                 </div>
-                                <button type="button" @click="removeImage()" class="btn btn-ghost !py-1 !px-2.5 text-xs text-rose-600 border border-rose-200 hover:bg-rose-50 cursor-pointer">
-                                    لابردنی وێنە
-                                </button>
-                                <button type="button" @click="document.getElementById('old_debt_image_input').click()" class="btn btn-ghost !py-1 !px-2.5 text-xs text-slate-700 bg-white border border-slate-200 cursor-pointer">
-                                    گۆڕینی وێنە
-                                </button>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <label for="old_debt_image_camera" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
+                                        📷 کامێرا
+                                    </label>
+                                    <label for="old_debt_image_input" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
+                                        🖼️ مۆبایل
+                                    </label>
+                                    <button type="button" @click="removeImage()" class="px-2.5 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all">
+                                        ✕ لابردن
+                                    </button>
+                                </div>
                             </div>
                         </template>
 
                         <template x-if="!imagePreview">
-                            <button type="button" @click="document.getElementById('old_debt_image_input').click()"
-                                    class="px-4 py-2 rounded-xl text-xs font-black bg-white hover:bg-amber-50 text-amber-900 border border-amber-500/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer">
-                                <span>📷</span>
-                                <span>دانانی وێنەی وەسڵەکە</span>
-                            </button>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <label for="old_debt_image_camera"
+                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-amber-50 text-amber-900 border border-amber-500/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                                    <span class="text-base">📸</span>
+                                    <span>دانانی وێنەی وەسڵەکە (کامێرا)</span>
+                                </label>
+
+                                <label for="old_debt_image_input"
+                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                                    <span class="text-base">🖼️</span>
+                                    <span>هەڵبژاردن لە مۆبایل</span>
+                                </label>
+                            </div>
                         </template>
                     </div>
                 </div>
@@ -379,9 +395,16 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
             this.paid = parts.join('.');
         },
 
-        onImageChange(e) {
+        onImageChange(e, source) {
             const file = e.target.files[0];
             if (file) {
+                if (source === 'camera') {
+                    const gallery = document.getElementById('old_debt_image_input');
+                    if (gallery) gallery.value = '';
+                } else {
+                    const camera = document.getElementById('old_debt_image_camera');
+                    if (camera) camera.value = '';
+                }
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     this.imagePreview = ev.target.result;
@@ -392,8 +415,10 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
 
         removeImage() {
             this.imagePreview = null;
-            const input = document.getElementById('old_debt_image_input');
-            if (input) input.value = '';
+            const inputGallery = document.getElementById('old_debt_image_input');
+            if (inputGallery) inputGallery.value = '';
+            const inputCamera = document.getElementById('old_debt_image_camera');
+            if (inputCamera) inputCamera.value = '';
         }
     };
 }

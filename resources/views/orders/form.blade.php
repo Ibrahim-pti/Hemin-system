@@ -141,15 +141,18 @@
                                            :name="`lines[${index}][image]`"
                                            :id="`order_line_image_${index}`"
                                            accept="image/*"
-                                           class="hidden"
+                                           class="sr-only"
                                            @change="onImageChange($event, line)">
                                     <input type="hidden" :name="`lines[${index}][existing_image]`" :value="line.image || ''">
 
                                     <template x-if="line.preview">
                                         <div class="relative group size-9 rounded-lg overflow-hidden border border-blue-400 shadow-2xs shrink-0">
-                                            <img :src="line.preview" class="size-full object-cover cursor-pointer"
-                                                 @click="document.getElementById(`order_line_image_${index}`).click()"
-                                                 title="گۆڕینی وێنە">
+                                            <img :src="line.preview" class="size-full object-cover">
+                                            <label :for="`order_line_image_${index}`"
+                                                   class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-white font-bold cursor-pointer transition-opacity"
+                                                   title="گۆڕینی وێنە">
+                                                ✎
+                                            </label>
                                             <button type="button" @click="removeImage(line, index)"
                                                     class="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full size-3.5 flex items-center justify-center text-[9px] shadow cursor-pointer"
                                                     title="لابردنی وێنە">×</button>
@@ -157,16 +160,15 @@
                                     </template>
 
                                     <template x-if="!line.preview">
-                                        <button type="button"
-                                                @click="document.getElementById(`order_line_image_${index}`).click()"
-                                                class="size-9 rounded-lg border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 cursor-pointer"
-                                                title="دانانی وێنەی دیزاین">
+                                        <label :for="`order_line_image_${index}`"
+                                               class="size-9 rounded-lg border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 cursor-pointer active:scale-95"
+                                               title="دانانی وێنەی دیزاین (کامێرا یان مۆبایل)">
                                             <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                                                 <circle cx="8.5" cy="8.5" r="1.5"/>
                                                 <polyline points="21 15 16 10 5 21"/>
                                             </svg>
-                                        </button>
+                                        </label>
                                     </template>
                                 </div>
                             </td>
