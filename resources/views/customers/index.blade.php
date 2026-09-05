@@ -24,11 +24,11 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-            {{-- دوگمەی قەرزی پێشوو / حیساباتی کۆن بەبێ ناردن بۆ کارگە --}}
+            {{-- دوگمەی قەرزی پێشوو --}}
             <button type="button" @click="openOldDebtModal = true; selectedCustId = ''; isNewCustomer = false;"
                class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white inline-flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
                 <span>📜</span>
-                <span>قەرزی پێشوو (بەبێ کارگە)</span>
+                <span>قەرزی پێشوو</span>
             </button>
 
             <a href="{{ route('orders.create') }}"
@@ -178,7 +178,7 @@
                                     <button type="button"
                                             @click="openOldDebtModal = true; selectedCustId = '{{ $customer->id }}'; isNewCustomer = false;"
                                             class="px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all cursor-pointer"
-                                            title="تۆمارکردنی قەرزی پێشوو (بەبێ کارگە)">
+                                            title="تۆمارکردنی قەرزی پێشوو">
                                         📜
                                     </button>
                                     <a href="{{ route('customers.show', $customer) }}"
