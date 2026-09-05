@@ -57,44 +57,6 @@
                 @error('address') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
             </div>
 
-            {{-- حیسابی پێشوو --}}
-            <div class="sm:col-span-2 lg:col-span-3 bg-gradient-to-l from-amber-50/70 to-orange-50/50 border border-amber-200/90 rounded-2xl p-4.5 sm:p-5 shadow-xs">
-                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <div class="flex items-center gap-2">
-                        <span class="text-base">📜</span>
-                        <label class="text-xs font-black text-amber-950" for="opening_balance">
-                            حیسابی پێشوو (باڵانسی سەرەتایی)
-                        </label>
-                    </div>
-                    <span class="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300/80">
-                        🚫 ناچێتە کارگە و وەسڵی دروستکردن
-                    </span>
-                </div>
-                <p class="text-[11px] text-slate-600 mb-3.5 font-medium leading-relaxed">
-                    ئەگەر لە پێشتردا یان لە دەفتەر ئەم کڕیارە حیسابی پێشووی هەبووە دەتوانی بڕەکەی لێرە بنووسیت. <strong class="text-amber-900 font-bold">ئەم بڕە بە هیچ جۆرێک ناچێتە بەشی کارگە بۆ دروستکردن</strong> و کرێکاران وەک داواکاری نوێ نایبینن.
-                </p>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="sm:col-span-2">
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1" for="opening_balance">بڕی قەرز / حیسابی پێشتر</label>
-                        <input id="opening_balance" type="number" step="any" min="0" name="opening_balance"
-                               class="field num !py-2.5 !px-3.5 w-full rounded-xl font-black text-rose-600 text-base"
-                               value="{{ old('opening_balance', (float) $customer->opening_balance > 0 ? (float) $customer->opening_balance : '') }}"
-                               placeholder="0">
-                        @error('opening_balance') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1" for="opening_currency">جۆری دراو</label>
-                        <select id="opening_currency" name="opening_currency" class="field !py-2.5 !px-3.5 w-full rounded-xl font-bold text-slate-800">
-                            <option value="IQD" @selected(old('opening_currency', $customer->opening_currency ?? 'IQD') === 'IQD')>دیناری عێراقی (د.ع)</option>
-                            <option value="USD" @selected(old('opening_currency', $customer->opening_currency ?? 'IQD') === 'USD')>دۆلاری ئەمریکی ($)</option>
-                        </select>
-                        @error('opening_currency') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-            </div>
-
             {{-- تێبینی --}}
             <div class="sm:col-span-2 lg:col-span-3">
                 <label class="block text-xs font-bold text-slate-700 mb-1.5" for="note">تێبینی</label>

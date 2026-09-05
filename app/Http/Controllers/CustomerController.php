@@ -222,31 +222,25 @@ class CustomerController extends Controller
 
     private function validated(Request $request): array
     {
-        $input = $request->all();
-        if (isset($input['opening_balance'])) {
-            $input['opening_balance'] = str_replace(',', '', (string) $input['opening_balance']);
-        }
-        $request->merge($input);
-
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:255'],
-            'opening_balance' => ['nullable', 'numeric', 'min:0'],
-            'opening_currency' => ['nullable', 'in:IQD,USD'],
             'note' => ['nullable', 'string'],
         ], [], [
             'name' => 'ناو',
             'phone' => 'تەلەفۆن',
             'address' => 'ناونیشان',
-            'opening_balance' => 'حیسابی پێشوو',
-            'opening_currency' => 'دراو',
         ]);
 
         $data['phone2'] = null;
         $data['discount_percent'] = 0;
-        $data['opening_balance'] = (float) ($data['opening_balance'] ?? 0);
-        $data['opening_currency'] = $data['opening_currency'] ?? 'IQD';
+        if ($request->has('opening_balance')) {
+            $data['opening_balance'] = (float) str_replace(',', '', (string) $request->input('opening_balance', 0));
+        }
+        if ($request->has('opening_currency')) {
+            $data['opening_currency'] = $request->input('opening_currency', 'IQD');
+        }
         $data['is_active'] = $request->boolean('is_active', true);
 
         return $data;
