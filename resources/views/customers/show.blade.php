@@ -7,10 +7,10 @@
             <span>&larr;</span>
             <span>گەڕانەوە</span>
         </a>
-        <button type="button" @click="$dispatch('open-old-debt-modal')" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-sm cursor-pointer">
+        <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-sm">
             <span>📜</span>
             <span>+ قەرزی پێشوو</span>
-        </button>
+        </a>
         <a href="{{ route('payments.create', ['type' => 'in', 'customer' => $customer->id]) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
             <span>+</span>
             <span>حەقدی</span>
@@ -65,11 +65,11 @@
 
         {{-- دوگمەی دەستکاری خێرا و قەرزی کۆن --}}
         <div class="flex items-center gap-2 flex-wrap">
-            <button type="button" @click="openOldDebtModal = true"
-                    class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-500 hover:bg-amber-600 text-white shadow-xs cursor-pointer">
+            <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}"
+               class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-500 hover:bg-amber-600 text-white shadow-xs">
                 <span>📜</span>
                 <span>قەرزی پێشوو</span>
-            </button>
+            </a>
             <a href="{{ route('customers.edit', $customer) }}" class="btn btn-ghost !py-1.5 !px-3 text-xs font-bold border border-slate-200 hover:bg-slate-100 text-slate-700">
                 ✏️ دەستکاری زانیاری
             </a>
@@ -200,11 +200,11 @@
                 {{ $oldDebts->count() }} تۆمار
             </span>
         </div>
-        <button type="button" @click="openOldDebtModal = true"
-                class="btn !py-1 !px-3 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-xs cursor-pointer">
+        <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}"
+           class="btn !py-1 !px-3 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-xs">
             <span>+</span>
             <span>زیادکردن</span>
-        </button>
+        </a>
     </div>
 
     <div class="overflow-x-auto">

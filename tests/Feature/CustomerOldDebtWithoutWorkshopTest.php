@@ -178,4 +178,22 @@ class CustomerOldDebtWithoutWorkshopTest extends TestCase
         $response->assertSee('قەرزی دەفتەر');
         $response->assertSee('200,000');
     }
+
+    public function test_create_old_debt_page_renders_successfully(): void
+    {
+        $customer = Customer::create([
+            'name' => 'کاک هێمن',
+            'phone' => '07501234567',
+            'opening_balance' => 0,
+            'opening_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('debts.old-debt.create', ['customer_id' => $customer->id]));
+        $response->assertOk();
+        $response->assertSee('تۆمارکردنی حیساباتی پێشتر');
+        $response->assertSee('کاک هێمن');
+        $response->assertSee('دانانی وێنەی وەسڵەکە');
+        $response->assertSee('حازری (پارەدراو)');
+    }
 }

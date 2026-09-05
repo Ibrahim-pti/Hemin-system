@@ -144,6 +144,18 @@ class DebtController extends Controller
         ]);
     }
 
+    /** پەڕەی تایبەتی تۆمارکردنی قەرزی کۆن و حیساباتی پێشتر */
+    public function createOldDebt(Request $request): View
+    {
+        $customers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
+        $selectedCustomer = null;
+        if ($request->filled('customer_id')) {
+            $selectedCustomer = Customer::find($request->customer_id);
+        }
+
+        return view('debts.create_old_debt', compact('customers', 'selectedCustomer'));
+    }
+
     /** تۆمارکردنی قەرزی کۆن و حیساباتی پێشتر (لەگەڵ دۆخی پارەدان و وێنە) */
     public function storeOldDebt(Request $request)
     {

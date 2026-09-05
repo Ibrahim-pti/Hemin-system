@@ -19,12 +19,11 @@
 
         {{-- لای چەپ: دوگمەی تۆمارکردنی قەرزی کۆن --}}
         <div>
-            <button type="button"
-                    @click="openOldDebtModal = true"
-                    style="background: #4f46e5; color: #ffffff; padding: 0.6rem 1.15rem; border-radius: 0.65rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.45rem; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);">
-                <span style="font-size: 1.1rem; font-weight: 900;">+</span>
-                <span>تۆمارکردنی قەرزی کۆن</span>
-            </button>
+            <a href="{{ route('debts.old-debt.create') }}"
+               style="background: #4f46e5; color: #ffffff; padding: 0.6rem 1.15rem; border-radius: 0.65rem; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.45rem; text-decoration: none; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);">
+                <span style="font-size: 1.1rem; font-weight: 900;">📜</span>
+                <span>تۆمارکردنی قەرزی پێشوو</span>
+            </a>
         </div>
     </div>
 

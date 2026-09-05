@@ -25,11 +25,11 @@
 
         <div class="flex items-center gap-2 flex-wrap">
             {{-- دوگمەی قەرزی پێشوو --}}
-            <button type="button" @click="openOldDebtModal = true; selectedCustId = ''; isNewCustomer = false;"
-               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white inline-flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
+            <a href="{{ route('debts.old-debt.create') }}"
+               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white inline-flex items-center gap-1.5 transition-all shadow-sm">
                 <span>📜</span>
                 <span>قەرزی پێشوو</span>
-            </button>
+            </a>
 
             <a href="{{ route('orders.create') }}"
                class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 inline-flex items-center gap-1.5 transition-all">
@@ -175,12 +175,11 @@
                             {{-- کردارەکان --}}
                             <td class="p-3.5 text-center">
                                 <div class="flex items-center justify-center gap-1.5">
-                                    <button type="button"
-                                            @click="openOldDebtModal = true; selectedCustId = '{{ $customer->id }}'; isNewCustomer = false;"
-                                            class="px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all cursor-pointer"
-                                            title="تۆمارکردنی قەرزی پێشوو">
+                                    <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}"
+                                       class="px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all"
+                                       title="تۆمارکردنی قەرزی پێشوو">
                                         📜
-                                    </button>
+                                    </a>
                                     <a href="{{ route('customers.show', $customer) }}"
                                        class="px-2 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
                                        title="پڕۆفایل">

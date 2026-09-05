@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('payments', PaymentController::class)->except(['edit', 'update']);
         Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
         Route::get('/debts', [DebtController::class, 'index'])->name('debts.index');
+        Route::get('/debts/old-debt/create', [DebtController::class, 'createOldDebt'])->name('debts.old-debt.create');
         Route::post('/debts/old-debt', [DebtController::class, 'storeOldDebt'])->name('debts.old-debt');
         Route::delete('/debts/old-debt/{oldDebt}', [DebtController::class, 'destroyOldDebt'])->name('debts.old-debt.destroy');
     });
