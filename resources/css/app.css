@@ -383,6 +383,94 @@
         background-color: #047857 !important;
     }
 
+    /* ── دوگمە و تابلۆی پارەدان (Employee Payment Tabs & Actions) ── */
+    .pay-tab-wage-active {
+        background-color: #0f766e !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+    .pay-tab-loan-active {
+        background-color: #d97706 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+    .pay-tab-repay-active {
+        background-color: #059669 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+    .pay-tab-inactive {
+        background-color: transparent !important;
+        color: #334155 !important;
+        font-weight: 700 !important;
+    }
+    .pay-tab-inactive:hover {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    .pay-submit-wage {
+        background-color: #0f766e !important;
+        color: #ffffff !important;
+    }
+    .pay-submit-wage:hover {
+        background-color: #115e59 !important;
+    }
+
+    .pay-submit-loan {
+        background-color: #d97706 !important;
+        color: #ffffff !important;
+    }
+    .pay-submit-loan:hover {
+        background-color: #b45309 !important;
+    }
+
+    .pay-submit-repay {
+        background-color: #059669 !important;
+        color: #ffffff !important;
+    }
+    .pay-submit-repay:hover {
+        background-color: #047857 !important;
+    }
+
+    .quick-fill-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem 0.625rem;
+        border-radius: 0.5rem;
+        font-weight: 800;
+        font-size: 0.6875rem;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .quick-fill-wage {
+        background-color: #0f766e !important;
+        color: #ffffff !important;
+    }
+    .quick-fill-wage:hover {
+        background-color: #115e59 !important;
+    }
+    .quick-fill-repay {
+        background-color: #059669 !important;
+        color: #ffffff !important;
+    }
+    .quick-fill-repay:hover {
+        background-color: #047857 !important;
+    }
+
+    .employee-stats-5 {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+    @media (max-width: 640px) {
+        .employee-stats-5 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+
     /* کلاسەکانی گریدی ڕیسپۆنسیڤ */
     .responsive-grid-4 {
         display: grid;

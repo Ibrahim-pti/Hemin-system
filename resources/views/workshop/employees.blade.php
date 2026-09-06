@@ -486,7 +486,7 @@
             {{-- کارتی حیساباتی خۆکار --}}
             {{-- کارتی حیساباتی خۆکار (٥ کارتی ڕێک و پوخت) --}}
             <div class="p-2.5 sm:p-3.5 bg-slate-50 border-b border-slate-200 shrink-0">
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
+                <div class="employee-stats-5 text-center text-xs">
                     {{-- ١. ڕۆژانی دەوام --}}
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
                         <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی دەوام</div>
@@ -534,7 +534,7 @@
                     </div>
 
                     {{-- ٥. قەرزی کارمەند --}}
-                    <div class="p-2.5 rounded-xl border flex flex-col justify-between transition-all"
+                    <div class="p-2.5 rounded-xl border flex flex-col justify-between transition-all col-span-2 sm:col-span-1"
                          :class="(drawerData?.stats?.loan_balance ?? 0) > 0 ? 'bg-amber-50 border-amber-300' : 'bg-white border-slate-200'">
                         <div class="text-[10px] font-bold"
                              :class="(drawerData?.stats?.loan_balance ?? 0) > 0 ? 'text-amber-900' : 'text-slate-500'">
@@ -690,18 +690,18 @@
                     {{-- هەڵبژاردنی جۆری پارەدان: تەواو ڕوون و جیاواز --}}
                     <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
                         <button type="button" @click="setPaymentType('wage')"
-                                :class="paymentForm.payment_type === 'wage' ? 'bg-teal-800 text-white shadow-xs font-black' : 'text-slate-700 font-bold hover:text-slate-950 hover:bg-white/60'"
-                                class="py-2 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                                :class="paymentForm.payment_type === 'wage' ? 'pay-tab-wage-active' : 'pay-tab-inactive'"
+                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                             <span>💵 مووچەی شایستە</span>
                         </button>
                         <button type="button" @click="setPaymentType('advance')"
-                                :class="paymentForm.payment_type === 'advance' ? 'bg-amber-600 text-white shadow-xs font-black' : 'text-slate-700 font-bold hover:text-slate-950 hover:bg-white/60'"
-                                class="py-2 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                                :class="paymentForm.payment_type === 'advance' ? 'pay-tab-loan-active' : 'pay-tab-inactive'"
+                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                             <span>🤝 پێدانی قەرز</span>
                         </button>
                         <button type="button" @click="setPaymentType('debt_repayment')"
-                                :class="paymentForm.payment_type === 'debt_repayment' ? 'bg-emerald-700 text-white shadow-xs font-black' : 'text-slate-700 font-bold hover:text-slate-950 hover:bg-white/60'"
-                                class="py-2 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                                :class="paymentForm.payment_type === 'debt_repayment' ? 'pay-tab-repay-active' : 'pay-tab-inactive'"
+                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                             <span>📥 دانەوەی قەرز</span>
                         </button>
                     </div>
@@ -711,7 +711,7 @@
                         <div class="flex items-center justify-between p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-950 font-bold">
                             <span>شایستەی ماوە بۆ مووچە: <b class="font-mono text-sm" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></b></span>
                             <template x-if="(drawerData?.stats?.remaining_balance ?? 0) > 0">
-                                <button type="button" @click="setFullDuePayment()" class="px-2.5 py-1 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-black text-[11px] cursor-pointer shadow-xs">
+                                <button type="button" @click="setFullDuePayment()" class="quick-fill-btn quick-fill-wage shadow-xs">
                                     دانانی تەواوی شایستە
                                 </button>
                             </template>
@@ -728,7 +728,7 @@
                         <div class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 font-bold">
                             <span>قەرزی ماوە لەسەر کارمەند: <b class="font-mono text-sm" x-text="formatNumber(drawerData?.stats?.loan_balance ?? 0) + ' د.ع'"></b></span>
                             <template x-if="(drawerData?.stats?.loan_balance ?? 0) > 0">
-                                <button type="button" @click="setFullDueLoan()" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] cursor-pointer shadow-xs">
+                                <button type="button" @click="setFullDueLoan()" class="quick-fill-btn quick-fill-repay shadow-xs">
                                     دانانی تەواوی قەرز
                                 </button>
                             </template>
@@ -789,7 +789,7 @@
                                 گەڕانەوە
                             </button>
                             <button type="submit"
-                                    :class="paymentForm.payment_type === 'advance' ? 'bg-amber-600 hover:bg-amber-700' : (paymentForm.payment_type === 'debt_repayment' ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-teal-700 hover:bg-teal-800')"
+                                    :class="paymentForm.payment_type === 'advance' ? 'pay-submit-loan' : (paymentForm.payment_type === 'debt_repayment' ? 'pay-submit-repay' : 'pay-submit-wage')"
                                     class="px-6 py-2.5 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95 shadow-xs text-xs">
                                 <span x-text="paymentForm.payment_type === 'advance' ? '✓ تۆمارکردنی پێدانی قەرز' : (paymentForm.payment_type === 'debt_repayment' ? '✓ تۆمارکردنی دانەوەی قەرز' : '✓ تۆمارکردنی مووچە')"></span>
                             </button>
