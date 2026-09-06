@@ -484,121 +484,69 @@
             </div>
 
             {{-- کارتی حیساباتی خۆکار --}}
+            {{-- کارتی حیساباتی خۆکار (٥ کارتی ڕێک و پوخت) --}}
             <div class="p-2.5 sm:p-3.5 bg-slate-50 border-b border-slate-200 shrink-0">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 text-center text-xs">
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
                     {{-- ١. ڕۆژانی دەوام --}}
-                    <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی دەوام لە مانگدا</div>
-                        <div class="text-base font-black text-emerald-800 font-mono mt-0.5" x-text="(drawerData?.stats?.present_count ?? 0) + ' ڕۆژ ئامادە'"></div>
-                        <div class="flex items-center justify-center gap-1.5 flex-wrap mt-0.5">
+                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
+                        <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی دەوام</div>
+                        <div class="text-sm sm:text-base font-black text-emerald-800 font-mono mt-0.5" x-text="(drawerData?.stats?.present_count ?? 0) + ' ڕۆژ ئامادە'"></div>
+                        <div class="flex items-center justify-center gap-1 flex-wrap mt-0.5">
                             <template x-if="(drawerData?.stats?.half_day_count ?? 0) > 0">
-                                <span class="text-[10px] text-amber-700 font-bold" x-text="'+ ' + drawerData.stats.half_day_count + ' نیوە'"></span>
+                                <span class="text-[9px] text-amber-700 font-bold" x-text="'+ ' + drawerData.stats.half_day_count + ' نیوە'"></span>
                             </template>
                             <template x-if="(drawerData?.stats?.absent_count ?? 0) > 0">
-                                <span class="text-[10px] text-rose-600 font-bold" x-text="drawerData.stats.absent_count + ' ڕۆژ غیاب'"></span>
+                                <span class="text-[9px] text-rose-600 font-bold" x-text="drawerData.stats.absent_count + ' غیاب'"></span>
+                            </template>
+                            <template x-if="!(drawerData?.stats?.half_day_count ?? 0) && !(drawerData?.stats?.absent_count ?? 0)">
+                                <span class="text-[9px] text-slate-400">مانگەکە</span>
                             </template>
                         </div>
                     </div>
 
-                    {{-- ٢. پارەی هەیە (شایستە) --}}
-                    <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <div class="text-[10px] text-slate-500 font-bold">کۆی شایستەی دەوام</div>
-                        <div class="text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
+                    {{-- ٢. شایستەی دەوام --}}
+                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
+                        <div class="text-[10px] text-slate-500 font-bold">شایستەی دەوام</div>
+                        <div class="text-sm sm:text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
                         <div class="text-[9px] text-slate-400 mt-0.5">
-                            <template x-if="(drawerData?.stats?.absent_penalty_deduction ?? 0) > 0">
-                                <span class="text-rose-600 font-bold" x-text="'سزای غیاب: -' + formatNumber(drawerData.stats.absent_penalty_deduction) + ' د.ع'"></span>
-                            </template>
-                            <template x-if="!(drawerData?.stats?.absent_penalty_deduction ?? 0)">
-                                <span>حەقدەست + زیادە - سزا</span>
-                            </template>
+                            کۆی حەقدەستی مانگ
                         </div>
                     </div>
 
                     {{-- ٣. مووچەی دراو --}}
-                    <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <div class="text-[10px] text-slate-500 font-bold">مووچەی دراو لە مانگدا</div>
-                        <div class="text-base font-black text-emerald-800 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_wages_paid ?? 0) + ' د.ع'"></div>
+                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
+                        <div class="text-[10px] text-slate-500 font-bold">مووچەی دراو</div>
+                        <div class="text-sm sm:text-base font-black text-emerald-800 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_wages_paid ?? 0) + ' د.ع'"></div>
                         <div class="text-[9px] text-slate-400 mt-0.5">
-                            پارەی دراوی شایستەی دەوام
+                            لە شایستە دراوە
                         </div>
                     </div>
 
                     {{-- ٤. شایستەی ماوە بۆ پێدان --}}
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between"
-                         :class="(drawerData?.stats?.remaining_balance ?? 0) === 0 && (drawerData?.stats?.total_wages_paid ?? 0) > 0 ? 'bg-emerald-50/50 border-emerald-200' : ''">
-                        <div class="text-[10px] font-bold text-slate-500">
-                            <span>شایستەی ماوە بۆ پێدان</span>
-                        </div>
-
-                        <template x-if="(drawerData?.stats?.remaining_balance ?? 0) === 0 && (drawerData?.stats?.total_wages_paid ?? 0) > 0">
-                            <div class="mt-0.5">
-                                <div class="text-sm sm:text-base font-black text-emerald-700 flex items-center justify-center gap-1">
-                                    <span>✓</span>
-                                    <span>مووچە دراوە</span>
-                                </div>
-                                <div class="text-[9px] text-emerald-600 font-bold mt-0.5">تەواوی شایستەی ئەم مانگە دراوە</div>
-                            </div>
-                        </template>
-
-                        <template x-if="(drawerData?.stats?.remaining_balance ?? 0) > 0">
-                            <div class="mt-0.5">
-                                <div class="text-base font-black font-mono text-teal-900"
-                                     x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></div>
-                                <div class="text-[9px] text-slate-400 mt-0.5">
-                                    <span>ماوە بۆی بدرێت</span>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template x-if="(drawerData?.stats?.remaining_balance ?? 0) === 0 && !(drawerData?.stats?.total_wages_paid ?? 0)">
-                            <div class="mt-0.5">
-                                <div class="text-base font-black font-mono text-slate-400">0 د.ع</div>
-                                <div class="text-[9px] text-slate-400 mt-0.5">هیچ شایستەیەک نییە</div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                {{-- کارتی تایبەت بە قەرز و دانەوەی قەرز (جیاکراوە لە مووچە) --}}
-                <div class="mt-2.5 p-2.5 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-2"
-                     :class="(drawerData?.stats?.loan_balance ?? 0) > 0 ? 'bg-amber-50/90 border-amber-300' : 'bg-white border-slate-200'">
-                    <div class="flex items-center gap-2.5 text-right w-full sm:w-auto">
-                        <span class="text-xl">🤝</span>
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="text-xs font-black" :class="(drawerData?.stats?.loan_balance ?? 0) > 0 ? 'text-amber-950' : 'text-slate-800'">
-                                    حیساباتی قەرز و سولفەی کارمەند:
-                                </span>
-                                <template x-if="(drawerData?.stats?.loan_balance ?? 0) > 0">
-                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-200 text-amber-900 flex items-center gap-1">
-                                        <span>قەرزارە بە:</span>
-                                        <span class="font-mono" x-text="formatNumber(drawerData.stats.loan_balance) + ' د.ع'"></span>
-                                    </span>
-                                </template>
-                                <template x-if="!(drawerData?.stats?.loan_balance ?? 0)">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
-                                        هیچ قەرزێکی لەسەر نییە
-                                    </span>
-                                </template>
-                            </div>
-                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-2">
-                                <span>کۆی قەرزی دراو: <strong class="font-mono text-slate-800" x-text="formatNumber(drawerData?.stats?.total_loan_taken ?? 0) + ' د.ع'"></strong></span>
-                                <span>•</span>
-                                <span>کۆی دانەوە: <strong class="font-mono text-emerald-700" x-text="formatNumber(drawerData?.stats?.total_loan_repaid ?? 0) + ' د.ع'"></strong></span>
-                            </div>
+                         :class="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_wages_paid ?? 0) > 0 ? 'bg-emerald-50/50 border-emerald-200' : ''">
+                        <div class="text-[10px] font-bold text-slate-500">شایستەی ماوە</div>
+                        <div class="text-sm sm:text-base font-black font-mono text-teal-900 mt-0.5"
+                             x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></div>
+                        <div class="text-[9px] text-slate-400 mt-0.5">
+                            <span x-text="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_wages_paid ?? 0) > 0 ? '✓ تەواو دراوە' : 'ماوە بۆ مووچە'"></span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                        <button type="button" @click="setPaymentType('advance'); drawerTab = 'payment'"
-                                class="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-600 hover:bg-amber-700 text-white transition-colors cursor-pointer flex items-center gap-1 shadow-xs">
-                            <span>+ پێدانی قەرز</span>
-                        </button>
-                        <template x-if="(drawerData?.stats?.loan_balance ?? 0) > 0">
-                            <button type="button" @click="setFullDueLoan(); drawerTab = 'payment'"
-                                    class="px-3 py-1.5 rounded-lg text-xs font-black bg-emerald-700 hover:bg-emerald-800 text-white transition-colors cursor-pointer flex items-center gap-1 shadow-xs">
-                                <span>📥 دانەوەی قەرز</span>
-                            </button>
-                        </template>
+
+                    {{-- ٥. قەرزی کارمەند --}}
+                    <div class="p-2.5 rounded-xl border flex flex-col justify-between transition-all"
+                         :class="(drawerData?.stats?.loan_balance ?? 0) > 0 ? 'bg-amber-50 border-amber-300' : 'bg-white border-slate-200'">
+                        <div class="text-[10px] font-bold"
+                             :class="(drawerData?.stats?.loan_balance ?? 0) > 0 ? 'text-amber-900' : 'text-slate-500'">
+                            قەرزی لەسەرە
+                        </div>
+                        <div class="text-sm sm:text-base font-black font-mono mt-0.5"
+                             :class="(drawerData?.stats?.loan_balance ?? 0) > 0 ? 'text-amber-950' : 'text-slate-400'"
+                             x-text="formatNumber(drawerData?.stats?.loan_balance ?? 0) + ' د.ع'"></div>
+                        <div class="text-[9px] mt-0.5 font-bold"
+                             :class="(drawerData?.stats?.loan_balance ?? 0) > 0 ? 'text-amber-700' : 'text-slate-400'">
+                            <span x-text="(drawerData?.stats?.loan_balance ?? 0) > 0 ? '⚠️ قەرزارە' : 'هیچ قەرزێکی نییە'"></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -735,103 +683,73 @@
 
             </div>
 
-            {{-- فۆرمی پێدانی پارە لە ناو هەمان پەنجەرە بەبێ مۆداڵی زیادە و لەسەریەک --}}
-            <div x-show="drawerTab === 'payment'" class="p-4 sm:p-6 overflow-y-auto flex-1 text-xs bg-slate-50/50">
-                <form @submit.prevent="savePayment()" class="max-w-lg mx-auto space-y-4 bg-white p-5 rounded-2xl border border-slate-200">
+            {{-- فۆرمی تۆمارکردنی مووچە، پێدانی قەرز، یان دانەوەی قەرز --}}
+            <div x-show="drawerTab === 'payment'" class="p-4 sm:p-5 overflow-y-auto flex-1 text-xs bg-slate-50/50">
+                <form @submit.prevent="savePayment()" class="max-w-lg mx-auto space-y-3.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
                     
-                    {{-- هەڵبژاردنی جۆری پێدان: مووچەی شایستە، پێدانی قەرز، دانەوەی قەرز --}}
-                    <div class="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+                    {{-- هەڵبژاردنی جۆری پارەدان: تەواو ڕوون و جیاواز --}}
+                    <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
                         <button type="button" @click="setPaymentType('wage')"
-                                :class="paymentForm.payment_type === 'wage' ? 'bg-teal-700 text-white shadow-xs font-black' : 'text-slate-600 font-bold hover:text-slate-900'"
-                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                            <span>💵</span>
-                            <span>مووچەی شایستە</span>
+                                :class="paymentForm.payment_type === 'wage' ? 'bg-teal-800 text-white shadow-xs font-black' : 'text-slate-700 font-bold hover:text-slate-950 hover:bg-white/60'"
+                                class="py-2 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>💵 مووچەی شایستە</span>
                         </button>
                         <button type="button" @click="setPaymentType('advance')"
-                                :class="paymentForm.payment_type === 'advance' ? 'bg-amber-600 text-white shadow-xs font-black' : 'text-slate-600 font-bold hover:text-slate-900'"
-                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                            <span>🤝</span>
-                            <span>پێدانی قەرز</span>
+                                :class="paymentForm.payment_type === 'advance' ? 'bg-amber-600 text-white shadow-xs font-black' : 'text-slate-700 font-bold hover:text-slate-950 hover:bg-white/60'"
+                                class="py-2 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>🤝 پێدانی قەرز</span>
                         </button>
                         <button type="button" @click="setPaymentType('debt_repayment')"
-                                :class="paymentForm.payment_type === 'debt_repayment' ? 'bg-emerald-700 text-white shadow-xs font-black' : 'text-slate-600 font-bold hover:text-slate-900'"
-                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                            <span>📥</span>
-                            <span>دانەوەی قەرز</span>
+                                :class="paymentForm.payment_type === 'debt_repayment' ? 'bg-emerald-700 text-white shadow-xs font-black' : 'text-slate-700 font-bold hover:text-slate-950 hover:bg-white/60'"
+                                class="py-2 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>📥 دانەوەی قەرز</span>
                         </button>
                     </div>
 
-                    {{-- کارتی زانیاری و دانانی شایستە یان قەرز --}}
-                    <div class="rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                         :class="paymentForm.payment_type === 'advance' ? 'bg-amber-50 border border-amber-200' : (paymentForm.payment_type === 'debt_repayment' ? 'bg-emerald-50 border border-emerald-200' : 'bg-teal-50 border border-teal-200')">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-base" x-text="paymentForm.payment_type === 'advance' ? '🤝' : (paymentForm.payment_type === 'debt_repayment' ? '📥' : '💵')"></span>
-                                <h3 class="text-xs sm:text-sm font-black"
-                                    :class="paymentForm.payment_type === 'advance' ? 'text-amber-950' : (paymentForm.payment_type === 'debt_repayment' ? 'text-emerald-950' : 'text-teal-950')"
-                                    x-text="(paymentForm.payment_type === 'advance' ? 'پێدانی قەرز (سولفە) بۆ: ' : (paymentForm.payment_type === 'debt_repayment' ? 'دانەوەی قەرز لەلایەن: ' : 'تۆمارکردنی مووچە بۆ: ')) + (selectedEmployee?.name || '')"></h3>
-                            </div>
-                            <p class="text-[11px] mt-0.5"
-                               :class="paymentForm.payment_type === 'advance' ? 'text-amber-700' : (paymentForm.payment_type === 'debt_repayment' ? 'text-emerald-700' : 'text-teal-700')"
-                                x-text="paymentForm.payment_type === 'advance' ? 'پارە دەدرێت بە کارمەند وەک قەرز (لە مووچەی شایستە کەم ناکرێتەوە)' : (paymentForm.payment_type === 'debt_repayment' ? 'کارمەند پارەی قەرزەکەی دەگەڕێنێتەوە ناو قاسە' : 'پێدانی مووچەی شایستەی دەوام لە قاسەوە')"></p>
+                    {{-- کارتی خێرای پەیوەندیدار بە تابی هەڵبژێردراو --}}
+                    <template x-if="paymentForm.payment_type === 'wage'">
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-950 font-bold">
+                            <span>شایستەی ماوە بۆ مووچە: <b class="font-mono text-sm" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></b></span>
+                            <template x-if="(drawerData?.stats?.remaining_balance ?? 0) > 0">
+                                <button type="button" @click="setFullDuePayment()" class="px-2.5 py-1 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-black text-[11px] cursor-pointer shadow-xs">
+                                    دانانی تەواوی شایستە
+                                </button>
+                            </template>
                         </div>
+                    </template>
 
-                        {{-- دوگمەی خێرای پڕکردنەوەی مووچە --}}
-                        <template x-if="paymentForm.payment_type === 'wage' && (drawerData?.stats?.remaining_balance ?? 0) > 0">
-                            <button type="button" @click="setFullDuePayment()"
-                                    class="py-1.5 px-3 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-black text-xs transition-colors cursor-pointer flex items-center gap-1 shrink-0 self-start sm:self-auto">
-                                <span>💰 دانانی شایستەی ماوە:</span>
-                                <span class="font-mono" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></span>
-                            </button>
-                        </template>
+                    <template x-if="paymentForm.payment_type === 'advance'">
+                        <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 font-bold">
+                            <span>💡 پێدانی قەرز (سولفە) لە قاسەوە بە کارمەند — لە مووچەی شایستە کەم ناکرێتەوە</span>
+                        </div>
+                    </template>
 
-                        {{-- دوگمەی خێرای پڕکردنەوەی دانەوەی قەرز --}}
-                        <template x-if="paymentForm.payment_type === 'debt_repayment' && (drawerData?.stats?.loan_balance ?? 0) > 0">
-                            <button type="button" @click="setFullDueLoan()"
-                                    class="py-1.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs transition-colors cursor-pointer flex items-center gap-1 shrink-0 self-start sm:self-auto">
-                                <span>💳 دانانی تەواوی قەرز:</span>
-                                <span class="font-mono" x-text="formatNumber(drawerData?.stats?.loan_balance ?? 0) + ' د.ع'"></span>
-                            </button>
-                        </template>
+                    <template x-if="paymentForm.payment_type === 'debt_repayment'">
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 font-bold">
+                            <span>قەرزی ماوە لەسەر کارمەند: <b class="font-mono text-sm" x-text="formatNumber(drawerData?.stats?.loan_balance ?? 0) + ' د.ع'"></b></span>
+                            <template x-if="(drawerData?.stats?.loan_balance ?? 0) > 0">
+                                <button type="button" @click="setFullDueLoan()" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] cursor-pointer shadow-xs">
+                                    دانانی تەواوی قەرز
+                                </button>
+                            </template>
+                        </div>
+                    </template>
 
-                        <template x-if="paymentForm.payment_type === 'wage' && (drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_wages_paid ?? 0) > 0">
-                            <span class="py-1.5 px-3 rounded-xl bg-emerald-100 text-emerald-800 font-black text-xs flex items-center gap-1 shrink-0">
-                                <span>✓</span>
-                                <span>مووچە دراوە</span>
-                            </span>
-                        </template>
-                    </div>
-
-                    {{-- پەیامی ڕوونکردنەوەی پێدانی قەرز --}}
-                    <div x-show="paymentForm.payment_type === 'advance'" class="bg-amber-50/80 border border-amber-200/90 rounded-xl p-3 text-[11px] text-amber-900 leading-relaxed font-bold flex items-start gap-2">
-                        <span class="text-sm shrink-0">💡</span>
-                        <span>
-                            ئەم بڕە وەک <b>پێدانی قەرز (سولفە)</b> لە قاسە دەردەچێت و دەدرێت بە کارمەند. <u>لە شایستەی مووچەی دەوام کەم ناکرێتەوە</u>، بەڵکو لەسەر قەرزی کارمەند هەژمار دەبێت و کارمەند لە بەشی «دانەوەی قەرز» دەتوانێت بیداتەوە.
-                        </span>
-                    </div>
-
-                    {{-- پەیامی ڕوونکردنەوەی دانەوەی قەرز --}}
-                    <div x-show="paymentForm.payment_type === 'debt_repayment'" class="bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-3 text-[11px] text-emerald-900 leading-relaxed font-bold flex items-start gap-2">
-                        <span class="text-sm shrink-0">📥</span>
-                        <span>
-                            ئەم بڕە وەک <b>دانەوەی قەرز</b> لە کارمەند وەردەگیرێتەوە و دەچێتە ناو قاسە. باڵانسی قەرزی ماوەی کارمەند بەم بڕە کەم دەبێتەوە.
-                        </span>
-                    </div>
-
+                    {{-- خانەکانی فۆرم --}}
                     <div class="space-y-3 font-bold text-slate-700">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center justify-between mb-1 text-xs">
                                     <label class="text-slate-600"
-                                           x-text="paymentForm.payment_type === 'debt_repayment' ? 'قاسەی وەرگرتن (دەچێتە ناو)' : 'قاسەی پارەدان (لە قاسە دەردەچێت)'"></label>
+                                           x-text="paymentForm.payment_type === 'debt_repayment' ? 'قاسەی وەرگرتن (دێتە ناو)' : 'قاسەی پارەدان (دەردەچێت)'"></label>
                                     <template x-if="selectedCashBox">
-                                        <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md"
-                                              :class="(selectedCashBox?.balance ?? 0) > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded"
+                                              :class="(selectedCashBox?.balance ?? 0) >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
                                               x-text="'باڵانس: ' + formatNumber(selectedCashBox?.balance ?? 0) + ' ' + (selectedCashBox?.currency === 'USD' ? '$' : 'د.ع')"></span>
                                     </template>
                                 </div>
                                 <select x-model="paymentForm.cash_box_id" @change="onCashBoxChange()"
-                                        class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold bg-white focus:outline-hidden focus:border-teal-600">
+                                        class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold bg-white text-xs focus:outline-hidden focus:border-teal-600">
                                     <template x-for="box in cashBoxes" :key="box.id">
                                         <option :value="box.id" x-text="box.name + ' (' + formatNumber(box.balance) + ' ' + (box.currency === 'USD' ? '$' : 'د.ع') + ')'"></option>
                                     </template>
@@ -839,41 +757,40 @@
                             </div>
 
                             <div>
-                                <label class="block mb-1 text-slate-600">بەروار</label>
+                                <label class="block mb-1 text-slate-600 text-xs">بەروار</label>
                                 <input type="date" x-model="paymentForm.paid_at" required
-                                       class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-mono font-bold bg-white">
+                                       class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-mono font-bold bg-white text-xs">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <label class="block mb-1 text-slate-600 font-bold"
+                                <label class="block mb-1 text-slate-600 text-xs font-bold"
                                        x-text="'بڕی پارە (' + (paymentForm.currency === 'USD' ? 'دۆلار $' : 'دینار د.ع') + ') *'"></label>
                                 <div class="flex items-stretch rounded-xl border border-slate-200 overflow-hidden focus-within:border-teal-600 bg-white">
                                     <input type="text" inputmode="numeric" x-model="paymentForm.amount"
                                            @input="paymentForm.amount = formatMoneyInput($event.target.value)" required
                                            :placeholder="paymentForm.currency === 'USD' ? 'بڕی پارە بە دۆلار' : 'بڕی پارە بە دینار'"
-                                           class="w-full px-3 py-2.5 font-mono font-black text-base text-slate-900 focus:outline-hidden">
+                                           class="w-full px-3 py-2.5 font-mono font-black text-sm text-slate-900 focus:outline-hidden">
                                     <span class="bg-slate-100 px-3 flex items-center text-xs font-black text-slate-600 border-r border-slate-200 shrink-0"
                                           x-text="paymentForm.currency === 'USD' ? '$' : 'د.ع'"></span>
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block mb-1 text-slate-600">تێبینی</label>
+                                <label class="block mb-1 text-slate-600 text-xs">تێبینی</label>
                                 <input type="text" x-model="paymentForm.note"
-                                       :placeholder="paymentForm.payment_type === 'advance' ? 'تێبینی بۆ ئەم پێدانی قەرزە...' : (paymentForm.payment_type === 'debt_repayment' ? 'تێبینی بۆ ئەم دانەوەی قەرزە...' : 'تێبینی بۆ ئەم مووچەیە...')"
-                                       class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-medium">
+                                       class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-medium text-xs">
                             </div>
                         </div>
 
                         <div class="pt-2 flex items-center justify-end gap-2.5">
-                            <button type="button" @click="drawerTab = 'details'" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 cursor-pointer">
+                            <button type="button" @click="drawerTab = 'details'" class="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-200 cursor-pointer text-xs">
                                 گەڕانەوە
                             </button>
                             <button type="submit"
                                     :class="paymentForm.payment_type === 'advance' ? 'bg-amber-600 hover:bg-amber-700' : (paymentForm.payment_type === 'debt_repayment' ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-teal-700 hover:bg-teal-800')"
-                                    class="px-6 py-2.5 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95 shadow-xs">
+                                    class="px-6 py-2.5 rounded-xl font-black text-white cursor-pointer transition-all active:scale-95 shadow-xs text-xs">
                                 <span x-text="paymentForm.payment_type === 'advance' ? '✓ تۆمارکردنی پێدانی قەرز' : (paymentForm.payment_type === 'debt_repayment' ? '✓ تۆمارکردنی دانەوەی قەرز' : '✓ تۆمارکردنی مووچە')"></span>
                             </button>
                         </div>
