@@ -377,7 +377,7 @@ class WorkshopController extends Controller
                     min($from, $monthStart),
                     max($to, $monthEnd)
                 ]),
-                'payments' => fn ($q) => $q->where('direction', 'out')->latest('paid_at'),
+                'payments' => fn ($q) => $q->latest('paid_at'),
             ])
             ->orderByRaw("CASE job_title WHEN 'master' THEN 1 WHEN 'porter' THEN 2 WHEN 'helper' THEN 3 WHEN 'driver' THEN 4 WHEN 'other' THEN 5 ELSE 6 END")
             ->orderBy('name')
@@ -519,8 +519,10 @@ class WorkshopController extends Controller
             $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $totalDeductions, 2);
 
             $rangePayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $from && $p->paid_at->toDateString() <= $to);
-            $totalPaid = (float) $rangePayments->sum('amount_iqd');
-            $remainingBalance = round($totalEarned - $totalPaid, 2);
+            $totalWagesPaid = (float) $rangePayments->where('direction', 'out')->filter(fn ($p) => $p->isWage())->sum('amount_iqd');
+            $totalPaid = $totalWagesPaid;
+            $remainingBalance = max(0, round($totalEarned - $totalWagesPaid, 2));
+            $loanBalance = $emp->loanBalance();
 
             // هەژمارکردنی ئاماری تەواوی مانگ بۆ پڕۆفایل و دێتەلی وەستاکە
             $monthAtts = $emp->attendances->filter(fn ($a) => $a->work_date && $a->work_date->toDateString() >= $monthStart && $a->work_date->toDateString() <= $monthEnd);
@@ -565,16 +567,20 @@ class WorkshopController extends Controller
             $monthTotalEarned = round($monthBaseEarned + $monthOvertimeEarned + $monthFuel + $monthBonus - ($monthDeductions + $monthAbsentPenalty), 2);
 
             $monthPayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $monthStart && $p->paid_at->toDateString() <= $monthEnd);
-            $monthTotalPaid = (float) $monthPayments->sum('amount_iqd');
-            $monthRemaining = round($monthTotalEarned - $monthTotalPaid, 2);
+            $monthWagesPaid = (float) $monthPayments->where('direction', 'out')->filter(fn ($p) => $p->isWage())->sum('amount_iqd');
+            $monthTotalPaid = $monthWagesPaid;
+            $monthRemaining = max(0, round($monthTotalEarned - $monthWagesPaid, 2));
 
             $paymentsList = $rangePayments->map(fn ($p) => [
                 'id' => $p->id,
                 'voucher_no' => $p->voucher_no,
+                'direction' => $p->direction,
                 'amount' => (float) $p->amount,
                 'amount_iqd' => (float) $p->amount_iqd,
                 'currency' => $p->currency,
                 'paid_at' => $p->paid_at?->format('Y/m/d'),
+                'payment_type' => $p->isDebtRepayment() ? 'debt_repayment' : ($p->isAdvance() ? 'advance' : 'wage'),
+                'type_label' => $p->payment_type_label,
                 'note' => $p->note,
             ])->values()->all();
 
@@ -608,7 +614,9 @@ class WorkshopController extends Controller
                 'overtime_earned' => $canSeeMoney ? $overtimeEarned : 0,
                 'total_earned' => $canSeeMoney ? $totalEarned : 0,
                 'total_paid' => $canSeeMoney ? $totalPaid : 0,
+                'total_wages_paid' => $canSeeMoney ? $totalWagesPaid : 0,
                 'remaining_balance' => $canSeeMoney ? $remainingBalance : 0,
+                'loan_balance' => $canSeeMoney ? $loanBalance : 0,
                 'payments' => $canSeeMoney ? $paymentsList : [],
                 'month_summary' => [
                     'present_count' => $monthPresent,
@@ -1363,7 +1371,6 @@ class WorkshopController extends Controller
             ->get();
 
         $payments = $employee->payments()
-            ->where('direction', 'out')
             ->whereBetween('paid_at', [$startDate, $endDate])
             ->orderByDesc('paid_at')
             ->get();
@@ -1450,10 +1457,15 @@ class WorkshopController extends Controller
         $allDeductions = round($totalDeductions + $calculatedLatePenalty + $calculatedAbsentPenalty);
         $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $allDeductions);
 
-        $totalAdvances = (float) $payments->filter(fn ($p) => $p->isAdvance())->sum('amount_iqd');
-        $totalWagesPaid = (float) $payments->filter(fn ($p) => ! $p->isAdvance())->sum('amount_iqd');
-        $totalPaid = round((float) $payments->sum('amount_iqd'));
-        $remainingBalance = round($totalEarned - $totalPaid);
+        // جیاکردنەوەی تەواوی مووچە لە قەرز: قەرز مووچە کەم ناکاتەوە!
+        $monthLoanTaken = (float) $payments->where('direction', 'out')->filter(fn ($p) => $p->isAdvance())->sum('amount_iqd');
+        $monthLoanRepaid = (float) $payments->where('direction', 'in')->filter(fn ($p) => $p->isDebtRepayment())->sum('amount_iqd');
+        $totalWagesPaid = (float) $payments->where('direction', 'out')->filter(fn ($p) => $p->isWage())->sum('amount_iqd');
+        $remainingWage = max(0, round($totalEarned - $totalWagesPaid));
+
+        $totalLoanTaken = $employee->totalLoanTaken();
+        $totalLoanRepaid = $employee->totalLoanRepaid();
+        $loanBalance = max(0, round($totalLoanTaken - $totalLoanRepaid));
 
         return response()->json([
             'ok' => true,
@@ -1488,10 +1500,16 @@ class WorkshopController extends Controller
                 'base_earned' => $baseEarned,
                 'overtime_earned' => $overtimeEarned,
                 'total_earned' => $totalEarned,
-                'total_paid' => $totalPaid,
-                'total_advances' => $totalAdvances,
+                'total_paid' => $totalWagesPaid,
                 'total_wages_paid' => $totalWagesPaid,
-                'remaining_balance' => $remainingBalance,
+                'remaining_balance' => $remainingWage,
+                'remaining_wage' => $remainingWage,
+                'total_advances' => $monthLoanTaken,
+                'month_loan_taken' => $monthLoanTaken,
+                'month_loan_repaid' => $monthLoanRepaid,
+                'total_loan_taken' => $totalLoanTaken,
+                'total_loan_repaid' => $totalLoanRepaid,
+                'loan_balance' => $loanBalance,
             ],
             'attendances' => $attendances->map(function ($a) {
                 $kurdishDays = [
@@ -1527,12 +1545,13 @@ class WorkshopController extends Controller
             'payments' => $payments->map(fn ($p) => [
                 'id' => $p->id,
                 'voucher_no' => $p->voucher_no,
+                'direction' => $p->direction,
                 'amount' => (float) $p->amount,
                 'amount_iqd' => (float) $p->amount_iqd,
                 'currency' => $p->currency,
                 'paid_at' => $p->paid_at?->format('Y/m/d'),
-                'payment_type' => $p->isAdvance() ? 'advance' : 'wage',
-                'type_label' => $p->isAdvance() ? 'پێشەکی (قەرز)' : 'مووچە',
+                'payment_type' => $p->isDebtRepayment() ? 'debt_repayment' : ($p->isAdvance() ? 'advance' : 'wage'),
+                'type_label' => $p->payment_type_label,
                 'note' => $p->note,
             ])->values()->all(),
         ]);
@@ -1594,7 +1613,7 @@ class WorkshopController extends Controller
         return back()->with('ok', "ئامادەبوونی هەموو وەستاکان بۆ بەرواری {$date} تۆمارکرا.");
     }
 
-    /** تۆمارکردنی پێشەکی یان دانی مووچە بۆ وەستا لە ڕێگەی قاصەوە */
+    /** تۆمارکردنی مووچە، پێدانی قەرز، یان دانەوەی قەرز بۆ کارمەند لە ڕێگەی قاسەوە */
     public function recordEmployeePayment(Request $request, \App\Services\PaymentService $paymentService)
     {
         if (! auth()->user()->isAdmin()) {
@@ -1607,46 +1626,67 @@ class WorkshopController extends Controller
             'currency' => ['nullable', 'in:IQD,USD'],
             'cash_box_id' => ['nullable', 'exists:cash_boxes,id'],
             'paid_at' => ['required', 'date'],
-            'payment_type' => ['nullable', 'in:wage,advance'],
+            'payment_type' => ['nullable', 'in:wage,advance,debt_repayment'],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $employee = Employee::findOrFail($validated['employee_id']);
         $paymentType = $validated['payment_type'] ?? 'wage';
 
-        $defaultNote = $paymentType === 'advance'
-            ? "پێشەکی (قەرز) بۆ {$employee->name}"
-            : "مووچەی {$employee->name}";
+        $direction = match ($paymentType) {
+            'debt_repayment' => 'in',
+            default => 'out',
+        };
+
+        $category = match ($paymentType) {
+            'wage' => 'wage',
+            default => 'other',
+        };
+
+        $defaultNote = match ($paymentType) {
+            'advance' => "پێدانی قەرز بۆ {$employee->name}",
+            'debt_repayment' => "دانەوەی قەرز لەلایەن {$employee->name}",
+            default => "مووچەی {$employee->name}",
+        };
 
         $note = ! empty($validated['note']) ? $validated['note'] : $defaultNote;
 
         $payment = $paymentService->record([
-            'direction' => 'out',
+            'direction' => $direction,
             'party' => $employee,
             'party_name' => $employee->name,
             'amount' => (float) $validated['amount'],
             'currency' => $validated['currency'] ?? 'IQD',
             'cash_box_id' => $validated['cash_box_id'] ?? null,
             'paid_at' => $validated['paid_at'],
-            'category' => 'wage',
+            'category' => $category,
             'payment_type' => $paymentType,
             'note' => $note,
         ]);
 
-        $typeLabel = $payment->isAdvance() ? 'پێشەکی (قەرز)' : 'مووچە';
+        $typeLabel = match ($paymentType) {
+            'debt_repayment' => 'دانەوەی قەرز',
+            'advance' => 'پێدانی قەرز',
+            default => 'مووچە',
+        };
+
+        $actionMsg = $direction === 'in'
+            ? "بڕی " . number_format($payment->amount) . " {$payment->currency} وەک {$typeLabel} لە {$employee->name} وەرگیرا و خرایە ناو قاسە."
+            : "{$typeLabel} بە بڕی " . number_format($payment->amount) . " {$payment->currency} بە سەرکەوتوویی درا بە {$employee->name}.";
 
         if ($request->wantsJson()) {
             return response()->json([
                 'ok' => true,
-                'message' => "{$typeLabel} بە بڕی " . number_format($payment->amount) . " {$payment->currency} بە سەرکەوتوویی درا بە {$employee->name}.",
+                'message' => $actionMsg,
                 'payment' => [
                     'id' => $payment->id,
                     'voucher_no' => $payment->voucher_no,
+                    'direction' => $payment->direction,
                     'amount' => (float) $payment->amount,
                     'amount_iqd' => (float) $payment->amount_iqd,
                     'currency' => $payment->currency,
                     'paid_at' => $payment->paid_at?->format('Y/m/d'),
-                    'payment_type' => $payment->isAdvance() ? 'advance' : 'wage',
+                    'payment_type' => $paymentType,
                     'type_label' => $typeLabel,
                     'note' => $payment->note,
                 ],
@@ -1657,7 +1697,7 @@ class WorkshopController extends Controller
             ]);
         }
 
-        return back()->with('ok', "{$typeLabel} بۆ {$employee->name} بە سەرکەوتوویی تۆمارکرا.");
+        return back()->with('ok', $actionMsg);
     }
 
     /** سڕینەوەی وەسڵی پارەدان/پێشەکی بۆ وەستا لە قاصەدا */

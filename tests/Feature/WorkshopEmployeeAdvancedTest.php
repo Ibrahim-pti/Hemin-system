@@ -636,7 +636,7 @@ class WorkshopEmployeeAdvancedTest extends TestCase
         $cashBox = CashBox::first();
         $initialBalance = (float) $cashBox->balance();
 
-        // ١. پێدانی پێشەکی / قەرز بە کارمەند
+        // ١. پێدانی قەرز بە کارمەند (لە قاسە دەردەچێت، باڵانسی قەرزی زیاد دەکات)
         $advanceAmount = 50000;
         $payRes = $this->postJson('/workshop/employees/record-payment', [
             'employee_id' => $employee->id,
@@ -645,29 +645,28 @@ class WorkshopEmployeeAdvancedTest extends TestCase
             'cash_box_id' => $cashBox->id,
             'paid_at' => now()->toDateString(),
             'payment_type' => 'advance',
-            'note' => 'پێشەکی بۆ سوارە مەنتک',
+            'note' => 'پێدانی قەرز بۆ سوارە مەنتک',
         ]);
         $payRes->assertStatus(200);
         $payRes->assertJson([
             'ok' => true,
             'payment' => [
                 'payment_type' => 'advance',
-                'type_label' => 'پێشەکی (قەرز)',
             ],
         ]);
 
         // پشکنینی کەمبوونەوەی قاسە
         $this->assertEquals($initialBalance - $advanceAmount, (float) $cashBox->fresh()->balance());
 
-        // ٢. لە دەستپێکدا هیچ دەوامی نەکردووە، بۆیە قەرزارە بە بڕی 50,000 د.ع (باڵانس -50,000)
+        // ٢. لە دەستپێکدا هیچ دەوامی نەکردووە، بۆیە شایستەی 0ـە و باڵانسی قەرزی 50,000 د.ع یە
         $monthRes = $this->getJson("/workshop/employees/{$employee->id}/month-details?month=" . now()->format('Y-m'));
         $monthRes->assertStatus(200);
         $monthRes->assertJson([
             'stats' => [
                 'total_earned' => 0,
-                'total_paid' => 50000,
-                'total_advances' => 50000,
-                'remaining_balance' => -50000,
+                'total_wages_paid' => 0,
+                'remaining_balance' => 0,
+                'loan_balance' => 50000,
             ],
         ]);
 
@@ -685,32 +684,46 @@ class WorkshopEmployeeAdvancedTest extends TestCase
             'wage_snapshot' => 40000,
         ]);
 
-        // ٤. کاتێک دەوامەکە تەواو دەبێت، پێشەکییەکە لە کۆی مووچەکەی کەمدەبێتەوە
-        // شایستە = 80,000 د.ع، پێشەکی = 50,000 د.ع => ماوە بۆی بدرێت تەنها = 30,000 د.ع
+        // ٤. شایستەی مووچەکەی بە تەواوی دەمێنێتەوە (80,000 د.ع) و لە قەرز کەم ناکرێتەوە!
         $monthRes2 = $this->getJson("/workshop/employees/{$employee->id}/month-details?month=" . now()->format('Y-m'));
         $monthRes2->assertStatus(200);
         $monthRes2->assertJson([
             'stats' => [
                 'present_count' => 2,
                 'total_earned' => 80000,
-                'total_paid' => 50000,
-                'total_advances' => 50000,
-                'remaining_balance' => 30000,
+                'total_wages_paid' => 0,
+                'remaining_balance' => 80000,
+                'loan_balance' => 50000,
             ],
         ]);
 
-        // ٥. پشکنینی سڕینەوەی وەسڵ و گەڕانەوەی پارە بۆ قاسە
-        $paymentId = $payRes->json('payment.id');
-        $delRes = $this->deleteJson("/workshop/employees/payments/{$paymentId}");
-        $delRes->assertStatus(200);
+        // ٥. دانەوەی قەرز (کارمەند پارەکە دەداتەوە بە قاسە — direction: in)
+        $repayRes = $this->postJson('/workshop/employees/record-payment', [
+            'employee_id' => $employee->id,
+            'amount' => 50000,
+            'currency' => 'IQD',
+            'cash_box_id' => $cashBox->id,
+            'paid_at' => now()->toDateString(),
+            'payment_type' => 'debt_repayment',
+            'note' => 'دانەوەی قەرز لەلایەن سوارە مەنتک',
+        ]);
+        $repayRes->assertStatus(200);
+        $repayRes->assertJson([
+            'ok' => true,
+            'payment' => [
+                'direction' => 'in',
+                'payment_type' => 'debt_repayment',
+            ],
+        ]);
+
+        // قاسە دەگەڕێتەوە باڵانسی پێش قەرزەکە
         $this->assertEquals($initialBalance, (float) $cashBox->fresh()->balance());
 
-        // دوای سڕینەوە باڵانسی شایستەی ماوە دەبێتەوە بە 80,000 تەواو
+        // باڵانسی قەرزی دەبێتەوە 0 و شایستەی مووچەش وەک خۆیەتی (80,000 د.ع)
         $monthRes3 = $this->getJson("/workshop/employees/{$employee->id}/month-details?month=" . now()->format('Y-m'));
         $monthRes3->assertJson([
             'stats' => [
-                'total_paid' => 0,
-                'total_advances' => 0,
+                'loan_balance' => 0,
                 'remaining_balance' => 80000,
             ],
         ]);

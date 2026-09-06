@@ -32,10 +32,50 @@ class Payment extends Model
             return true;
         }
 
+        if ($this->direction !== 'out') {
+            return false;
+        }
+
         $note = (string) $this->note;
-        return str_contains($note, 'پێشەکی')
-            || str_contains($note, 'قەرز')
-            || str_contains($note, 'سولفە');
+        return (str_contains($note, 'پێشەکی') || str_contains($note, 'قەرز') || str_contains($note, 'سولفە'))
+            && ! str_contains($note, 'دانەوە')
+            && ! str_contains($note, 'گەڕاندنەوە');
+    }
+
+    public function isDebtRepayment(): bool
+    {
+        if ($this->payment_type === 'debt_repayment') {
+            return true;
+        }
+
+        if ($this->direction !== 'in') {
+            return false;
+        }
+
+        $note = (string) $this->note;
+        return str_contains($note, 'دانەوە')
+            || str_contains($note, 'گەڕاندنەوە')
+            || (str_contains($note, 'قەرز') && $this->direction === 'in');
+    }
+
+    public function isWage(): bool
+    {
+        if ($this->payment_type === 'wage') {
+            return true;
+        }
+
+        return $this->direction === 'out' && ! $this->isAdvance() && ! $this->isDebtRepayment();
+    }
+
+    public function getPaymentTypeLabelAttribute(): string
+    {
+        if ($this->isDebtRepayment()) {
+            return 'دانەوەی قەرز';
+        }
+        if ($this->isAdvance()) {
+            return 'پێدانی قەرز';
+        }
+        return 'مووچە';
     }
 
     protected function casts(): array

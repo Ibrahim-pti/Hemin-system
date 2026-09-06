@@ -91,13 +91,43 @@ class Employee extends Model
             ->sum('wage_snapshot');
     }
 
-    /** ئەوەی پێی دراوە لە ماوەکەدا. */
+    /** ئەوەی پێی دراوە لە ماوەکەدا (تەنها مووچە). */
     public function paidBetween(string $from, string $to): float
     {
         return (float) $this->payments()
             ->where('direction', 'out')
             ->whereBetween('paid_at', [$from, $to])
+            ->get()
+            ->filter(fn ($p) => $p->isWage())
             ->sum('amount_iqd');
+    }
+
+    /** کۆی ئەو قەرز و پێشەکییانەی دراوە بە کارمەند */
+    public function totalLoanTaken(?string $from = null, ?string $to = null): float
+    {
+        $query = $this->payments()->where('direction', 'out');
+        if ($from && $to) {
+            $query->whereBetween('paid_at', [$from, $to]);
+        }
+        return (float) $query->get()->filter(fn ($p) => $p->isAdvance())->sum('amount_iqd');
+    }
+
+    /** کۆی ئەو قەرزانەی کارمەند داویەتییەوە بە قاسە */
+    public function totalLoanRepaid(?string $from = null, ?string $to = null): float
+    {
+        $query = $this->payments()->where('direction', 'in');
+        if ($from && $to) {
+            $query->whereBetween('paid_at', [$from, $to]);
+        }
+        return (float) $query->get()->filter(fn ($p) => $p->isDebtRepayment())->sum('amount_iqd');
+    }
+
+    /** باڵانسی تەواوی قەرزی ماوە لەسەر کارمەند */
+    public function loanBalance(): float
+    {
+        $taken = $this->totalLoanTaken();
+        $repaid = $this->totalLoanRepaid();
+        return max(0, round($taken - $repaid, 2));
     }
 
     public function scopeActive(Builder $query): Builder
