@@ -296,7 +296,7 @@
 
         {{-- ڕێنمایی کورت --}}
         <div class="px-2.5 sm:px-3.5 py-1.5 bg-teal-50 border-b border-teal-100 text-[10px] sm:text-[11px] text-teal-900 font-bold flex items-center justify-between gap-2">
-            <span class="truncate">👆 کلیک لە خانەی <b>ئەمڕۆ</b> بکە بۆ گۆڕینی دۆخ — دووەم کلیک بۆ وردەکاری</span>
+            <span class="truncate">👆 کلیک لە هەر خانەیەک بکە بۆ گۆڕینی دۆخ (هاتوو / نیو ڕۆژ / نەهاتوو) — نیشانەی ⚙ بۆ وردەکاری</span>
             @if(!empty($holidayLabel))
                 <span class="shrink-0 text-[9px] sm:text-[10px] px-2 py-0.5 rounded-md bg-white border border-teal-200 text-teal-700 whitespace-nowrap">{{ $holidayLabel }} پشووە</span>
             @endif
@@ -386,26 +386,21 @@
                                 <td class="col-day p-0.5 sm:p-1 text-center border-l border-slate-200 relative cell-td"
                                     :class="day.is_today ? 'bg-amber-50/70 border-l border-amber-200' : ''">
 
-                                    <div @click="day.is_today ? toggleCell(row.id, day.date) : null"
-                                         @contextmenu.prevent="if (day.is_today) openCellDetailModal(row, day)"
-                                         :title="day.is_today ? 'کلیک بۆ گۆڕینی دۆخ' : 'تەنها دەوامی ئەمڕۆ دەگۆڕدرێت'"
-                                         class="cell-box w-full flex items-center justify-center transition-all font-black select-none"
-                                         :class="[
-                                            getCellStyle(row.cells[day.date]),
-                                            day.is_today ? 'cursor-pointer active:scale-95' : 'cursor-not-allowed opacity-70'
-                                         ]">
+                                    <div @click="toggleCell(row.id, day.date)"
+                                         @contextmenu.prevent="openCellDetailModal(row, day)"
+                                         title="کلیک بکە بۆ گۆڕینی دۆخ (هاتوو / نیو ڕۆژ / نەهاتوو) — ڕاست کلیک بۆ وردەکاری"
+                                         class="cell-box w-full flex items-center justify-center transition-all font-black select-none cursor-pointer active:scale-95"
+                                         :class="getCellStyle(row.cells[day.date])">
                                         <span class="hidden sm:inline" x-text="getCellDisplay(row.cells[day.date])"></span>
                                         <span class="sm:hidden text-sm" x-text="getCellIcon(row.cells[day.date])"></span>
                                     </div>
 
-                                    {{-- دەستکاری ورد (تەنها بۆ ئەمڕۆ، لەسەر دێسکتۆپ بە هۆڤەر) --}}
-                                    <template x-if="day.is_today">
-                                        <button type="button" @click.stop="openCellDetailModal(row, day)"
-                                                class="hidden sm:flex absolute top-1 left-1 size-4 opacity-0 cell-gear items-center justify-center bg-white rounded text-[8px] text-slate-500 hover:text-teal-700 border border-slate-300 print:hidden transition-opacity cursor-pointer"
-                                                title="دەستکاری کاتی زیادە و خەرجی">
-                                            ⚙
-                                        </button>
-                                    </template>
+                                    {{-- دەستکاری ورد (بۆ هەموو ڕۆژەکان لەسەر دێسکتۆپ بە هۆڤەر) --}}
+                                    <button type="button" @click.stop="openCellDetailModal(row, day)"
+                                            class="hidden sm:flex absolute top-1 left-1 size-4 opacity-0 cell-gear items-center justify-center bg-white rounded text-[8px] text-slate-500 hover:text-teal-700 border border-slate-300 print:hidden transition-opacity cursor-pointer shadow-2xs"
+                                            title="دەستکاری ورد: کاتی زیادە، خەرجی و تێبینی">
+                                        ⚙
+                                    </button>
                                 </td>
                             </template>
 
@@ -1555,12 +1550,6 @@ function workshopEmployeesApp() {
         },
 
         async toggleCell(empId, date) {
-            const todayStr = '{{ now()->toDateString() }}';
-            if (date !== todayStr) {
-                this.showToast('تەنها دەتوانیت دەوامی ئەمڕۆ بە شێوەی ڕۆژ بە ڕۆژ تۆمار یان دەستکاری بکەیت.', 'error');
-                return;
-            }
-
             try {
                 const res = await fetch('{{ route('workshop.employees.toggle-cell') }}', {
                     method: 'POST',
@@ -1591,11 +1580,6 @@ function workshopEmployeesApp() {
         },
 
         openCellDetailModal(row, day) {
-            if (!day.is_today) {
-                this.showToast('تەنها دەتوانیت دەوامی ئەمڕۆ (ڕۆژ بە ڕۆژ) دەستکاری بکەیت.', 'error');
-                return;
-            }
-
             this.activeCellEmployee = row;
             this.activeCellDay = day;
             const existing = row.cells[day.date];
