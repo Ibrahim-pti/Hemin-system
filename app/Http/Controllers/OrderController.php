@@ -26,11 +26,13 @@ class OrderController extends Controller
     public function index(Request $request): View
     {
         $activeTab = $request->string('tab', 'customers')->toString();
+        $currency = $request->string('currency', 'all')->toString();
 
         $orders = Order::query()
-            ->with(['customer', 'items'])
+            ->with(['customer', 'items', 'payments'])
             ->search($request->string('q')->toString())
             ->when($request->string('status')->toString(), fn ($q, $s) => $q->where('status', $s))
+            ->when(in_array($currency, ['USD', 'IQD']), fn ($q) => $q->where('currency', $currency))
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('order_date', '>=', $d))
             ->when($request->date('to'), fn ($q, $d) => $q->whereDate('order_date', '<=', $d))
             ->latest('order_date')
@@ -41,7 +43,7 @@ class OrderController extends Controller
         $customers = Customer::query()
             ->search($request->string('q')->toString())
             ->withCount('orders')
-            ->with(['orders' => fn ($q) => $q->latest('order_date')->limit(1)])
+            ->with(['orders' => fn ($q) => $q->whereNotIn('status', ['draft', 'cancelled']), 'payments'])
             ->orderBy('name')
             ->paginate(25, ['*'], 'customers_page')
             ->withQueryString();
@@ -49,19 +51,47 @@ class OrderController extends Controller
         $allCustomers = Customer::all();
         $totalCustomers = $allCustomers->count();
         $totalOrders = (int) Order::whereNotIn('status', ['draft', 'cancelled'])->count();
-        $totalSales = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->sum(Order::totalIqdExpression());
-        $totalReceived = (float) Payment::where('direction', 'in')->sum('amount_iqd');
-        $totalDebt = (float) $allCustomers->sum(fn ($c) => max(0, $c->balance()));
+        $usdOrdersCount = (int) Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->count();
+        $iqdOrdersCount = (int) Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'IQD')->count();
+
+        $currentRate = ExchangeRate::current() ?: 1500;
+
+        $totalSalesIqd = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->sum(Order::totalIqdExpression());
+        $totalSalesUsd = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->sum('total');
+        $totalSalesAllInUsd = $currentRate > 0 ? round($totalSalesIqd / $currentRate, 2) : $totalSalesUsd;
+
+        $totalReceivedIqd = (float) Payment::where('direction', 'in')->sum('amount_iqd');
+        $totalReceivedUsd = (float) Payment::where('direction', 'in')->where('currency', 'USD')->sum('amount');
+        $totalReceivedAllInUsd = $currentRate > 0 ? round($totalReceivedIqd / $currentRate, 2) : $totalReceivedUsd;
+
+        $totalDebtIqd = (float) $allCustomers->sum(fn ($c) => max(0, $c->balance()));
+        $totalDebtUsd = $currentRate > 0 ? round($totalDebtIqd / $currentRate, 2) : 0;
+
+        $totalSales = $totalSalesIqd;
+        $totalReceived = $totalReceivedIqd;
+        $totalDebt = $totalDebtIqd;
 
         return view('orders.index', compact(
             'orders',
             'customers',
             'activeTab',
+            'currency',
+            'currentRate',
             'totalCustomers',
             'totalOrders',
+            'usdOrdersCount',
+            'iqdOrdersCount',
             'totalSales',
             'totalReceived',
-            'totalDebt'
+            'totalDebt',
+            'totalSalesIqd',
+            'totalSalesUsd',
+            'totalSalesAllInUsd',
+            'totalReceivedIqd',
+            'totalReceivedUsd',
+            'totalReceivedAllInUsd',
+            'totalDebtIqd',
+            'totalDebtUsd'
         ));
     }
 
@@ -69,7 +99,7 @@ class OrderController extends Controller
     {
         return view('orders.form', [
             'order' => new Order([
-                'currency' => 'IQD',
+                'currency' => $request->string('currency', 'USD')->toString(),
                 'order_date' => now()->toDateString(),
                 'customer_id' => $request->integer('customer') ?: null,
             ]),
@@ -277,14 +307,18 @@ class OrderController extends Controller
             $customer->update(['address' => $address]);
         }
 
+        $exchangeRate = null;
+        if ($data['currency'] === 'USD') {
+            $rawRate = !empty($data['exchange_rate']) ? (float) $data['exchange_rate'] : ExchangeRate::forDate($data['order_date']);
+            $exchangeRate = $rawRate > 5000 ? $rawRate / 100 : $rawRate;
+        }
+
         return [
             'customer_id' => $data['customer_id'],
             'order_date' => $data['order_date'],
             'delivery_date' => $data['delivery_date'] ?? null,
             'currency' => $data['currency'],
-            'exchange_rate' => $data['currency'] === 'USD'
-                ? ($data['exchange_rate'] ?: ExchangeRate::forDate($data['order_date']))
-                : null,
+            'exchange_rate' => $exchangeRate,
             'subtotal' => $subtotal,
             'discount_percent' => $percent,
             'discount_amount' => $discount,
@@ -356,6 +390,7 @@ class OrderController extends Controller
             'direction' => 'in',
             'amount' => $amount,
             'currency' => $order->currency,
+            'exchange_rate' => $order->exchange_rate,
             'paid_at' => $order->order_date->toDateString(),
             'party' => $customer,
             'order_id' => $order->id,

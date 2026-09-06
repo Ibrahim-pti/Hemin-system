@@ -28,7 +28,8 @@ class PaymentService
         return DB::transaction(function () use ($data) {
             $currency = $data['currency'] ?? 'IQD';
             $paidAt = $data['paid_at'] ?? now()->toDateString();
-            $rate = $currency === 'USD' ? ((float) ($data['exchange_rate'] ?? 0) ?: ExchangeRate::forDate($paidAt)) : null;
+            $rawRate = $currency === 'USD' ? ((float) ($data['exchange_rate'] ?? 0) ?: ExchangeRate::forDate($paidAt)) : null;
+            $rate = $rawRate ? ($rawRate > 5000 ? $rawRate / 100 : $rawRate) : null;
             $amount = (float) $data['amount'];
             $amountIqd = $currency === 'USD' ? $amount * (float) $rate : $amount;
 

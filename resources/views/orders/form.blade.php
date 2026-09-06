@@ -24,7 +24,7 @@
       x-data="orderForm(
           @js($initialLines),
           @js(old('discount_amount', $order->discount_amount ? (float)$order->discount_amount : '')),
-          @js(old('currency', $order->currency ?: 'IQD')),
+          @js(old('currency', $order->currency ?: 'USD')),
           @js(collect($customers)->mapWithKeys(fn ($c) => [$c->id => (float) $c->discount_percent])->all()),
           @js($customers->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone, 'address' => $c->address, 'discount_percent' => (float) $c->discount_percent])->values()->all())
       )">
@@ -375,7 +375,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         newCustomer: { name: '', phone: '', address: '' },
         prepaid: '{{ old('prepaid_amount', $order->exists ? ($order->prepaid_amount ? number_format($order->prepaid_amount) : '') : '') }}',
         prepaidManuallySet: {{ ($order->exists || old('prepaid_amount') !== null) ? 'true' : 'false' }},
-        exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ?: ($rate ?: 150000)) }}',
+        exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ? ($order->exchange_rate > 5000 ? $order->exchange_rate : $order->exchange_rate * 100) : ($rate > 5000 ? $rate : ($rate > 0 ? $rate * 100 : 150000))) }}',
         fetchingRate: false,
 
         formatDiscountInput(e) {

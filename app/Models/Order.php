@@ -86,16 +86,44 @@ class Order extends Model
         return $this->toIqd($this->total);
     }
 
-    /** کۆی ئەوەی دراوە بەم وەسڵە (پێشەکیش لەناویدایە، چونکە وەک حەقدی تۆمار دەکرێت). */
-    public function paidAmount(): float
+    /** کۆی ئەوەی دراوە بەم وەسڵە بەپێی دراوی وەسڵەکە. */
+    public function paidTotal(): float
+    {
+        if ($this->currency === 'USD') {
+            $rate = (float) ($this->exchange_rate ?: ExchangeRate::forDate($this->order_date?->toDateString() ?: now()->toDateString())) ?: 1;
+            return (float) $this->payments()->where('direction', 'in')->get()->sum(function ($p) use ($rate) {
+                if ($p->currency === 'USD') {
+                    return (float) $p->amount;
+                }
+                return $rate > 0 ? (float) $p->amount_iqd / $rate : (float) $p->amount;
+            });
+        }
+
+        return (float) $this->payments()->where('direction', 'in')->sum('amount_iqd');
+    }
+
+    /** کۆی ئەوەی دراوە بە دینار. */
+    public function paidTotalIqd(): float
     {
         return (float) $this->payments()->where('direction', 'in')->sum('amount_iqd');
     }
 
-    /** ئەوەی ماوە — ئەمە قەرزی ئەم وەسڵەیە. */
+    /** کۆی ئەوەی دراوە — وەک ناوە کۆنەکە پارێزراوە. */
+    public function paidAmount(): float
+    {
+        return $this->paidTotal();
+    }
+
+    /** ئەوەی ماوە بەپێی دراوی وەسڵەکە — قەرزی ئەم وەسڵەیە. */
     public function remaining(): float
     {
-        return $this->total_iqd - $this->paidAmount();
+        return max(0, (float) $this->total - $this->paidTotal());
+    }
+
+    /** ئەوەی ماوە بە دینار. */
+    public function remainingIqd(): float
+    {
+        return max(0, (float) $this->total_iqd - $this->paidTotalIqd());
     }
 
     public function getStatusLabelAttribute(): string
