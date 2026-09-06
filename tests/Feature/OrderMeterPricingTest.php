@@ -105,4 +105,50 @@ class OrderMeterPricingTest extends TestCase
         $res->assertSee('کۆی گشتی');
         $res->assertSee('calculateLineTotal');
     }
+
+    public function test_order_can_be_created_in_usd_and_viewed_in_sales_index()
+    {
+        $this->actingAs($this->admin);
+
+        $payload = [
+            'invoice_no' => 'INV-USD-101',
+            'customer_id' => $this->customer->id,
+            'order_date' => now()->toDateString(),
+            'currency' => 'USD',
+            'exchange_rate' => '150,000',
+            'discount_amount' => 0,
+            'prepaid_amount' => '200',
+            'confirm' => 1,
+            'lines' => [
+                [
+                    'description' => 'دەرگای تایبەت بە دۆلار',
+                    'meter' => '5',
+                    'meter_price' => '100', // 5 * 100 = 500 $
+                    'line_total' => '500',
+                ],
+            ],
+        ];
+
+        $response = $this->post('/orders', $payload);
+        $response->assertRedirect();
+
+        $order = Order::where('invoice_no', 'INV-USD-101')->firstOrFail();
+        $this->assertEquals('USD', $order->currency);
+        $this->assertEquals(1500, (float) $order->exchange_rate);
+        $this->assertEquals(500, (float) $order->total);
+        $this->assertEquals(200, (float) $order->paidTotal());
+        $this->assertEquals(300, (float) $order->remaining());
+        $this->assertEquals(750000, (float) $order->total_iqd); // 500 * 1500
+
+        // Index page check
+        $indexRes = $this->get('/orders');
+        $indexRes->assertStatus(200);
+        $indexRes->assertSee('پیشاندان بە دراو');
+        $indexRes->assertSee('$500.00');
+
+        // USD filtered index check
+        $usdIndexRes = $this->get('/orders?currency=USD');
+        $usdIndexRes->assertStatus(200);
+        $usdIndexRes->assertSee('$500.00');
+    }
 }
