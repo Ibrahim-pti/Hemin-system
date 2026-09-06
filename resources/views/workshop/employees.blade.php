@@ -718,11 +718,6 @@
                         </div>
                     </template>
 
-                    <template x-if="paymentForm.payment_type === 'advance'">
-                        <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 font-bold">
-                            <span>💡 پێدانی قەرز (سولفە) لە قاسەوە بە کارمەند — لە مووچەی شایستە کەم ناکرێتەوە</span>
-                        </div>
-                    </template>
 
                     <template x-if="paymentForm.payment_type === 'debt_repayment'">
                         <div class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 font-bold">
