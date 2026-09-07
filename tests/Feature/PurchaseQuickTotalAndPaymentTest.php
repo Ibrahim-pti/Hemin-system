@@ -166,4 +166,58 @@ class PurchaseQuickTotalAndPaymentTest extends TestCase
         $res->assertSee('دۆلار ($ USD)');
         $res->assertDontSee('نرخی ١٠٠$ دۆلار');
     }
+
+    public function test_purchase_debt_can_be_paid_via_store_payment()
+    {
+        // 1. Create a purchase with debt (200,000 IQD total, 100,000 paid, 100,000 remaining)
+        $purchase = Purchase::create([
+            'invoice_no' => Purchase::nextInvoiceNo(),
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'purchase_date' => now()->toDateString(),
+            'currency' => 'IQD',
+            'exchange_rate' => 1,
+            'subtotal' => 200000,
+            'discount_amount' => 0,
+            'total' => 200000,
+            'paid_amount' => 100000,
+            'status' => 'confirmed',
+            'user_id' => $this->admin->id,
+        ]);
+
+        app(\App\Services\PaymentService::class)->record([
+            'direction' => 'out',
+            'amount' => 100000,
+            'currency' => 'IQD',
+            'paid_at' => now()->toDateString(),
+            'party' => $this->supplier,
+            'purchase_id' => $purchase->id,
+            'category' => 'supplier_payment',
+            'note' => 'پێشەکی پسوولەی کڕین',
+        ]);
+
+        $this->assertEquals(100000, (float) $purchase->remaining());
+
+        // 2. Pay remaining 100,000
+        $res = $this->post("/purchases/{$purchase->id}/payments", [
+            'amount' => '100,000',
+            'paid_at' => now()->toDateString(),
+            'note' => 'دانەوەی قەرز بە کاش',
+        ]);
+
+        $res->assertSessionHas('ok');
+        $res->assertRedirect();
+
+        // 3. Assert purchase is fully paid
+        $purchase->refresh();
+        $this->assertEquals(0, (float) $purchase->remaining());
+        $this->assertEquals(200000, (float) $purchase->paid_amount);
+
+        // 4. Assert payment record created
+        $lastPayment = $purchase->payments()->latest('id')->first();
+        $this->assertNotNull($lastPayment);
+        $this->assertEquals(100000, (float) $lastPayment->amount);
+        $this->assertEquals('out', $lastPayment->direction);
+        $this->assertEquals($this->supplier->id, $lastPayment->party_id);
+    }
 }
