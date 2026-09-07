@@ -40,7 +40,7 @@ class PurchaseController extends Controller
         $totalPurchasesCount = Purchase::count();
         $confirmedPurchases = Purchase::where('status', 'confirmed')->get();
         $totalPurchasesAmount = (float) $confirmedPurchases->sum('total');
-        $totalPurchasesPaid = (float) $confirmedPurchases->sum('paid_amount');
+        $totalPurchasesPaid = (float) $confirmedPurchases->sum(fn ($p) => $p->paidTotal());
         $totalRemainingDebt = max(0, $totalPurchasesAmount - $totalPurchasesPaid);
         $draftCount = Purchase::where('status', 'draft')->count();
 

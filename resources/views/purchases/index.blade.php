@@ -47,13 +47,18 @@
     </div>
 
     {{-- قەرزی ماوە بۆ کۆمپانیاکان --}}
-    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-rose-500 relative flex items-center justify-between overflow-hidden">
+    @php $effectiveDebt = max($totalCompanyDebt, $totalRemainingDebt); @endphp
+    <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 {{ $effectiveDebt > 0 ? 'border-r-rose-500' : 'border-r-emerald-500' }} relative flex items-center justify-between overflow-hidden">
         <div>
-            <div class="text-2xl font-black text-rose-600 num tracking-tight">{{ fmt_money($totalCompanyDebt > 0 ? $totalCompanyDebt : $totalRemainingDebt) }}</div>
-            <div class="text-xs font-bold text-slate-500 mt-1">قەرزی ماوە بۆ کۆمپانیاکان (د.ع)</div>
+            <div class="text-2xl font-black {{ $effectiveDebt > 0 ? 'text-rose-600' : 'text-emerald-700' }} num tracking-tight">
+                {{ fmt_money($effectiveDebt) }}
+            </div>
+            <div class="text-xs font-bold text-slate-500 mt-1">
+                {{ $effectiveDebt > 0 ? 'قەرزی ماوە بۆ کۆمپانیاکان (د.ع)' : '✓ حساب پاکە (بێ قەرز)' }}
+            </div>
         </div>
-        <div class="size-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0">
-            ⚠️
+        <div class="size-12 rounded-xl {{ $effectiveDebt > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600' }} flex items-center justify-center text-xl shrink-0">
+            {{ $effectiveDebt > 0 ? '⚠️' : '✓' }}
         </div>
     </div>
 </div>
