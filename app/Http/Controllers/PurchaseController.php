@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CashBox;
 use App\Models\ExchangeRate;
 use App\Models\Item;
 use App\Models\Purchase;
@@ -72,8 +73,8 @@ class PurchaseController extends Controller
         $totalSuppliersWithDebtCount = $suppliersSummary->where('balance', '>', 0)->count();
         $totalCompanyDebt = $suppliersSummary->where('balance', '>', 0)->sum('balance');
         $suppliersList = Supplier::active()->orderBy('name')->get();
-
         $purchases = (clone $query)->paginate(15)->withQueryString();
+        $cashBoxes = CashBox::where('is_active', true)->get();
 
         return view('purchases.index', compact(
             'purchases',
@@ -86,7 +87,8 @@ class PurchaseController extends Controller
             'totalSuppliersCount',
             'totalSuppliersWithDebtCount',
             'totalCompanyDebt',
-            'suppliersList'
+            'suppliersList',
+            'cashBoxes'
         ));
     }
 
@@ -162,9 +164,61 @@ class PurchaseController extends Controller
 
     public function show(Purchase $purchase): View
     {
-        $purchase->load(['supplier', 'warehouse', 'items.item.unit', 'payments', 'user']);
+        $purchase->load(['supplier', 'warehouse', 'items.item.unit', 'payments.user', 'user']);
+        $cashBoxes = CashBox::where('is_active', true)->get();
 
-        return view('purchases.show', compact('purchase'));
+        return view('purchases.show', compact('purchase', 'cashBoxes'));
+    }
+
+    /**
+     * دانەوەی قەرزی پسوولەی کڕین (پارەدان بە فرۆشیار).
+     */
+    public function storePayment(Request $request, Purchase $purchase)
+    {
+        if ($request->filled('amount')) {
+            $request->merge([
+                'amount' => (float) str_replace(',', '', (string) $request->input('amount')),
+            ]);
+        }
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'cash_box_id' => ['nullable', 'exists:cash_boxes,id'],
+            'paid_at' => ['required', 'date'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ], [
+            'amount.required' => 'تکایە بڕی پارە بنووسە.',
+            'amount.gt' => 'بڕی پارە دەبێت لە سفر زیاتر بێت.',
+            'paid_at.required' => 'بەرواری پارەدان دیاری بکە.',
+        ]);
+
+        $amount = (float) $data['amount'];
+        $remaining = (float) $purchase->remaining();
+
+        if ($amount > ($remaining + 0.01)) {
+            return back()->with('err', 'بڕی پارەی دراو ناتوانێت لە قەرزی ماوەی پسوولەکە زیاتر بێت (ماوە: ' . number_format($remaining) . ' ' . $purchase->currency . ').');
+        }
+
+        DB::transaction(function () use ($purchase, $data, $amount) {
+            $this->payments->record([
+                'direction' => 'out',
+                'party' => $purchase->supplier,
+                'party_name' => $purchase->supplier?->name,
+                'purchase_id' => $purchase->id,
+                'amount' => $amount,
+                'currency' => $purchase->currency,
+                'exchange_rate' => $purchase->exchange_rate ?? null,
+                'cash_box_id' => $data['cash_box_id'] ?? null,
+                'paid_at' => $data['paid_at'],
+                'category' => 'supplier_payment',
+                'note' => $data['note'] ?: 'پارەدانی قەرزی پسوولەی کڕینی #' . $purchase->invoice_no,
+            ]);
+
+            $purchase->paid_amount = $purchase->paidTotal();
+            $purchase->save();
+        });
+
+        return back()->with('ok', 'پارەدان بە سەرکەوتوویی تۆمارکرا و لە قەرزی پسوولەکە و فرۆشیارەکە کەمکرایەوە.');
     }
 
     public function print(Purchase $purchase): View

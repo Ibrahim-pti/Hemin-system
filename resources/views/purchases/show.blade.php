@@ -2,7 +2,25 @@
 @section('title', 'پسوولەی کڕین ' . $purchase->invoice_no)
 
 @section('content')
-<div class="space-y-4 sm:space-y-6">
+<div class="space-y-4 sm:space-y-6"
+     x-data="{
+         payModal: false,
+         payForm: {
+             amount: '{{ number_format((float)$purchase->remaining()) }}',
+             cash_box_id: '{{ $cashBoxes->first()?->id ?? '' }}',
+             paid_at: '{{ now()->toDateString() }}',
+             note: 'پارەدانی قەرزی پسوولەی #{{ $purchase->invoice_no }}'
+         },
+         formatAmount(e) {
+             let clean = e.target.value.replace(/[^0-9.]/g, '');
+             let parts = clean.split('.');
+             if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+             let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+             let dec = parts.length > 1 ? '.' + parts[1] : '';
+             e.target.value = int ? int + dec : '';
+             this.payForm.amount = e.target.value;
+         }
+     }">
 
     {{-- ١. هێڵی سەرەوە: ناونیشان و دوگمەکان --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -41,6 +59,15 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
+            @php $rem = $purchase->remaining(); @endphp
+            @if ($rem > 0)
+                <button type="button" @click="payModal = true"
+                        class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all cursor-pointer">
+                    <span>💳</span>
+                    <span>پارەدانی قەرز</span>
+                </button>
+            @endif
+
             <a href="{{ route('purchases.print', $purchase) }}" target="_blank"
                class="px-4 py-2 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xs inline-flex items-center gap-1.5 transition-all cursor-pointer">
                 <span>🖨️</span>

@@ -58,7 +58,33 @@
     </div>
 </div>
 
-<div x-data="{ tab: '{{ request('tab', 'invoices') }}' }">
+<div x-data="{
+    tab: '{{ request('tab', 'invoices') }}',
+    payModal: false,
+    payPurchase: { id: null, invoice_no: '', supplier_name: '', remaining: 0, currency: 'IQD', total: 0, paid: 0 },
+    payForm: { amount: '', cash_box_id: '{{ $cashBoxes->first()?->id ?? '' }}', paid_at: '{{ now()->toDateString() }}', note: '' },
+    openPayment(p) {
+        this.payPurchase = p;
+        this.payForm.amount = p.remaining.toLocaleString('en-US');
+        this.payForm.note = 'پارەدانی قەرزی پسوولەی #' + p.invoice_no;
+        this.payModal = true;
+    },
+    closePayment() {
+        this.payModal = false;
+    },
+    fillFullAmount() {
+        this.payForm.amount = this.payPurchase.remaining.toLocaleString('en-US');
+    },
+    formatAmount(e) {
+        let clean = e.target.value.replace(/[^0-9.]/g, '');
+        let parts = clean.split('.');
+        if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+        let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+        let dec = parts.length > 1 ? '.' + parts[1] : '';
+        e.target.value = int ? int + dec : '';
+        this.payForm.amount = e.target.value;
+    }
+}">
     {{-- ٢. سویچەری نێوان تابەکان --}}
     <div class="flex items-center gap-2 mb-4">
         <button @click="tab = 'invoices'"
@@ -196,10 +222,29 @@
 
                             {{-- کردار --}}
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                <a href="{{ route('purchases.show', $purchase) }}"
-                                   class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
-                                    بینین
-                                </a>
+                                <div class="inline-flex items-center gap-1.5" onclick="event.stopPropagation()">
+                                    <a href="{{ route('purchases.show', $purchase) }}"
+                                       class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
+                                        بینین
+                                    </a>
+
+                                    @if ($remaining > 0)
+                                        <button type="button"
+                                                @click="openPayment({
+                                                    id: {{ $purchase->id }},
+                                                    invoice_no: '{{ $purchase->invoice_no }}',
+                                                    supplier_name: '{{ addslashes($purchase->supplier?->name ?? 'نەناسراو') }}',
+                                                    remaining: {{ (float) $remaining }},
+                                                    currency: '{{ $purchase->currency }}',
+                                                    total: {{ (float) $purchase->total }},
+                                                    paid: {{ (float) $paid }}
+                                                })"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-2xs transition-all cursor-pointer">
+                                            <span>💳</span>
+                                            <span>پارەدان</span>
+                                        </button>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -352,6 +397,119 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    {{-- مۆداڵی پارەدانی قەرزی پسوولە --}}
+    <div x-show="payModal"
+         x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+         @keydown.escape.window="closePayment()">
+        
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden transform transition-all text-right"
+             @click.outside="closePayment()"
+             dir="rtl">
+            
+            {{-- سەردێڕی مۆداڵ --}}
+            <div class="bg-gradient-to-l from-emerald-600 to-teal-700 p-4 sm:p-5 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="size-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
+                        💳
+                    </div>
+                    <div>
+                        <h3 class="font-black text-sm sm:text-base">تۆمارکردنی پارەدان بە فرۆشیار</h3>
+                        <p class="text-xs text-emerald-100 mt-0.5">
+                            پسوولەی <span class="font-mono font-bold text-white">#<span x-text="payPurchase.invoice_no"></span></span>
+                            • فرۆشیار: <span class="font-bold text-white" x-text="payPurchase.supplier_name"></span>
+                        </p>
+                    </div>
+                </div>
+                <button type="button" @click="closePayment()" class="size-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg transition-colors cursor-pointer">
+                    &times;
+                </button>
+            </div>
+
+            {{-- کارتی زانیاری قەرز --}}
+            <div class="p-4 sm:p-5 bg-slate-50/80 border-b border-slate-100">
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="bg-white p-2.5 rounded-xl border border-slate-200">
+                        <span class="text-slate-400 block text-[11px] font-medium mb-0.5">کۆی پسوولە</span>
+                        <span class="font-mono font-bold text-slate-800" x-text="payPurchase.total.toLocaleString('en-US')"></span>
+                    </div>
+                    <div class="bg-white p-2.5 rounded-xl border border-slate-200">
+                        <span class="text-slate-400 block text-[11px] font-medium mb-0.5">دراوە</span>
+                        <span class="font-mono font-bold text-emerald-600" x-text="payPurchase.paid.toLocaleString('en-US')"></span>
+                    </div>
+                    <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200">
+                        <span class="text-rose-600 block text-[11px] font-bold mb-0.5">ماوە (قەرز)</span>
+                        <span class="font-mono font-black text-rose-700" x-text="payPurchase.remaining.toLocaleString('en-US')"></span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- فۆڕمی پارەدان --}}
+            <form method="POST" :action="'/purchases/' + payPurchase.id + '/payments'" class="p-4 sm:p-5 space-y-4">
+                @csrf
+
+                {{-- بڕی پارەی دراو --}}
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="label !mb-0 font-bold" for="modal_pay_amount">
+                            بڕی پارەی دراو <span class="text-rose-500">*</span>
+                        </label>
+                        <button type="button" @click="fillFullAmount()" class="text-xs text-teal-700 hover:text-teal-800 font-bold underline cursor-pointer">
+                            دانەوەی هەمووی (<span x-text="payPurchase.remaining.toLocaleString('en-US')"></span>)
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <input id="modal_pay_amount"
+                               name="amount"
+                               type="text"
+                               inputmode="numeric"
+                               required
+                               x-model="payForm.amount"
+                               @input="formatAmount($event)"
+                               class="field num font-black text-emerald-700 text-base !py-2.5 pl-14 w-full"
+                               placeholder="0">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-xs font-bold text-slate-400 pointer-events-none" x-text="payPurchase.currency">
+                            د.ع
+                        </span>
+                    </div>
+                </div>
+
+                {{-- هەڵبژاردنی قاسە --}}
+                <div>
+                    <label class="label font-bold" for="modal_pay_box">دەرهێنان لە قاسەی <span class="text-rose-500">*</span></label>
+                    <select id="modal_pay_box" name="cash_box_id" x-model="payForm.cash_box_id" class="field w-full cursor-pointer font-medium" required>
+                        @foreach ($cashBoxes as $box)
+                            <option value="{{ $box->id }}">{{ $box->name }} ({{ $box->currency }}) — باڵانس: {{ fmt_num($box->balance()) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- بەرواری پارەدان --}}
+                <div>
+                    <label class="label font-bold" for="modal_pay_date">بەرواری پارەدان <span class="text-rose-500">*</span></label>
+                    <input id="modal_pay_date" name="paid_at" type="date" x-model="payForm.paid_at" class="field num w-full" required>
+                </div>
+
+                {{-- تێبینی --}}
+                <div>
+                    <label class="label" for="modal_pay_note">تێبینی (ئارەزوومەندانە)</label>
+                    <input id="modal_pay_note" name="note" type="text" x-model="payForm.note" class="field w-full text-xs" placeholder="تێبینی بنووسە...">
+                </div>
+
+                {{-- دوگمەکان --}}
+                <div class="flex items-center justify-end gap-2.5 pt-2">
+                    <button type="button" @click="closePayment()" class="btn btn-ghost !py-2 !px-4 text-xs font-bold text-slate-600">
+                        پاشگەزبوونەوە
+                    </button>
+                    <button type="submit" class="btn !py-2 !px-5 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm cursor-pointer">
+                        تۆمارکردنی پارەدان ✔️
+                    </button>
+                </div>
+            </form>
+
         </div>
     </div>
 </div>
