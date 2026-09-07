@@ -46,9 +46,8 @@ class PurchaseController extends Controller
         $usdPurchasesCount = (int) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->count();
         $iqdPurchasesCount = (int) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'IQD')->count();
 
-        $confirmedPurchases = Purchase::where('status', 'confirmed')->get();
-        $totalPurchasesIqd = (float) $confirmedPurchases->sum(Purchase::totalIqdExpression());
-        $totalPurchasesUsd = (float) $confirmedPurchases->where('currency', 'USD')->sum('total');
+        $totalPurchasesIqd = (float) Purchase::where('status', 'confirmed')->sum(Purchase::totalIqdExpression());
+        $totalPurchasesUsd = (float) Purchase::where('status', 'confirmed')->where('currency', 'USD')->sum('total');
         $totalPurchasesAllInUsd = $currentRate > 0 ? round($totalPurchasesIqd / $currentRate, 2) : $totalPurchasesUsd;
 
         $totalPaidIqd = (float) Payment::where('direction', 'out')->sum('amount_iqd');
