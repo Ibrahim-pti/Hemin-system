@@ -87,6 +87,18 @@
                 </a>
             @endif
 
+            <form method="POST" action="{{ route('purchases.destroy', $purchase) }}"
+                  onsubmit="return confirm('دڵنیایت لە سڕینەوەی ئەم پسوولەی کڕینە؟ سەرجەم جوڵەی کۆگا و داراییەکانی پاک دەکرێنەوە.')"
+                  class="inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                        class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 inline-flex items-center gap-1.5 transition-all cursor-pointer">
+                    <span>🗑️</span>
+                    <span>سڕینەوە</span>
+                </button>
+            </form>
+
             <a href="{{ route('purchases.index') }}"
                class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 inline-flex items-center gap-1.5 transition-all">
                 <span>←</span>

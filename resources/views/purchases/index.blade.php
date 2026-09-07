@@ -257,6 +257,18 @@
                                             <span>پارەدان</span>
                                         </button>
                                     @endif
+
+                                    <form method="POST" action="{{ route('purchases.destroy', $purchase) }}"
+                                          onsubmit="return confirm('دڵنیایت لە سڕینەوەی پسوولەی کڕینی #{{ $purchase->invoice_no }}؟')"
+                                          class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+                                                title="سڕینەوەی پسوولە">
+                                            🗑️
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

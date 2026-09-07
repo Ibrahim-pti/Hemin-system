@@ -301,13 +301,23 @@ class PurchaseController extends Controller
 
     public function destroy(Purchase $purchase)
     {
-        if ($purchase->status === 'confirmed') {
-            return back()->with('err', 'ناتوانیت پسوولەی پەسەندکراو بسڕیتەوە — سەرەتا هەڵیبوەشێنەوە.');
-        }
+        DB::transaction(function () use ($purchase) {
+            // ئەگەر پەسەندکرابوو، جوڵەی کۆگاکان لە مەخزەن دەسڕدرێنەوە
+            if ($purchase->status === 'confirmed') {
+                $this->stock->unpostPurchase($purchase);
+            }
 
-        $purchase->delete();
+            // سڕینەوەی هەموو ئەو پارەدانانەی بەستراونەتەوە بەم پسوولەیە و گەڕاندنەوەی حیساباتی قاسە
+            foreach ($purchase->payments as $payment) {
+                $this->payments->remove($payment);
+            }
 
-        return redirect()->route('purchases.index')->with('ok', 'پسوولەی کڕین سڕایەوە.');
+            // سڕینەوەی کاڵاکان و خودی پسوولەکە
+            $purchase->items()->delete();
+            $purchase->delete();
+        });
+
+        return redirect()->route('purchases.index')->with('ok', 'پسوولەی کڕین بە سەرکەوتوویی سڕایەوە.');
     }
 
     private function validated(Request $request): array
