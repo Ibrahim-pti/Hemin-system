@@ -220,4 +220,43 @@ class PurchaseQuickTotalAndPaymentTest extends TestCase
         $this->assertEquals('out', $lastPayment->direction);
         $this->assertEquals($this->supplier->id, $lastPayment->party_id);
     }
+
+    public function test_purchase_can_be_deleted_cleaning_up_payments_and_stock()
+    {
+        $purchase = Purchase::create([
+            'invoice_no' => Purchase::nextInvoiceNo(),
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'purchase_date' => now()->toDateString(),
+            'currency' => 'IQD',
+            'exchange_rate' => 1,
+            'subtotal' => 50000,
+            'discount_amount' => 0,
+            'total' => 50000,
+            'paid_amount' => 50000,
+            'status' => 'confirmed',
+            'user_id' => $this->admin->id,
+        ]);
+
+        app(\App\Services\PaymentService::class)->record([
+            'direction' => 'out',
+            'amount' => 50000,
+            'currency' => 'IQD',
+            'paid_at' => now()->toDateString(),
+            'party' => $this->supplier,
+            'purchase_id' => $purchase->id,
+            'category' => 'supplier_payment',
+            'note' => 'پارەدانی پسوولە',
+        ]);
+
+        $this->assertDatabaseHas('purchases', ['id' => $purchase->id]);
+        $this->assertDatabaseHas('payments', ['purchase_id' => $purchase->id]);
+
+        $res = $this->delete("/purchases/{$purchase->id}");
+        $res->assertSessionHas('ok');
+        $res->assertRedirect(route('purchases.index'));
+
+        $this->assertSoftDeleted('purchases', ['id' => $purchase->id]);
+        $this->assertSoftDeleted('payments', ['purchase_id' => $purchase->id]);
+    }
 }
