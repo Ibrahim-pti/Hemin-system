@@ -103,7 +103,7 @@
         <button @click="tab = 'suppliers'"
                 :class="tab === 'suppliers' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
                 class="px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
-            <span>🏢 کۆمپانیا و فرۆشیارەکان</span>
+            <span>🏢 کۆمپانیا و کەشف حیساب</span>
             <span :class="tab === 'suppliers' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'"
                   class="px-2 py-0.5 rounded-full text-xs font-mono font-bold">{{ $totalSuppliersCount }}</span>
         </button>
@@ -232,6 +232,14 @@
                                        class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
                                         بینین
                                     </a>
+
+                                    @if ($purchase->supplier)
+                                        <a href="{{ route('suppliers.show', $purchase->supplier) }}"
+                                           class="btn btn-ghost !py-1 !px-2 text-xs font-bold text-blue-600 hover:bg-blue-50"
+                                           title="کەشف حیسابی تەواوی ئەم فرۆشیارە">
+                                            کەشف حیساب
+                                        </a>
+                                    @endif
 
                                     @if ($remaining > 0)
                                         <button type="button"
