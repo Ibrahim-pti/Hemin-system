@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CashBox;
 use App\Models\ExchangeRate;
 use App\Models\Item;
+use App\Models\Payment;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\Supplier;
@@ -25,11 +26,15 @@ class PurchaseController extends Controller
 
     public function index(Request $request): View
     {
+        $currency = $request->string('currency', 'all')->toString();
+        $currentRate = ExchangeRate::current() ?: 1500;
+
         $query = Purchase::query()
             ->with(['supplier', 'warehouse', 'items.item.unit'])
             ->search($request->string('q')->toString())
             ->when($request->filled('supplier_id'), fn ($q) => $q->where('supplier_id', $request->input('supplier_id')))
             ->when($request->string('status')->toString(), fn ($q, $s) => $q->where('status', $s))
+            ->when(in_array($currency, ['USD', 'IQD']), fn ($q) => $q->where('currency', $currency))
             ->when($request->string('payment_status')->toString() === 'debt', fn ($q) => $q->where('status', 'confirmed')->whereRaw('total > paid_amount'))
             ->when($request->string('payment_status')->toString() === 'paid', fn ($q) => $q->where('status', 'confirmed')->whereRaw('total <= paid_amount'))
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
@@ -37,11 +42,20 @@ class PurchaseController extends Controller
             ->latest('purchase_date')
             ->latest('id');
 
-        $totalPurchasesCount = Purchase::count();
+        $totalPurchasesCount = (int) Purchase::whereNotIn('status', ['draft', 'cancelled'])->count();
+        $usdPurchasesCount = (int) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->count();
+        $iqdPurchasesCount = (int) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'IQD')->count();
+
         $confirmedPurchases = Purchase::where('status', 'confirmed')->get();
-        $totalPurchasesAmount = (float) $confirmedPurchases->sum('total');
-        $totalPurchasesPaid = (float) $confirmedPurchases->sum(fn ($p) => $p->paidTotal());
-        $totalRemainingDebt = max(0, $totalPurchasesAmount - $totalPurchasesPaid);
+        $totalPurchasesIqd = (float) $confirmedPurchases->sum(Purchase::totalIqdExpression());
+        $totalPurchasesUsd = (float) $confirmedPurchases->where('currency', 'USD')->sum('total');
+        $totalPurchasesAllInUsd = $currentRate > 0 ? round($totalPurchasesIqd / $currentRate, 2) : $totalPurchasesUsd;
+
+        $totalPaidIqd = (float) Payment::where('direction', 'out')->sum('amount_iqd');
+        $totalPaidUsd = (float) Payment::where('direction', 'out')->where('currency', 'USD')->sum('amount');
+        $totalPaidAllInUsd = $currentRate > 0 ? round($totalPaidIqd / $currentRate, 2) : $totalPaidUsd;
+
+        $totalRemainingDebt = max(0, $totalPurchasesIqd - $totalPaidIqd);
         $draftCount = Purchase::where('status', 'draft')->count();
 
         // پوختەی کۆمپانیا و فرۆشیارەکان و قەرزەکانیان
@@ -71,17 +85,30 @@ class PurchaseController extends Controller
 
         $totalSuppliersCount = $allSuppliers->count();
         $totalSuppliersWithDebtCount = $suppliersSummary->where('balance', '>', 0)->count();
-        $totalCompanyDebt = $suppliersSummary->where('balance', '>', 0)->sum('balance');
+        $totalCompanyDebtIqd = (float) $suppliersSummary->where('balance', '>', 0)->sum('balance');
+        $totalCompanyDebtUsd = $currentRate > 0 ? round($totalCompanyDebtIqd / $currentRate, 2) : 0;
+        $totalCompanyDebt = $totalCompanyDebtIqd;
+
         $suppliersList = Supplier::active()->orderBy('name')->get();
         $purchases = (clone $query)->paginate(15)->withQueryString();
         $cashBoxes = CashBox::where('is_active', true)->get();
 
         return view('purchases.index', compact(
             'purchases',
+            'currency',
+            'currentRate',
             'totalPurchasesCount',
-            'totalPurchasesAmount',
-            'totalPurchasesPaid',
+            'usdPurchasesCount',
+            'iqdPurchasesCount',
+            'totalPurchasesIqd',
+            'totalPurchasesUsd',
+            'totalPurchasesAllInUsd',
+            'totalPaidIqd',
+            'totalPaidUsd',
+            'totalPaidAllInUsd',
             'totalRemainingDebt',
+            'totalCompanyDebtIqd',
+            'totalCompanyDebtUsd',
             'draftCount',
             'suppliersSummary',
             'totalSuppliersCount',

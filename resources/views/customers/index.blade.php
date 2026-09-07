@@ -45,35 +45,89 @@
         </div>
     </div>
 
+    {{-- پیشاندان بە دراو و نرخی ئاڵوگۆڕ --}}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500">پیشاندان بە دراو:</span>
+            <div class="inline-flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'all']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>🌐</span>
+                    <span>هەمووی (دۆلار و دینار)</span>
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'USD']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'USD' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>💵</span>
+                    <span>تەنها دۆلار ($)</span>
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'IQD']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'IQD' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>🇮🇶</span>
+                    <span>تەنها دینار (د.ع)</span>
+                </a>
+            </div>
+        </div>
+
+        @if ($currentRate > 0)
+            <div class="text-xs font-mono font-bold text-slate-600 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-2">
+                <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>نرخی ١٠٠$:</span>
+                <span class="text-emerald-700 font-black">{{ number_format($currentRate * 100, 0) }} د.ع</span>
+            </div>
+        @endif
+    </div>
+
     {{-- ٢. ٤ کارتی ئاماری سەرەکی --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
+        {{-- کۆی کڕیاران --}}
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 border-r-4 border-r-blue-500 shadow-xs">
             <div class="text-xs font-bold text-slate-500 mb-1">کۆی کڕیاران</div>
             <div class="text-2xl font-black text-slate-900 font-mono">{{ fmt_num($totalCustomers) }}</div>
         </div>
 
-        <div class="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/80 shadow-xs">
-            <div class="text-xs font-bold text-emerald-800 mb-1 flex items-center gap-1.5">
+        {{-- کۆی فرۆشتن --}}
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 border-r-4 border-r-emerald-500 shadow-xs">
+            <div class="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1.5">
                 <span>💰</span>
                 <span>کۆی فرۆشتن</span>
             </div>
-            <div class="text-xl sm:text-2xl font-black text-emerald-700 font-mono">{{ fmt_money($totalSales) }}</div>
+            @if ($currency === 'USD')
+                <div class="text-xl sm:text-2xl font-black text-emerald-700 font-mono">${{ number_format($totalSalesUsd, 2) }}</div>
+                <div class="text-2xs text-slate-400 font-medium mt-0.5">بە دۆلار</div>
+            @elseif ($currency === 'IQD')
+                <div class="text-xl sm:text-2xl font-black text-emerald-700 font-mono">{{ fmt_money($totalSalesIqd) }}</div>
+                <div class="text-2xs text-slate-400 font-medium mt-0.5">بە دینار</div>
+            @else
+                <div class="text-xl sm:text-2xl font-black text-emerald-700 font-mono">${{ number_format($totalSalesAllInUsd, 2) }}</div>
+                <div class="text-2xs text-slate-400 font-mono mt-0.5">({{ fmt_money($totalSalesIqd) }})</div>
+            @endif
         </div>
 
-        <div class="bg-rose-50/70 rounded-2xl p-4 border border-rose-200/80 shadow-xs">
-            <div class="text-xs font-bold text-rose-800 mb-1 flex items-center gap-1.5">
+        {{-- کۆی قەرز لەسەر کڕیاران --}}
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 border-r-4 border-r-rose-500 shadow-xs">
+            <div class="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1.5">
                 <span>⚠️</span>
                 <span>کۆی قەرز لەسەر کڕیاران</span>
             </div>
-            <div class="text-xl sm:text-2xl font-black text-rose-600 font-mono">{{ fmt_money($totalDebt) }}</div>
+            @if ($currency === 'USD')
+                <div class="text-xl sm:text-2xl font-black text-rose-600 font-mono">${{ number_format($totalDebtUsd, 2) }}</div>
+                <div class="text-2xs text-slate-400 font-medium mt-0.5">بە دۆلار</div>
+            @elseif ($currency === 'IQD')
+                <div class="text-xl sm:text-2xl font-black text-rose-600 font-mono">{{ fmt_money($totalDebtIqd) }}</div>
+                <div class="text-2xs text-slate-400 font-medium mt-0.5">بە دینار</div>
+            @else
+                <div class="text-xl sm:text-2xl font-black text-rose-600 font-mono">${{ number_format($totalDebtUsd, 2) }}</div>
+                <div class="text-2xs text-slate-400 font-mono mt-0.5">({{ fmt_money($totalDebtIqd) }})</div>
+            @endif
         </div>
 
-        <div class="bg-amber-50/70 rounded-2xl p-4 border border-amber-200/80 shadow-xs">
-            <div class="text-xs font-bold text-amber-800 mb-1 flex items-center gap-1.5">
+        {{-- کڕیاری قەرزدار --}}
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 border-r-4 border-r-amber-500 shadow-xs">
+            <div class="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1.5">
                 <span class="size-2 rounded-full bg-amber-500"></span>
                 <span>کڕیاری قەرزدار</span>
             </div>
-            <div class="text-2xl font-black text-amber-700 font-mono">{{ fmt_num($debtorCount) }}</div>
+            <div class="text-2xl font-black text-amber-600 font-mono">{{ fmt_num($debtorCount) }}</div>
         </div>
     </div>
 
@@ -157,17 +211,46 @@
 
                             {{-- باڵانس --}}
                             <td class="p-3.5 text-left">
+                                @php
+                                    $balUsd = $currentRate > 0 ? round(abs($bal) / $currentRate, 2) : 0;
+                                @endphp
                                 @if($bal > 0)
-                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
-                                        {{ fmt_money($bal) }}
-                                    </span>
+                                    <div class="inline-flex flex-col items-start">
+                                        @if ($currency === 'USD')
+                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                                ${{ number_format($balUsd, 2) }}
+                                            </span>
+                                        @elseif ($currency === 'IQD')
+                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                                {{ fmt_money($bal) }}
+                                            </span>
+                                        @else
+                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                                ${{ number_format($balUsd, 2) }}
+                                            </span>
+                                            <span class="text-[10px] text-slate-400 font-mono mt-0.5">({{ fmt_money($bal) }})</span>
+                                        @endif
+                                    </div>
                                 @elseif($bal < 0)
-                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        {{ fmt_money(abs($bal)) }} (زیادە)
-                                    </span>
+                                    <div class="inline-flex flex-col items-start">
+                                        @if ($currency === 'USD')
+                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                ${{ number_format($balUsd, 2) }} (زیادە)
+                                            </span>
+                                        @elseif ($currency === 'IQD')
+                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                {{ fmt_money(abs($bal)) }} (زیادە)
+                                            </span>
+                                        @else
+                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                ${{ number_format($balUsd, 2) }}
+                                            </span>
+                                            <span class="text-[10px] text-slate-400 font-mono mt-0.5">({{ fmt_money(abs($bal)) }} زیادە)</span>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="px-2.5 py-0.5 rounded-md font-mono font-bold text-xs text-slate-400 bg-slate-100">
-                                        0 د.ع
+                                        0
                                     </span>
                                 @endif
                             </td>

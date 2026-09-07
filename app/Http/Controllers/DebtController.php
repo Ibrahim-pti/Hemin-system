@@ -60,9 +60,20 @@ class DebtController extends Controller
             ];
         });
 
+        $currency = $request->string('currency', 'all')->toString();
+        if (!in_array($currency, ['all', 'USD', 'IQD'], true)) {
+            $currency = 'all';
+        }
+        $currentRate = \App\Models\ExchangeRate::current() ?: 1500;
+
         $totalRemainingDebt = (float) $customers->where('remaining', '>', 0.5)->sum('remaining');
         $totalPaid = (float) $customers->sum('total_paid');
         $activeDebtorsCount = $customers->where('is_active_debtor', true)->count();
+
+        $totalRemainingDebtIqd = $totalRemainingDebt;
+        $totalRemainingDebtUsd = $currentRate > 0 ? round($totalRemainingDebtIqd / $currentRate, 2) : 0;
+        $totalPaidIqd = $totalPaid;
+        $totalPaidUsd = $currentRate > 0 ? round($totalPaidIqd / $currentRate, 2) : 0;
 
         // ڕیزبەندی بەپێی قەرزی ماوە
         $customers = $customers->sortByDesc('remaining')->values();
@@ -137,6 +148,12 @@ class DebtController extends Controller
             'allCustomersList' => $allCustomersList,
             'totalRemainingDebt' => $totalRemainingDebt,
             'totalPaid' => $totalPaid,
+            'totalRemainingDebtIqd' => $totalRemainingDebtIqd,
+            'totalRemainingDebtUsd' => $totalRemainingDebtUsd,
+            'totalPaidIqd' => $totalPaidIqd,
+            'totalPaidUsd' => $totalPaidUsd,
+            'currency' => $currency,
+            'currentRate' => $currentRate,
             'activeDebtorsCount' => $activeDebtorsCount,
             'selectedCustomer' => $selectedCustomer,
             'customerOrders' => $customerOrders,

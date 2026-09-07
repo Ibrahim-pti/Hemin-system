@@ -17,13 +17,43 @@ class CustomerController extends Controller
             ->paginate(30)
             ->withQueryString();
 
+        $currency = $request->string('currency', 'all')->toString();
+        if (!in_array($currency, ['all', 'USD', 'IQD'], true)) {
+            $currency = 'all';
+        }
+
+        $currentRate = \App\Models\ExchangeRate::current() ?: 1500;
+
         $allCustomers = Customer::orderBy('name')->get(['id', 'name', 'phone']);
         $totalCustomers = Customer::count();
-        $totalSales = (float) \App\Models\Order::whereNotIn('status', ['draft', 'cancelled'])->sum(\App\Models\Order::totalIqdExpression());
-        $totalDebt = (float) Customer::all()->sum(fn ($c) => max(0, $c->balance()));
+
+        $totalSalesIqd = (float) \App\Models\Order::whereNotIn('status', ['draft', 'cancelled'])->sum(\App\Models\Order::totalIqdExpression());
+        $totalSalesUsd = (float) \App\Models\Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->sum('total');
+        $totalSalesAllInUsd = $currentRate > 0 ? round($totalSalesIqd / $currentRate, 2) : $totalSalesUsd;
+
+        $totalDebtIqd = (float) Customer::all()->sum(fn ($c) => max(0, $c->balance()));
+        $totalDebtUsd = $currentRate > 0 ? round($totalDebtIqd / $currentRate, 2) : 0;
+
         $debtorCount = Customer::all()->filter(fn ($c) => $c->balance() > 0)->count();
 
-        return view('customers.index', compact('customers', 'allCustomers', 'totalCustomers', 'totalSales', 'totalDebt', 'debtorCount'));
+        $totalSales = $totalSalesIqd;
+        $totalDebt = $totalDebtIqd;
+
+        return view('customers.index', compact(
+            'customers',
+            'allCustomers',
+            'currency',
+            'currentRate',
+            'totalCustomers',
+            'totalSales',
+            'totalSalesIqd',
+            'totalSalesUsd',
+            'totalSalesAllInUsd',
+            'totalDebt',
+            'totalDebtIqd',
+            'totalDebtUsd',
+            'debtorCount'
+        ));
     }
 
     public function create(): View

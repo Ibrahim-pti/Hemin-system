@@ -2,7 +2,7 @@
 @section('title', $selectedCustomer ? 'قەرزەکانی ' . $selectedCustomer->name : 'قەرزەکان')
 
 @section('content')
-<div x-data="debtsPage(@js($customers), @js($selectedCustomer ? (float)($customerStats['remaining_debt'] ?? 0) : 0))" style="display: flex; flex-direction: column; gap: 1.25rem;">
+<div x-data="debtsPage(@js($customers), @js($selectedCustomer ? (float)($customerStats['remaining_debt'] ?? 0) : 0), @js($currency), @js($currentRate))" style="display: flex; flex-direction: column; gap: 1.25rem;">
 
     {{-- ١. بەشی سەرەوە: سەردێڕ و دوگمەی زیادکردنی قەرزی کۆن --}}
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
@@ -27,18 +27,67 @@
         </div>
     </div>
 
-    {{-- ٢. کارتە ئامارییەکانی سەرەوە (٣ کارت لە تەنیشت یەک وەک وێنەکە) --}}
+    {{-- پیشاندان بە دراو و نرخی ئاڵوگۆڕ --}}
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-1">
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500">پیشاندان بە دراو:</span>
+            <div class="inline-flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'all']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>🌐</span>
+                    <span>هەمووی (دۆلار و دینار)</span>
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'USD']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'USD' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>💵</span>
+                    <span>تەنها دۆلار ($)</span>
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'IQD']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'IQD' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>🇮🇶</span>
+                    <span>تەنها دینار (د.ع)</span>
+                </a>
+            </div>
+        </div>
+
+        @if ($currentRate > 0)
+            <div class="text-xs font-mono font-bold text-slate-600 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-2">
+                <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>نرخی ١٠٠$:</span>
+                <span class="text-emerald-700 font-black">{{ number_format($currentRate * 100, 0) }} د.ع</span>
+            </div>
+        @endif
+    </div>
+
+    {{-- ٢. کارتە ئامارییەکانی سەرەوە (هاوشێوەی بەشی فرۆشتن) --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
 
         {{-- کارتی ١ (دەستە ڕاست): کۆی قەرزی ماوە --}}
         <div style="background: #ffffff; border-radius: 1rem; padding: 1.25rem; border: 1px solid #fecdd3; border-right: 4px solid #f43f5e; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
             <div>
-                <div class="num" style="font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
-                    {{ fmt_num($totalRemainingDebt) }} <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">د.ع</span>
-                </div>
-                <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
-                    کۆی قەرزی ماوە
-                </div>
+                @if ($currency === 'USD')
+                    <div class="num font-mono" style="font-size: 1.75rem; font-weight: 800; color: #e11d48; line-height: 1.2;">
+                        ${{ number_format($totalRemainingDebtUsd, 2) }}
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                        کۆی قەرزی ماوە بە دۆلار
+                    </div>
+                @elseif ($currency === 'IQD')
+                    <div class="num font-mono" style="font-size: 1.75rem; font-weight: 800; color: #e11d48; line-height: 1.2;">
+                        {{ fmt_money($totalRemainingDebtIqd) }}
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                        کۆی قەرزی ماوە بە دینار
+                    </div>
+                @else
+                    <div class="num font-mono" style="font-size: 1.75rem; font-weight: 800; color: #e11d48; line-height: 1.2;">
+                        ${{ number_format($totalRemainingDebtUsd, 2) }}
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <span>کۆی قەرزی ماوە</span>
+                        <span style="color: #94a3b8; font-family: monospace; font-size: 0.75rem;">({{ fmt_money($totalRemainingDebtIqd) }})</span>
+                    </div>
+                @endif
             </div>
             <div style="width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; background: #ffe4e6; color: #f43f5e; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <svg style="width: 1.35rem; height: 1.35rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,12 +101,29 @@
         {{-- کارتی ٢ (ناوەڕاست): کۆی پارەی دراو --}}
         <div style="background: #ffffff; border-radius: 1rem; padding: 1.25rem; border: 1px solid #a7f3d0; border-right: 4px solid #10b981; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
             <div>
-                <div class="num" style="font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
-                    {{ fmt_num($totalPaid) }} <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">د.ع</span>
-                </div>
-                <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
-                    کۆی پارەی دراو
-                </div>
+                @if ($currency === 'USD')
+                    <div class="num font-mono" style="font-size: 1.75rem; font-weight: 800; color: #059669; line-height: 1.2;">
+                        ${{ number_format($totalPaidUsd, 2) }}
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                        کۆی پارەی دراو بە دۆلار
+                    </div>
+                @elseif ($currency === 'IQD')
+                    <div class="num font-mono" style="font-size: 1.75rem; font-weight: 800; color: #059669; line-height: 1.2;">
+                        {{ fmt_money($totalPaidIqd) }}
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
+                        کۆی پارەی دراو بە دینار
+                    </div>
+                @else
+                    <div class="num font-mono" style="font-size: 1.75rem; font-weight: 800; color: #059669; line-height: 1.2;">
+                        ${{ number_format($totalPaidUsd, 2) }}
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <span>کۆی پارەی دراو</span>
+                        <span style="color: #94a3b8; font-family: monospace; font-size: 0.75rem;">({{ fmt_money($totalPaidIqd) }})</span>
+                    </div>
+                @endif
             </div>
             <div style="width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; background: #d1fae5; color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <svg style="width: 1.35rem; height: 1.35rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -70,7 +136,7 @@
         {{-- کارتی ٣ (دەستە چەپ): قەرزداری چالاک --}}
         <div style="background: #ffffff; border-radius: 1rem; padding: 1.25rem; border: 1px solid #fde68a; border-right: 4px solid #f59e0b; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
             <div>
-                <div class="num" style="font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.2;">
+                <div class="num font-mono" style="font-size: 1.75rem; font-weight: 800; color: #d97706; line-height: 1.2;">
                     {{ fmt_num($activeDebtorsCount) }}
                 </div>
                 <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
@@ -154,25 +220,67 @@
                 {{-- قەرزی ماوە (Red) --}}
                 <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 0.75rem; padding: 0.75rem 0.5rem; text-align: center;">
                     <div style="font-size: 0.72rem; font-weight: 700; color: #9f1239; margin-bottom: 0.25rem;">قەرزی ماوە</div>
-                    <div class="num" style="font-size: 1.4rem; font-weight: 800; color: #e11d48;">
-                        {{ fmt_num($customerStats['remaining_debt']) }}
-                    </div>
+                    @php
+                        $cRemainingUsd = $currentRate > 0 ? round($customerStats['remaining_debt'] / $currentRate, 2) : 0;
+                    @endphp
+                    @if ($currency === 'USD')
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #e11d48;">
+                            ${{ number_format($cRemainingUsd, 2) }}
+                        </div>
+                    @elseif ($currency === 'IQD')
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #e11d48;">
+                            {{ fmt_num($customerStats['remaining_debt']) }} <span style="font-size: 0.75rem;">د.ع</span>
+                        </div>
+                    @else
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #e11d48;">
+                            ${{ number_format($cRemainingUsd, 2) }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #9f1239; font-weight: 600; font-family: monospace;">({{ fmt_num($customerStats['remaining_debt']) }} د.ع)</div>
+                    @endif
                 </div>
 
                 {{-- پارەی دراو (Green) --}}
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.75rem; padding: 0.75rem 0.5rem; text-align: center;">
                     <div style="font-size: 0.72rem; font-weight: 700; color: #166534; margin-bottom: 0.25rem;">پارەی دراو</div>
-                    <div class="num" style="font-size: 1.4rem; font-weight: 800; color: #16a34a;">
-                        {{ fmt_num($customerStats['paid_total']) }}
-                    </div>
+                    @php
+                        $cPaidUsd = $currentRate > 0 ? round($customerStats['paid_total'] / $currentRate, 2) : 0;
+                    @endphp
+                    @if ($currency === 'USD')
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #16a34a;">
+                            ${{ number_format($cPaidUsd, 2) }}
+                        </div>
+                    @elseif ($currency === 'IQD')
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #16a34a;">
+                            {{ fmt_num($customerStats['paid_total']) }} <span style="font-size: 0.75rem;">د.ع</span>
+                        </div>
+                    @else
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #16a34a;">
+                            ${{ number_format($cPaidUsd, 2) }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #166534; font-weight: 600; font-family: monospace;">({{ fmt_num($customerStats['paid_total']) }} د.ع)</div>
+                    @endif
                 </div>
 
                 {{-- کۆی قەرز (Blue) --}}
                 <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 0.75rem; padding: 0.75rem 0.5rem; text-align: center;">
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #075985; margin-bottom: 0.25rem;">کۆی قەرز</div>
-                    <div class="num" style="font-size: 1.4rem; font-weight: 800; color: #0284c7;">
-                        {{ fmt_num($customerStats['total_debt']) }}
-                    </div>
+                    <div style="font-size: 0.72rem; font-weight: 700; color: #075985; margin-bottom: 0.25rem;">کۆی حیساب</div>
+                    @php
+                        $cTotalUsd = $currentRate > 0 ? round($customerStats['total_debt'] / $currentRate, 2) : 0;
+                    @endphp
+                    @if ($currency === 'USD')
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #0284c7;">
+                            ${{ number_format($cTotalUsd, 2) }}
+                        </div>
+                    @elseif ($currency === 'IQD')
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #0284c7;">
+                            {{ fmt_num($customerStats['total_debt']) }} <span style="font-size: 0.75rem;">د.ع</span>
+                        </div>
+                    @else
+                        <div class="num font-mono" style="font-size: 1.3rem; font-weight: 800; color: #0284c7;">
+                            ${{ number_format($cTotalUsd, 2) }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #0284c7; font-weight: 600; font-family: monospace;">({{ fmt_num($customerStats['total_debt']) }} د.ع)</div>
+                    @endif
                 </div>
 
             </div>
@@ -464,20 +572,60 @@
                                 </td>
 
                                 {{-- کۆی بڕ --}}
-                                <td class="num" style="padding: 1rem; text-align: center; font-weight: 700; color: #334155; font-size: 0.88rem;" x-text="formatNumber(row.total_amount)"></td>
+                                <td class="num font-mono" style="padding: 1rem; text-align: center; font-weight: 700; color: #334155; font-size: 0.88rem;">
+                                    <template x-if="currency === 'USD'">
+                                        <span x-text="formatUsd(row.total_amount)"></span>
+                                    </template>
+                                    <template x-if="currency === 'IQD'">
+                                        <span x-text="formatNumber(row.total_amount)"></span>
+                                    </template>
+                                    <template x-if="currency === 'all'">
+                                        <div>
+                                            <div style="font-weight: 800; color: #1e293b;" x-text="formatUsd(row.total_amount)"></div>
+                                            <div style="font-size: 0.7rem; color: #94a3b8;" x-text="'(' + formatNumber(row.total_amount) + ')'"></div>
+                                        </div>
+                                    </template>
+                                </td>
 
                                 {{-- دراو --}}
-                                <td class="num" style="padding: 1rem; text-align: center; font-weight: 700; font-size: 0.88rem;"
-                                    :style="{ color: row.total_paid > 0 ? '#10b981' : '#64748b' }"
-                                    x-text="formatNumber(row.total_paid)">
+                                <td class="num font-mono" style="padding: 1rem; text-align: center; font-weight: 700; font-size: 0.88rem;">
+                                    <template x-if="currency === 'USD'">
+                                        <span :style="{ color: row.total_paid > 0 ? '#10b981' : '#64748b' }" x-text="formatUsd(row.total_paid)"></span>
+                                    </template>
+                                    <template x-if="currency === 'IQD'">
+                                        <span :style="{ color: row.total_paid > 0 ? '#10b981' : '#64748b' }" x-text="formatNumber(row.total_paid)"></span>
+                                    </template>
+                                    <template x-if="currency === 'all'">
+                                        <div>
+                                            <div :style="{ color: row.total_paid > 0 ? '#10b981' : '#64748b', fontWeight: 800 }" x-text="formatUsd(row.total_paid)"></div>
+                                            <div style="font-size: 0.7rem; color: #94a3b8;" x-text="'(' + formatNumber(row.total_paid) + ')'"></div>
+                                        </div>
+                                    </template>
                                 </td>
 
                                 {{-- قەرزی ماوە: باجی سووری پان یان سەوزی تەواو دراوە --}}
                                 <td style="padding: 1rem 1.25rem; text-align: center;">
                                     <template x-if="row.remaining > 0.5">
-                                        <span class="num" style="background: #fee2e2; color: #dc2626; font-weight: 800; padding: 0.25rem 0.85rem; border-radius: 0.375rem; font-size: 0.78rem; display: inline-block;"
-                                              x-text="formatNumber(row.remaining)">
-                                        </span>
+                                        <div>
+                                            <template x-if="currency === 'USD'">
+                                                <span class="num font-mono" style="background: #fee2e2; color: #dc2626; font-weight: 800; padding: 0.25rem 0.85rem; border-radius: 0.375rem; font-size: 0.85rem; display: inline-block;"
+                                                      x-text="formatUsd(row.remaining)">
+                                                </span>
+                                            </template>
+                                            <template x-if="currency === 'IQD'">
+                                                <span class="num font-mono" style="background: #fee2e2; color: #dc2626; font-weight: 800; padding: 0.25rem 0.85rem; border-radius: 0.375rem; font-size: 0.85rem; display: inline-block;"
+                                                      x-text="formatNumber(row.remaining)">
+                                                </span>
+                                            </template>
+                                            <template x-if="currency === 'all'">
+                                                <div style="display: inline-flex; flex-direction: column; align-items: center;">
+                                                    <span class="num font-mono" style="background: #fee2e2; color: #dc2626; font-weight: 800; padding: 0.2rem 0.75rem; border-radius: 0.375rem; font-size: 0.85rem; display: inline-block;"
+                                                          x-text="formatUsd(row.remaining)">
+                                                    </span>
+                                                    <span style="font-size: 0.7rem; color: #94a3b8; font-family: monospace; margin-top: 0.15rem;" x-text="'(' + formatNumber(row.remaining) + ' د.ع)'"></span>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </template>
                                     <template x-if="row.remaining <= 0.5">
                                         <span style="background: #dcfce7; color: #16a34a; font-weight: 800; padding: 0.25rem 0.85rem; border-radius: 0.375rem; font-size: 0.75rem; display: inline-block;">
@@ -800,7 +948,7 @@
 </div>
 
 <script>
-function debtsPage(initialCustomers, initialRemainingDebt = 0) {
+function debtsPage(initialCustomers, initialRemainingDebt = 0, initialCurrency = 'all', initialRate = 1500) {
     return {
         customers: initialCustomers,
         searchQuery: '',
@@ -808,6 +956,8 @@ function debtsPage(initialCustomers, initialRemainingDebt = 0) {
         openOldDebtModal: false,
         remainingDebt: initialRemainingDebt,
         payAmount: initialRemainingDebt > 0 ? initialRemainingDebt : '',
+        currency: initialCurrency,
+        rate: initialRate,
 
         get filteredCustomers() {
             if (!this.searchQuery.trim()) {
@@ -823,7 +973,13 @@ function debtsPage(initialCustomers, initialRemainingDebt = 0) {
 
         formatNumber(val) {
             if (val === null || val === undefined || isNaN(val)) return '0';
-            return Number(val).toLocaleString('en-US');
+            return Math.round(Number(val)).toLocaleString('en-US');
+        },
+
+        formatUsd(val) {
+            const n = Number(val) || 0;
+            const usd = this.rate > 0 ? (n / this.rate) : 0;
+            return '$' + usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
     }
 }

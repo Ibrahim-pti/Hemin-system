@@ -17,6 +17,13 @@ class SupplierController extends Controller
 {
     public function index(Request $request): View
     {
+        $currency = $request->string('currency', 'all')->toString();
+        if (!in_array($currency, ['all', 'USD', 'IQD'], true)) {
+            $currency = 'all';
+        }
+
+        $currentRate = \App\Models\ExchangeRate::current() ?: 1500;
+
         $suppliers = Supplier::query()
             ->search($request->string('q')->toString())
             ->withCount('purchases')
@@ -25,11 +32,37 @@ class SupplierController extends Controller
             ->withQueryString();
 
         $allSuppliers = Supplier::all();
-        $totalPurchases = $allSuppliers->sum(fn($s) => $s->totalPurchases());
-        $totalPaid = $allSuppliers->sum(fn($s) => $s->totalPaid());
-        $totalDebt = $allSuppliers->sum(fn($s) => $s->balance());
+        $totalPurchasesIqd = (float) Purchase::whereNotIn('status', ['draft', 'cancelled'])->sum(Purchase::totalIqdExpression());
+        $totalPurchasesUsd = (float) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->sum('total');
+        $totalPurchasesAllInUsd = $currentRate > 0 ? round($totalPurchasesIqd / $currentRate, 2) : $totalPurchasesUsd;
 
-        return view('suppliers.index', compact('suppliers', 'totalPurchases', 'totalPaid', 'totalDebt'));
+        $totalPaidIqd = (float) Payment::where('direction', 'out')->sum('amount_iqd');
+        $totalPaidUsd = (float) Payment::where('direction', 'out')->where('currency', 'USD')->sum('amount');
+        $totalPaidAllInUsd = $currentRate > 0 ? round($totalPaidIqd / $currentRate, 2) : $totalPaidUsd;
+
+        $totalDebtIqd = (float) $allSuppliers->sum(fn($s) => max(0, $s->balance()));
+        $totalDebtUsd = $currentRate > 0 ? round($totalDebtIqd / $currentRate, 2) : 0;
+
+        $totalPurchases = $totalPurchasesIqd;
+        $totalPaid = $totalPaidIqd;
+        $totalDebt = $totalDebtIqd;
+
+        return view('suppliers.index', compact(
+            'suppliers',
+            'currency',
+            'currentRate',
+            'totalPurchases',
+            'totalPurchasesIqd',
+            'totalPurchasesUsd',
+            'totalPurchasesAllInUsd',
+            'totalPaid',
+            'totalPaidIqd',
+            'totalPaidUsd',
+            'totalPaidAllInUsd',
+            'totalDebt',
+            'totalDebtIqd',
+            'totalDebtUsd'
+        ));
     }
 
     public function create(): View

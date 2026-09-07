@@ -9,51 +9,114 @@
 
 <div x-data="{ showDeleteModal: false, deleteUrl: '' }">
 
-    {{-- ١. کارتەکانی کورتە-ئامار بە ئایکۆنە فەرمییەکانی سیستم --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 mb-5">
+    {{-- شریتی گۆڕینی دراو و نرخی ئاڵوگۆڕ --}}
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500">پیشاندان بە دراو:</span>
+            <div class="inline-flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'all']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>🌐</span>
+                    <span>هەمووی (دۆلار و دینار)</span>
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'USD']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'USD' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>💵</span>
+                    <span>تەنها دۆلار ($)</span>
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['currency' => 'IQD']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'IQD' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                    <span>🇮🇶</span>
+                    <span>تەنها دینار (د.ع)</span>
+                </a>
+            </div>
+        </div>
+
+        @if ($currentRate > 0)
+            <div class="text-xs font-mono font-bold text-slate-600 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-2">
+                <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>نرخی ١٠٠$:</span>
+                <span class="text-emerald-700 font-black">{{ number_format($currentRate * 100, 0) }} د.ع</span>
+            </div>
+        @endif
+    </div>
+
+    {{-- ١. کارتەکانی کورتە-ئامار بە دیزاینی هاوشێوەی فرۆشتن --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         {{-- فرۆشیارەکان --}}
-        <div class="card flex items-center gap-3.5 px-4 py-3.5">
-            <span class="icon-chip bg-blue-50 text-blue-600 shrink-0">
-                @include('partials.icon', ['name' => 'suppliers', 'class' => 'size-5'])
-            </span>
-            <div class="min-w-0">
-                <div class="truncate text-xs font-medium text-slate-500">کۆی فرۆشیارەکان</div>
-                <div class="num mt-0.5 truncate text-lg font-bold text-slate-800">{{ fmt_num($suppliers->total()) }}</div>
+        <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-blue-500 relative flex items-center justify-between overflow-hidden">
+            <div>
+                <div class="text-3xl font-black text-slate-800 num tracking-tight">{{ fmt_num($suppliers->total()) }}</div>
+                <div class="text-xs font-bold text-slate-500 mt-1">کۆی فرۆشیارەکان</div>
+            </div>
+            <div class="size-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0">
+                👥
             </div>
         </div>
 
         {{-- کۆی کڕینەکان --}}
-        <div class="card flex items-center gap-3.5 px-4 py-3.5">
-            <span class="icon-chip bg-indigo-50 text-indigo-600 shrink-0">
-                @include('partials.icon', ['name' => 'purchases', 'class' => 'size-5'])
-            </span>
-            <div class="min-w-0">
-                <div class="truncate text-xs font-medium text-slate-500">کۆی گشتی کڕینەکان</div>
-                <div class="num mt-0.5 truncate text-lg font-bold text-slate-800">{{ fmt_money($totalPurchases) }}</div>
+        <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-emerald-500 relative flex items-center justify-between overflow-hidden">
+            <div>
+                @if ($currency === 'USD')
+                    <div class="text-2xl font-black text-emerald-700 num tracking-tight font-mono">${{ number_format($totalPurchasesUsd, 2) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1">کۆی کڕین بە دۆلار</div>
+                @elseif ($currency === 'IQD')
+                    <div class="text-2xl font-black text-slate-800 num tracking-tight font-mono">{{ fmt_money($totalPurchasesIqd) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1">کۆی کڕین بە دینار</div>
+                @else
+                    <div class="text-2xl font-black text-emerald-700 num tracking-tight font-mono">${{ number_format($totalPurchasesAllInUsd, 2) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1 flex items-center gap-1.5">
+                        <span>کۆی گشتی کڕینەکان</span>
+                        <span class="text-slate-400 font-mono text-2xs">({{ fmt_money($totalPurchasesIqd) }})</span>
+                    </div>
+                @endif
+            </div>
+            <div class="size-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+                🛒
             </div>
         </div>
 
         {{-- کۆی پارەی دراو --}}
-        <div class="card flex items-center gap-3.5 px-4 py-3.5">
-            <span class="icon-chip icon-chip-ok shrink-0">
-                @include('partials.icon', ['name' => 'payments', 'class' => 'size-5'])
-            </span>
-            <div class="min-w-0">
-                <div class="truncate text-xs font-medium text-slate-500">کۆی پارەی دراو</div>
-                <div class="num mt-0.5 truncate text-lg font-bold text-emerald-600">{{ fmt_money($totalPaid) }}</div>
+        <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-teal-500 relative flex items-center justify-between overflow-hidden">
+            <div>
+                @if ($currency === 'USD')
+                    <div class="text-2xl font-black text-teal-700 num tracking-tight font-mono">${{ number_format($totalPaidUsd, 2) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1">کۆی دراو بە دۆلار</div>
+                @elseif ($currency === 'IQD')
+                    <div class="text-2xl font-black text-teal-700 num tracking-tight font-mono">{{ fmt_money($totalPaidIqd) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1">کۆی دراو بە دینار</div>
+                @else
+                    <div class="text-2xl font-black text-teal-700 num tracking-tight font-mono">${{ number_format($totalPaidAllInUsd, 2) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1 flex items-center gap-1.5">
+                        <span>کۆی پارەی دراو</span>
+                        <span class="text-slate-400 font-mono text-2xs">({{ fmt_money($totalPaidIqd) }})</span>
+                    </div>
+                @endif
+            </div>
+            <div class="size-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl shrink-0">
+                💳
             </div>
         </div>
 
         {{-- قەرزی ماوەی سەر کارگە --}}
-        <div class="card flex items-center gap-3.5 px-4 py-3.5 {{ $totalDebt > 0 ? 'border-rose-200 bg-rose-50/20' : '' }}">
-            <span class="icon-chip {{ $totalDebt > 0 ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600' }} shrink-0">
-                @include('partials.icon', ['name' => 'debts', 'class' => 'size-5'])
-            </span>
-            <div class="min-w-0">
-                <div class="truncate text-xs font-medium text-slate-500">کۆی قەرزی سەر کارگە</div>
-                <div class="num mt-0.5 truncate text-lg font-bold {{ $totalDebt > 0 ? 'text-[--color-danger]' : 'text-slate-800' }}">
-                    {{ fmt_money($totalDebt) }}
-                </div>
+        <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-100 border-r-4 border-r-rose-500 relative flex items-center justify-between overflow-hidden">
+            <div>
+                @if ($currency === 'USD')
+                    <div class="text-2xl font-black text-rose-600 num tracking-tight font-mono">${{ number_format($totalDebtUsd, 2) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1">قەرزی سەر کارگە بە دۆلار</div>
+                @elseif ($currency === 'IQD')
+                    <div class="text-2xl font-black text-rose-600 num tracking-tight font-mono">{{ fmt_money($totalDebtIqd) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1">قەرزی سەر کارگە بە دینار</div>
+                @else
+                    <div class="text-2xl font-black text-rose-600 num tracking-tight font-mono">${{ number_format($totalDebtUsd, 2) }}</div>
+                    <div class="text-xs font-bold text-slate-500 mt-1 flex items-center gap-1.5">
+                        <span>قەرزی سەر کارگە</span>
+                        <span class="text-slate-400 font-mono text-2xs">({{ fmt_money($totalDebtIqd) }})</span>
+                    </div>
+                @endif
+            </div>
+            <div class="size-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0">
+                ⚠️
             </div>
         </div>
     </div>
@@ -111,15 +174,58 @@
                             {{-- شوێن --}}
                             <td class="text-[--color-ink-soft]">{{ $supplier->address ?? '—' }}</td>
 
+                            @php
+                                $purchasesTotalUsd = $currentRate > 0 ? round($purchasesTotal / $currentRate, 2) : 0;
+                                $paidTotalUsd = $currentRate > 0 ? round($paidTotal / $currentRate, 2) : 0;
+                                $balanceUsd = $currentRate > 0 ? round($balance / $currentRate, 2) : 0;
+                            @endphp
+
                             {{-- کۆی کڕینەکان --}}
-                            <td class="num font-medium">{{ fmt_money($purchasesTotal) }}</td>
+                            <td class="num font-mono text-center">
+                                @if ($currency === 'USD')
+                                    <span class="font-bold text-slate-800">${{ number_format($purchasesTotalUsd, 2) }}</span>
+                                @elseif ($currency === 'IQD')
+                                    <span class="font-bold text-slate-800">{{ fmt_money($purchasesTotal) }}</span>
+                                @else
+                                    <div class="font-bold text-slate-800">${{ number_format($purchasesTotalUsd, 2) }}</div>
+                                    <div class="text-[10px] text-slate-400">({{ fmt_money($purchasesTotal) }})</div>
+                                @endif
+                            </td>
 
                             {{-- کۆی پارەی دراو --}}
-                            <td class="num font-medium">{{ fmt_money($paidTotal) }}</td>
+                            <td class="num font-mono text-center">
+                                @if ($currency === 'USD')
+                                    <span class="font-bold text-emerald-600">${{ number_format($paidTotalUsd, 2) }}</span>
+                                @elseif ($currency === 'IQD')
+                                    <span class="font-bold text-emerald-600">{{ fmt_money($paidTotal) }}</span>
+                                @else
+                                    <div class="font-bold text-emerald-600">${{ number_format($paidTotalUsd, 2) }}</div>
+                                    <div class="text-[10px] text-slate-400">({{ fmt_money($paidTotal) }})</div>
+                                @endif
+                            </td>
 
                             {{-- قەرزی ماوە --}}
-                            <td class="num font-bold {{ $balance > 0 ? 'text-[--color-danger]' : '' }}">
-                                {{ fmt_money($balance) }}
+                            <td class="num font-mono text-center">
+                                @if ($balance > 0)
+                                    @if ($currency === 'USD')
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                            ${{ number_format($balanceUsd, 2) }}
+                                        </span>
+                                    @elseif ($currency === 'IQD')
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                            {{ fmt_money($balance) }}
+                                        </span>
+                                    @else
+                                        <div class="inline-flex flex-col items-center">
+                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                                ${{ number_format($balanceUsd, 2) }}
+                                            </span>
+                                            <span class="text-[10px] text-slate-400 font-mono mt-0.5">({{ fmt_money($balance) }})</span>
+                                        </div>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-slate-400 font-medium">پاکتاوە</span>
+                                @endif
                             </td>
 
                             {{-- کردارەکان --}}
