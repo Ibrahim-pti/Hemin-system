@@ -9,18 +9,18 @@
       class="w-full"
       x-data="{
           lines: [
-              { name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}', preview: null }
+              { name: '', qty: '', unit_price: '', unit_id: '{{ ($units ?? collect())->first()?->id ?? 1 }}', preview: null }
           ],
           paymentType: 'debt',
           paidAmount: '',
           addLine() {
-              this.lines.push({ name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}', preview: null });
+              this.lines.push({ name: '', qty: '', unit_price: '', unit_id: '{{ ($units ?? collect())->first()?->id ?? 1 }}', preview: null });
           },
           removeLine(index) {
               if (this.lines.length > 1) {
                   this.lines.splice(index, 1);
               } else {
-                  this.lines[0] = { name: '', qty: '', unit_price: '', unit_id: '{{ $units->first()?->id ?? 1 }}', preview: null };
+                  this.lines[0] = { name: '', qty: '', unit_price: '', unit_id: '{{ ($units ?? collect())->first()?->id ?? 1 }}', preview: null };
               }
           },
           onImageChange(e, line) {
@@ -222,7 +222,7 @@
                                             <select :name="'purchase_lines[' + index + '][unit_id]'"
                                                     x-model="line.unit_id"
                                                     class="field w-full !py-1.5 !px-3 text-sm bg-white cursor-pointer">
-                                                @foreach ($units as $unit)
+                                                @foreach ($units ?? [] as $unit)
                                                     <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                                 @endforeach
                                             </select>

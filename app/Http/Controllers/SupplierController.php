@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\Supplier;
+use App\Models\Unit;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,7 @@ class SupplierController extends Controller
         return view('suppliers.form', [
             'supplier' => new Supplier(['opening_currency' => 'IQD', 'is_active' => true]),
             'items' => Item::active()->with('unit')->orderBy('name')->get(),
-            'units' => \App\Models\Unit::where('is_active', true)->orderBy('name')->get(),
+            'units' => Unit::where('is_active', true)->orderBy('name')->get(),
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
@@ -314,6 +315,7 @@ class SupplierController extends Controller
         return view('suppliers.form', [
             'supplier' => $supplier,
             'items' => Item::active()->with('unit')->orderBy('name')->get(),
+            'units' => Unit::where('is_active', true)->orderBy('name')->get(),
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
