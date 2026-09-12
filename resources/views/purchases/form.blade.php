@@ -32,7 +32,19 @@
         $initialPaymentType = old('payment_type', 'cash');
     }
 
-    $initialImage = $purchase->imageUrl();
+    $initialAttachments = [];
+    foreach ($purchase->allAttachments() as $attPath) {
+        $isPdf = \App\Models\Purchase::isPdfPath($attPath);
+        $initialAttachments[] = [
+            'id' => 'existing_' . md5($attPath),
+            'existingPath' => $attPath,
+            'name' => basename($attPath),
+            'size' => '',
+            'isPdf' => $isPdf,
+            'previewUrl' => asset('storage/' . $attPath),
+            'isExisting' => true,
+        ];
+    }
     $initialCurrency = old('currency', $purchase->currency ?: 'IQD');
     $defaultRate100 = ($rate ?: \App\Models\ExchangeRate::current() ?: 1500) * 100;
     if ($defaultRate100 > 500000) $defaultRate100 = $defaultRate100 / 100;
@@ -45,14 +57,18 @@
 <form method="POST"
       action="{{ $purchase->exists ? route('purchases.update', $purchase) : route('purchases.store') }}"
       enctype="multipart/form-data"
-      x-data="purchaseForm(@js($initialLines), @js($initialDiscount), @js($initialPaid), @js($initialPaymentType), @js($initialImage), @js($initialCurrency), @js($initialExchangeRate), @js($purchase->isPdf()))"
+      x-data="purchaseForm(@js($initialLines), @js($initialDiscount), @js($initialPaid), @js($initialPaymentType), @js($initialAttachments), @js($initialCurrency), @js($initialExchangeRate))"
       class="space-y-4">
     @csrf
     @if ($purchase->exists) @method('PUT') @endif
     <input type="hidden" name="currency" :value="currency">
     <input type="hidden" name="entry_mode" :value="entryMode">
     <input type="hidden" name="payment_type" :value="paymentType">
-    <input type="hidden" name="remove_image" :value="removeImageFlag ? '1' : '0'">
+    <input type="hidden" name="remove_image" :value="attachmentsList.length === 0 ? '1' : '0'">
+
+    <template x-for="item in attachmentsList.filter(i => i.isExisting)" :key="item.existingPath">
+        <input type="hidden" name="existing_attachments[]" :value="item.existingPath">
+    </template>
 
     @if ($errors->any())
         <div class="card mb-4 border-r-4 !border-r-[--color-danger] px-4 py-3 text-sm">
