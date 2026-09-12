@@ -335,7 +335,7 @@ class PurchaseQuickTotalAndPaymentTest extends TestCase
         $showRes = $this->get("/purchases/{$purchase->id}");
         $showRes->assertOk();
         $showRes->assertSee('4 فایل');
-        $showRes->assertSee('خوێندنەوە');
+        $showRes->assertSee('کردنەوەی فایلی PDF');
 
         // Test index page displays +3 badge
         $indexRes = $this->get('/purchases');
