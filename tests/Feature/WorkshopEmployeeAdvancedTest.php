@@ -834,5 +834,64 @@ class WorkshopEmployeeAdvancedTest extends TestCase
             ],
         ]);
     }
+
+    public function test_weekly_wage_persists_and_all_payments_history_accessible_across_weeks()
+    {
+        $this->actingAs($this->admin);
+
+        $employee = Employee::create([
+            'name' => 'وەستا هەڵمەت',
+            'job_title' => 'master',
+            'salary_type' => 'weekly',
+            'daily_wage' => 200000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $cashBox = CashBox::first();
+
+        // پێدانی پارە لە هەفتەی یەکەم
+        $payRes = $this->postJson('/workshop/employees/record-payment', [
+            'employee_id' => $employee->id,
+            'cash_box_id' => $cashBox->id,
+            'payment_type' => 'wage',
+            'amount' => 200000,
+            'currency' => 'IQD',
+            'paid_at' => '2026-09-05',
+            'note' => 'مووچەی حەفتانەی یەکەم',
+        ]);
+        $payRes->assertStatus(200);
+
+        // سەردانی هەفتەی دووەم
+        $week2Start = '2026-09-12';
+        $week2End = '2026-09-18';
+        $resWeek2 = $this->getJson("/workshop/employees/{$employee->id}/month-details?from={$week2Start}&to={$week2End}&mode=week");
+        $resWeek2->assertStatus(200);
+
+        // شایستەی دیاریکراو و هەفتانە هەمیشە ٢٠٠ هەزار دەمێنێتەوە و سفر نابێتەوە
+        $resWeek2->assertJson([
+            'ok' => true,
+            'employee' => [
+                'id' => $employee->id,
+                'name' => 'وەستا هەڵمەت',
+                'salary_type' => 'weekly',
+                'daily_wage' => 200000,
+            ],
+        ]);
+
+        // لە هەفتەی دووەمدا وەسڵی هەفتەکە بەتاڵە بەڵام مێژووی تەواوی وەسڵەکان هەمووی تێدایە لەگەڵ بەستەری چاپکردن
+        $data = $resWeek2->json();
+        $this->assertCount(0, $data['payments']);
+        $this->assertCount(1, $data['all_payments']);
+        $this->assertEquals(200000, $data['all_payments'][0]['amount']);
+        $this->assertNotEmpty($data['all_payments'][0]['print_url']);
+        $this->assertNotEmpty($data['all_payments'][0]['cash_box_name']);
+
+        // لاپەڕەی پرۆفایل و دێتەلی گشتی کارمەند لەگەڵ خشتەی وەسڵەکان دەکرێتەوە
+        $profileRes = $this->get("/employees/{$employee->id}");
+        $profileRes->assertStatus(200);
+        $profileRes->assertSee('200,000');
+        $profileRes->assertSee('مێژووی پارەدان و وەسڵەکانی قاصە');
+    }
 }
 
