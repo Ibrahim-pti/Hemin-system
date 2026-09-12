@@ -378,6 +378,14 @@
                                         class="w-full text-center min-w-0">
                                     <span class="font-black text-slate-900 text-[11px] sm:text-sm truncate block leading-tight" x-text="row.name"></span>
                                     <span class="hidden sm:block text-[10px] text-slate-400 font-bold truncate" x-text="row.job_title_label"></span>
+                                    @if($canSeeMoney)
+                                    <template x-if="row.daily_wage > 0">
+                                        <span class="mt-0.5 inline-flex items-center justify-center px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold rounded-md bg-teal-50 text-teal-800 border border-teal-200/80 truncate max-w-full"
+                                              :title="'مووچەی دیاریکراوی ' + (row.salary_type === 'weekly' ? 'حەفتانە' : (row.salary_type === 'monthly' ? 'مانگانە' : 'ڕۆژانە')) + ' جێگیرە لە سیستەم'">
+                                            <span x-text="(row.salary_type === 'weekly' ? 'حەفتانە: ' : (row.salary_type === 'monthly' ? 'مانگانە: ' : 'ڕۆژانە: ')) + formatNumber(row.daily_wage) + ' د.ع'"></span>
+                                        </span>
+                                    </template>
+                                    @endif
                                 </button>
                             </td>
 
@@ -442,8 +450,9 @@
                             <span class="shrink-0 px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-bold bg-teal-700 text-teal-100" x-text="selectedEmployee?.job_title_label"></span>
                         </div>
                         <div class="text-[11px] sm:text-xs text-teal-200 mt-1 flex items-center gap-1.5 flex-wrap">
-                            <span x-text="selectedEmployee?.salary_type === 'monthly' ? 'مووچەی مانگانە:' : (selectedEmployee?.salary_type === 'weekly' ? 'مووچەی حەفتانە:' : 'مووچەی ڕۆژانە:')"></span>
+                            <span x-text="selectedEmployee?.salary_type === 'monthly' ? 'مووچەی دیاریکراوی مانگانە:' : (selectedEmployee?.salary_type === 'weekly' ? 'مووچەی دیاریکراوی حەفتانە:' : 'مووچەی دیاریکراوی ڕۆژانە:')"></span>
                             <b class="text-white font-black font-mono" x-text="formatNumber(selectedEmployee?.daily_wage) + ' د.ع'"></b>
+                            <span class="bg-teal-700/90 text-[10px] px-1.5 py-0.5 rounded text-teal-100 font-bold border border-teal-600/60" title="مووچەی دیاریکراوی کارمەند لە پرۆفایلەکەی جێگیرە و هەرگیز نافەوتێت">✓ جێگیرە لە سیستەم</span>
                             <template x-if="selectedEmployee?.salary_type === 'monthly' || selectedEmployee?.salary_type === 'weekly'">
                                 <span class="text-[10px] sm:text-[11px] text-teal-300">
                                     (ڕۆژانەی هاوتا: <span class="font-bold text-white font-mono" x-text="formatNumber(selectedEmployee?.effective_daily_wage)"></span> د.ع)
@@ -548,7 +557,12 @@
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
                         <div class="text-[10px] text-slate-500 font-bold" x-text="drawerPeriodMode === 'week' ? 'شایستەی ئەم هەفتەیە' : 'شایستەی دەوام'"></div>
                         <div class="text-sm sm:text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
-                        <div class="text-[9px] text-slate-400 mt-0.5" x-text="drawerPeriodMode === 'week' ? 'حەقدەستی هەفتە' : 'کۆی حەقدەستی مانگ'"></div>
+                        <div class="text-[9px] text-slate-400 mt-0.5 leading-tight">
+                            <span x-text="drawerPeriodMode === 'week' ? 'حەقدەستی بەدەستهاتوو' : 'کۆی حەقدەستی مانگ'"></span>
+                            <template x-if="selectedEmployee?.salary_type === 'weekly'">
+                                <span class="text-teal-700 font-bold block" x-text="'(مووچەی حەفتانە: ' + formatNumber(selectedEmployee?.daily_wage) + ')'"></span>
+                            </template>
+                        </div>
                     </div>
 
                     {{-- ٣. مووچەی دراو --}}
@@ -664,19 +678,36 @@
                 </div>
 
                 {{-- وەسڵەکانی پارەدان --}}
-                <div>
-                    <div class="mb-2">
+                <div x-data="{ paymentHistoryScope: 'all' }">
+                    <div class="mb-2 flex items-center justify-between flex-wrap gap-2">
                         <h3 class="font-black text-slate-800 flex items-center gap-1.5">
                             <span>💸</span>
                             <span>وەسڵەکانی پارەدان لە قاصە</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-900"
+                                  x-text="(paymentHistoryScope === 'all' ? (drawerData?.all_payments?.length || 0) : (drawerData?.payments?.length || 0)) + ' وەسڵ'"></span>
                         </h3>
+
+                        {{-- دوگمەی هەڵبژاردن: هەموو وەسڵەکان یان تەنها ئەم ماوەیە --}}
+                        <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[11px] font-bold">
+                            <button type="button" @click="paymentHistoryScope = 'all'"
+                                    class="px-2.5 py-1 rounded-md transition-all cursor-pointer"
+                                    :class="paymentHistoryScope === 'all' ? 'bg-white text-teal-900 shadow-2xs font-black' : 'text-slate-500 hover:text-slate-800'">
+                                هەموو وەسڵەکان (مێژووی تەواو)
+                            </button>
+                            <button type="button" @click="paymentHistoryScope = 'period'"
+                                    class="px-2.5 py-1 rounded-md transition-all cursor-pointer"
+                                    :class="paymentHistoryScope === 'period' ? 'bg-white text-teal-900 shadow-2xs font-black' : 'text-slate-500 hover:text-slate-800'">
+                                وەسڵەکانی ئەم ماوەیە
+                            </button>
+                        </div>
                     </div>
                     <div class="border border-slate-200 rounded-2xl overflow-x-auto att-scroll bg-white">
-                        <table class="w-full min-w-[28rem] text-right">
+                        <table class="w-full min-w-[32rem] text-right">
                             <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-center">
                                 <tr>
                                     <th class="p-2 text-right">ژ.وەسڵ</th>
                                     <th class="p-2">بەروار</th>
+                                    <th class="p-2">قاسە</th>
                                     <th class="p-2">جۆری جوڵە</th>
                                     <th class="p-2">بڕی پارە</th>
                                     <th class="p-2 text-right">تێبینی</th>
@@ -684,10 +715,11 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 font-medium">
-                                <template x-for="p in (drawerData?.payments || [])" :key="p.id">
+                                <template x-for="p in ((paymentHistoryScope === 'all' ? drawerData?.all_payments : drawerData?.payments) || [])" :key="p.id">
                                     <tr class="hover:bg-slate-50 text-center">
                                         <td class="p-2 font-mono font-bold text-slate-800 text-right" x-text="'#' + p.voucher_no"></td>
-                                        <td class="p-2 font-mono text-slate-600 text-xs" x-text="p.paid_at"></td>
+                                        <td class="p-2 font-mono text-slate-600 text-xs whitespace-nowrap" x-text="p.paid_at"></td>
+                                        <td class="p-2 text-xs text-slate-600 font-medium" x-text="p.cash_box_name || 'قاسە'"></td>
                                         <td class="p-2">
                                             <div class="inline-flex items-center gap-1 justify-center">
                                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-black inline-block"
@@ -702,24 +734,35 @@
                                                 </template>
                                             </div>
                                         </td>
-                                        <td class="p-2 font-mono font-black"
+                                        <td class="p-2 font-mono font-black whitespace-nowrap"
                                             :class="p.direction === 'in' ? 'text-emerald-700' : 'text-slate-900'"
                                             x-text="(p.direction === 'in' ? '+ ' : '- ') + formatNumber(p.amount) + ' ' + p.currency"></td>
                                         <td class="p-2 text-slate-600 text-right text-xs" x-text="p.note || '—'"></td>
-                                        <td class="p-2 text-center">
-                                            <button type="button" @click="confirmDeletePayment(p)"
-                                                    title="سڕینەوەی وەسڵ"
-                                                    class="p-1 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 cursor-pointer transition-colors">
-                                                <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                            </button>
+                                        <td class="p-2 text-center whitespace-nowrap">
+                                            <div class="inline-flex items-center gap-1">
+                                                <template x-if="p.print_url">
+                                                    <a :href="p.print_url" target="_blank"
+                                                       title="چاپکردنی وەسڵ"
+                                                       class="p-1 rounded-lg text-teal-700 hover:bg-teal-100 transition-colors inline-flex items-center justify-center">
+                                                        🖨️
+                                                    </a>
+                                                </template>
+                                                <button type="button" @click="confirmDeletePayment(p)"
+                                                        title="سڕینەوەی وەسڵ"
+                                                        class="p-1 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 cursor-pointer transition-colors">
+                                                    <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </template>
-                                <template x-if="!drawerData?.payments || drawerData.payments.length === 0">
+                                <template x-if="!((paymentHistoryScope === 'all' ? drawerData?.all_payments : drawerData?.payments) || []).length">
                                     <tr>
-                                        <td colspan="6" class="p-3 text-center text-slate-400 font-bold">هیچ پارەدانێک نییە.</td>
+                                        <td colspan="7" class="p-4 text-center text-slate-400 font-bold">
+                                            <span x-text="paymentHistoryScope === 'all' ? 'هیچ وەسڵێکی پارەدان بۆ ئەم کارمەندە تۆمار نەکراوە.' : 'لەم ماوەیەدا هیچ وەسڵێک تۆمار نەکراوە. کلیک لە (هەموو وەسڵەکان) بکە بۆ بینینی هەموو مێژووەکە.'"></span>
+                                        </td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -757,16 +800,23 @@
 
                     {{-- کارتی خێرای پەیوەندیدار بە تابی هەڵبژێردراو --}}
                     <template x-if="paymentForm.payment_type === 'wage'">
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-950 font-bold">
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-950 font-bold flex-wrap gap-2">
                             <div>
                                 <span x-text="drawerPeriodMode === 'week' ? 'شایستەی ماوەی ئەم هەفتەیە: ' : 'شایستەی ماوە بۆ مووچە: '"></span>
                                 <b class="font-mono text-sm text-teal-900" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></b>
                             </div>
-                            <template x-if="(drawerData?.stats?.remaining_balance ?? 0) > 0">
-                                <button type="button" @click="setFullDuePayment()" class="quick-fill-btn quick-fill-wage shadow-xs">
-                                    ✓ دانانی تەواوی شایستە
-                                </button>
-                            </template>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <template x-if="(drawerData?.stats?.remaining_balance ?? 0) > 0">
+                                    <button type="button" @click="setFullDuePayment()" class="quick-fill-btn quick-fill-wage shadow-xs">
+                                        ✓ دانانی شایستەی ماوە
+                                    </button>
+                                </template>
+                                <template x-if="(selectedEmployee?.daily_wage ?? 0) > 0">
+                                    <button type="button" @click="setFixedWagePayment()" class="quick-fill-btn bg-white text-teal-900 border border-teal-300 hover:bg-teal-100 shadow-xs">
+                                        <span x-text="'💵 دانانی مووچەی دیاریکراو (' + formatNumber(selectedEmployee?.daily_wage) + ' د.ع)'"></span>
+                                    </button>
+                                </template>
+                            </div>
                         </div>
                     </template>
 
@@ -1855,8 +1905,12 @@ function workshopEmployeesApp() {
 
             let amount = '';
             let note = `مووچەی ${row?.name || ''}`;
-            if (initialType === 'wage' && remainingWage > 0) {
-                amount = this.formatMoneyInput(remainingWage);
+            if (initialType === 'wage') {
+                if (remainingWage > 0) {
+                    amount = this.formatMoneyInput(remainingWage);
+                } else if ((row?.daily_wage || 0) > 0 && row?.salary_type === 'weekly') {
+                    amount = this.formatMoneyInput(row.daily_wage);
+                }
             } else if (initialType === 'debt_repayment' && loanBalance > 0) {
                 amount = this.formatMoneyInput(loanBalance);
                 note = `دانەوەی قەرز لەلایەن ${row?.name || ''}`;
@@ -1918,6 +1972,17 @@ function workshopEmployeesApp() {
                 this.paymentForm.amount = this.formatMoneyInput(remainingWage);
                 this.paymentForm.payment_type = 'wage';
                 this.paymentForm.note = `مووچەی ${this.paymentEmployee?.name || this.selectedEmployee?.name || ''}`;
+            }
+        },
+
+        setFixedWagePayment() {
+            const emp = this.selectedEmployee || this.paymentEmployee;
+            const wage = emp?.daily_wage ?? 0;
+            if (wage > 0) {
+                this.paymentForm.amount = this.formatMoneyInput(wage);
+                this.paymentForm.payment_type = 'wage';
+                const wageType = emp?.salary_type === 'weekly' ? 'حەفتانەی' : (emp?.salary_type === 'monthly' ? 'مانگانەی' : 'ڕۆژانەی');
+                this.paymentForm.note = `مووچەی ${wageType} ${emp?.name || ''}`;
             }
         },
 
