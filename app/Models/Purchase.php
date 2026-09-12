@@ -21,17 +21,39 @@ class Purchase extends Model
     protected $fillable = [
         'invoice_no', 'supplier_id', 'warehouse_id', 'purchase_date',
         'currency', 'exchange_rate', 'subtotal', 'discount_amount', 'total',
-        'paid_amount', 'status', 'user_id', 'note', 'image',
+        'paid_amount', 'status', 'user_id', 'note', 'image', 'attachments',
     ];
 
     public function imageUrl(): ?string
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->fileUrl();
     }
 
-    public function isPdf(): bool
+    public function fileUrl(?string $path = null): ?string
     {
-        return !empty($this->image) && str_ends_with(strtolower($this->image), '.pdf');
+        $target = $path ?: $this->image;
+        return $target ? asset('storage/' . $target) : null;
+    }
+
+    public static function isPdfPath(?string $path): bool
+    {
+        return !empty($path) && str_ends_with(strtolower($path), '.pdf');
+    }
+
+    public function isPdf(?string $path = null): bool
+    {
+        $target = $path ?: $this->image;
+        return static::isPdfPath($target);
+    }
+
+    public function allAttachments(): array
+    {
+        $list = $this->attachments;
+        if ((empty($list) || !is_array($list)) && !empty($this->image)) {
+            $list = [$this->image];
+        }
+
+        return is_array($list) ? array_values(array_filter($list)) : [];
     }
 
     protected function casts(): array
@@ -43,6 +65,7 @@ class Purchase extends Model
             'total' => 'decimal:2',
             'paid_amount' => 'decimal:2',
             'exchange_rate' => 'decimal:2',
+            'attachments' => 'array',
         ];
     }
 
