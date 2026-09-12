@@ -259,4 +259,41 @@ class PurchaseQuickTotalAndPaymentTest extends TestCase
         $this->assertSoftDeleted('purchases', ['id' => $purchase->id]);
         $this->assertSoftDeleted('payments', ['purchase_id' => $purchase->id]);
     }
+
+    public function test_purchase_can_be_created_with_pdf_document(): void
+    {
+        Storage::fake('public');
+        $pdf = UploadedFile::fake()->create('invoice_bill.pdf', 800, 'application/pdf');
+
+        $payload = [
+            'entry_mode' => 'quick',
+            'quick_title' => 'مەوادی ئاسن بە وەسڵی PDF',
+            'quick_total' => '150,000',
+            'payment_type' => 'debt',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'purchase_date' => now()->toDateString(),
+            'currency' => 'IQD',
+            'pdf_file' => $pdf,
+            'note' => 'پسوولەی کڕین لەگەڵ فایلی PDF',
+        ];
+
+        $res = $this->post('/purchases', $payload);
+        $res->assertSessionHasNoErrors();
+
+        $purchase = Purchase::latest('id')->firstOrFail();
+        $this->assertNotNull($purchase->image);
+        $this->assertTrue($purchase->isPdf());
+        $this->assertStringEndsWith('.pdf', strtolower($purchase->image));
+        Storage::disk('public')->assertExists($purchase->image);
+
+        // Check show and index views render without errors
+        $showRes = $this->get("/purchases/{$purchase->id}");
+        $showRes->assertOk();
+        $showRes->assertSee('کردنەوەی فایلی PDF');
+
+        $indexRes = $this->get('/purchases');
+        $indexRes->assertOk();
+        $indexRes->assertSee('PDF');
+    }
 }
