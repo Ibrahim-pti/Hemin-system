@@ -5,17 +5,28 @@
 
 @php
     $initialLines = old('lines', $order->exists
-        ? $order->items->map(fn ($l) => [
-            'description' => $l->description,
-            'image' => $l->image,
-            'preview' => $l->imageUrl(),
-            'meter' => $l->meter !== null ? (float)$l->meter : '',
-            'meter_price' => $l->meter_price !== null ? number_format((float)$l->meter_price) : '',
-            'unit_price' => $l->unit_price !== null ? number_format((float)$l->unit_price) : '',
-            'line_total' => $l->line_total !== null ? number_format((float)$l->line_total) : ($l->unit_price !== null ? number_format((float)$l->unit_price) : ''),
-            'note' => $l->note ?? '',
-          ])->all()
-        : [['description' => '', 'image' => '', 'preview' => null, 'meter' => '', 'meter_price' => '', 'unit_price' => '', 'line_total' => '', 'note' => '']]);
+        ? $order->items->map(function ($l) {
+            $imgs = [];
+            foreach ($l->allImages() as $p) {
+                $imgs[] = [
+                    'id' => uniqid('img_', true),
+                    'path' => $p,
+                    'preview' => asset('storage/' . $p),
+                ];
+            }
+            return [
+                'description' => $l->description,
+                'image' => $l->image,
+                'images' => $imgs,
+                'preview' => $l->imageUrl(),
+                'meter' => $l->meter !== null ? (float)$l->meter : '',
+                'meter_price' => $l->meter_price !== null ? number_format((float)$l->meter_price) : '',
+                'unit_price' => $l->unit_price !== null ? number_format((float)$l->unit_price) : '',
+                'line_total' => $l->line_total !== null ? number_format((float)$l->line_total) : ($l->unit_price !== null ? number_format((float)$l->unit_price) : ''),
+                'note' => $l->note ?? '',
+            ];
+        })->all()
+        : [['description' => '', 'image' => '', 'images' => [], 'preview' => null, 'meter' => '', 'meter_price' => '', 'unit_price' => '', 'line_total' => '', 'note' => '']]);
 @endphp
 
 <form method="POST"
@@ -134,35 +145,55 @@
                 <tbody class="divide-y divide-slate-100 text-sm">
                     <template x-for="(line, index) in lines" :key="index">
                         <tr>
-                            {{-- وێنەی کاڵا / دیزاین --}}
-                            <td style="text-align: center; padding: 4px;">
+                            {{-- وێنەی کاڵا / دیزاین (چەندین وێنە) --}}
+                            <td style="text-align: center; padding: 4px; width: 56px;">
                                 <div class="flex items-center justify-center">
+                                    {{-- فایل ئینپووتی خێرا بۆ هەڵبژاردنی یەک یان چەندین وێنە --}}
                                     <input type="file"
-                                           :name="`lines[${index}][image]`"
-                                           :id="`order_line_image_${index}`"
+                                           :id="`order_line_file_${index}`"
+                                           multiple
                                            accept="image/*"
                                            class="sr-only"
-                                           @change="onImageChange($event, line)">
-                                    <input type="hidden" :name="`lines[${index}][existing_image]`" :value="line.image || ''">
+                                           @change="onLineFilesSelected($event, line)">
 
-                                    <template x-if="line.preview">
-                                        <div class="relative group size-9 rounded-lg overflow-hidden border border-blue-400 shadow-2xs shrink-0">
-                                            <img :src="line.preview" class="size-full object-cover">
-                                            <label :for="`order_line_image_${index}`"
-                                                   class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-white font-bold cursor-pointer transition-opacity"
-                                                   title="گۆڕینی وێنە">
+                                    {{-- Hidden inputs بۆ وێنە تۆمارکراوەکان و base64 --}}
+                                    <template x-for="(img, imgIdx) in (line.images || [])" :key="img.id || imgIdx">
+                                        <div>
+                                            <template x-if="img.path">
+                                                <input type="hidden" :name="`lines[${index}][existing_images][]`" :value="img.path">
+                                            </template>
+                                            <template x-if="img.base64">
+                                                <input type="hidden" :name="`lines[${index}][images_base64][]`" :value="img.base64">
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <input type="hidden" :name="`lines[${index}][existing_image]`" :value="(line.images && line.images[0]?.path) ? line.images[0].path : (line.image || '')">
+
+                                    {{-- کاتێک وێنە هەیە --}}
+                                    <template x-if="line.images && line.images.length > 0">
+                                        <div class="relative group size-9 rounded-lg overflow-hidden border-2 border-blue-500 shadow-2xs shrink-0 cursor-pointer bg-slate-100"
+                                             @click="openLineImageManager(index)"
+                                             :title="line.images.length + ' وێنە زیادکراوە — کرتە بکە بۆ پیشاندان و بەڕێوەبردن'">
+                                            <img :src="line.images[0].preview || line.preview" class="size-full object-cover group-hover:scale-110 transition-transform">
+                                            
+                                            {{-- نیشاندانی ژمارەی وێنەکان ئەگەر لە یەک زیاتر بوو --}}
+                                            <template x-if="line.images.length > 1">
+                                                <span class="absolute bottom-0 inset-x-0 bg-blue-900/90 text-white font-black text-[9px] py-0.5 leading-none text-center"
+                                                      x-text="'+' + line.images.length"></span>
+                                            </template>
+
+                                            {{-- هۆڤەر ئایکۆن بۆ دەستکاری --}}
+                                            <div class="absolute inset-0 bg-blue-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs text-white font-bold transition-opacity">
                                                 ✎
-                                            </label>
-                                            <button type="button" @click="removeImage(line, index)"
-                                                    class="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full size-3.5 flex items-center justify-center text-[9px] shadow cursor-pointer"
-                                                    title="لابردنی وێنە">×</button>
+                                            </div>
                                         </div>
                                     </template>
 
-                                    <template x-if="!line.preview">
-                                        <label :for="`order_line_image_${index}`"
+                                    {{-- کاتێک وێنە نییە --}}
+                                    <template x-if="!line.images || line.images.length === 0">
+                                        <label :for="`order_line_file_${index}`"
                                                class="size-9 rounded-lg border border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 cursor-pointer active:scale-95"
-                                               title="دانانی وێنەی دیزاین (کامێرا یان مۆبایل)">
+                                               title="دانانی چەندین وێنەی دیزاین (مۆبایل، گەلەری، کامێرا)">
                                             <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                                                 <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -356,6 +387,104 @@
             </div>
         </div>
     </div>
+
+    {{-- مۆداڵی بەڕێوەبردنی وێنەکانی دێڕی وەسڵ (چەندین وێنە) --}}
+    <div x-show="activeImageLineIndex !== null" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4"
+         @keydown.escape.window="activeImageLineIndex = null"
+         x-transition.opacity>
+        <div class="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-5 border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden"
+             @click.away="activeImageLineIndex = null"
+             x-transition.scale>
+            
+            {{-- سەرپەڕەی مۆداڵ --}}
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3 shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <span class="size-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg font-bold border border-blue-100">🖼️</span>
+                    <div>
+                        <div class="font-black text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                            <span>وێنەکانی دیزاینی ئەم بەشە</span>
+                            <template x-if="activeImageLineIndex !== null && lines[activeImageLineIndex]?.images?.length > 0">
+                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800"
+                                      x-text="lines[activeImageLineIndex].images.length + ' وێنە'"></span>
+                            </template>
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium"
+                             x-text="activeImageLineIndex !== null ? (lines[activeImageLineIndex]?.description ? 'بۆ: ' + lines[activeImageLineIndex].description : 'دێڕی ' + (activeImageLineIndex + 1)) : ''"></div>
+                    </div>
+                </div>
+                <button type="button" @click="activeImageLineIndex = null"
+                        class="text-slate-400 hover:text-slate-700 size-8 rounded-xl flex items-center justify-center text-lg hover:bg-slate-100 transition-colors cursor-pointer">✕</button>
+            </div>
+
+            {{-- دوگمەکانی زیادکردنی وێنە (کامێرا و گەلەری) --}}
+            <div class="flex flex-wrap items-center gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200 mb-3 shrink-0">
+                {{-- کامێرا --}}
+                <input type="file" id="modal_line_camera" accept="image/*" capture="environment" class="sr-only" @change="onModalFilesSelected($event, 'camera')">
+                <label for="modal_line_camera"
+                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                    <span>📸</span>
+                    <span>گرتنی وێنە بە کامێرا</span>
+                </label>
+
+                {{-- گەلەری / چەندین وێنە بەدڵی خۆت --}}
+                <input type="file" id="modal_line_gallery" accept="image/*" multiple class="sr-only" @change="onModalFilesSelected($event, 'gallery')">
+                <label for="modal_line_gallery"
+                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                    <span>🖼️</span>
+                    <span>زیادکردنی چەند وێنە لە گەلەری</span>
+                </label>
+            </div>
+
+            {{-- خشتەی پیشاندانی وێنەکان --}}
+            <div class="flex-1 overflow-y-auto min-h-0 pr-1 space-y-2">
+                <template x-if="activeImageLineIndex !== null && (!lines[activeImageLineIndex]?.images || lines[activeImageLineIndex]?.images.length === 0)">
+                    <div class="py-12 flex flex-col items-center justify-center text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
+                        <span class="text-4xl mb-2">📸</span>
+                        <span class="text-xs font-bold text-slate-600">هیچ وێنەیەک بۆ ئەم دێڕە دانەنراوە</span>
+                        <span class="text-[11px] text-slate-400 mt-1">دەتوانیت بە کامێرا وێنە بگریت یان چەندین وێنە لە گەلەری هەڵبژێریت.</span>
+                    </div>
+                </template>
+
+                <template x-if="activeImageLineIndex !== null && lines[activeImageLineIndex]?.images?.length > 0">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <template x-for="(img, imgIdx) in lines[activeImageLineIndex].images" :key="img.id || imgIdx">
+                            <div class="relative group rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-xs aspect-4/3 flex items-center justify-center">
+                                <img :src="img.preview" class="size-full object-cover">
+                                
+                                {{-- overlay controls --}}
+                                <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+                                    <button type="button" @click="viewLargeImage(img.preview)"
+                                            class="size-8 rounded-xl bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center text-xs shadow-xs cursor-pointer active:scale-90 transition-transform"
+                                            title="گەورەکردن">
+                                        🔍
+                                    </button>
+                                    <button type="button" @click="removeImageFromLine(lines[activeImageLineIndex], imgIdx)"
+                                            class="size-8 rounded-xl bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-xs cursor-pointer active:scale-90 transition-transform"
+                                            title="سڕینەوە">
+                                        🗑️
+                                    </button>
+                                </div>
+
+                                {{-- ژمارەی وێنە لە گۆشە --}}
+                                <div class="absolute top-1.5 right-1.5 bg-slate-900/70 text-white rounded-md px-1.5 py-0.5 text-[9px] font-black pointer-events-none"
+                                     x-text="imgIdx + 1"></div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            {{-- ژێرەوەی مۆداڵ --}}
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between mt-3 shrink-0">
+                <span class="text-[11px] text-slate-400 font-medium">وێنەکان دەمێننەوە و پاشەکەوت دەکرێن لە وەسڵدا</span>
+                <button type="button" @click="activeImageLineIndex = null"
+                        class="btn btn-primary !py-2 !px-5 text-xs font-black shadow-xs">
+                    تەواو
+                </button>
+            </div>
+        </div>
+    </div>
 </form>
 
 @push('scripts')
@@ -377,6 +506,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         prepaidManuallySet: {{ ($order->exists || old('prepaid_amount') !== null) ? 'true' : 'false' }},
         exchangeRate: '{{ (float) old('exchange_rate', $order->exchange_rate ? ($order->exchange_rate > 5000 ? $order->exchange_rate : $order->exchange_rate * 100) : ($rate > 5000 ? $rate : ($rate > 0 ? $rate * 100 : 150000))) }}',
         fetchingRate: false,
+        activeImageLineIndex: null,
 
         formatDiscountInput(e) {
             let clean = e.target.value.replace(/[^0-9.]/g, '');
@@ -467,6 +597,23 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         },
 
         init() {
+            // دڵنیابوونەوە لە ڕێکی پەیکەری وێنەکانی هەموو دێڕەکان
+            if (Array.isArray(this.lines)) {
+                this.lines.forEach((l) => {
+                    if (!Array.isArray(l.images)) {
+                        l.images = [];
+                        if (l.preview || l.image) {
+                            l.images.push({
+                                id: 'img_' + Math.random().toString(36).substring(2, 9),
+                                preview: l.preview || (l.image ? '/storage/' + l.image : null),
+                                path: l.image || null,
+                                base64: null,
+                            });
+                        }
+                    }
+                });
+            }
+
             if (!this.prepaidManuallySet) {
                 this.prepaid = this.total ? this.total.toLocaleString('en-US') : '';
             }
@@ -519,33 +666,109 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
                 });
         },
 
-        addLine() {
-            this.lines.push({
-                description: '', image: '', preview: null, meter: '', meter_price: '', unit_price: '', line_total: '', note: '',
-            });
+        openLineImageManager(index) {
+            this.activeImageLineIndex = index;
         },
 
-        onImageChange(e, line) {
-            const file = e.target.files[0];
-            if (file) {
-                line.preview = URL.createObjectURL(file);
-            } else {
-                line.preview = null;
+        closeLineImageManager() {
+            this.activeImageLineIndex = null;
+        },
+
+        onLineFilesSelected(e, line) {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            this.addFilesToLine(files, line);
+            e.target.value = '';
+        },
+
+        onModalFilesSelected(e, source) {
+            if (this.activeImageLineIndex === null) return;
+            const line = this.lines[this.activeImageLineIndex];
+            if (!line) return;
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            this.addFilesToLine(files, line);
+            e.target.value = '';
+        },
+
+        addFilesToLine(files, line) {
+            if (!Array.isArray(line.images)) line.images = [];
+            files.forEach(file => {
+                const tempId = 'img_' + Math.random().toString(36).substring(2, 9);
+                const previewUrl = URL.createObjectURL(file);
+                const imgObj = {
+                    id: tempId,
+                    preview: previewUrl,
+                    base64: null,
+                    path: null,
+                    file: file,
+                };
+                line.images.push(imgObj);
+                this.compressImageForLine(imgObj);
+            });
+            if (line.images.length > 0) {
+                line.preview = line.images[0].preview;
             }
         },
 
-        removeImage(line, index) {
-            line.preview = null;
-            line.image = '';
-            const input = document.getElementById('order_line_image_' + index);
-            if (input) input.value = '';
+        compressImageForLine(imgObj) {
+            try {
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 1920;
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    imgObj.base64 = canvas.toDataURL('image/jpeg', 0.82);
+                };
+                img.src = imgObj.preview;
+            } catch (err) {
+                console.warn('Image compression error:', err);
+            }
+        },
+
+        removeImageFromLine(line, imageIndex) {
+            if (Array.isArray(line.images)) {
+                line.images.splice(imageIndex, 1);
+                line.preview = line.images.length > 0 ? line.images[0].preview : null;
+                line.image = line.images.length > 0 ? (line.images[0].path || '') : '';
+            }
+        },
+
+        viewLargeImage(previewUrl) {
+            if (!previewUrl) return;
+            const win = window.open();
+            if (win) {
+                win.document.write('<!DOCTYPE html><html><head><title>وێنەی وەسڵ</title><style>body{margin:0;padding:20px;display:flex;align-items:center;justify-content:center;min-height:90vh;background:#0f172a;}img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);}</style></head><body><img src="' + previewUrl + '"></body></html>');
+            }
+        },
+
+        addLine() {
+            this.lines.push({
+                description: '',
+                image: '',
+                images: [],
+                preview: null,
+                meter: '',
+                meter_price: '',
+                unit_price: '',
+                line_total: '',
+                note: '',
+            });
         },
 
         removeLine(index) {
             if (this.lines.length > 1) {
                 this.lines.splice(index, 1);
             } else {
-                this.lines[0] = { description: '', image: '', preview: null, meter: '', meter_price: '', unit_price: '', line_total: '', note: '' };
+                this.lines[0] = { description: '', image: '', images: [], preview: null, meter: '', meter_price: '', unit_price: '', line_total: '', note: '' };
             }
         },
 

@@ -11,17 +11,51 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OrderItem extends Model
 {
     protected $fillable = [
-        'order_id', 'description', 'image', 'item_id', 'pricing_mode',
+        'order_id', 'description', 'image', 'images', 'item_id', 'pricing_mode',
         'meter', 'meter_price',
         'width', 'height', 'qty', 'computed_qty', 'unit_price', 'line_total', 'note',
     ];
 
+    /**
+     * هەموو وێنەکانی پەیوەست بەم دێڕە وەک path لە ناو storage.
+     * @return array<string>
+     */
+    public function allImages(): array
+    {
+        $list = [];
+        if (is_array($this->images)) {
+            foreach ($this->images as $img) {
+                if (!empty($img) && is_string($img)) {
+                    $list[] = $img;
+                }
+            }
+        }
+        if ($this->image && !in_array($this->image, $list, true)) {
+            array_unshift($list, $this->image);
+        }
+        return array_values(array_unique($list));
+    }
+
+    /**
+     * هەموو وێنەکانی پەیوەست بەم دێڕە وەک URL.
+     * @return array<string>
+     */
+    public function allImageUrls(): array
+    {
+        $urls = [];
+        foreach ($this->allImages() as $img) {
+            $urls[] = asset('storage/' . $img);
+        }
+        if (empty($urls) && $this->item?->imageUrl()) {
+            $urls[] = $this->item->imageUrl();
+        }
+        return $urls;
+    }
+
     public function imageUrl(): ?string
     {
-        if ($this->image) {
-            return asset('storage/' . $this->image);
-        }
-        return $this->item?->imageUrl();
+        $urls = $this->allImageUrls();
+        return $urls[0] ?? null;
     }
 
     public function getHasMeterAttribute(): bool
@@ -32,6 +66,7 @@ class OrderItem extends Model
     protected function casts(): array
     {
         return [
+            'images' => 'array',
             'meter' => 'decimal:3',
             'meter_price' => 'decimal:2',
             'width' => 'decimal:3',

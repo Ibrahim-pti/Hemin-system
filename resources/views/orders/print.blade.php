@@ -365,5 +365,48 @@
         </div>
     </div>
 
+    {{-- وێنەکانی دیزاین و داواکاری لە خوارەوەی وەسڵ (بۆ پیشاندان و گەورەکردن) --}}
+    @php
+        $allItemsWithImages = $order->items->filter(fn ($it) => count($it->allImageUrls()) > 0);
+    @endphp
+    @if ($allItemsWithImages->isNotEmpty())
+        <div class="no-print mx-auto mt-6 max-w-[148mm] bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+            <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">🖼️</span>
+                    <span class="font-black text-xs text-slate-800">وێنەکانی دیزاین و داواکاری</span>
+                </div>
+                <span class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full font-mono">
+                    {{ $allItemsWithImages->sum(fn ($it) => count($it->allImageUrls())) }} وێنە
+                </span>
+            </div>
+
+            <div class="space-y-4">
+                @foreach ($allItemsWithImages as $item)
+                    <div>
+                        <div class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                            <span class="size-1.5 rounded-full bg-blue-600"></span>
+                            <span>{{ $item->description ?: 'کاڵا' }}</span>
+                            @if ($item->has_meter)
+                                <span class="text-slate-400 font-normal">({{ fmt_qty($item->meter) }} مەتر)</span>
+                            @endif
+                        </div>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                            @foreach ($item->allImageUrls() as $imgUrl)
+                                <a href="{{ $imgUrl }}" target="_blank"
+                                   class="group block aspect-4/3 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 hover:border-blue-500 shadow-2xs transition-all relative">
+                                    <img src="{{ $imgUrl }}" class="size-full object-cover group-hover:scale-105 transition-transform" alt="{{ $item->description }}">
+                                    <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
+                                        🔍 گەورەکردن
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
 </body>
 </html>

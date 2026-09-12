@@ -14,6 +14,7 @@ use App\Services\PaymentService;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -265,8 +266,13 @@ class OrderController extends Controller
             'lines.*.meter_price' => ['nullable'],
             'lines.*.unit_price' => ['nullable'],
             'lines.*.line_total' => ['nullable'],
-            'lines.*.image' => ['nullable', 'image', 'max:5120'],
+            'lines.*.image' => ['nullable'],
+            'lines.*.images' => ['nullable', 'array'],
+            'lines.*.images.*' => ['nullable'],
+            'lines.*.existing_images' => ['nullable'],
             'lines.*.existing_image' => ['nullable', 'string'],
+            'lines.*.images_base64' => ['nullable', 'array'],
+            'lines.*.images_base64.*' => ['nullable', 'string'],
             'lines.*.note' => ['nullable', 'string', 'max:255'],
         ], [
             'lines.required' => 'لانیکەم یەک دێڕ زیاد بکە.',
@@ -353,17 +359,65 @@ class OrderController extends Controller
 
             $unitPrice = ($meterPrice !== null && $meterPrice > 0) ? $meterPrice : $lineTotal;
 
-            $imagePath = null;
-            if (isset($lineFiles[$index]['image']) && $lineFiles[$index]['image']->isValid()) {
-                $imagePath = $lineFiles[$index]['image']->store('orders', 'public');
-            } elseif (!empty($line['existing_image'])) {
-                $imagePath = $line['existing_image'];
+            $storedImages = [];
+
+            // 1. Existing images (array or legacy string)
+            if (!empty($line['existing_images'])) {
+                $existing = is_array($line['existing_images']) ? $line['existing_images'] : json_decode($line['existing_images'], true);
+                if (is_array($existing)) {
+                    foreach ($existing as $exImg) {
+                        if (is_string($exImg) && !empty($exImg)) {
+                            $storedImages[] = $exImg;
+                        }
+                    }
+                }
             }
+            if (!empty($line['existing_image']) && !in_array($line['existing_image'], $storedImages, true)) {
+                $storedImages[] = $line['existing_image'];
+            }
+
+            // 2. Uploaded files (multiple or single)
+            if (isset($lineFiles[$index])) {
+                $fList = [];
+                if (isset($lineFiles[$index]['images'])) {
+                    $fList = is_array($lineFiles[$index]['images']) ? $lineFiles[$index]['images'] : [$lineFiles[$index]['images']];
+                }
+                if (isset($lineFiles[$index]['image'])) {
+                    $single = is_array($lineFiles[$index]['image']) ? $lineFiles[$index]['image'] : [$lineFiles[$index]['image']];
+                    $fList = array_merge($fList, $single);
+                }
+                foreach ($fList as $file) {
+                    if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
+                        $storedImages[] = $file->store('orders', 'public');
+                    }
+                }
+            }
+
+            // 3. Base64 encoded images (from camera / canvas compression)
+            if (!empty($line['images_base64']) && is_array($line['images_base64'])) {
+                foreach ($line['images_base64'] as $b64) {
+                    if (is_string($b64) && str_starts_with($b64, 'data:image/')) {
+                        $parts = explode(',', $b64, 2);
+                        if (count($parts) === 2) {
+                            $decoded = base64_decode($parts[1]);
+                            if ($decoded !== false) {
+                                $filename = 'orders/' . uniqid('line_img_', true) . '.jpg';
+                                Storage::disk('public')->put($filename, $decoded);
+                                $storedImages[] = $filename;
+                            }
+                        }
+                    }
+                }
+            }
+
+            $storedImages = array_values(array_unique(array_filter($storedImages)));
+            $primaryImage = $storedImages[0] ?? null;
 
             OrderItem::create([
                 'order_id' => $order->id,
                 'description' => $line['description'],
-                'image' => $imagePath,
+                'image' => $primaryImage,
+                'images' => !empty($storedImages) ? $storedImages : null,
                 'item_id' => $line['item_id'] ?? null,
                 'pricing_mode' => ($meter !== null && $meter > 0) ? 'length' : 'count',
                 'meter' => $meter,

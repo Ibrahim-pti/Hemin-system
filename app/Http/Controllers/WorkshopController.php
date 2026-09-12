@@ -122,6 +122,7 @@ class WorkshopController extends Controller
                     'measurement' => $it->measurement_label,
                     'note' => $it->note,
                     'image' => $it->imageUrl(),
+                    'images' => $it->allImageUrls(),
                 ])->values()->all(),
             ];
         })->values()->all();
