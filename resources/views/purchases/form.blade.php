@@ -157,82 +157,101 @@
                        value="{{ old('note', $purchase->note) }}">
             </div>
 
-            {{-- وێنە یان فایلی پسوولەی کڕین (فایل، کامێرا یان PDF) --}}
+            {{-- وێنە و فایلی وەسڵ / پسوولەی کڕین (چەندین وێنە و چەندین فایلی PDF پێکەوە) --}}
             <div class="sm:col-span-2 lg:col-span-4 bg-slate-50/80 p-3.5 rounded-2xl border border-dashed border-slate-300">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2.5">
-                        <span class="text-2xl">📸</span>
+                        <span class="text-2xl">📑</span>
                         <div>
-                            <span class="block text-xs font-bold text-slate-800">وێنە و فایلی پسوولەی کڕین (وەسڵی کاغەزی فرۆشیار یان PDF)</span>
-                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت، لە مۆبایل هەڵیبژێریت یان فایلی PDF دابنێیت.</span>
+                            <div class="flex items-center gap-2">
+                                <span class="block text-xs font-bold text-slate-800">وێنە و فایلی پسوولەی کڕین (وەسڵ / دەفتەر / PDF)</span>
+                                <template x-if="attachmentsList.length > 0">
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                          x-text="attachmentsList.length + ' فایل هەڵبژێردراوە'"></span>
+                                </template>
+                            </div>
+                            <span class="block text-[11px] text-slate-500">دەتوانیت چەندین وێنە بە کامێرا بگریت، چەندین وێنە لە مۆبایل هەڵبژێریت یان چەندین فایلی PDF پێکەوە دابنێیت.</span>
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-2.5">
+                    {{-- دوگمەکانی کامێرا، هەڵبژاردنی وێنەکان، و PDF --}}
+                    <div class="flex flex-wrap items-center gap-2">
                         {{-- فایل ئینپووتی کامێرا بۆ مۆبایل --}}
-                        <input type="file" id="purchase_image_camera" name="image_camera" accept="image/*" capture="environment" class="sr-only" @change="onImageChange($event, 'camera')">
-                        {{-- فایل ئینپووتی ستۆدیۆ و مۆبایل --}}
-                        <input type="file" id="purchase_image_input" name="image" accept="image/*" class="sr-only" @change="onImageChange($event, 'gallery')">
-                        {{-- فایل ئینپووتی PDF --}}
-                        <input type="file" id="purchase_pdf_input" name="pdf_file" accept="application/pdf" class="sr-only" @change="onImageChange($event, 'pdf')">
+                        <input type="file" id="purchase_image_camera" accept="image/*" capture="environment" class="sr-only" @change="onFilesAdded($event, 'camera')">
+                        {{-- فایل ئینپووتی ستۆدیۆ و مۆبایل (چەندین وێنە) --}}
+                        <input type="file" id="purchase_image_input" accept="image/*" multiple class="sr-only" @change="onFilesAdded($event, 'gallery')">
+                        {{-- فایل ئینپووتی PDF (چەندین فایل) --}}
+                        <input type="file" id="purchase_pdf_input" accept="application/pdf" multiple class="sr-only" @change="onFilesAdded($event, 'pdf')">
+                        {{-- ئینپووتی سەرەکی فۆڕم بۆ ناردن --}}
+                        <input type="file" id="purchase_form_attachments" name="attachments[]" multiple class="sr-only">
 
-                        <template x-if="imagePreview">
-                            <div class="flex items-center gap-2.5 bg-white p-2 rounded-xl border border-teal-300 shadow-2xs">
-                                {{-- پیشاندانی وێنە یان فایلی PDF --}}
-                                <template x-if="!isPdf">
-                                    <div class="relative size-12 rounded-lg overflow-hidden border border-teal-600 shadow-xs group shrink-0">
-                                        <img :src="imagePreview" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="window.open(imagePreview, '_blank')" title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
-                                    </div>
-                                </template>
-                                <template x-if="isPdf">
-                                    <div class="relative size-12 rounded-lg bg-rose-50 border border-rose-300 flex flex-col items-center justify-center cursor-pointer hover:bg-rose-100 transition-colors shrink-0"
-                                         @click="window.open(imagePreview, '_blank')" title="کلیک بکە بۆ کردنەوەی فایلی PDF">
-                                        <span class="text-base">📄</span>
-                                        <span class="text-[8px] font-black text-rose-700 uppercase">PDF</span>
-                                    </div>
-                                </template>
+                        <label for="purchase_image_camera"
+                               class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-amber-50 text-amber-900 border border-amber-500/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                               title="گرتنی وێنەی نوێ بە کامێرا">
+                            <span class="text-base">📸</span>
+                            <span>دانانی وێنەی وەسڵەکە (کامێرا)</span>
+                        </label>
 
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <label for="purchase_image_camera" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-teal-100 border border-slate-200 rounded-lg cursor-pointer transition-all" title="گۆڕین بە کامێرا">
-                                        📷 کامێرا
-                                    </label>
-                                    <label for="purchase_image_input" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-teal-100 border border-slate-200 rounded-lg cursor-pointer transition-all" title="گۆڕین لە مۆبایل">
-                                        🖼️ مۆبایل
-                                    </label>
-                                    <label for="purchase_pdf_input" class="px-2.5 py-1 text-[11px] font-bold text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all" title="گۆڕین بۆ فایلی PDF">
-                                        📄 PDF
-                                    </label>
-                                    <button type="button" @click="removeImage()" class="px-2.5 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all">
-                                        ✕ لابردن
+                        <label for="purchase_image_input"
+                               class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                               title="هەڵبژاردنی یەک یان چەندین وێنە">
+                            <span class="text-base">🖼️</span>
+                            <span>هەڵبژاردن لە مۆبایل</span>
+                        </label>
+
+                        <label for="purchase_pdf_input"
+                               class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                               title="هەڵبژاردنی یەک یان چەندین فایلی PDF">
+                            <span class="text-base">📄</span>
+                            <span>+ فایلی PDF</span>
+                        </label>
+
+                        <template x-if="attachmentsList.length > 0">
+                            <button type="button" @click="clearAllAttachments()" class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer">
+                                ✕ سڕینەوەی هەمووی
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                {{-- خشتەی پیشاندانی هەموو وێنە و فایلە هەڵبژێردراوەکان --}}
+                <template x-if="attachmentsList.length > 0">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-2.5 border-t border-slate-200/80 mt-2">
+                        <template x-for="(item, idx) in attachmentsList" :key="item.id">
+                            <div class="flex items-center justify-between gap-2.5 bg-white p-2 rounded-xl border border-slate-200 shadow-2xs hover:border-teal-400 transition-all">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    {{-- ئەگەر وێنە بێت --}}
+                                    <template x-if="!item.isPdf">
+                                        <div class="relative size-11 rounded-lg overflow-hidden border border-slate-200 group shrink-0 cursor-pointer" @click="openAttachmentPreview(item)" title="کلیک بکە بۆ بینینی گەورە">
+                                            <img :src="item.previewUrl" class="size-full object-cover group-hover:scale-110 transition-transform">
+                                        </div>
+                                    </template>
+                                    {{-- ئەگەر PDF بێت --}}
+                                    <template x-if="item.isPdf">
+                                        <div @click="openAttachmentPreview(item)" class="relative size-11 rounded-lg bg-rose-50 border border-rose-300 flex flex-col items-center justify-center cursor-pointer hover:bg-rose-100 transition-colors shrink-0" title="کلیک بکە بۆ کردنەوەی فایلی PDF">
+                                            <span class="text-base">📄</span>
+                                            <span class="text-[8px] font-black text-rose-700 uppercase">PDF</span>
+                                        </div>
+                                    </template>
+
+                                    <div class="min-w-0">
+                                        <div class="text-xs font-bold text-slate-800 truncate max-w-[150px]" x-text="item.name" :title="item.name"></div>
+                                        <div class="text-[10px] font-mono text-slate-400" x-text="item.size"></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button type="button" @click="openAttachmentPreview(item)" class="p-1 rounded-md text-slate-500 hover:text-teal-600 hover:bg-teal-50 transition-colors cursor-pointer" title="پیشاندان">
+                                        👁️
+                                    </button>
+                                    <button type="button" @click="removeAttachment(idx)" class="p-1 rounded-md text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer" title="سڕینەوەی ئەم فایلە">
+                                        ✕
                                     </button>
                                 </div>
                             </div>
                         </template>
-
-                        <template x-if="!imagePreview">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <label for="purchase_image_camera"
-                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-teal-50 text-teal-800 border border-teal-600/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                                    <span class="text-base">📸</span>
-                                    <span>گرتنی وێنە بە کامێرا</span>
-                                </label>
-
-                                <label for="purchase_image_input"
-                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                                    <span class="text-base">🖼️</span>
-                                    <span>هەڵبژاردن لە مۆبایل</span>
-                                </label>
-
-                                <label for="purchase_pdf_input"
-                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-                                       title="هەڵبژاردنی یەک فایلی PDF">
-                                    <span class="text-base">📄</span>
-                                    <span>+ فایلی PDF</span>
-                                </label>
-                            </div>
-                        </template>
                     </div>
-                </div>
+                </template>
             </div>
         </div>
     </div>
