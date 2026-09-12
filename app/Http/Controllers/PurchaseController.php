@@ -288,16 +288,42 @@ class PurchaseController extends Controller
 
         $data = $this->validated($request);
 
-        $imagePath = $purchase->image;
-        $uploadedFile = $request->file('image') ?? $request->file('image_camera') ?? $request->file('pdf_file');
-        if ($uploadedFile && $uploadedFile->isValid()) {
-            $imagePath = $uploadedFile->store('purchases', 'public');
-        } elseif ($request->boolean('remove_image')) {
-            $imagePath = null;
+        $existingAttachments = [];
+        if ($request->has('existing_attachments')) {
+            $existing = (array) $request->input('existing_attachments');
+            $validCurrent = $purchase->allAttachments();
+            $existingAttachments = array_values(array_intersect($existing, $validCurrent));
+        } elseif (!$request->boolean('remove_image') && !$request->hasFile('attachments') && !$request->hasFile('image') && !$request->hasFile('image_camera') && !$request->hasFile('pdf_file')) {
+            $existingAttachments = $purchase->allAttachments();
         }
 
-        DB::transaction(function () use ($purchase, $data, $request, $imagePath) {
-            $purchase->update($this->header($data) + ['image' => $imagePath]);
+        $storedFiles = $existingAttachments;
+
+        $fileInputs = ['attachments', 'image', 'image_camera', 'pdf_file'];
+        foreach ($fileInputs as $inputKey) {
+            if ($request->hasFile($inputKey)) {
+                $rawFiles = $request->file($inputKey);
+                $fileList = is_array($rawFiles) ? $rawFiles : [$rawFiles];
+                foreach ($fileList as $f) {
+                    if ($f && $f->isValid()) {
+                        $storedFiles[] = $f->store('purchases', 'public');
+                    }
+                }
+            }
+        }
+
+        if ($request->boolean('remove_image')) {
+            $storedFiles = [];
+        }
+
+        $storedFiles = array_values(array_unique(array_filter($storedFiles)));
+        $primaryImage = !empty($storedFiles) ? $storedFiles[0] : null;
+
+        DB::transaction(function () use ($purchase, $data, $request, $primaryImage, $storedFiles) {
+            $purchase->update($this->header($data) + [
+                'image' => $primaryImage,
+                'attachments' => !empty($storedFiles) ? $storedFiles : null,
+            ]);
             $purchase->items()->delete();
             $this->syncLines($purchase, $data['lines']);
 
