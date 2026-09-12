@@ -14,6 +14,7 @@ class CustomerOldDebt extends Model
         'currency',
         'status',
         'image',
+        'attachments',
         'note',
         'date',
         'user_id',
@@ -25,6 +26,7 @@ class CustomerOldDebt extends Model
             'amount' => 'decimal:2',
             'paid_amount' => 'decimal:2',
             'date' => 'date',
+            'attachments' => 'array',
         ];
     }
 
@@ -79,17 +81,33 @@ class CustomerOldDebt extends Model
         return (float) $this->paid_amount;
     }
 
+    public function allAttachments(): array
+    {
+        $list = $this->attachments;
+        if ((empty($list) || !is_array($list)) && !empty($this->image)) {
+            $list = [$this->image];
+        }
+
+        return is_array($list) ? $list : [];
+    }
+
+    public static function isPdfPath(?string $path): bool
+    {
+        return !empty($path) && str_ends_with(strtolower($path), '.pdf');
+    }
+
     public function isPdf(): bool
     {
         if (empty($this->image)) {
             return false;
         }
 
-        return str_ends_with(strtolower($this->image), '.pdf');
+        return static::isPdfPath($this->image);
     }
 
-    public function fileUrl(): ?string
+    public function fileUrl(?string $path = null): ?string
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        $target = $path ?: $this->image;
+        return $target ? asset('storage/' . $target) : null;
     }
 }

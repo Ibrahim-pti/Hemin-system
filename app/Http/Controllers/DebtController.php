@@ -220,21 +220,25 @@ class DebtController extends Controller
             'currency' => ['required', 'in:IQD,USD'],
             'status' => ['required', 'in:debt,paid,partial'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
-            'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
-            'image_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:25600'],
+            'image' => ['nullable'],
+            'image.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
+            'image_camera' => ['nullable'],
+            'image_camera.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
+            'image_pdf' => ['nullable'],
+            'image_pdf.*' => ['nullable', 'file', 'mimes:pdf', 'max:25600'],
+            'attachments' => ['nullable'],
+            'attachments.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
             'image_base64' => ['nullable', 'string'],
+            'attachments_base64' => ['nullable', 'array'],
+            'attachments_base64.*' => ['string'],
             'date' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ], [
             'amount.required' => 'بڕی حیساب / قەرز بنووسە.',
             'amount.min' => 'بڕی پارە دەبێت لە ٠ زیاتر بێت.',
             'new_customer_name.required_without' => 'ناوی کڕیار بنووسە یان کڕیارێک هەڵبژێرە.',
-            'image.file' => 'فایلی هەڵبژێردراو دەبێت وێنە یان بەڵگەنامەی PDF بێت.',
-            'image.mimes' => 'فایلی وەسڵ دەبێت وێنە (JPG, PNG, WEBP) یان بەڵگەنامەی PDF بێت.',
-            'image.max' => 'قەبارەی فایل نابێت لە ۲۵ مێگابایت زیاتر بێت.',
-            'image_pdf.mimes' => 'فایلەکە دەبێت لە جۆری PDF بێت.',
-            'image_pdf.max' => 'قەبارەی فایلی PDF نابێت لە ۲۵ مێگابایت زیاتر بێت.',
+            'attachments.*.mimes' => 'هەموو فایلەکان دەبێت وێنە (JPG, PNG, WEBP) یان بەڵگەنامەی PDF بن.',
+            'attachments.*.max' => 'قەبارەی هیچ فایلێک نابێت لە ۲۵ مێگابایت زیاتر بێت.',
         ]);
 
         if (!empty($data['customer_id'])) {
@@ -265,14 +269,33 @@ class DebtController extends Controller
             $paidAmount = (float) ($data['paid_amount'] ?? 0);
         }
 
-        $uploadedImage = $request->file('image') ?? $request->file('image_camera') ?? $request->file('image_pdf');
-        $imagePath = null;
-        if ($uploadedImage && $uploadedImage->isValid()) {
-            $imagePath = $uploadedImage->store('old_debts', 'public');
-        } elseif ($request->filled('image_base64')) {
-            // پاشەکەوتکردنی وێنەی پەستێنراو (Base64) بۆ کاتێک فایلی کامێرا بەهۆی سنورداری مۆبایل نەنێردرابێت
-            $base64Data = $request->input('image_base64');
-            if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $typeMatch)) {
+        $storedFiles = [];
+
+        // کۆکردنەوەی هەموو فایلە بەرزکراوەکان (چەندین وێنە و چەندین فایلی PDF پێکەوە)
+        $fileInputs = ['attachments', 'image', 'image_camera', 'image_pdf'];
+        foreach ($fileInputs as $inputKey) {
+            if ($request->hasFile($inputKey)) {
+                $rawFiles = $request->file($inputKey);
+                $fileList = is_array($rawFiles) ? $rawFiles : [$rawFiles];
+                foreach ($fileList as $f) {
+                    if ($f && $f->isValid()) {
+                        $storedFiles[] = $f->store('old_debts', 'public');
+                    }
+                }
+            }
+        }
+
+        // کۆکردنەوەی وێنەکانی Base64 (fallback بۆ مۆبایل و کامێرا)
+        $base64List = [];
+        if ($request->filled('attachments_base64')) {
+            $base64List = array_merge($base64List, (array) $request->input('attachments_base64'));
+        }
+        if ($request->filled('image_base64')) {
+            $base64List[] = (string) $request->input('image_base64');
+        }
+
+        foreach ($base64List as $base64Data) {
+            if (is_string($base64Data) && preg_match('/^data:image\/(\w+);base64,/', $base64Data, $typeMatch)) {
                 $rawBase64 = substr($base64Data, strpos($base64Data, ',') + 1);
                 $ext = strtolower($typeMatch[1]);
                 if (in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'heic'])) {
@@ -281,11 +304,14 @@ class DebtController extends Controller
                         $ext = $ext === 'jpeg' ? 'jpg' : $ext;
                         $fileName = 'old_debts/' . \Illuminate\Support\Str::random(40) . '.' . $ext;
                         \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $decoded);
-                        $imagePath = $fileName;
+                        $storedFiles[] = $fileName;
                     }
                 }
             }
         }
+
+        $storedFiles = array_values(array_unique($storedFiles));
+        $primaryImage = !empty($storedFiles) ? $storedFiles[0] : null;
 
         \App\Models\CustomerOldDebt::create([
             'customer_id' => $customer->id,
@@ -293,7 +319,8 @@ class DebtController extends Controller
             'paid_amount' => $paidAmount,
             'currency' => $data['currency'],
             'status' => $status,
-            'image' => $imagePath,
+            'image' => $primaryImage,
+            'attachments' => !empty($storedFiles) ? $storedFiles : null,
             'note' => $data['note'] ?? null,
             'date' => $data['date'] ?? now()->toDateString(),
             'user_id' => auth()->id(),
@@ -305,8 +332,11 @@ class DebtController extends Controller
     /** سڕینەوەی تۆماری قەرزی کۆن */
     public function destroyOldDebt(\App\Models\CustomerOldDebt $oldDebt)
     {
-        if ($oldDebt->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldDebt->image)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldDebt->image);
+        $allFiles = $oldDebt->allAttachments();
+        foreach ($allFiles as $filePath) {
+            if ($filePath && \Illuminate\Support\Facades\Storage::disk('public')->exists($filePath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($filePath);
+            }
         }
 
         $oldDebt->delete();

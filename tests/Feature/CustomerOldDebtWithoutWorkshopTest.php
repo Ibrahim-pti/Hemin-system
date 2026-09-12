@@ -154,6 +154,52 @@ class CustomerOldDebtWithoutWorkshopTest extends TestCase
         Storage::disk('public')->assertExists($oldDebt->image);
     }
 
+    public function test_old_debt_can_be_uploaded_with_multiple_images_and_pdf_attachments(): void
+    {
+        Storage::fake('public');
+
+        $customer = Customer::create([
+            'name' => 'کاک ئاراس',
+            'phone' => '07503334455',
+            'opening_balance' => 0,
+            'opening_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $image1 = UploadedFile::fake()->image('receipt1.jpg');
+        $image2 = UploadedFile::fake()->image('receipt2.png');
+        $pdf = UploadedFile::fake()->create('contract.pdf', 300, 'application/pdf');
+
+        $response = $this->actingAs($this->user)->post(route('debts.old-debt'), [
+            'customer_id' => $customer->id,
+            'amount' => '600000',
+            'currency' => 'IQD',
+            'status' => 'debt',
+            'date' => '2026-09-04',
+            'note' => 'حیساب لەگەڵ دوو وێنە و یەک فایلی PDF',
+            'attachments' => [$image1, $image2, $pdf],
+        ]);
+
+        $response->assertSessionHas('ok');
+        $oldDebt = CustomerOldDebt::where('customer_id', $customer->id)->firstOrFail();
+        $attachments = $oldDebt->allAttachments();
+
+        $this->assertCount(3, $attachments);
+        $this->assertNotNull($oldDebt->image);
+        foreach ($attachments as $path) {
+            Storage::disk('public')->assertExists($path);
+        }
+
+        // Test that PDF helper recognizes the PDF attachment
+        $hasPdf = false;
+        foreach ($attachments as $path) {
+            if (CustomerOldDebt::isPdfPath($path)) {
+                $hasPdf = true;
+            }
+        }
+        $this->assertTrue($hasPdf);
+    }
+
     public function test_old_debt_marked_as_paid_does_not_increase_customer_debt(): void
     {
         $customer = Customer::create([

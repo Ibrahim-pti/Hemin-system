@@ -244,17 +244,28 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 text-center">
-                            @if ($debt->image)
-                                @if ($debt->isPdf())
-                                    <a href="{{ $debt->fileUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-black transition-all shadow-2xs group" title="کلیک بکە بۆ کردنەوەی فایلی PDF">
-                                        <span class="text-sm group-hover:scale-110 transition-transform">📄</span>
-                                        <span>فایلی PDF</span>
-                                    </a>
-                                @else
-                                    <a href="{{ $debt->fileUrl() }}" target="_blank" class="inline-block group" title="کلیک بکە بۆ بینینی وێنەی گەورە">
-                                        <img src="{{ $debt->fileUrl() }}" alt="بەڵگە" class="size-10 rounded-lg object-cover border border-slate-200 shadow-xs group-hover:scale-110 transition-all">
-                                    </a>
-                                @endif
+                            @php
+                                $attachments = $debt->allAttachments();
+                            @endphp
+                            @if (!empty($attachments))
+                                <div class="flex items-center justify-center gap-1.5 flex-wrap max-w-[220px] mx-auto">
+                                    @foreach ($attachments as $idx => $att)
+                                        @if (\App\Models\CustomerOldDebt::isPdfPath($att))
+                                            <a href="{{ $debt->fileUrl($att) }}" target="_blank"
+                                               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-black shadow-2xs transition-all"
+                                               title="فایلی PDF (کلیک بکە بۆ کردنەوە)">
+                                                <span class="text-sm">📄</span>
+                                                <span>PDF{{ count($attachments) > 1 ? ' (' . ($idx+1) . ')' : '' }}</span>
+                                            </a>
+                                        @else
+                                            <a href="{{ $debt->fileUrl($att) }}" target="_blank"
+                                               class="inline-block group"
+                                               title="وێنەی بەڵگە {{ count($attachments) > 1 ? '(' . ($idx+1) . ')' : '' }} (کلیک بکە بۆ بینینی گەورە)">
+                                                <img src="{{ $debt->fileUrl($att) }}" alt="بەڵگە" class="size-10 rounded-lg object-cover border border-slate-200 shadow-xs group-hover:scale-110 transition-transform">
+                                            </a>
+                                        @endif
+                                    @endforeach
+                                </div>
                             @else
                                 <span class="text-slate-300 text-xs">—</span>
                             @endif

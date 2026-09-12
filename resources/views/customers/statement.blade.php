@@ -461,16 +461,23 @@
                                         @endif
                                     </td>
                                     <td style="padding: 0.75rem 0.85rem; text-align: center;">
-                                        @if ($debt->image)
-                                            @if ($debt->isPdf())
-                                                <a href="{{ $debt->fileUrl() }}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.65rem; background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 800; text-decoration: none;">
-                                                    <span>📄</span> <span>PDF</span>
-                                                </a>
-                                            @else
-                                                <a href="{{ $debt->fileUrl() }}" target="_blank" style="display: inline-block;">
-                                                    <img src="{{ $debt->fileUrl() }}" alt="بەڵگە" style="width: 2.5rem; height: 2.5rem; object-fit: cover; border-radius: 0.5rem; border: 1px solid #cbd5e1;">
-                                                </a>
-                                            @endif
+                                        @php
+                                            $attachments = $debt->allAttachments();
+                                        @endphp
+                                        @if (!empty($attachments))
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; flex-wrap: wrap;">
+                                                @foreach ($attachments as $idx => $att)
+                                                    @if (\App\Models\CustomerOldDebt::isPdfPath($att))
+                                                        <a href="{{ $debt->fileUrl($att) }}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; border-radius: 0.4rem; font-size: 0.7rem; font-weight: 800; text-decoration: none;">
+                                                            <span>📄</span> <span>PDF{{ count($attachments) > 1 ? ' (' . ($idx+1) . ')' : '' }}</span>
+                                                        </a>
+                                                    @else
+                                                        <a href="{{ $debt->fileUrl($att) }}" target="_blank" style="display: inline-block;">
+                                                            <img src="{{ $debt->fileUrl($att) }}" alt="بەڵگە" style="width: 2.2rem; height: 2.2rem; object-fit: cover; border-radius: 0.4rem; border: 1px solid #cbd5e1;">
+                                                        </a>
+                                                    @endif
+                                                @endforeach
+                                            </div>
                                         @else
                                             <span style="color: #cbd5e1;">—</span>
                                         @endif

@@ -22,7 +22,10 @@
     <input type="hidden" name="currency" :value="currency">
     <input type="hidden" name="status" :value="paymentType">
     <input type="hidden" name="customer_id" :value="customerId">
-    <input type="hidden" name="image_base64" :value="imageBase64">
+    <input type="hidden" name="image_base64" :value="attachmentsList[0]?.base64 || ''">
+    <template x-for="(item, idx) in attachmentsList" :key="'b64_' + item.id">
+        <input type="hidden" name="attachments_base64[]" :value="item.base64">
+    </template>
 
     @if ($errors->any())
         <div class="card mb-4 border-r-4 !border-r-[--color-danger] px-4 py-3 text-sm">
@@ -111,90 +114,101 @@
                        value="{{ old('note') }}">
             </div>
 
-            {{-- وێنە یان فایلی وەسڵ / دەفتەری حیسابات (فایل، PDF، یان کامێرا) --}}
+            {{-- وێنە یان فایلی وەسڵ / دەفتەری حیسابات (چەندین وێنە و چەندین فایلی PDF پێکەوە) --}}
             <div class="sm:col-span-2 lg:col-span-4 bg-slate-50/80 p-3.5 rounded-2xl border border-dashed border-slate-300">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2.5">
                         <span class="text-2xl">📑</span>
                         <div>
-                            <span class="block text-xs font-bold text-slate-800">وێنەی وەسڵ / فایلی PDF یان لاپەڕەی دەفتەر</span>
-                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت، لە مۆبایل هەڵیبژێریت، یان فایلی PDF دابنێیت.</span>
+                            <div class="flex items-center gap-2">
+                                <span class="block text-xs font-bold text-slate-800">وێنە و فایلی وەسڵ / دەفتەری حیسابات</span>
+                                <template x-if="attachmentsList.length > 0">
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                          x-text="attachmentsList.length + ' فایل هەڵبژێردراوە'"></span>
+                                </template>
+                            </div>
+                            <span class="block text-[11px] text-slate-500">دەتوانیت چەندین وێنە و چەندین فایلی PDF پێکەوە هەڵبژێریت یان بە کامێرا بگریت.</span>
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-2.5">
-                        {{-- فایل ئینپووتی کامێرا بۆ مۆبایل (capture=environment ڕاستەوخۆ کامێرا دەکاتەوە) --}}
-                        <input type="file" id="old_debt_image_camera" name="image_camera" accept="image/*" capture="environment" class="sr-only" @change="onImageChange($event, 'camera')">
-                        {{-- فایل ئینپووتی ستۆدیۆ و وێنە --}}
-                        <input type="file" id="old_debt_image_input" name="image" accept="image/*,application/pdf" class="sr-only" @change="onImageChange($event, 'gallery')">
-                        {{-- فایل ئینپووتی تایبەت بە فایلی PDF --}}
-                        <input type="file" id="old_debt_pdf_input" name="image_pdf" accept="application/pdf" class="sr-only" @change="onImageChange($event, 'pdf')">
+                    {{-- دوگمەکانی کامێرا، هەڵبژاردنی وێنەکان، و PDF --}}
+                    <div class="flex flex-wrap items-center gap-2">
+                        {{-- فایل ئینپووتی کامێرا --}}
+                        <input type="file" id="old_debt_image_camera" accept="image/*" capture="environment" class="sr-only" @change="onFilesAdded($event, 'camera')">
+                        {{-- فایل ئینپووتی ستۆدیۆ (multiple images) --}}
+                        <input type="file" id="old_debt_image_input" accept="image/*" multiple class="sr-only" @change="onFilesAdded($event, 'gallery')">
+                        {{-- فایل ئینپووتی PDF (multiple PDFs) --}}
+                        <input type="file" id="old_debt_pdf_input" accept="application/pdf" multiple class="sr-only" @change="onFilesAdded($event, 'pdf')">
+                        {{-- ئینپووتی سەرەکی فۆڕم بۆ ناردن --}}
+                        <input type="file" id="old_debt_form_attachments" name="attachments[]" multiple class="sr-only">
 
-                        <template x-if="fileSelected">
-                            <div class="flex items-center gap-2.5 bg-white p-2 rounded-xl border border-amber-300 shadow-2xs">
-                                {{-- اگر وێنە بێت پیشاندانی بچووک دەکرێتەوە --}}
-                                <template x-if="!isPdf">
-                                    <div class="relative size-12 rounded-lg overflow-hidden border border-amber-500 shadow-xs group shrink-0">
-                                        <img :src="filePreview" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="openPreview()" title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
-                                    </div>
-                                </template>
-                                {{-- اگر فایلی PDF بێت ئایکۆن و باجی شیکی PDF نیشان دەدرێت --}}
-                                <template x-if="isPdf">
-                                    <div @click="openPreview()" class="relative size-12 rounded-lg bg-rose-50 border border-rose-300 flex flex-col items-center justify-center cursor-pointer hover:bg-rose-100 transition-colors shrink-0" title="کلیک بکە بۆ پیشاندانی فایلی PDF">
-                                        <span class="text-xl">📄</span>
-                                        <span class="text-[9px] font-black text-rose-700 uppercase">PDF</span>
-                                    </div>
-                                </template>
+                        <label for="old_debt_image_camera"
+                               class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-amber-50 text-amber-900 border border-amber-500/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                               title="گرتنی وێنەی نوێ بە کامێرا">
+                            <span class="text-base">📸</span>
+                            <span>کامێرا</span>
+                        </label>
 
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs font-bold text-slate-800 truncate max-w-[180px]" x-text="fileName"></span>
-                                        <span class="text-[10px] font-mono text-slate-400" x-text="fileSize"></span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <button type="button" @click="openPreview()" class="px-2 py-0.5 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer transition-all">
-                                            👁️ پیشاندان
-                                        </button>
-                                        <label for="old_debt_image_camera" class="px-2 py-0.5 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
-                                            📷 کامێرا
-                                        </label>
-                                        <label for="old_debt_image_input" class="px-2 py-0.5 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
-                                            🖼️ وێنە
-                                        </label>
-                                        <label for="old_debt_pdf_input" class="px-2 py-0.5 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all">
-                                            📄 PDF
-                                        </label>
-                                        <button type="button" @click="removeFile()" class="px-2 py-0.5 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all">
-                                            ✕ لابردن
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
+                        <label for="old_debt_image_input"
+                               class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                               title="هەڵبژاردنی یەک یان چەندین وێنە لە ستۆدیۆ">
+                            <span class="text-base">🖼️</span>
+                            <span>+ وێنەی تر (مۆبایل)</span>
+                        </label>
 
-                        <template x-if="!fileSelected">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <label for="old_debt_image_camera"
-                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-amber-50 text-amber-900 border border-amber-500/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                                    <span class="text-base">📸</span>
-                                    <span>دانانی وێنەی وەسڵەکە (کامێرا)</span>
-                                </label>
+                        <label for="old_debt_pdf_input"
+                               class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                               title="هەڵبژاردنی یەک یان چەندین فایلی PDF">
+                            <span class="text-base">📄</span>
+                            <span>+ فایلی PDF</span>
+                        </label>
 
-                                <label for="old_debt_image_input"
-                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                                    <span class="text-base">🖼️</span>
-                                    <span>هەڵبژاردن لە مۆبایل</span>
-                                </label>
-
-                                <label for="old_debt_pdf_input"
-                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                                    <span class="text-base">📄</span>
-                                    <span>فایلی وەسڵ (PDF)</span>
-                                </label>
-                            </div>
+                        <template x-if="attachmentsList.length > 0">
+                            <button type="button" @click="clearAllAttachments()" class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer">
+                                ✕ سڕینەوەی هەمووی
+                            </button>
                         </template>
                     </div>
                 </div>
+
+                {{-- خشتەی پیشاندانی هەموو وێنە و فایلە هەڵبژێردراوەکان --}}
+                <template x-if="attachmentsList.length > 0">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-2.5 border-t border-slate-200/80 mt-2">
+                        <template x-for="(item, idx) in attachmentsList" :key="item.id">
+                            <div class="flex items-center justify-between gap-2.5 bg-white p-2 rounded-xl border border-slate-200 shadow-2xs hover:border-blue-400 transition-all">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    {{-- ئەگەر وێنە بێت --}}
+                                    <template x-if="!item.isPdf">
+                                        <div class="relative size-11 rounded-lg overflow-hidden border border-slate-200 group shrink-0 cursor-pointer" @click="openAttachmentPreview(item)" title="کلیک بکە بۆ بینینی گەورە">
+                                            <img :src="item.previewUrl" class="size-full object-cover group-hover:scale-110 transition-transform">
+                                        </div>
+                                    </template>
+                                    {{-- ئەگەر PDF بێت --}}
+                                    <template x-if="item.isPdf">
+                                        <div @click="openAttachmentPreview(item)" class="relative size-11 rounded-lg bg-rose-50 border border-rose-300 flex flex-col items-center justify-center cursor-pointer hover:bg-rose-100 transition-colors shrink-0" title="کلیک بکە بۆ کردنەوەی فایلی PDF">
+                                            <span class="text-base">📄</span>
+                                            <span class="text-[8px] font-black text-rose-700 uppercase">PDF</span>
+                                        </div>
+                                    </template>
+
+                                    <div class="min-w-0">
+                                        <div class="text-xs font-bold text-slate-800 truncate max-w-[150px]" x-text="item.name" :title="item.name"></div>
+                                        <div class="text-[10px] font-mono text-slate-400" x-text="item.size"></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button type="button" @click="openAttachmentPreview(item)" class="p-1 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer" title="پیشاندان">
+                                        👁️
+                                    </button>
+                                    <button type="button" @click="removeAttachment(idx)" class="p-1 rounded-md text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer" title="سڕینەوەی ئەم فایلە">
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -349,6 +363,7 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
         paid: initPaid ? Number(initPaid).toLocaleString() : '',
         paymentType: initPaymentType || 'debt',
         currency: initCurrency || 'IQD',
+        attachmentsList: [],
         fileSelected: false,
         filePreview: null,
         imagePreview: null,
@@ -433,148 +448,119 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
             this.paid = parts.join('.');
         },
 
-        onImageChange(e, source) {
-            const file = e.target.files[0];
-            if (file) {
-                if (source === 'camera') {
-                    const gallery = document.getElementById('old_debt_image_input');
-                    if (gallery) gallery.value = '';
-                    const pdf = document.getElementById('old_debt_pdf_input');
-                    if (pdf) pdf.value = '';
-                } else if (source === 'pdf') {
-                    const camera = document.getElementById('old_debt_image_camera');
-                    if (camera) camera.value = '';
-                    const gallery = document.getElementById('old_debt_image_input');
-                    if (gallery) gallery.value = '';
-                } else {
-                    const camera = document.getElementById('old_debt_image_camera');
-                    if (camera) camera.value = '';
-                    const pdf = document.getElementById('old_debt_pdf_input');
-                    if (pdf) pdf.value = '';
-                }
+        onFilesAdded(e, source) {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
 
-                this.fileSelected = true;
-                this.fileName = file.name;
+            Array.from(files).forEach((file) => {
+                const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
                 const sizeKb = file.size / 1024;
-                this.fileSize = sizeKb > 1024 ? (sizeKb / 1024).toFixed(1) + ' MB' : Math.round(sizeKb) + ' KB';
+                const formattedSize = sizeKb > 1024 ? (sizeKb / 1024).toFixed(1) + ' MB' : Math.round(sizeKb) + ' KB';
+                const item = {
+                    id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    file: file,
+                    name: file.name,
+                    size: formattedSize,
+                    isPdf: isPdf,
+                    previewUrl: '',
+                    base64: ''
+                };
 
-                const isPdfFile = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-                this.isPdf = isPdfFile;
-
-                if (isPdfFile) {
-                    this.imageBase64 = '';
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        this.filePreview = ev.target.result;
-                        this.imagePreview = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                    return;
-                }
-
-                // بۆ وێنە (کامێرا یان ستۆدیۆ): پیشاندانی دەستبەجێ + پەستاندنی خۆکار بۆ ڕێگری لە کێشەی قەبارەی مۆبایل
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    this.filePreview = ev.target.result;
-                    this.imagePreview = ev.target.result;
-                    this.imageBase64 = ev.target.result;
-                    this.compressImageFile(ev.target.result, file, source);
+                    item.previewUrl = ev.target.result;
+                    if (!isPdf) {
+                        item.base64 = ev.target.result;
+                        this.compressAttachment(item);
+                    }
                 };
                 reader.readAsDataURL(file);
-            }
+
+                this.attachmentsList.push(item);
+            });
+
+            e.target.value = '';
+            this.syncFilesToForm();
         },
 
-        compressImageFile(dataUrl, originalFile, source) {
+        compressAttachment(item) {
             try {
                 const img = new Image();
                 img.onload = () => {
                     const maxDim = 1920;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > maxDim || height > maxDim) {
-                        if (width > height) {
-                            height = Math.round((height * maxDim) / width);
-                            width = maxDim;
-                        } else {
-                            width = Math.round((width * maxDim) / height);
-                            height = maxDim;
-                        }
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
                     }
-
                     const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
+                    canvas.width = w;
+                    canvas.height = h;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // پەستاندنی وێنەکە بۆ JPEG بە کوالێتی بەرز (0.85) کە هەموو بەڵگە و وەسڵێک بە تەواوی خوێنەرەوە دەهێڵێتەوە
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                    this.imageBase64 = compressedDataUrl;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    item.base64 = canvas.toDataURL('image/jpeg', 0.85);
 
                     canvas.toBlob((blob) => {
                         if (blob) {
                             const newSizeKb = blob.size / 1024;
-                            this.fileSize = newSizeKb > 1024 
-                                ? (newSizeKb / 1024).toFixed(1) + ' MB' 
-                                : Math.round(newSizeKb) + ' KB';
-
-                            try {
-                                const targetInputId = source === 'camera' ? 'old_debt_image_camera' : 'old_debt_image_input';
-                                const inputElem = document.getElementById(targetInputId);
-                                if (inputElem && window.DataTransfer) {
-                                    const dt = new DataTransfer();
-                                    const cleanName = (originalFile.name || 'receipt').replace(/\.[^/.]+$/, "") + ".jpg";
-                                    const newFile = new File([blob], cleanName, {
-                                        type: 'image/jpeg',
-                                        lastModified: Date.now()
-                                    });
-                                    dt.items.add(newFile);
-                                    inputElem.files = dt.files;
-                                }
-                            } catch (e) {
-                                // لە حاڵەتی پشتگیری نەکردنی DataTransfer، فۆڕمەکە image_base64 پاشەکەوت دەکات بەبێ کێشە
-                            }
+                            item.size = newSizeKb > 1024 ? (newSizeKb / 1024).toFixed(1) + ' MB' : Math.round(newSizeKb) + ' KB';
+                            const cleanName = (item.name || 'receipt').replace(/\.[^/.]+$/, "") + ".jpg";
+                            item.file = new File([blob], cleanName, { type: 'image/jpeg', lastModified: Date.now() });
+                            this.syncFilesToForm();
                         }
                     }, 'image/jpeg', 0.85);
                 };
-                img.src = dataUrl;
+                img.src = item.previewUrl;
             } catch (err) {
-                console.warn('Image auto-compression skipped:', err);
+                console.warn('Compress error:', err);
             }
         },
 
-        openPreview() {
-            if (this.filePreview) {
-                const win = window.open();
-                if (win) {
-                    if (this.isPdf) {
-                        win.document.write('<!DOCTYPE html><html><head><title>' + (this.fileName || 'PDF Document') + '</title><style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#333;}</style></head><body><iframe src="' + this.filePreview + '" frameborder="0" style="border:0;width:100%;height:100%;" allowfullscreen></iframe></body></html>');
-                    } else {
-                        win.document.write('<!DOCTYPE html><html><head><title>' + (this.fileName || 'Image') + '</title><style>body{margin:0;padding:20px;display:flex;align-items:center;justify-content:center;min-height:90vh;background:#0f172a;}img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head><body><img src="' + this.filePreview + '"></body></html>');
-                    }
+        syncFilesToForm() {
+            try {
+                const formInput = document.getElementById('old_debt_form_attachments');
+                if (formInput && window.DataTransfer) {
+                    const dt = new DataTransfer();
+                    this.attachmentsList.forEach((att) => {
+                        if (att.file) dt.items.add(att.file);
+                    });
+                    formInput.files = dt.files;
+                }
+            } catch (e) {}
+        },
+
+        removeAttachment(index) {
+            this.attachmentsList.splice(index, 1);
+            this.syncFilesToForm();
+        },
+
+        clearAllAttachments() {
+            this.attachmentsList = [];
+            this.syncFilesToForm();
+        },
+
+        openAttachmentPreview(item) {
+            if (!item.previewUrl) return;
+            const win = window.open();
+            if (win) {
+                if (item.isPdf) {
+                    win.document.write('<!DOCTYPE html><html><head><title>' + (item.name || 'PDF') + '</title><style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#333;}</style></head><body><iframe src="' + item.previewUrl + '" frameborder="0" style="border:0;width:100%;height:100%;" allowfullscreen></iframe></body></html>');
+                } else {
+                    win.document.write('<!DOCTYPE html><html><head><title>' + (item.name || 'Image') + '</title><style>body{margin:0;padding:20px;display:flex;align-items:center;justify-content:center;min-height:90vh;background:#0f172a;}img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head><body><img src="' + item.previewUrl + '"></body></html>');
                 }
             }
         },
 
+        onImageChange(e, source) {
+            this.onFilesAdded(e, source);
+        },
+
         removeFile() {
-            this.fileSelected = false;
-            this.filePreview = null;
-            this.imagePreview = null;
-            this.imageBase64 = '';
-            this.isPdf = false;
-            this.fileName = '';
-            this.fileSize = '';
-            const inputGallery = document.getElementById('old_debt_image_input');
-            if (inputGallery) inputGallery.value = '';
-            const inputCamera = document.getElementById('old_debt_image_camera');
-            if (inputCamera) inputCamera.value = '';
-            const inputPdf = document.getElementById('old_debt_pdf_input');
-            if (inputPdf) inputPdf.value = '';
+            this.clearAllAttachments();
         },
 
         removeImage() {
-            this.removeFile();
+            this.clearAllAttachments();
         }
     };
 }
