@@ -80,6 +80,11 @@ class EmployeeController extends Controller
                 ->whereBetween('work_date', [$from, $to])
                 ->orderByDesc('work_date')
                 ->get(),
+            'payments' => $employee->payments()
+                ->with('cashBox')
+                ->orderByDesc('paid_at')
+                ->orderByDesc('id')
+                ->get(),
             'earned' => $employee->earnedBetween($from, $to),
             'paid' => $employee->paidBetween($from, $to),
             'from' => $from,

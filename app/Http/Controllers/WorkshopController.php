@@ -1386,9 +1386,17 @@ class WorkshopController extends Controller
             ->get();
 
         $payments = $employee->payments()
+            ->with('cashBox')
             ->whereDate('paid_at', '>=', $startDate)
             ->whereDate('paid_at', '<=', $endDate)
             ->orderByDesc('paid_at')
+            ->orderByDesc('id')
+            ->get();
+
+        $allPayments = $employee->payments()
+            ->with('cashBox')
+            ->orderByDesc('paid_at')
+            ->orderByDesc('id')
             ->get();
 
         $presentCount = $attendances->where('status', 'present')->count();
@@ -1565,18 +1573,38 @@ class WorkshopController extends Controller
                     'note' => $a->note,
                 ];
             })->values()->all(),
-            'payments' => $payments->map(fn ($p) => [
-                'id' => $p->id,
-                'voucher_no' => $p->voucher_no,
-                'direction' => $p->direction,
-                'amount' => (float) $p->amount,
-                'amount_iqd' => (float) $p->amount_iqd,
-                'currency' => $p->currency,
-                'paid_at' => $p->paid_at?->format('Y/m/d'),
-                'payment_type' => $p->isDebtRepayment() ? 'debt_repayment' : ($p->isAdvance() ? 'advance' : 'wage'),
-                'type_label' => $p->payment_type_label,
-                'note' => $p->note,
-            ])->values()->all(),
+            'payments' => $payments->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'voucher_no' => $p->voucher_no,
+                    'direction' => $p->direction,
+                    'amount' => (float) $p->amount,
+                    'amount_iqd' => (float) $p->amount_iqd,
+                    'currency' => $p->currency,
+                    'cash_box_name' => $p->cashBox?->name ?? 'قاسە',
+                    'paid_at' => $p->paid_at?->format('Y/m/d'),
+                    'payment_type' => $p->isDebtRepayment() ? 'debt_repayment' : ($p->isAdvance() ? 'advance' : 'wage'),
+                    'type_label' => $p->payment_type_label,
+                    'note' => $p->note,
+                    'print_url' => route('payments.print', $p),
+                ];
+            })->values()->all(),
+            'all_payments' => $allPayments->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'voucher_no' => $p->voucher_no,
+                    'direction' => $p->direction,
+                    'amount' => (float) $p->amount,
+                    'amount_iqd' => (float) $p->amount_iqd,
+                    'currency' => $p->currency,
+                    'cash_box_name' => $p->cashBox?->name ?? 'قاسە',
+                    'paid_at' => $p->paid_at?->format('Y/m/d'),
+                    'payment_type' => $p->isDebtRepayment() ? 'debt_repayment' : ($p->isAdvance() ? 'advance' : 'wage'),
+                    'type_label' => $p->payment_type_label,
+                    'note' => $p->note,
+                    'print_url' => route('payments.print', $p),
+                ];
+            })->values()->all(),
         ]);
     }
 
