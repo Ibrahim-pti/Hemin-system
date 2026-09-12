@@ -121,6 +121,39 @@ class CustomerOldDebtWithoutWorkshopTest extends TestCase
         Storage::disk('public')->assertExists($oldDebt->image);
     }
 
+    public function test_old_debt_can_be_saved_with_compressed_base64_image_fallback(): void
+    {
+        Storage::fake('public');
+
+        $customer = Customer::create([
+            'name' => 'کاک دەروون',
+            'phone' => '07501112233',
+            'opening_balance' => 0,
+            'opening_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        // 1x1 transparent PNG data URL
+        $base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+        $response = $this->actingAs($this->user)->post(route('debts.old-debt'), [
+            'customer_id' => $customer->id,
+            'amount' => '120000',
+            'currency' => 'IQD',
+            'status' => 'debt',
+            'date' => '2026-09-03',
+            'note' => 'حیسابی کۆن لەگەڵ وێنەی مۆبایل بە Base64',
+            'image_base64' => $base64Image,
+        ]);
+
+        $response->assertSessionHas('ok');
+        $oldDebt = CustomerOldDebt::where('customer_id', $customer->id)->firstOrFail();
+        $this->assertNotNull($oldDebt->image);
+        $this->assertFalse($oldDebt->isPdf());
+        $this->assertStringEndsWith('.png', strtolower($oldDebt->image));
+        Storage::disk('public')->assertExists($oldDebt->image);
+    }
+
     public function test_old_debt_marked_as_paid_does_not_increase_customer_debt(): void
     {
         $customer = Customer::create([

@@ -879,14 +879,56 @@
                         </div>
 
                         {{-- وێنەی وەسڵ / بەڵگە / PDF --}}
-                        <div x-data="{ modalPreview: null, isPdf: false, fileName: '' }">
+                        <div x-data="{
+                            modalPreview: null,
+                            isPdf: false,
+                            fileName: '',
+                            imageBase64: '',
+                            handleFile(f, source) {
+                                if (!f) return;
+                                this.fileName = f.name;
+                                this.isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+                                if (source === 'camera') {
+                                    const g = document.getElementById('debt_index_gallery'); if(g) g.value = '';
+                                } else {
+                                    const c = document.getElementById('debt_index_camera'); if(c) c.value = '';
+                                }
+                                const r = new FileReader();
+                                r.onload = (e) => {
+                                    this.modalPreview = e.target.result;
+                                    if (this.isPdf) {
+                                        this.imageBase64 = '';
+                                    } else {
+                                        this.imageBase64 = e.target.result;
+                                        try {
+                                            const img = new Image();
+                                            img.onload = () => {
+                                                const maxDim = 1920;
+                                                let w = img.width, h = img.height;
+                                                if (w > maxDim || h > maxDim) {
+                                                    if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                                                    else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                                                }
+                                                const canvas = document.createElement('canvas');
+                                                canvas.width = w; canvas.height = h;
+                                                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                                                this.imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                                            };
+                                            img.src = e.target.result;
+                                        } catch (err) {}
+                                    }
+                                };
+                                r.readAsDataURL(f);
+                            }
+                        }">
+                            <input type="hidden" name="image_base64" :value="imageBase64">
                             <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; display: block; text-align: right; color: #334155;">
                                 📑 وێنەی وەسڵ / فایلی PDF
                             </label>
                             <input type="file" id="debt_index_camera" name="image_camera" accept="image/*" capture="environment" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
-                                   @change="const f = $event.target.files[0]; if(f){ isPdf = false; fileName = f.name; const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const g = document.getElementById('debt_index_gallery'); if(g) g.value = ''; }">
+                                   @change="handleFile($event.target.files[0], 'camera')">
                             <input type="file" id="debt_index_gallery" name="image" accept="image/*,application/pdf" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
-                                   @change="const f = $event.target.files[0]; if(f){ isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'); fileName = f.name; const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; }">
+                                   @change="handleFile($event.target.files[0], 'gallery')">
 
                             <template x-if="!modalPreview">
                                 <div style="display: flex; gap: 0.35rem;">
@@ -923,7 +965,7 @@
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0;">
                                         <label for="debt_index_gallery" style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 0.35rem; color: #334155; cursor: pointer;">گۆڕین</label>
-                                        <button type="button" @click="modalPreview = null; isPdf = false; fileName = ''; const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; const g = document.getElementById('debt_index_gallery'); if(g) g.value = '';"
+                                        <button type="button" @click="modalPreview = null; isPdf = false; fileName = ''; imageBase64 = ''; const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; const g = document.getElementById('debt_index_gallery'); if(g) g.value = '';"
                                                 style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.35rem; color: #dc2626; cursor: pointer;">✕</button>
                                     </div>
                                 </div>

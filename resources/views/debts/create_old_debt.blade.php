@@ -22,6 +22,7 @@
     <input type="hidden" name="currency" :value="currency">
     <input type="hidden" name="status" :value="paymentType">
     <input type="hidden" name="customer_id" :value="customerId">
+    <input type="hidden" name="image_base64" :value="imageBase64">
 
     @if ($errors->any())
         <div class="card mb-4 border-r-4 !border-r-[--color-danger] px-4 py-3 text-sm">
@@ -351,6 +352,7 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
         fileSelected: false,
         filePreview: null,
         imagePreview: null,
+        imageBase64: '',
         isPdf: false,
         fileName: '',
         fileSize: '',
@@ -459,12 +461,86 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
                 const isPdfFile = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
                 this.isPdf = isPdfFile;
 
+                if (isPdfFile) {
+                    this.imageBase64 = '';
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        this.filePreview = ev.target.result;
+                        this.imagePreview = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                    return;
+                }
+
+                // بۆ وێنە (کامێرا یان ستۆدیۆ): پیشاندانی دەستبەجێ + پەستاندنی خۆکار بۆ ڕێگری لە کێشەی قەبارەی مۆبایل
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     this.filePreview = ev.target.result;
                     this.imagePreview = ev.target.result;
+                    this.imageBase64 = ev.target.result;
+                    this.compressImageFile(ev.target.result, file, source);
                 };
                 reader.readAsDataURL(file);
+            }
+        },
+
+        compressImageFile(dataUrl, originalFile, source) {
+            try {
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 1920;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // پەستاندنی وێنەکە بۆ JPEG بە کوالێتی بەرز (0.85) کە هەموو بەڵگە و وەسڵێک بە تەواوی خوێنەرەوە دەهێڵێتەوە
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    this.imageBase64 = compressedDataUrl;
+
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const newSizeKb = blob.size / 1024;
+                            this.fileSize = newSizeKb > 1024 
+                                ? (newSizeKb / 1024).toFixed(1) + ' MB' 
+                                : Math.round(newSizeKb) + ' KB';
+
+                            try {
+                                const targetInputId = source === 'camera' ? 'old_debt_image_camera' : 'old_debt_image_input';
+                                const inputElem = document.getElementById(targetInputId);
+                                if (inputElem && window.DataTransfer) {
+                                    const dt = new DataTransfer();
+                                    const cleanName = (originalFile.name || 'receipt').replace(/\.[^/.]+$/, "") + ".jpg";
+                                    const newFile = new File([blob], cleanName, {
+                                        type: 'image/jpeg',
+                                        lastModified: Date.now()
+                                    });
+                                    dt.items.add(newFile);
+                                    inputElem.files = dt.files;
+                                }
+                            } catch (e) {
+                                // لە حاڵەتی پشتگیری نەکردنی DataTransfer، فۆڕمەکە image_base64 پاشەکەوت دەکات بەبێ کێشە
+                            }
+                        }
+                    }, 'image/jpeg', 0.85);
+                };
+                img.src = dataUrl;
+            } catch (err) {
+                console.warn('Image auto-compression skipped:', err);
             }
         },
 
@@ -485,6 +561,7 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
             this.fileSelected = false;
             this.filePreview = null;
             this.imagePreview = null;
+            this.imageBase64 = '';
             this.isPdf = false;
             this.fileName = '';
             this.fileSize = '';

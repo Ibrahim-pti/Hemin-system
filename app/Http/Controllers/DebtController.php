@@ -197,6 +197,13 @@ class DebtController extends Controller
             $request->merge(['status' => 'debt']);
         }
 
+        // پشکنین ئەگەر فۆڕمەکە لەلایەن PHP بەهۆی قەبارەی زۆر گەورە فڕێدرابێت
+        if (empty($_POST) && (int) $request->server('CONTENT_LENGTH', 0) > 0) {
+            return back()
+                ->withInput()
+                ->withErrors(['image' => 'قەبارەی وێنە یان فایلەکە زۆر گەورەیە و لە توانای سێرڤەر زیاترە.']);
+        }
+
         if (!$request->hasFile('image')) {
             if ($request->hasFile('image_camera')) {
                 $request->files->set('image', $request->file('image_camera'));
@@ -216,6 +223,7 @@ class DebtController extends Controller
             'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
             'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
             'image_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:25600'],
+            'image_base64' => ['nullable', 'string'],
             'date' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ], [
@@ -261,6 +269,22 @@ class DebtController extends Controller
         $imagePath = null;
         if ($uploadedImage && $uploadedImage->isValid()) {
             $imagePath = $uploadedImage->store('old_debts', 'public');
+        } elseif ($request->filled('image_base64')) {
+            // پاشەکەوتکردنی وێنەی پەستێنراو (Base64) بۆ کاتێک فایلی کامێرا بەهۆی سنورداری مۆبایل نەنێردرابێت
+            $base64Data = $request->input('image_base64');
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $typeMatch)) {
+                $rawBase64 = substr($base64Data, strpos($base64Data, ',') + 1);
+                $ext = strtolower($typeMatch[1]);
+                if (in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'heic'])) {
+                    $decoded = base64_decode($rawBase64);
+                    if ($decoded !== false) {
+                        $ext = $ext === 'jpeg' ? 'jpg' : $ext;
+                        $fileName = 'old_debts/' . \Illuminate\Support\Str::random(40) . '.' . $ext;
+                        \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $decoded);
+                        $imagePath = $fileName;
+                    }
+                }
+            }
         }
 
         \App\Models\CustomerOldDebt::create([
