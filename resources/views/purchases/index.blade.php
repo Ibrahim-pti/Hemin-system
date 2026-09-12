@@ -246,24 +246,38 @@
 
                             {{-- وێنەی وەسڵ / PDF --}}
                             <td class="py-2.5 px-3 text-center">
-                                @if ($purchase->imageUrl())
-                                    @if ($purchase->isPdf())
+                                @php $atts = $purchase->allAttachments(); @endphp
+                                @if (count($atts) > 0)
+                                    @php
+                                        $firstAtt = $atts[0];
+                                        $isPdf = \App\Models\Purchase::isPdfPath($firstAtt);
+                                        $firstUrl = asset('storage/' . $firstAtt);
+                                    @endphp
+                                    @if ($isPdf)
                                         <div class="inline-flex items-center justify-center group relative">
                                             <div class="size-12 rounded-xl bg-rose-50 border-2 border-rose-300 shadow-2xs group-hover:scale-125 group-hover:border-rose-500 transition-all cursor-pointer flex flex-col items-center justify-center text-rose-700"
-                                                 onclick="event.stopPropagation(); window.open('{{ $purchase->imageUrl() }}', '_blank')"
-                                                 title="کرتە بکە بۆ کردنەوەی فایلی PDF">
+                                                 onclick="event.stopPropagation(); window.open('{{ $firstUrl }}', '_blank')"
+                                                 title="کرتە بکە بۆ کردنەوەی فایلی PDF (کۆی {{ count($atts) }} فایل)">
                                                 <span class="text-base leading-none">📄</span>
                                                 <span class="text-[8px] font-black uppercase leading-none mt-0.5">PDF</span>
                                             </div>
-                                            <span class="absolute -bottom-1 -right-1 size-4 bg-rose-600 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs pointer-events-none">🔍</span>
+                                            @if (count($atts) > 1)
+                                                <span class="absolute -top-1 -right-1 size-4 bg-rose-600 text-white rounded-full flex items-center justify-center text-[9px] font-black shadow-xs pointer-events-none">+{{ count($atts) - 1 }}</span>
+                                            @else
+                                                <span class="absolute -bottom-1 -right-1 size-4 bg-rose-600 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs pointer-events-none">🔍</span>
+                                            @endif
                                         </div>
                                     @else
                                         <div class="inline-flex items-center justify-center group relative">
-                                            <img src="{{ $purchase->imageUrl() }}"
+                                            <img src="{{ $firstUrl }}"
                                                  class="size-12 rounded-xl object-cover border-2 border-slate-200 shadow-2xs group-hover:scale-125 group-hover:border-teal-500 transition-all cursor-pointer bg-white"
-                                                 onclick="event.stopPropagation(); window.open('{{ $purchase->imageUrl() }}', '_blank')"
-                                                 title="کرتە بکە بۆ بینینی تەواوی وێنەکە">
-                                            <span class="absolute -bottom-1 -right-1 size-4 bg-teal-600 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs pointer-events-none">🔍</span>
+                                                 onclick="event.stopPropagation(); window.open('{{ $firstUrl }}', '_blank')"
+                                                 title="کرتە بکە بۆ بینینی وێنە (کۆی {{ count($atts) }} فایل)">
+                                            @if (count($atts) > 1)
+                                                <span class="absolute -top-1 -right-1 size-4 bg-teal-600 text-white rounded-full flex items-center justify-center text-[9px] font-black shadow-xs pointer-events-none">+{{ count($atts) - 1 }}</span>
+                                            @else
+                                                <span class="absolute -bottom-1 -right-1 size-4 bg-teal-600 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs pointer-events-none">🔍</span>
+                                            @endif
                                         </div>
                                     @endif
                                 @else

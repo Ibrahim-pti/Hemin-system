@@ -296,4 +296,50 @@ class PurchaseQuickTotalAndPaymentTest extends TestCase
         $indexRes->assertOk();
         $indexRes->assertSee('PDF');
     }
+
+    public function test_purchase_can_be_created_with_multiple_images_and_multiple_pdfs(): void
+    {
+        Storage::fake('public');
+        $img1 = UploadedFile::fake()->image('receipt1.jpg');
+        $img2 = UploadedFile::fake()->image('receipt2.png');
+        $pdf1 = UploadedFile::fake()->create('contract1.pdf', 400, 'application/pdf');
+        $pdf2 = UploadedFile::fake()->create('contract2.pdf', 600, 'application/pdf');
+
+        $payload = [
+            'entry_mode' => 'quick',
+            'quick_title' => 'کڕینی مەواد لەگەڵ چەندین وێنە و PDF',
+            'quick_total' => '500,000',
+            'payment_type' => 'cash',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'purchase_date' => now()->toDateString(),
+            'currency' => 'IQD',
+            'attachments' => [$img1, $img2, $pdf1, $pdf2],
+            'note' => 'چوار بەڵگەنامە هاوپێچکراون',
+        ];
+
+        $res = $this->post('/purchases', $payload);
+        $res->assertSessionHasNoErrors();
+
+        $purchase = Purchase::latest('id')->firstOrFail();
+        $this->assertNotNull($purchase->image);
+        $this->assertNotNull($purchase->attachments);
+        $this->assertCount(4, $purchase->attachments);
+        $this->assertCount(4, $purchase->allAttachments());
+
+        foreach ($purchase->allAttachments() as $filePath) {
+            Storage::disk('public')->assertExists($filePath);
+        }
+
+        // Test show page displays all 4 files
+        $showRes = $this->get("/purchases/{$purchase->id}");
+        $showRes->assertOk();
+        $showRes->assertSee('4 فایل');
+        $showRes->assertSee('خوێندنەوە');
+
+        // Test index page displays +3 badge
+        $indexRes = $this->get('/purchases');
+        $indexRes->assertOk();
+        $indexRes->assertSee('+3');
+    }
 }

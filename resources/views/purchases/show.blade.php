@@ -25,18 +25,34 @@
     {{-- ١. هێڵی سەرەوە: ناونیشان و دوگمەکان --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
-            @if ($purchase->imageUrl())
-                @if ($purchase->isPdf())
+            @php $allAttachments = $purchase->allAttachments(); @endphp
+            @if (count($allAttachments) > 0)
+                @php
+                    $firstAtt = $allAttachments[0];
+                    $firstIsPdf = \App\Models\Purchase::isPdfPath($firstAtt);
+                    $firstUrl = asset('storage/' . $firstAtt);
+                @endphp
+                @if ($firstIsPdf)
                     <div class="relative size-14 rounded-2xl bg-rose-50 border-2 border-rose-400 shadow-md shrink-0 cursor-pointer group flex flex-col items-center justify-center hover:bg-rose-100 transition-all"
-                         onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')" title="کرتە بکە بۆ کردنەوەی فایلی PDF">
+                         onclick="window.open('{{ $firstUrl }}', '_blank')" title="کرتە بکە بۆ کردنەوەی فایل">
                         <span class="text-xl">📄</span>
                         <span class="text-[9px] font-black text-rose-700 uppercase">PDF</span>
+                        @if (count($allAttachments) > 1)
+                            <span class="absolute -top-1 -right-1 size-5 bg-rose-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
+                                +{{ count($allAttachments) - 1 }}
+                            </span>
+                        @endif
                     </div>
                 @else
                     <div class="relative size-14 rounded-2xl overflow-hidden border-2 border-teal-500 shadow-md shrink-0 cursor-pointer group"
-                         onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')" title="کرتە بکە بۆ بینینی تەواوی وێنەکە">
-                        <img src="{{ $purchase->imageUrl() }}" class="size-full object-cover group-hover:scale-110 transition-transform">
+                         onclick="window.open('{{ $firstUrl }}', '_blank')" title="کرتە بکە بۆ بینینی تەواوی وێنەکە">
+                        <img src="{{ $firstUrl }}" class="size-full object-cover group-hover:scale-110 transition-transform">
                         <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center font-bold py-0.5">وێنە</span>
+                        @if (count($allAttachments) > 1)
+                            <span class="absolute -top-1 -right-1 size-5 bg-teal-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
+                                +{{ count($allAttachments) - 1 }}
+                            </span>
+                        @endif
                     </div>
                 @endif
             @else
@@ -245,39 +261,66 @@
                 @endif
             </div>
 
-            {{-- وێنە یان فایلی پسوولەی کڕین --}}
-            @if ($purchase->imageUrl())
-                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2">
-                    <h3 class="font-black text-slate-800 text-xs flex items-center gap-1.5 border-b border-slate-100 pb-2">
-                        <span>{{ $purchase->isPdf() ? '📄' : '📷' }}</span>
-                        <span>{{ $purchase->isPdf() ? 'فایلی PDF ی وەسڵی کڕین' : 'وێنەی وەسڵی کڕین' }}</span>
-                    </h3>
-                    @if ($purchase->isPdf())
-                        <div class="p-6 rounded-xl border border-rose-200 bg-rose-50/50 flex flex-col items-center justify-center gap-3 text-center">
-                            <div class="size-16 rounded-2xl bg-white border border-rose-200 shadow-xs flex items-center justify-center text-3xl text-rose-600">
-                                📄
-                            </div>
-                            <div>
-                                <span class="block text-xs font-bold text-slate-800">بەڵگەنامەی وەسڵ بە شێوەی PDF</span>
-                                <span class="block text-[11px] text-slate-500 mt-0.5">دەتوانیت کلیک بکەیت بۆ خوێندنەوە یان داگرتنی فایلەکە</span>
-                            </div>
-                            <a href="{{ $purchase->imageUrl() }}" target="_blank"
-                               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-all">
-                                <span>📄</span>
-                                <span>کردنەوەی فایلی PDF</span>
-                            </a>
-                        </div>
-                    @else
-                        <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer group"
-                             onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')"
-                             title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
-                            <img src="{{ $purchase->imageUrl() }}" class="w-full max-h-64 object-contain mx-auto group-hover:scale-105 transition-transform">
-                        </div>
-                        <a href="{{ $purchase->imageUrl() }}" target="_blank"
-                           class="block text-center text-[11px] font-bold text-teal-700 hover:underline pt-1">
-                            🔍 بینینی تەواوی وێنەکە
-                        </a>
-                    @endif
+            {{-- وێنە و بەڵگەنامەکانی وەسڵ (چەندین وێنە و فایلی PDF) --}}
+            @php $allAttachments = $purchase->allAttachments(); @endphp
+            @if (count($allAttachments) > 0)
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h3 class="font-black text-slate-800 text-xs flex items-center gap-1.5">
+                            <span>📑</span>
+                            <span>وەسڵ و بەڵگەنامە هاوپێچەکان</span>
+                        </h3>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-50 text-teal-700 border border-teal-200">
+                            {{ count($allAttachments) }} فایل
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2.5">
+                        @foreach ($allAttachments as $idx => $att)
+                            @php
+                                $isPdf = \App\Models\Purchase::isPdfPath($att);
+                                $url = asset('storage/' . $att);
+                                $fileName = basename($att);
+                            @endphp
+                            @if ($isPdf)
+                                <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 transition-all">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="size-10 rounded-lg bg-white border border-rose-300 flex flex-col items-center justify-center shrink-0 text-rose-600 shadow-2xs">
+                                            <span class="text-sm">📄</span>
+                                            <span class="text-[8px] font-black uppercase">PDF</span>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <span class="block text-xs font-bold text-slate-800 truncate" title="{{ $fileName }}">
+                                                فایلی PDF ({{ $idx + 1 }})
+                                            </span>
+                                            <span class="block text-[10px] text-slate-400 font-mono truncate">{{ $fileName }}</span>
+                                        </div>
+                                    </div>
+                                    <a href="{{ $url }}" target="_blank"
+                                       class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition-colors shrink-0 flex items-center gap-1">
+                                        <span>خوێندنەوە</span>
+                                        <span>↗</span>
+                                    </a>
+                                </div>
+                            @else
+                                <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 group">
+                                    <div class="relative cursor-pointer max-h-56 overflow-hidden flex items-center justify-center bg-slate-900/5"
+                                         onclick="window.open('{{ $url }}', '_blank')" title="کرتە بکە بۆ بینینی تەواوی وێنەکە">
+                                        <img src="{{ $url }}" class="w-full max-h-56 object-contain group-hover:scale-105 transition-transform">
+                                        <span class="absolute bottom-1 right-1 px-2 py-0.5 bg-black/60 text-white rounded text-[10px] font-bold">
+                                            وێنەی {{ $idx + 1 }}
+                                        </span>
+                                    </div>
+                                    <div class="p-2 bg-white flex items-center justify-between border-t border-slate-100 text-xs">
+                                        <span class="font-mono text-slate-500 text-[10px] truncate max-w-[160px]">{{ $fileName }}</span>
+                                        <a href="{{ $url }}" target="_blank" class="font-bold text-teal-700 hover:underline text-[11px]">
+                                            🔍 بینینی تەواو
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
                 </div>
             @endif
 

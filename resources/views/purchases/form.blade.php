@@ -516,7 +516,7 @@
 </form>
 
 <script>
-function purchaseForm(initialLines, initialDiscount, initialPaid, initialPaymentType, initialImagePreview, initialCurrency, initialExchangeRate, initialIsPdf = false) {
+function purchaseForm(initialLines, initialDiscount, initialPaid, initialPaymentType, initialAttachments, initialCurrency, initialExchangeRate) {
     const hasDetailedItems = initialLines && initialLines.length > 1;
 
     return {
@@ -527,9 +527,7 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
         lines: initialLines || [{ item_name: '', qty: '', unit_price: '', note: '' }],
         discount: initialDiscount || '',
         paid: initialPaid || '',
-        imagePreview: initialImagePreview || null,
-        isPdf: !!initialIsPdf || (initialImagePreview ? initialImagePreview.toLowerCase().includes('.pdf') : false),
-        removeImageFlag: false,
+        attachmentsList: Array.isArray(initialAttachments) ? [...initialAttachments] : [],
 
         currency: initialCurrency || 'IQD',
         exchangeRate: initialExchangeRate || '150,000',
@@ -611,43 +609,105 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
                 });
         },
 
-        onImageChange(e, source) {
-            const file = e.target.files[0];
-            if (file) {
-                if (source === 'camera') {
-                    const gallery = document.getElementById('purchase_image_input');
-                    if (gallery) gallery.value = '';
-                    const pdf = document.getElementById('purchase_pdf_input');
-                    if (pdf) pdf.value = '';
-                    this.isPdf = false;
-                } else if (source === 'gallery') {
-                    const camera = document.getElementById('purchase_image_camera');
-                    if (camera) camera.value = '';
-                    const pdf = document.getElementById('purchase_pdf_input');
-                    if (pdf) pdf.value = '';
-                    this.isPdf = false;
-                } else if (source === 'pdf') {
-                    const camera = document.getElementById('purchase_image_camera');
-                    if (camera) camera.value = '';
-                    const gallery = document.getElementById('purchase_image_input');
-                    if (gallery) gallery.value = '';
-                    this.isPdf = true;
-                }
-                this.imagePreview = URL.createObjectURL(file);
-                this.removeImageFlag = false;
+        onFilesAdded(e, source) {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+
+            Array.from(files).forEach((file) => {
+                const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                const sizeKb = file.size / 1024;
+                const formattedSize = sizeKb > 1024 ? (sizeKb / 1024).toFixed(1) + ' MB' : Math.round(sizeKb) + ' KB';
+                const item = {
+                    id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    file: file,
+                    name: file.name,
+                    size: formattedSize,
+                    isPdf: isPdf,
+                    previewUrl: '',
+                    isExisting: false,
+                };
+
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    item.previewUrl = ev.target.result;
+                    if (!isPdf) {
+                        this.compressAttachment(item);
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                this.attachmentsList.push(item);
+            });
+
+            e.target.value = '';
+            this.syncFilesToForm();
+        },
+
+        compressAttachment(item) {
+            try {
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 1920;
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const newSizeKb = blob.size / 1024;
+                            item.size = newSizeKb > 1024 ? (newSizeKb / 1024).toFixed(1) + ' MB' : Math.round(newSizeKb) + ' KB';
+                            const cleanName = (item.name || 'receipt').replace(/\.[^/.]+$/, "") + ".jpg";
+                            item.file = new File([blob], cleanName, { type: 'image/jpeg', lastModified: Date.now() });
+                            this.syncFilesToForm();
+                        }
+                    }, 'image/jpeg', 0.85);
+                };
+                img.src = item.previewUrl;
+            } catch (err) {
+                console.warn('Compress error:', err);
             }
         },
 
-        removeImage() {
-            this.imagePreview = null;
-            this.isPdf = false;
-            this.removeImageFlag = true;
-            const inputGallery = document.getElementById('purchase_image_input');
-            if (inputGallery) inputGallery.value = '';
-            const inputCamera = document.getElementById('purchase_image_camera');
-            if (inputCamera) inputCamera.value = '';
-            const inputPdf = document.getElementById('purchase_pdf_input');
-            if (inputPdf) inputPdf.value = '';
+        syncFilesToForm() {
+            try {
+                const formInput = document.getElementById('purchase_form_attachments');
+                if (formInput && window.DataTransfer) {
+                    const dt = new DataTransfer();
+                    this.attachmentsList.forEach((att) => {
+                        if (att.file) dt.items.add(att.file);
+                    });
+                    formInput.files = dt.files;
+                }
+            } catch (e) {}
+        },
+
+        removeAttachment(index) {
+            this.attachmentsList.splice(index, 1);
+            this.syncFilesToForm();
+        },
+
+        clearAllAttachments() {
+            this.attachmentsList = [];
+            this.syncFilesToForm();
+        },
+
+        openAttachmentPreview(item) {
+            if (!item.previewUrl) return;
+            const win = window.open();
+            if (win) {
+                if (item.isPdf) {
+                    win.document.write('<!DOCTYPE html><html><head><title>' + (item.name || 'PDF') + '</title><style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#333;}</style></head><body><iframe src="' + item.previewUrl + '" frameborder="0" style="border:0;width:100%;height:100%;" allowfullscreen></iframe></body></html>');
+                } else {
+                    win.document.write('<!DOCTYPE html><html><head><title>' + (item.name || 'Image') + '</title><style>body{margin:0;padding:20px;display:flex;align-items:center;justify-content:center;min-height:90vh;background:#0f172a;}img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head><body><img src="' + item.previewUrl + '"></body></html>');
+                }
+            }
         },
 
         formatQuickTotal(e) {

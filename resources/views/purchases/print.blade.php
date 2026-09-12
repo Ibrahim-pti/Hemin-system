@@ -264,18 +264,26 @@
             </div>
         @endif
 
-        @if ($purchase->imageUrl())
-            <div class="mt-4 pt-3 border-t border-slate-200 text-center">
-                @if ($purchase->isPdf())
-                    <div class="text-xs font-bold text-slate-700 mb-2">بەڵگەنامەی هاوپێچکراوی وەسڵ:</div>
-                    <div class="inline-flex items-center gap-2 p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-700">
-                        <span>📄</span>
-                        <span>فایلی بەڵگەنامەی وەسڵ (PDF) هاوپێچ کراوە</span>
-                    </div>
-                @else
-                    <div class="text-xs font-bold text-slate-700 mb-2">وێنەی هاوپێچکراوی وەسڵ:</div>
-                    <img src="{{ $purchase->imageUrl() }}" class="max-h-72 mx-auto rounded border border-slate-300 object-contain shadow-xs">
-                @endif
+        @php $printAtts = $purchase->allAttachments(); @endphp
+        @if (count($printAtts) > 0)
+            <div class="mt-4 pt-3 border-t border-slate-200 text-center space-y-3">
+                <div class="text-xs font-bold text-slate-700">بەڵگەنامە و وێنە هاوپێچکراوەکانی وەسڵ ({{ count($printAtts) }}):</div>
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    @foreach ($printAtts as $idx => $att)
+                        @php
+                            $isPdf = \App\Models\Purchase::isPdfPath($att);
+                            $url = asset('storage/' . $att);
+                        @endphp
+                        @if ($isPdf)
+                            <div class="inline-flex items-center gap-2 p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-700">
+                                <span>📄</span>
+                                <span>فایلی PDF ({{ $idx + 1 }}) هاوپێچ کراوە</span>
+                            </div>
+                        @else
+                            <img src="{{ $url }}" class="max-h-56 rounded border border-slate-300 object-contain shadow-xs">
+                        @endif
+                    @endforeach
+                </div>
             </div>
         @endif
 
