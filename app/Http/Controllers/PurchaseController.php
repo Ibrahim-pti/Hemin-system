@@ -141,26 +141,32 @@ class PurchaseController extends Controller
     {
         $data = $this->validated($request);
 
-        if (!$request->hasFile('image') && $request->hasFile('pdf_file')) {
-            $request->files->set('image', $request->file('pdf_file'));
-        } elseif (!$request->hasFile('image') && $request->hasFile('image_camera')) {
-            $request->files->set('image', $request->file('image_camera'));
+        $storedFiles = [];
+        $fileInputs = ['attachments', 'image', 'image_camera', 'pdf_file'];
+        foreach ($fileInputs as $inputKey) {
+            if ($request->hasFile($inputKey)) {
+                $rawFiles = $request->file($inputKey);
+                $fileList = is_array($rawFiles) ? $rawFiles : [$rawFiles];
+                foreach ($fileList as $f) {
+                    if ($f && $f->isValid()) {
+                        $storedFiles[] = $f->store('purchases', 'public');
+                    }
+                }
+            }
         }
 
-        $imagePath = null;
-        $uploadedFile = $request->file('image') ?? $request->file('image_camera') ?? $request->file('pdf_file');
-        if ($uploadedFile && $uploadedFile->isValid()) {
-            $imagePath = $uploadedFile->store('purchases', 'public');
-        }
+        $storedFiles = array_values(array_unique(array_filter($storedFiles)));
+        $primaryImage = !empty($storedFiles) ? $storedFiles[0] : null;
 
-        $purchase = DB::transaction(function () use ($data, $request, $imagePath) {
+        $purchase = DB::transaction(function () use ($data, $request, $primaryImage, $storedFiles) {
             $headerData = $this->header($data);
 
             $purchase = Purchase::create($headerData + [
                 'invoice_no' => Purchase::nextInvoiceNo(),
                 'status' => 'draft',
                 'user_id' => auth()->id(),
-                'image' => $imagePath,
+                'image' => $primaryImage,
+                'attachments' => !empty($storedFiles) ? $storedFiles : null,
             ]);
 
             $this->syncLines($purchase, $data['lines']);
