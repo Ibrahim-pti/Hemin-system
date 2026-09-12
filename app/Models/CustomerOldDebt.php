@@ -78,4 +78,18 @@ class CustomerOldDebt extends Model
 
         return (float) $this->paid_amount;
     }
+
+    public function isPdf(): bool
+    {
+        if (empty($this->image)) {
+            return false;
+        }
+
+        return str_ends_with(strtolower($this->image), '.pdf');
+    }
+
+    public function fileUrl(): ?string
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 }

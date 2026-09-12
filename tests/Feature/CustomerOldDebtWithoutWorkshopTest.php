@@ -89,6 +89,38 @@ class CustomerOldDebtWithoutWorkshopTest extends TestCase
         $this->assertEquals(0, Order::count());
     }
 
+    public function test_old_debt_can_be_uploaded_with_pdf_document(): void
+    {
+        Storage::fake('public');
+
+        $customer = Customer::create([
+            'name' => 'کاک سەرکەوت',
+            'phone' => '07509876543',
+            'opening_balance' => 0,
+            'opening_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $pdf = UploadedFile::fake()->create('contract_receipt.pdf', 500, 'application/pdf');
+
+        $response = $this->actingAs($this->user)->post(route('debts.old-debt'), [
+            'customer_id' => $customer->id,
+            'amount' => '450000',
+            'currency' => 'IQD',
+            'status' => 'debt',
+            'date' => '2026-09-02',
+            'note' => 'گرێبەست و حیسابی پێشوو بە فایلی PDF',
+            'image' => $pdf,
+        ]);
+
+        $response->assertSessionHas('ok');
+        $oldDebt = CustomerOldDebt::where('customer_id', $customer->id)->firstOrFail();
+        $this->assertNotNull($oldDebt->image);
+        $this->assertTrue($oldDebt->isPdf());
+        $this->assertStringEndsWith('.pdf', strtolower($oldDebt->image));
+        Storage::disk('public')->assertExists($oldDebt->image);
+    }
+
     public function test_old_debt_marked_as_paid_does_not_increase_customer_debt(): void
     {
         $customer = Customer::create([

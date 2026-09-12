@@ -462,9 +462,15 @@
                                     </td>
                                     <td style="padding: 0.75rem 0.85rem; text-align: center;">
                                         @if ($debt->image)
-                                            <a href="{{ asset('storage/' . $debt->image) }}" target="_blank" style="display: inline-block;">
-                                                <img src="{{ asset('storage/' . $debt->image) }}" alt="بەڵگە" style="width: 2.5rem; height: 2.5rem; object-fit: cover; border-radius: 0.5rem; border: 1px solid #cbd5e1;">
-                                            </a>
+                                            @if ($debt->isPdf())
+                                                <a href="{{ $debt->fileUrl() }}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.65rem; background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 800; text-decoration: none;">
+                                                    <span>📄</span> <span>PDF</span>
+                                                </a>
+                                            @else
+                                                <a href="{{ $debt->fileUrl() }}" target="_blank" style="display: inline-block;">
+                                                    <img src="{{ $debt->fileUrl() }}" alt="بەڵگە" style="width: 2.5rem; height: 2.5rem; object-fit: cover; border-radius: 0.5rem; border: 1px solid #cbd5e1;">
+                                                </a>
+                                            @endif
                                         @else
                                             <span style="color: #cbd5e1;">—</span>
                                         @endif

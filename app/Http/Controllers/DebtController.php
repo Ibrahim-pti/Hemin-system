@@ -197,8 +197,12 @@ class DebtController extends Controller
             $request->merge(['status' => 'debt']);
         }
 
-        if (!$request->hasFile('image') && $request->hasFile('image_camera')) {
-            $request->files->set('image', $request->file('image_camera'));
+        if (!$request->hasFile('image')) {
+            if ($request->hasFile('image_camera')) {
+                $request->files->set('image', $request->file('image_camera'));
+            } elseif ($request->hasFile('image_pdf')) {
+                $request->files->set('image', $request->file('image_pdf'));
+            }
         }
 
         $data = $request->validate([
@@ -209,16 +213,20 @@ class DebtController extends Controller
             'currency' => ['required', 'in:IQD,USD'],
             'status' => ['required', 'in:debt,paid,partial'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp', 'max:15360'],
-            'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp', 'max:15360'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
+            'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
+            'image_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:25600'],
             'date' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ], [
             'amount.required' => 'بڕی حیساب / قەرز بنووسە.',
             'amount.min' => 'بڕی پارە دەبێت لە ٠ زیاتر بێت.',
             'new_customer_name.required_without' => 'ناوی کڕیار بنووسە یان کڕیارێک هەڵبژێرە.',
-            'image.file' => 'فایلی هەڵبژێردراو دەبێت وێنە بێت.',
-            'image.max' => 'قەبارەی وێنە نابێت لە ١٥ مێگابایت زیاتر بێت.',
+            'image.file' => 'فایلی هەڵبژێردراو دەبێت وێنە یان بەڵگەنامەی PDF بێت.',
+            'image.mimes' => 'فایلی وەسڵ دەبێت وێنە (JPG, PNG, WEBP) یان بەڵگەنامەی PDF بێت.',
+            'image.max' => 'قەبارەی فایل نابێت لە ۲۵ مێگابایت زیاتر بێت.',
+            'image_pdf.mimes' => 'فایلەکە دەبێت لە جۆری PDF بێت.',
+            'image_pdf.max' => 'قەبارەی فایلی PDF نابێت لە ۲۵ مێگابایت زیاتر بێت.',
         ]);
 
         if (!empty($data['customer_id'])) {
@@ -249,7 +257,7 @@ class DebtController extends Controller
             $paidAmount = (float) ($data['paid_amount'] ?? 0);
         }
 
-        $uploadedImage = $request->file('image') ?? $request->file('image_camera');
+        $uploadedImage = $request->file('image') ?? $request->file('image_camera') ?? $request->file('image_pdf');
         $imagePath = null;
         if ($uploadedImage && $uploadedImage->isValid()) {
             $imagePath = $uploadedImage->store('old_debts', 'public');

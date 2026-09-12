@@ -878,41 +878,52 @@
                             <input type="date" name="date" value="{{ date('Y-m-d') }}" class="field num" style="width: 100%; font-size: 0.8rem; font-weight: 700;">
                         </div>
 
-                        {{-- وێنەی وەسڵ / بەڵگە --}}
-                        <div x-data="{ modalPreview: null }">
+                        {{-- وێنەی وەسڵ / بەڵگە / PDF --}}
+                        <div x-data="{ modalPreview: null, isPdf: false, fileName: '' }">
                             <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; display: block; text-align: right; color: #334155;">
-                                📷 وێنەی وەسڵ / دەفتەری حیسابات
+                                📑 وێنەی وەسڵ / فایلی PDF
                             </label>
                             <input type="file" id="debt_index_camera" name="image_camera" accept="image/*" capture="environment" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
-                                   @change="const f = $event.target.files[0]; if(f){ const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const g = document.getElementById('debt_index_gallery'); if(g) g.value = ''; }">
-                            <input type="file" id="debt_index_gallery" name="image" accept="image/*" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
-                                   @change="const f = $event.target.files[0]; if(f){ const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; }">
+                                   @change="const f = $event.target.files[0]; if(f){ isPdf = false; fileName = f.name; const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const g = document.getElementById('debt_index_gallery'); if(g) g.value = ''; }">
+                            <input type="file" id="debt_index_gallery" name="image" accept="image/*,application/pdf" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
+                                   @change="const f = $event.target.files[0]; if(f){ isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'); fileName = f.name; const r = new FileReader(); r.onload = (e) => modalPreview = e.target.result; r.readAsDataURL(f); const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; }">
 
                             <template x-if="!modalPreview">
-                                <div style="display: flex; gap: 0.4rem;">
+                                <div style="display: flex; gap: 0.35rem;">
                                     <label for="debt_index_camera"
-                                           style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.45rem 0.5rem; border-radius: 0.6rem; border: 1px solid #fcd34d; background: #fffbeb; color: #78350f; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+                                           style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.45rem 0.35rem; border-radius: 0.6rem; border: 1px solid #fcd34d; background: #fffbeb; color: #78350f; font-weight: 700; font-size: 0.72rem; cursor: pointer;">
                                         <span>📸</span>
                                         <span>کامێرا</span>
                                     </label>
                                     <label for="debt_index_gallery"
-                                           style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.45rem 0.5rem; border-radius: 0.6rem; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+                                           style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.45rem 0.35rem; border-radius: 0.6rem; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: 700; font-size: 0.72rem; cursor: pointer;">
                                         <span>🖼️</span>
-                                        <span>مۆبایل</span>
+                                        <span>وێنە</span>
+                                    </label>
+                                    <label for="debt_index_gallery"
+                                           style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.45rem 0.35rem; border-radius: 0.6rem; border: 1px solid #fecdd3; background: #fff1f2; color: #be123c; font-weight: 700; font-size: 0.72rem; cursor: pointer;">
+                                        <span>📄</span>
+                                        <span>PDF</span>
                                     </label>
                                 </div>
                             </template>
 
                             <template x-if="modalPreview">
                                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.3rem 0.5rem; border-radius: 0.6rem; border: 1px solid #f59e0b; background: #fffbeb;">
-                                    <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                        <img :src="modalPreview" style="width: 2rem; height: 2rem; border-radius: 0.4rem; object-fit: cover; border: 1px solid #d97706;">
-                                        <span style="font-size: 0.7rem; font-weight: 700; color: #047857;">✓ وێنە دانرا</span>
+                                    <div style="display: flex; align-items: center; gap: 0.4rem; overflow: hidden;">
+                                        <template x-if="!isPdf">
+                                            <img :src="modalPreview" style="width: 2rem; height: 2rem; border-radius: 0.4rem; object-fit: cover; border: 1px solid #d97706; flex-shrink: 0;">
+                                        </template>
+                                        <template x-if="isPdf">
+                                            <div style="width: 2rem; height: 2rem; border-radius: 0.4rem; background: #fee2e2; border: 1px solid #ef4444; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; color: #b91c1c; flex-shrink: 0;">
+                                                PDF
+                                            </div>
+                                        </template>
+                                        <span style="font-size: 0.7rem; font-weight: 700; color: #047857; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;" x-text="isPdf ? '✓ فایلی PDF دانرا' : '✓ وێنە دانرا'"></span>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 0.25rem;">
-                                        <label for="debt_index_camera" style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 0.35rem; color: #334155; cursor: pointer;">کامێرا</label>
-                                        <label for="debt_index_gallery" style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 0.35rem; color: #334155; cursor: pointer;">مۆبایل</label>
-                                        <button type="button" @click="modalPreview = null; const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; const g = document.getElementById('debt_index_gallery'); if(g) g.value = '';"
+                                    <div style="display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0;">
+                                        <label for="debt_index_gallery" style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 0.35rem; color: #334155; cursor: pointer;">گۆڕین</label>
+                                        <button type="button" @click="modalPreview = null; isPdf = false; fileName = ''; const c = document.getElementById('debt_index_camera'); if(c) c.value = ''; const g = document.getElementById('debt_index_gallery'); if(g) g.value = '';"
                                                 style="padding: 0.15rem 0.4rem; font-size: 0.65rem; font-weight: 700; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.35rem; color: #dc2626; cursor: pointer;">✕</button>
                                     </div>
                                 </div>

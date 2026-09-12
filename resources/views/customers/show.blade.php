@@ -245,9 +245,16 @@
                         </td>
                         <td class="py-3 px-4 text-center">
                             @if ($debt->image)
-                                <a href="{{ asset('storage/' . $debt->image) }}" target="_blank" class="inline-block group" title="کلیک بکە بۆ بینینی وێنەی گەورە">
-                                    <img src="{{ asset('storage/' . $debt->image) }}" alt="بەڵگە" class="size-10 rounded-lg object-cover border border-slate-200 shadow-xs group-hover:scale-110 transition-all">
-                                </a>
+                                @if ($debt->isPdf())
+                                    <a href="{{ $debt->fileUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-black transition-all shadow-2xs group" title="کلیک بکە بۆ کردنەوەی فایلی PDF">
+                                        <span class="text-sm group-hover:scale-110 transition-transform">📄</span>
+                                        <span>فایلی PDF</span>
+                                    </a>
+                                @else
+                                    <a href="{{ $debt->fileUrl() }}" target="_blank" class="inline-block group" title="کلیک بکە بۆ بینینی وێنەی گەورە">
+                                        <img src="{{ $debt->fileUrl() }}" alt="بەڵگە" class="size-10 rounded-lg object-cover border border-slate-200 shadow-xs group-hover:scale-110 transition-all">
+                                    </a>
+                                @endif
                             @else
                                 <span class="text-slate-300 text-xs">—</span>
                             @endif

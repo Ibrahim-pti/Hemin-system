@@ -110,43 +110,68 @@
                        value="{{ old('note') }}">
             </div>
 
-            {{-- وێنەی وەسڵ / دەفتەری حیسابات (فایل یان کامێرا) --}}
+            {{-- وێنە یان فایلی وەسڵ / دەفتەری حیسابات (فایل، PDF، یان کامێرا) --}}
             <div class="sm:col-span-2 lg:col-span-4 bg-slate-50/80 p-3.5 rounded-2xl border border-dashed border-slate-300">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
-                        <span class="text-2xl">📸</span>
+                        <span class="text-2xl">📑</span>
                         <div>
-                            <span class="block text-xs font-bold text-slate-800">وێنەی وەسڵ / دەفتەری حیسابات</span>
-                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت یان لە مۆبایل و ستۆدیۆ هەڵیبژێریت.</span>
+                            <span class="block text-xs font-bold text-slate-800">وێنەی وەسڵ / فایلی PDF یان لاپەڕەی دەفتەر</span>
+                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت، لە مۆبایل هەڵیبژێریت، یان فایلی PDF دابنێیت.</span>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2.5">
                         {{-- فایل ئینپووتی کامێرا بۆ مۆبایل (capture=environment ڕاستەوخۆ کامێرا دەکاتەوە) --}}
                         <input type="file" id="old_debt_image_camera" name="image_camera" accept="image/*" capture="environment" class="sr-only" @change="onImageChange($event, 'camera')">
-                        {{-- فایل ئینپووتی ستۆدیۆ و مۆبایل --}}
-                        <input type="file" id="old_debt_image_input" name="image" accept="image/*" class="sr-only" @change="onImageChange($event, 'gallery')">
+                        {{-- فایل ئینپووتی ستۆدیۆ و وێنە --}}
+                        <input type="file" id="old_debt_image_input" name="image" accept="image/*,application/pdf" class="sr-only" @change="onImageChange($event, 'gallery')">
+                        {{-- فایل ئینپووتی تایبەت بە فایلی PDF --}}
+                        <input type="file" id="old_debt_pdf_input" name="image_pdf" accept="application/pdf" class="sr-only" @change="onImageChange($event, 'pdf')">
 
-                        <template x-if="imagePreview">
+                        <template x-if="fileSelected">
                             <div class="flex items-center gap-2.5 bg-white p-2 rounded-xl border border-amber-300 shadow-2xs">
-                                <div class="relative size-12 rounded-lg overflow-hidden border border-amber-500 shadow-xs group shrink-0">
-                                    <img :src="imagePreview" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="window.open(imagePreview, '_blank')" title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
-                                </div>
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <label for="old_debt_image_camera" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
-                                        📷 کامێرا
-                                    </label>
-                                    <label for="old_debt_image_input" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
-                                        🖼️ مۆبایل
-                                    </label>
-                                    <button type="button" @click="removeImage()" class="px-2.5 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all">
-                                        ✕ لابردن
-                                    </button>
+                                {{-- اگر وێنە بێت پیشاندانی بچووک دەکرێتەوە --}}
+                                <template x-if="!isPdf">
+                                    <div class="relative size-12 rounded-lg overflow-hidden border border-amber-500 shadow-xs group shrink-0">
+                                        <img :src="filePreview" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="openPreview()" title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
+                                    </div>
+                                </template>
+                                {{-- اگر فایلی PDF بێت ئایکۆن و باجی شیکی PDF نیشان دەدرێت --}}
+                                <template x-if="isPdf">
+                                    <div @click="openPreview()" class="relative size-12 rounded-lg bg-rose-50 border border-rose-300 flex flex-col items-center justify-center cursor-pointer hover:bg-rose-100 transition-colors shrink-0" title="کلیک بکە بۆ پیشاندانی فایلی PDF">
+                                        <span class="text-xl">📄</span>
+                                        <span class="text-[9px] font-black text-rose-700 uppercase">PDF</span>
+                                    </div>
+                                </template>
+
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-bold text-slate-800 truncate max-w-[180px]" x-text="fileName"></span>
+                                        <span class="text-[10px] font-mono text-slate-400" x-text="fileSize"></span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <button type="button" @click="openPreview()" class="px-2 py-0.5 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer transition-all">
+                                            👁️ پیشاندان
+                                        </button>
+                                        <label for="old_debt_image_camera" class="px-2 py-0.5 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
+                                            📷 کامێرا
+                                        </label>
+                                        <label for="old_debt_image_input" class="px-2 py-0.5 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
+                                            🖼️ وێنە
+                                        </label>
+                                        <label for="old_debt_pdf_input" class="px-2 py-0.5 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all">
+                                            📄 PDF
+                                        </label>
+                                        <button type="button" @click="removeFile()" class="px-2 py-0.5 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all">
+                                            ✕ لابردن
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </template>
 
-                        <template x-if="!imagePreview">
+                        <template x-if="!fileSelected">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <label for="old_debt_image_camera"
                                        class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-amber-50 text-amber-900 border border-amber-500/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
@@ -158,6 +183,12 @@
                                        class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
                                     <span class="text-base">🖼️</span>
                                     <span>هەڵبژاردن لە مۆبایل</span>
+                                </label>
+
+                                <label for="old_debt_pdf_input"
+                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                                    <span class="text-base">📄</span>
+                                    <span>فایلی وەسڵ (PDF)</span>
                                 </label>
                             </div>
                         </template>
@@ -317,7 +348,12 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
         paid: initPaid ? Number(initPaid).toLocaleString() : '',
         paymentType: initPaymentType || 'debt',
         currency: initCurrency || 'IQD',
+        fileSelected: false,
+        filePreview: null,
         imagePreview: null,
+        isPdf: false,
+        fileName: '',
+        fileSize: '',
 
         onCustomerInput(e) {
             const val = e.target.value.trim();
@@ -401,24 +437,67 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
                 if (source === 'camera') {
                     const gallery = document.getElementById('old_debt_image_input');
                     if (gallery) gallery.value = '';
+                    const pdf = document.getElementById('old_debt_pdf_input');
+                    if (pdf) pdf.value = '';
+                } else if (source === 'pdf') {
+                    const camera = document.getElementById('old_debt_image_camera');
+                    if (camera) camera.value = '';
+                    const gallery = document.getElementById('old_debt_image_input');
+                    if (gallery) gallery.value = '';
                 } else {
                     const camera = document.getElementById('old_debt_image_camera');
                     if (camera) camera.value = '';
+                    const pdf = document.getElementById('old_debt_pdf_input');
+                    if (pdf) pdf.value = '';
                 }
+
+                this.fileSelected = true;
+                this.fileName = file.name;
+                const sizeKb = file.size / 1024;
+                this.fileSize = sizeKb > 1024 ? (sizeKb / 1024).toFixed(1) + ' MB' : Math.round(sizeKb) + ' KB';
+
+                const isPdfFile = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                this.isPdf = isPdfFile;
+
                 const reader = new FileReader();
                 reader.onload = (ev) => {
+                    this.filePreview = ev.target.result;
                     this.imagePreview = ev.target.result;
                 };
                 reader.readAsDataURL(file);
             }
         },
 
-        removeImage() {
+        openPreview() {
+            if (this.filePreview) {
+                const win = window.open();
+                if (win) {
+                    if (this.isPdf) {
+                        win.document.write('<!DOCTYPE html><html><head><title>' + (this.fileName || 'PDF Document') + '</title><style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#333;}</style></head><body><iframe src="' + this.filePreview + '" frameborder="0" style="border:0;width:100%;height:100%;" allowfullscreen></iframe></body></html>');
+                    } else {
+                        win.document.write('<!DOCTYPE html><html><head><title>' + (this.fileName || 'Image') + '</title><style>body{margin:0;padding:20px;display:flex;align-items:center;justify-content:center;min-height:90vh;background:#0f172a;}img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.5);}</style></head><body><img src="' + this.filePreview + '"></body></html>');
+                    }
+                }
+            }
+        },
+
+        removeFile() {
+            this.fileSelected = false;
+            this.filePreview = null;
             this.imagePreview = null;
+            this.isPdf = false;
+            this.fileName = '';
+            this.fileSize = '';
             const inputGallery = document.getElementById('old_debt_image_input');
             if (inputGallery) inputGallery.value = '';
             const inputCamera = document.getElementById('old_debt_image_camera');
             if (inputCamera) inputCamera.value = '';
+            const inputPdf = document.getElementById('old_debt_pdf_input');
+            if (inputPdf) inputPdf.value = '';
+        },
+
+        removeImage() {
+            this.removeFile();
         }
     };
 }
