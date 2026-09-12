@@ -21,9 +21,14 @@ class OrderMultipleImagesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->seed();
+        $this->user = User::where('email', 'admin@hemin.krd')->firstOrFail();
         $this->actingAs($this->user);
-        $this->customer = Customer::factory()->create(['name' => 'کاک هێمن']);
+        $this->customer = Customer::create([
+            'name' => 'کاک هێمن',
+            'phone' => '07501112233',
+            'is_active' => true,
+        ]);
     }
 
     public function test_can_create_order_with_multiple_images_for_a_line_item(): void
