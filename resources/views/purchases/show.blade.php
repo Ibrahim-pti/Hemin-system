@@ -298,7 +298,7 @@
                                     </div>
                                     <a href="{{ $url }}" target="_blank"
                                        class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition-colors shrink-0 flex items-center gap-1">
-                                        <span>خوێندنەوە</span>
+                                        <span>کردنەوەی فایلی PDF</span>
                                         <span>↗</span>
                                     </a>
                                 </div>
