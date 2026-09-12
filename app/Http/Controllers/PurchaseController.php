@@ -141,12 +141,14 @@ class PurchaseController extends Controller
     {
         $data = $this->validated($request);
 
-        if (!$request->hasFile('image') && $request->hasFile('image_camera')) {
+        if (!$request->hasFile('image') && $request->hasFile('pdf_file')) {
+            $request->files->set('image', $request->file('pdf_file'));
+        } elseif (!$request->hasFile('image') && $request->hasFile('image_camera')) {
             $request->files->set('image', $request->file('image_camera'));
         }
 
         $imagePath = null;
-        $uploadedFile = $request->file('image') ?? $request->file('image_camera');
+        $uploadedFile = $request->file('image') ?? $request->file('image_camera') ?? $request->file('pdf_file');
         if ($uploadedFile && $uploadedFile->isValid()) {
             $imagePath = $uploadedFile->store('purchases', 'public');
         }
@@ -281,7 +283,7 @@ class PurchaseController extends Controller
         $data = $this->validated($request);
 
         $imagePath = $purchase->image;
-        $uploadedFile = $request->file('image') ?? $request->file('image_camera');
+        $uploadedFile = $request->file('image') ?? $request->file('image_camera') ?? $request->file('pdf_file');
         if ($uploadedFile && $uploadedFile->isValid()) {
             $imagePath = $uploadedFile->store('purchases', 'public');
         } elseif ($request->boolean('remove_image')) {
@@ -408,8 +410,9 @@ class PurchaseController extends Controller
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
             'payment_type' => ['nullable', 'in:cash,debt,partial'],
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp', 'max:15360'],
-            'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp', 'max:15360'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
+            'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
+            'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:25600'],
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.item_name' => ['nullable', 'string', 'max:255'],
@@ -420,6 +423,8 @@ class PurchaseController extends Controller
         ], [
             'lines.required' => 'تکایە بڕی پارەی پسوولەکە بنووسە.',
             'lines.*.qty.gt' => 'بڕ دەبێت لە سفر زیاتر بێت.',
+            'image.mimes' => 'فایلی وەسڵ دەبێت وێنە یان PDF بێت.',
+            'pdf_file.mimes' => 'فایلەکە دەبێت PDF بێت.',
         ]);
     }
 

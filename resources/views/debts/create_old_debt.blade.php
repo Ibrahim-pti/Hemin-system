@@ -114,31 +114,29 @@
                        value="{{ old('note') }}">
             </div>
 
-            {{-- وێنە یان فایلی وەسڵ / دەفتەری حیسابات (چەندین وێنە و چەندین فایلی PDF پێکەوە) --}}
+            {{-- وێنەی وەسڵ / دەفتەری حیسابات (چەندین وێنە پێکەوە) --}}
             <div class="sm:col-span-2 lg:col-span-4 bg-slate-50/80 p-3.5 rounded-2xl border border-dashed border-slate-300">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2.5">
-                        <span class="text-2xl">📑</span>
+                        <span class="text-2xl">📸</span>
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="block text-xs font-bold text-slate-800">وێنە و فایلی وەسڵ / دەفتەری حیسابات</span>
+                                <span class="block text-xs font-bold text-slate-800">وێنەی وەسڵ / دەفتەری حیسابات</span>
                                 <template x-if="attachmentsList.length > 0">
                                     <span class="px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300"
-                                          x-text="attachmentsList.length + ' فایل هەڵبژێردراوە'"></span>
+                                          x-text="attachmentsList.length + ' وێنە هەڵبژێردراوە'"></span>
                                 </template>
                             </div>
-                            <span class="block text-[11px] text-slate-500">دەتوانیت چەندین وێنە و چەندین فایلی PDF پێکەوە هەڵبژێریت یان بە کامێرا بگریت.</span>
+                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت یان چەندین وێنە لە مۆبایل پێکەوە هەڵبژێریت.</span>
                         </div>
                     </div>
 
-                    {{-- دوگمەکانی کامێرا، هەڵبژاردنی وێنەکان، و PDF --}}
+                    {{-- دوگمەکانی کامێرا و هەڵبژاردنی وێنەکان --}}
                     <div class="flex flex-wrap items-center gap-2">
                         {{-- فایل ئینپووتی کامێرا --}}
                         <input type="file" id="old_debt_image_camera" accept="image/*" capture="environment" class="sr-only" @change="onFilesAdded($event, 'camera')">
                         {{-- فایل ئینپووتی ستۆدیۆ (multiple images) --}}
                         <input type="file" id="old_debt_image_input" accept="image/*" multiple class="sr-only" @change="onFilesAdded($event, 'gallery')">
-                        {{-- فایل ئینپووتی PDF (multiple PDFs) --}}
-                        <input type="file" id="old_debt_pdf_input" accept="application/pdf" multiple class="sr-only" @change="onFilesAdded($event, 'pdf')">
                         {{-- ئینپووتی سەرەکی فۆڕم بۆ ناردن --}}
                         <input type="file" id="old_debt_form_attachments" name="attachments[]" multiple class="sr-only">
 
@@ -154,13 +152,6 @@
                                title="هەڵبژاردنی یەک یان چەندین وێنە لە ستۆدیۆ">
                             <span class="text-base">🖼️</span>
                             <span>هەڵبژاردن لە مۆبایل</span>
-                        </label>
-
-                        <label for="old_debt_pdf_input"
-                               class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-                               title="هەڵبژاردنی یەک یان چەندین فایلی PDF">
-                            <span class="text-base">📄</span>
-                            <span>+ فایلی PDF</span>
                         </label>
 
                         <template x-if="attachmentsList.length > 0">

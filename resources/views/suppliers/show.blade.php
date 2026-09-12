@@ -153,16 +153,31 @@
                                 {{ fmt_date($item->date) }}
                             </td>
 
-                            {{-- وێنەی وەسڵ --}}
+                            {{-- وێنەی وەسڵ / PDF --}}
                             <td class="py-2.5 px-3 text-center">
                                 @if(!empty($item->image))
-                                    <div class="inline-flex items-center justify-center group relative">
-                                        <img src="{{ $item->image }}"
-                                             class="size-12 rounded-xl object-cover border-2 border-slate-200 shadow-2xs group-hover:scale-125 group-hover:border-teal-500 transition-all cursor-pointer bg-white"
-                                             onclick="event.stopPropagation(); window.open('{{ $item->image }}', '_blank')"
-                                             title="کرتە بکە بۆ بینینی تەواوی وێنەی وەسڵ">
-                                        <span class="absolute -bottom-1 -right-1 size-4 bg-teal-600 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs pointer-events-none">🔍</span>
-                                    </div>
+                                    @php
+                                        $isPdf = str_ends_with(strtolower($item->image), '.pdf');
+                                    @endphp
+                                    @if($isPdf)
+                                        <div class="inline-flex items-center justify-center group relative">
+                                            <div class="size-12 rounded-xl bg-rose-50 border-2 border-rose-300 shadow-2xs group-hover:scale-125 group-hover:border-rose-500 transition-all cursor-pointer flex flex-col items-center justify-center text-rose-700"
+                                                 onclick="event.stopPropagation(); window.open('{{ $item->image }}', '_blank')"
+                                                 title="کرتە بکە بۆ کردنەوەی فایلی PDF">
+                                                <span class="text-base leading-none">📄</span>
+                                                <span class="text-[8px] font-black uppercase leading-none mt-0.5">PDF</span>
+                                            </div>
+                                            <span class="absolute -bottom-1 -right-1 size-4 bg-rose-600 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs pointer-events-none">🔍</span>
+                                        </div>
+                                    @else
+                                        <div class="inline-flex items-center justify-center group relative">
+                                            <img src="{{ $item->image }}"
+                                                 class="size-12 rounded-xl object-cover border-2 border-slate-200 shadow-2xs group-hover:scale-125 group-hover:border-teal-500 transition-all cursor-pointer bg-white"
+                                                 onclick="event.stopPropagation(); window.open('{{ $item->image }}', '_blank')"
+                                                 title="کرتە بکە بۆ بینینی تەواوی وێنەی وەسڵ">
+                                            <span class="absolute -bottom-1 -right-1 size-4 bg-teal-600 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs pointer-events-none">🔍</span>
+                                        </div>
+                                    @endif
                                 @else
                                     <span class="inline-flex items-center gap-1 text-[11px] text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
                                         <span>📷</span>

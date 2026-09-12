@@ -266,8 +266,16 @@
 
         @if ($purchase->imageUrl())
             <div class="mt-4 pt-3 border-t border-slate-200 text-center">
-                <div class="text-xs font-bold text-slate-700 mb-2">وێنەی هاوپێچکراوی وەسڵ:</div>
-                <img src="{{ $purchase->imageUrl() }}" class="max-h-72 mx-auto rounded border border-slate-300 object-contain shadow-xs">
+                @if ($purchase->isPdf())
+                    <div class="text-xs font-bold text-slate-700 mb-2">بەڵگەنامەی هاوپێچکراوی وەسڵ:</div>
+                    <div class="inline-flex items-center gap-2 p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-700">
+                        <span>📄</span>
+                        <span>فایلی بەڵگەنامەی وەسڵ (PDF) هاوپێچ کراوە</span>
+                    </div>
+                @else
+                    <div class="text-xs font-bold text-slate-700 mb-2">وێنەی هاوپێچکراوی وەسڵ:</div>
+                    <img src="{{ $purchase->imageUrl() }}" class="max-h-72 mx-auto rounded border border-slate-300 object-contain shadow-xs">
+                @endif
             </div>
         @endif
 

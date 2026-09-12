@@ -45,7 +45,7 @@
 <form method="POST"
       action="{{ $purchase->exists ? route('purchases.update', $purchase) : route('purchases.store') }}"
       enctype="multipart/form-data"
-      x-data="purchaseForm(@js($initialLines), @js($initialDiscount), @js($initialPaid), @js($initialPaymentType), @js($initialImage), @js($initialCurrency), @js($initialExchangeRate))"
+      x-data="purchaseForm(@js($initialLines), @js($initialDiscount), @js($initialPaid), @js($initialPaymentType), @js($initialImage), @js($initialCurrency), @js($initialExchangeRate), @js($purchase->isPdf()))"
       class="space-y-4">
     @csrf
     @if ($purchase->exists) @method('PUT') @endif
@@ -141,34 +141,50 @@
                        value="{{ old('note', $purchase->note) }}">
             </div>
 
-            {{-- وێنەی پسوولەی کڕین (فایل یان کامێرا) --}}
+            {{-- وێنە یان فایلی پسوولەی کڕین (فایل، کامێرا یان PDF) --}}
             <div class="sm:col-span-2 lg:col-span-4 bg-slate-50/80 p-3.5 rounded-2xl border border-dashed border-slate-300">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
                         <span class="text-2xl">📸</span>
                         <div>
-                            <span class="block text-xs font-bold text-slate-800">وێنەی پسوولەی کڕین (وەسڵی کاغەزی فرۆشیار)</span>
-                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت یان لە مۆبایل و ستۆدیۆ هەڵیبژێریت.</span>
+                            <span class="block text-xs font-bold text-slate-800">وێنە و فایلی پسوولەی کڕین (وەسڵی کاغەزی فرۆشیار یان PDF)</span>
+                            <span class="block text-[11px] text-slate-500">دەتوانیت وێنەی وەسڵەکە بە کامێرا بگریت، لە مۆبایل هەڵیبژێریت یان فایلی PDF دابنێیت.</span>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2.5">
-                        {{-- فایل ئینپووتی کامێرا بۆ مۆبایل (capture=environment ڕاستەوخۆ کامێرا دەکاتەوە) --}}
+                        {{-- فایل ئینپووتی کامێرا بۆ مۆبایل --}}
                         <input type="file" id="purchase_image_camera" name="image_camera" accept="image/*" capture="environment" class="sr-only" @change="onImageChange($event, 'camera')">
                         {{-- فایل ئینپووتی ستۆدیۆ و مۆبایل --}}
                         <input type="file" id="purchase_image_input" name="image" accept="image/*" class="sr-only" @change="onImageChange($event, 'gallery')">
+                        {{-- فایل ئینپووتی PDF --}}
+                        <input type="file" id="purchase_pdf_input" name="pdf_file" accept="application/pdf" class="sr-only" @change="onImageChange($event, 'pdf')">
 
                         <template x-if="imagePreview">
                             <div class="flex items-center gap-2.5 bg-white p-2 rounded-xl border border-teal-300 shadow-2xs">
-                                <div class="relative size-12 rounded-lg overflow-hidden border border-teal-600 shadow-xs group shrink-0">
-                                    <img :src="imagePreview" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="window.open(imagePreview, '_blank')" title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
-                                </div>
+                                {{-- پیشاندانی وێنە یان فایلی PDF --}}
+                                <template x-if="!isPdf">
+                                    <div class="relative size-12 rounded-lg overflow-hidden border border-teal-600 shadow-xs group shrink-0">
+                                        <img :src="imagePreview" class="size-full object-cover cursor-pointer hover:scale-110 transition-transform" @click="window.open(imagePreview, '_blank')" title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
+                                    </div>
+                                </template>
+                                <template x-if="isPdf">
+                                    <div class="relative size-12 rounded-lg bg-rose-50 border border-rose-300 flex flex-col items-center justify-center cursor-pointer hover:bg-rose-100 transition-colors shrink-0"
+                                         @click="window.open(imagePreview, '_blank')" title="کلیک بکە بۆ کردنەوەی فایلی PDF">
+                                        <span class="text-base">📄</span>
+                                        <span class="text-[8px] font-black text-rose-700 uppercase">PDF</span>
+                                    </div>
+                                </template>
+
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    <label for="purchase_image_camera" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-teal-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
+                                    <label for="purchase_image_camera" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-teal-100 border border-slate-200 rounded-lg cursor-pointer transition-all" title="گۆڕین بە کامێرا">
                                         📷 کامێرا
                                     </label>
-                                    <label for="purchase_image_input" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-teal-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
+                                    <label for="purchase_image_input" class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-teal-100 border border-slate-200 rounded-lg cursor-pointer transition-all" title="گۆڕین لە مۆبایل">
                                         🖼️ مۆبایل
+                                    </label>
+                                    <label for="purchase_pdf_input" class="px-2.5 py-1 text-[11px] font-bold text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all" title="گۆڕین بۆ فایلی PDF">
+                                        📄 PDF
                                     </label>
                                     <button type="button" @click="removeImage()" class="px-2.5 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg cursor-pointer transition-all">
                                         ✕ لابردن
@@ -189,6 +205,13 @@
                                        class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
                                     <span class="text-base">🖼️</span>
                                     <span>هەڵبژاردن لە مۆبایل</span>
+                                </label>
+
+                                <label for="purchase_pdf_input"
+                                       class="px-3.5 py-2 rounded-xl text-xs font-black bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                                       title="هەڵبژاردنی یەک فایلی PDF">
+                                    <span class="text-base">📄</span>
+                                    <span>+ فایلی PDF</span>
                                 </label>
                             </div>
                         </template>
@@ -458,7 +481,7 @@
 </form>
 
 <script>
-function purchaseForm(initialLines, initialDiscount, initialPaid, initialPaymentType, initialImagePreview, initialCurrency, initialExchangeRate) {
+function purchaseForm(initialLines, initialDiscount, initialPaid, initialPaymentType, initialImagePreview, initialCurrency, initialExchangeRate, initialIsPdf = false) {
     const hasDetailedItems = initialLines && initialLines.length > 1;
 
     return {
@@ -470,6 +493,7 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
         discount: initialDiscount || '',
         paid: initialPaid || '',
         imagePreview: initialImagePreview || null,
+        isPdf: !!initialIsPdf || (initialImagePreview ? initialImagePreview.toLowerCase().includes('.pdf') : false),
         removeImageFlag: false,
 
         currency: initialCurrency || 'IQD',
@@ -558,9 +582,21 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
                 if (source === 'camera') {
                     const gallery = document.getElementById('purchase_image_input');
                     if (gallery) gallery.value = '';
-                } else {
+                    const pdf = document.getElementById('purchase_pdf_input');
+                    if (pdf) pdf.value = '';
+                    this.isPdf = false;
+                } else if (source === 'gallery') {
                     const camera = document.getElementById('purchase_image_camera');
                     if (camera) camera.value = '';
+                    const pdf = document.getElementById('purchase_pdf_input');
+                    if (pdf) pdf.value = '';
+                    this.isPdf = false;
+                } else if (source === 'pdf') {
+                    const camera = document.getElementById('purchase_image_camera');
+                    if (camera) camera.value = '';
+                    const gallery = document.getElementById('purchase_image_input');
+                    if (gallery) gallery.value = '';
+                    this.isPdf = true;
                 }
                 this.imagePreview = URL.createObjectURL(file);
                 this.removeImageFlag = false;
@@ -569,11 +605,14 @@ function purchaseForm(initialLines, initialDiscount, initialPaid, initialPayment
 
         removeImage() {
             this.imagePreview = null;
+            this.isPdf = false;
             this.removeImageFlag = true;
             const inputGallery = document.getElementById('purchase_image_input');
             if (inputGallery) inputGallery.value = '';
             const inputCamera = document.getElementById('purchase_image_camera');
             if (inputCamera) inputCamera.value = '';
+            const inputPdf = document.getElementById('purchase_pdf_input');
+            if (inputPdf) inputPdf.value = '';
         },
 
         formatQuickTotal(e) {

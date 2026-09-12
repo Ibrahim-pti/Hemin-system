@@ -26,11 +26,19 @@
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
             @if ($purchase->imageUrl())
-                <div class="relative size-14 rounded-2xl overflow-hidden border-2 border-teal-500 shadow-md shrink-0 cursor-pointer group"
-                     onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')" title="کرتە بکە بۆ بینینی تەواوی وێنەکە">
-                    <img src="{{ $purchase->imageUrl() }}" class="size-full object-cover group-hover:scale-110 transition-transform">
-                    <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center font-bold py-0.5">وێنە</span>
-                </div>
+                @if ($purchase->isPdf())
+                    <div class="relative size-14 rounded-2xl bg-rose-50 border-2 border-rose-400 shadow-md shrink-0 cursor-pointer group flex flex-col items-center justify-center hover:bg-rose-100 transition-all"
+                         onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')" title="کرتە بکە بۆ کردنەوەی فایلی PDF">
+                        <span class="text-xl">📄</span>
+                        <span class="text-[9px] font-black text-rose-700 uppercase">PDF</span>
+                    </div>
+                @else
+                    <div class="relative size-14 rounded-2xl overflow-hidden border-2 border-teal-500 shadow-md shrink-0 cursor-pointer group"
+                         onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')" title="کرتە بکە بۆ بینینی تەواوی وێنەکە">
+                        <img src="{{ $purchase->imageUrl() }}" class="size-full object-cover group-hover:scale-110 transition-transform">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center font-bold py-0.5">وێنە</span>
+                    </div>
+                @endif
             @else
                 <div class="size-12 rounded-2xl bg-linear-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center text-2xl shadow-md shadow-emerald-500/20 shrink-0">
                     🛒
@@ -237,22 +245,39 @@
                 @endif
             </div>
 
-            {{-- وێنەی پسوولەی کڕین --}}
+            {{-- وێنە یان فایلی پسوولەی کڕین --}}
             @if ($purchase->imageUrl())
                 <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2">
                     <h3 class="font-black text-slate-800 text-xs flex items-center gap-1.5 border-b border-slate-100 pb-2">
-                        <span>📷</span>
-                        <span>وێنەی وەسڵی کڕین</span>
+                        <span>{{ $purchase->isPdf() ? '📄' : '📷' }}</span>
+                        <span>{{ $purchase->isPdf() ? 'فایلی PDF ی وەسڵی کڕین' : 'وێنەی وەسڵی کڕین' }}</span>
                     </h3>
-                    <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer group"
-                         onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')"
-                         title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
-                        <img src="{{ $purchase->imageUrl() }}" class="w-full max-h-64 object-contain mx-auto group-hover:scale-105 transition-transform">
-                    </div>
-                    <a href="{{ $purchase->imageUrl() }}" target="_blank"
-                       class="block text-center text-[11px] font-bold text-teal-700 hover:underline pt-1">
-                        🔍 بینینی تەواوی وێنەکە
-                    </a>
+                    @if ($purchase->isPdf())
+                        <div class="p-6 rounded-xl border border-rose-200 bg-rose-50/50 flex flex-col items-center justify-center gap-3 text-center">
+                            <div class="size-16 rounded-2xl bg-white border border-rose-200 shadow-xs flex items-center justify-center text-3xl text-rose-600">
+                                📄
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-800">بەڵگەنامەی وەسڵ بە شێوەی PDF</span>
+                                <span class="block text-[11px] text-slate-500 mt-0.5">دەتوانیت کلیک بکەیت بۆ خوێندنەوە یان داگرتنی فایلەکە</span>
+                            </div>
+                            <a href="{{ $purchase->imageUrl() }}" target="_blank"
+                               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-all">
+                                <span>📄</span>
+                                <span>کردنەوەی فایلی PDF</span>
+                            </a>
+                        </div>
+                    @else
+                        <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer group"
+                             onclick="window.open('{{ $purchase->imageUrl() }}', '_blank')"
+                             title="کلیک بکە بۆ بینینی تەواوی وێنەکە">
+                            <img src="{{ $purchase->imageUrl() }}" class="w-full max-h-64 object-contain mx-auto group-hover:scale-105 transition-transform">
+                        </div>
+                        <a href="{{ $purchase->imageUrl() }}" target="_blank"
+                           class="block text-center text-[11px] font-bold text-teal-700 hover:underline pt-1">
+                            🔍 بینینی تەواوی وێنەکە
+                        </a>
+                    @endif
                 </div>
             @endif
 

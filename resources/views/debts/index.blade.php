@@ -923,11 +923,11 @@
                         }">
                             <input type="hidden" name="image_base64" :value="imageBase64">
                             <label class="label" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; display: block; text-align: right; color: #334155;">
-                                📑 وێنەی وەسڵ / فایلی PDF
+                                📸 وێنەی وەسڵ
                             </label>
                             <input type="file" id="debt_index_camera" name="image_camera" accept="image/*" capture="environment" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
                                    @change="handleFile($event.target.files[0], 'camera')">
-                            <input type="file" id="debt_index_gallery" name="image" accept="image/*,application/pdf" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
+                            <input type="file" id="debt_index_gallery" name="image" accept="image/*" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
                                    @change="handleFile($event.target.files[0], 'gallery')">
 
                             <template x-if="!modalPreview">
@@ -941,11 +941,6 @@
                                            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.45rem 0.35rem; border-radius: 0.6rem; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: 700; font-size: 0.72rem; cursor: pointer;">
                                         <span>🖼️</span>
                                         <span>وێنە</span>
-                                    </label>
-                                    <label for="debt_index_gallery"
-                                           style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.45rem 0.35rem; border-radius: 0.6rem; border: 1px solid #fecdd3; background: #fff1f2; color: #be123c; font-weight: 700; font-size: 0.72rem; cursor: pointer;">
-                                        <span>📄</span>
-                                        <span>PDF</span>
                                     </label>
                                 </div>
                             </template>

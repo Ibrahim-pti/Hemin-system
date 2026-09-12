@@ -29,6 +29,11 @@ class Purchase extends Model
         return $this->image ? asset('storage/' . $this->image) : null;
     }
 
+    public function isPdf(): bool
+    {
+        return !empty($this->image) && str_ends_with(strtolower($this->image), '.pdf');
+    }
+
     protected function casts(): array
     {
         return [
