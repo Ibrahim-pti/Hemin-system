@@ -442,9 +442,13 @@ class PurchaseController extends Controller
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
             'payment_type' => ['nullable', 'in:cash,debt,partial'],
+            'attachments' => ['nullable'],
+            'attachments.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
             'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
             'image_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
             'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:25600'],
+            'existing_attachments' => ['nullable', 'array'],
+            'existing_attachments.*' => ['nullable', 'string'],
             'note' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.item_name' => ['nullable', 'string', 'max:255'],
@@ -455,6 +459,8 @@ class PurchaseController extends Controller
         ], [
             'lines.required' => 'تکایە بڕی پارەی پسوولەکە بنووسە.',
             'lines.*.qty.gt' => 'بڕ دەبێت لە سفر زیاتر بێت.',
+            'attachments.*.mimes' => 'هەموو فایلەکان دەبێت وێنە یان PDF بن.',
+            'attachments.*.max' => 'قەبارەی هیچ فایلێک لە ۲۵ مێگابایت زیاتر نەبێت.',
             'image.mimes' => 'فایلی وەسڵ دەبێت وێنە یان PDF بێت.',
             'pdf_file.mimes' => 'فایلەکە دەبێت PDF بێت.',
         ]);
