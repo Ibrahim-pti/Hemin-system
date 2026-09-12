@@ -133,12 +133,18 @@
                             <div class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
                                 {{-- وێنەی کەلوپەل (بە قەبارەی تەواو دیاریکراو 56px بە 56px) --}}
                                 <div style="width: 56px; height: 56px; min-width: 56px; min-height: 56px;"
-                                     class="rounded-xl bg-white border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                                     class="rounded-xl bg-white border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center relative">
                                     <template x-if="it.image">
-                                        <img :src="it.image" :alt="it.item_name"
-                                             style="width: 56px; height: 56px; object-fit: cover;"
-                                             class="cursor-pointer hover:scale-105 transition-transform"
-                                             @click="previewImg = it.image">
+                                        <div class="relative size-full">
+                                            <img :src="it.image" :alt="it.item_name"
+                                                 style="width: 56px; height: 56px; object-fit: cover;"
+                                                 class="cursor-pointer hover:scale-105 transition-transform size-full"
+                                                 @click="previewImg = it.image">
+                                            <template x-if="it.images && it.images.length > 1">
+                                                <span class="absolute bottom-0 inset-x-0 bg-slate-900/80 text-white font-mono font-bold text-[9px] text-center leading-tight py-0.5"
+                                                      x-text="it.images.length + ' وێنە'"></span>
+                                            </template>
+                                        </div>
                                     </template>
                                     <template x-if="!it.image">
                                         <div class="flex flex-col items-center justify-center text-slate-300">
@@ -156,6 +162,18 @@
                                         <span x-show="!it.measurement && (it.width || it.height)" class="text-slate-400 font-mono text-[10px]" x-text="'(' + (it.width || '') + '×' + (it.height || '') + ')'"></span>
                                     </div>
                                     <div x-show="it.note" class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md mt-1 border border-amber-200" x-text="'تێبینی: ' + it.note"></div>
+
+                                    {{-- تەمبنایلی وێنەکانی تر ئەگەر لە ١ زیاتر بوون --}}
+                                    <template x-if="it.images && it.images.length > 1">
+                                        <div class="flex items-center gap-1.5 mt-2 overflow-x-auto pb-0.5 scrollbar-none">
+                                            <template x-for="(pic, pIdx) in it.images" :key="pIdx">
+                                                <img :src="pic"
+                                                     class="size-7 rounded-lg object-cover border border-slate-200 hover:border-blue-500 cursor-pointer shadow-2xs hover:scale-105 transition-transform shrink-0"
+                                                     @click="previewImg = pic"
+                                                     :title="'وێنەی ' + (pIdx + 1)">
+                                            </template>
+                                        </div>
+                                    </template>
                                 </div>
                             </div>
                         </template>
