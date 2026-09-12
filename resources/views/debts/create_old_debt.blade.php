@@ -146,14 +146,14 @@
                                class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-amber-50 text-amber-900 border border-amber-500/40 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                                title="گرتنی وێنەی نوێ بە کامێرا">
                             <span class="text-base">📸</span>
-                            <span>کامێرا</span>
+                            <span>دانانی وێنەی وەسڵەکە (کامێرا)</span>
                         </label>
 
                         <label for="old_debt_image_input"
                                class="px-3 py-1.5 rounded-xl text-xs font-black bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                                title="هەڵبژاردنی یەک یان چەندین وێنە لە ستۆدیۆ">
                             <span class="text-base">🖼️</span>
-                            <span>+ وێنەی تر (مۆبایل)</span>
+                            <span>هەڵبژاردن لە مۆبایل</span>
                         </label>
 
                         <label for="old_debt_pdf_input"
