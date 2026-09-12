@@ -466,30 +466,70 @@
                     </div>
                 </div>
 
-                {{-- کردار و هەڵبژاردنی مانگ --}}
-                <div class="flex items-center gap-2">
+                {{-- کردار و هەڵبژاردنی ماوە (حەفتانە / مانگانە) --}}
+                <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
+                    {{-- دوگمەی پێدانی پارە --}}
                     <button type="button" @click="toggleDrawerPayment()"
-                            class="head-action-btn flex-1 sm:flex-initial px-3.5 h-9 rounded-xl text-[11px] sm:text-xs cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                            class="head-action-btn px-3.5 h-9 rounded-xl text-[11px] sm:text-xs cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shrink-0"
                             :class="drawerTab === 'payment' ? 'is-back' : ''">
                         <span x-text="drawerTab === 'payment' ? '📋' : '💸'"></span>
                         <span x-text="drawerTab === 'payment' ? 'بینینی دەوام' : 'پێدانی پارە'"></span>
                     </button>
 
-                    <label class="head-month-box flex items-center gap-1.5 px-2.5 h-9 rounded-xl shrink-0 cursor-pointer">
-                        <span class="text-sm leading-none">🗓️</span>
-                        <input type="month" x-model="selectedMonth" @change="loadEmployeeMonthDetails()"
-                               class="bg-transparent text-white text-[11px] sm:text-xs font-bold cursor-pointer focus:outline-hidden w-[6.5rem] sm:w-[7.5rem]">
-                    </label>
+                    {{-- سویچەری حەفتانە / مانگانە --}}
+                    <div class="flex items-center bg-teal-900/70 p-0.5 rounded-xl border border-teal-700/60 shrink-0 text-[11px]">
+                        <button type="button" @click="switchDrawerMode('week')"
+                                class="px-2.5 h-8 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1"
+                                :class="drawerPeriodMode === 'week' ? 'bg-white text-teal-950 shadow-xs' : 'text-teal-200 hover:text-white'">
+                            <span>🗓️</span>
+                            <span>حەفتانە</span>
+                        </button>
+                        <button type="button" @click="switchDrawerMode('month')"
+                                class="px-2.5 h-8 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1"
+                                :class="drawerPeriodMode === 'month' ? 'bg-white text-teal-950 shadow-xs' : 'text-teal-200 hover:text-white'">
+                            <span>📅</span>
+                            <span>مانگانە</span>
+                        </button>
+                    </div>
+
+                    {{-- کاتێک حەفتانە کارایە: گۆڕینی حەفتە بە تیرەکان و بەروار --}}
+                    <template x-if="drawerPeriodMode === 'week'">
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button type="button" @click="shiftDrawerWeek(-1)"
+                                    title="هەفتەی پێشوو"
+                                    class="size-8 rounded-xl bg-teal-900/60 hover:bg-teal-800 text-teal-100 border border-teal-700/60 flex items-center justify-center font-black text-xs cursor-pointer transition-all active:scale-95">
+                                →
+                            </button>
+                            <div class="h-8 px-2.5 rounded-xl bg-teal-900/80 border border-teal-700/60 flex items-center justify-center gap-1 text-[11px] font-mono font-bold text-white select-text">
+                                <span x-text="(drawerDisplayFrom || drawerFrom || '').replaceAll('-', '/')"></span>
+                                <span class="text-teal-300 font-sans text-[10px]">تا</span>
+                                <span x-text="(drawerDisplayTo || drawerTo || '').replaceAll('-', '/')"></span>
+                            </div>
+                            <button type="button" @click="shiftDrawerWeek(1)"
+                                    title="هەفتەی داهاتوو"
+                                    class="size-8 rounded-xl bg-teal-900/60 hover:bg-teal-800 text-teal-100 border border-teal-700/60 flex items-center justify-center font-black text-xs cursor-pointer transition-all active:scale-95">
+                                ←
+                            </button>
+                        </div>
+                    </template>
+
+                    {{-- کاتێک مانگانە کارایە: سەلێکتەری مانگ --}}
+                    <template x-if="drawerPeriodMode === 'month'">
+                        <label class="head-month-box flex items-center gap-1.5 px-2.5 h-8 rounded-xl shrink-0 cursor-pointer">
+                            <span class="text-xs leading-none">🗓️</span>
+                            <input type="month" x-model="selectedMonth" @change="loadEmployeeDrawerDetails()"
+                                   class="bg-transparent text-white text-[11px] sm:text-xs font-bold cursor-pointer focus:outline-hidden w-[6.5rem] sm:w-[7.5rem]">
+                        </label>
+                    </template>
                 </div>
             </div>
 
-            {{-- کارتی حیساباتی خۆکار --}}
             {{-- کارتی حیساباتی خۆکار (٥ کارتی ڕێک و پوخت) --}}
             <div class="p-2.5 sm:p-3.5 bg-slate-50 border-b border-slate-200 shrink-0">
                 <div class="employee-stats-5 text-center text-xs">
                     {{-- ١. ڕۆژانی دەوام --}}
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
-                        <div class="text-[10px] text-slate-500 font-bold">ڕۆژانی دەوام</div>
+                        <div class="text-[10px] text-slate-500 font-bold" x-text="drawerPeriodMode === 'week' ? 'ڕۆژانی دەوامی هەفتە' : 'ڕۆژانی دەوامی مانگ'"></div>
                         <div class="text-sm sm:text-base font-black text-emerald-800 font-mono mt-0.5" x-text="(drawerData?.stats?.present_count ?? 0) + ' ڕۆژ ئامادە'"></div>
                         <div class="flex items-center justify-center gap-1 flex-wrap mt-0.5">
                             <template x-if="(drawerData?.stats?.half_day_count ?? 0) > 0">
@@ -499,37 +539,34 @@
                                 <span class="text-[9px] text-rose-600 font-bold" x-text="drawerData.stats.absent_count + ' غیاب'"></span>
                             </template>
                             <template x-if="!(drawerData?.stats?.half_day_count ?? 0) && !(drawerData?.stats?.absent_count ?? 0)">
-                                <span class="text-[9px] text-slate-400">مانگەکە</span>
+                                <span class="text-[9px] text-slate-400" x-text="drawerPeriodMode === 'week' ? 'ئەم هەفتەیە' : 'مانگەکە'"></span>
                             </template>
                         </div>
                     </div>
 
                     {{-- ٢. شایستەی دەوام --}}
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
-                        <div class="text-[10px] text-slate-500 font-bold">شایستەی دەوام</div>
+                        <div class="text-[10px] text-slate-500 font-bold" x-text="drawerPeriodMode === 'week' ? 'شایستەی ئەم هەفتەیە' : 'شایستەی دەوام'"></div>
                         <div class="text-sm sm:text-base font-black text-teal-950 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_earned ?? 0) + ' د.ع'"></div>
-                        <div class="text-[9px] text-slate-400 mt-0.5">
-                            کۆی حەقدەستی مانگ
-                        </div>
+                        <div class="text-[9px] text-slate-400 mt-0.5" x-text="drawerPeriodMode === 'week' ? 'حەقدەستی هەفتە' : 'کۆی حەقدەستی مانگ'"></div>
                     </div>
 
                     {{-- ٣. مووچەی دراو --}}
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
-                        <div class="text-[10px] text-slate-500 font-bold">مووچەی دراو</div>
+                        <div class="text-[10px] text-slate-500 font-bold" x-text="drawerPeriodMode === 'week' ? 'مووچەی دراو لە هەفتە' : 'مووچەی دراو'"></div>
                         <div class="text-sm sm:text-base font-black text-emerald-800 font-mono mt-0.5" x-text="formatNumber(drawerData?.stats?.total_wages_paid ?? 0) + ' د.ع'"></div>
-                        <div class="text-[9px] text-slate-400 mt-0.5">
-                            لە شایستە دراوە
-                        </div>
+                        <div class="text-[9px] text-slate-400 mt-0.5" x-text="drawerPeriodMode === 'week' ? 'لەم هەفتەیە دراوە' : 'لە شایستە دراوە'"></div>
                     </div>
 
                     {{-- ٤. شایستەی ماوە بۆ پێدان --}}
                     <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between"
-                         :class="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_wages_paid ?? 0) > 0 ? 'bg-emerald-50/50 border-emerald-200' : ''">
-                        <div class="text-[10px] font-bold text-slate-500">شایستەی ماوە</div>
-                        <div class="text-sm sm:text-base font-black font-mono text-teal-900 mt-0.5"
+                         :class="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_earned ?? 0) > 0 ? 'bg-emerald-50/50 border-emerald-200' : ''">
+                        <div class="text-[10px] font-bold text-slate-500" x-text="drawerPeriodMode === 'week' ? 'شایستەی ماوەی هەفتە' : 'شایستەی ماوە'"></div>
+                        <div class="text-sm sm:text-base font-black font-mono mt-0.5"
+                             :class="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_earned ?? 0) > 0 ? 'text-emerald-700' : 'text-teal-900'"
                              x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></div>
                         <div class="text-[9px] text-slate-400 mt-0.5">
-                            <span x-text="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_wages_paid ?? 0) > 0 ? '✓ تەواو دراوە' : 'ماوە بۆ مووچە'"></span>
+                            <span x-text="(drawerData?.stats?.remaining_balance ?? 0) <= 0 && (drawerData?.stats?.total_earned ?? 0) > 0 ? '✓ تەواو دراوە' : ((drawerData?.stats?.total_earned ?? 0) === 0 ? 'هیچ شایستەیەک نییە' : 'ماوە بۆ مووچە')"></span>
                         </div>
                     </div>
 
@@ -652,9 +689,18 @@
                                         <td class="p-2 font-mono font-bold text-slate-800 text-right" x-text="'#' + p.voucher_no"></td>
                                         <td class="p-2 font-mono text-slate-600 text-xs" x-text="p.paid_at"></td>
                                         <td class="p-2">
-                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-black inline-block"
-                                                  :class="p.payment_type === 'debt_repayment' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (p.payment_type === 'advance' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-teal-100 text-teal-800 border border-teal-200')"
-                                                  x-text="p.type_label || (p.payment_type === 'debt_repayment' ? 'دانەوەی قەرز' : (p.payment_type === 'advance' ? 'پێدانی قەرز' : 'مووچە'))"></span>
+                                            <div class="inline-flex items-center gap-1 justify-center">
+                                                <span class="px-2 py-0.5 rounded-md text-[10px] font-black inline-block"
+                                                      :class="p.payment_type === 'debt_repayment' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (p.payment_type === 'advance' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-teal-100 text-teal-800 border border-teal-200')"
+                                                      x-text="p.type_label || (p.payment_type === 'debt_repayment' ? 'دانەوەی قەرز' : (p.payment_type === 'advance' ? 'پێدانی قەرز' : 'مووچە'))"></span>
+                                                <template x-if="p.direction === 'out'">
+                                                    <button type="button" @click="togglePaymentType(p)"
+                                                            :title="p.payment_type === 'advance' ? 'گۆڕین بۆ مووچە (کەمکردنەوە لە شایستە)' : 'گۆڕین بۆ پێدانی قەرز'"
+                                                            class="size-5 rounded-md bg-slate-100 hover:bg-teal-100 text-slate-500 hover:text-teal-800 text-[10px] font-bold cursor-pointer transition-colors inline-flex items-center justify-center">
+                                                        ⇄
+                                                    </button>
+                                                </template>
+                                            </div>
                                         </td>
                                         <td class="p-2 font-mono font-black"
                                             :class="p.direction === 'in' ? 'text-emerald-700' : 'text-slate-900'"
@@ -691,28 +737,34 @@
                     <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
                         <button type="button" @click="setPaymentType('wage')"
                                 :class="paymentForm.payment_type === 'wage' ? 'pay-tab-wage-active' : 'pay-tab-inactive'"
-                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                            <span>💵 مووچەی شایستە</span>
+                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer">
+                            <span class="font-black">💵 مووچەی شایستە</span>
+                            <span class="text-[9px] opacity-75">سفرکردنەوەی شایستە</span>
                         </button>
                         <button type="button" @click="setPaymentType('advance')"
                                 :class="paymentForm.payment_type === 'advance' ? 'pay-tab-loan-active' : 'pay-tab-inactive'"
-                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                            <span>🤝 پێدانی قەرز</span>
+                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer">
+                            <span class="font-black">🤝 پێدانی قەرز</span>
+                            <span class="text-[9px] opacity-75">وەک قەرزی جیاواز</span>
                         </button>
                         <button type="button" @click="setPaymentType('debt_repayment')"
                                 :class="paymentForm.payment_type === 'debt_repayment' ? 'pay-tab-repay-active' : 'pay-tab-inactive'"
-                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                            <span>📥 دانەوەی قەرز</span>
+                                class="py-2.5 px-2 rounded-lg text-xs transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer">
+                            <span class="font-black">📥 دانەوەی قەرز</span>
+                            <span class="text-[9px] opacity-75">گەڕاندنەوە بۆ قاسە</span>
                         </button>
                     </div>
 
                     {{-- کارتی خێرای پەیوەندیدار بە تابی هەڵبژێردراو --}}
                     <template x-if="paymentForm.payment_type === 'wage'">
                         <div class="flex items-center justify-between p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-950 font-bold">
-                            <span>شایستەی ماوە بۆ مووچە: <b class="font-mono text-sm" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></b></span>
+                            <div>
+                                <span x-text="drawerPeriodMode === 'week' ? 'شایستەی ماوەی ئەم هەفتەیە: ' : 'شایستەی ماوە بۆ مووچە: '"></span>
+                                <b class="font-mono text-sm text-teal-900" x-text="formatNumber(drawerData?.stats?.remaining_balance ?? 0) + ' د.ع'"></b>
+                            </div>
                             <template x-if="(drawerData?.stats?.remaining_balance ?? 0) > 0">
                                 <button type="button" @click="setFullDuePayment()" class="quick-fill-btn quick-fill-wage shadow-xs">
-                                    دانانی تەواوی شایستە
+                                    ✓ دانانی تەواوی شایستە
                                 </button>
                             </template>
                         </div>
@@ -1341,6 +1393,11 @@ function workshopEmployeesApp() {
         
         showEmployeeDrawer: false,
         selectedEmployee: null,
+        drawerPeriodMode: '{{ $mode === "month" ? "month" : "week" }}',
+        drawerFrom: '{{ $from }}',
+        drawerTo: '{{ $to }}',
+        drawerDisplayFrom: '{{ $displayFrom }}',
+        drawerDisplayTo: '{{ $displayTo }}',
         selectedMonth: '{{ now()->format("Y-m") }}',
         drawerData: null,
 
@@ -1660,15 +1717,26 @@ function workshopEmployeesApp() {
         async openEmployeeDrawer(row) {
             this.selectedEmployee = row;
             this.drawerTab = 'details';
+            this.drawerPeriodMode = this.mode === 'month' ? 'month' : 'week';
+            this.drawerFrom = this.from;
+            this.drawerTo = this.to;
+            this.drawerDisplayFrom = this.displayFrom;
+            this.drawerDisplayTo = this.displayTo;
             this.showEmployeeDrawer = true;
-            await this.loadEmployeeMonthDetails();
+            await this.loadEmployeeDrawerDetails();
         },
 
-        async loadEmployeeMonthDetails() {
+        async loadEmployeeDrawerDetails() {
             if (!this.selectedEmployee) return;
             this.drawerLoading = true;
             try {
-                const res = await fetch(`/workshop/employees/${this.selectedEmployee.id}/month-details?month=${this.selectedMonth}`, {
+                let url = `/workshop/employees/${this.selectedEmployee.id}/month-details?`;
+                if (this.drawerPeriodMode === 'week') {
+                    url += `from=${this.drawerFrom}&to=${this.drawerTo}&mode=week`;
+                } else {
+                    url += `month=${this.selectedMonth}`;
+                }
+                const res = await fetch(url, {
                     headers: { 'Accept': 'application/json' }
                 });
                 const data = await res.json();
@@ -1682,6 +1750,63 @@ function workshopEmployeesApp() {
                 console.error(e);
             } finally {
                 this.drawerLoading = false;
+            }
+        },
+
+        async loadEmployeeMonthDetails() {
+            return await this.loadEmployeeDrawerDetails();
+        },
+
+        async switchDrawerMode(mode) {
+            this.drawerPeriodMode = mode;
+            if (mode === 'month' && !this.selectedMonth) {
+                this.selectedMonth = this.drawerFrom ? this.drawerFrom.substring(0, 7) : '{{ now()->format("Y-m") }}';
+            }
+            await this.loadEmployeeDrawerDetails();
+        },
+
+        async shiftDrawerWeek(dir) {
+            let d = new Date(this.drawerFrom);
+            d.setDate(d.getDate() + (dir * 7));
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const newFrom = `${y}-${m}-${day}`;
+
+            let dEnd = new Date(d);
+            dEnd.setDate(dEnd.getDate() + 6);
+            const yEnd = dEnd.getFullYear();
+            const mEnd = String(dEnd.getMonth() + 1).padStart(2, '0');
+            const dayEnd = String(dEnd.getDate()).padStart(2, '0');
+            const newTo = `${yEnd}-${mEnd}-${dayEnd}`;
+
+            this.drawerFrom = newFrom;
+            this.drawerTo = newTo;
+            this.drawerDisplayFrom = newFrom;
+            this.drawerDisplayTo = newTo;
+            await this.loadEmployeeDrawerDetails();
+        },
+
+        async togglePaymentType(p) {
+            if (!confirm(`ئایا دڵنیایت دەتەوێت جۆری ئەم وەسڵە (#${p.voucher_no}) بگۆڕیت؟`)) return;
+            try {
+                const res = await fetch(`/workshop/employees/payments/${p.id}/toggle-type`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    this.showToast(data.message, 'success');
+                    await this.loadEmployeeDrawerDetails();
+                } else {
+                    this.showToast(data.message || 'هەڵە لە گۆڕینی جۆری وەسڵ', 'error');
+                }
+            } catch (e) {
+                this.showToast('هەڵە لە گۆڕینی جۆری وەسڵ', 'error');
             }
         },
 
@@ -1739,13 +1864,18 @@ function workshopEmployeesApp() {
                 note = `پێدانی قەرز بۆ ${row?.name || ''}`;
             }
 
+            let defaultDate = '{{ now()->toDateString() }}';
+            if (this.drawerPeriodMode === 'week' && this.drawerTo && this.drawerTo < defaultDate) {
+                defaultDate = this.drawerTo;
+            }
+
             this.paymentForm = {
                 employee_id: row?.id,
                 payment_type: initialType,
                 amount: amount,
                 currency: defaultBox ? defaultBox.currency : 'IQD',
                 cash_box_id: defaultBox ? defaultBox.id : (this.cashBoxes[0]?.id || ''),
-                paid_at: '{{ now()->toDateString() }}',
+                paid_at: defaultDate,
                 note: note
             };
         },

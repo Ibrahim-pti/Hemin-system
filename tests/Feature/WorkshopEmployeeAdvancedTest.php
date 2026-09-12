@@ -728,5 +728,111 @@ class WorkshopEmployeeAdvancedTest extends TestCase
             ],
         ]);
     }
+
+    public function test_employee_details_supports_custom_weekly_range_and_payment_clears_dues(): void
+    {
+        $this->actingAs($this->admin);
+
+        $cashBox = CashBox::firstOrCreate(
+            ['currency' => 'IQD'],
+            ['name' => 'قاسەی سەرەکی', 'initial_balance' => 1000000]
+        );
+
+        $employee = Employee::create([
+            'name' => 'وەستا هەڵکەوت',
+            'job_title' => 'master',
+            'salary_type' => 'weekly',
+            'daily_wage' => 200000,
+            'wage_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        // هەفتەی یەکەم: ٦ ڕۆژ دەوام (٢٠٠،٠٠٠ د.ع)
+        $week1Start = '2026-09-05';
+        $week1End = '2026-09-11';
+        for ($i = 0; $i < 6; $i++) {
+            Attendance::create([
+                'employee_id' => $employee->id,
+                'work_date' => \Carbon\Carbon::parse($week1Start)->addDays($i)->toDateString(),
+                'status' => 'present',
+                'wage_snapshot' => 33333.33,
+            ]);
+        }
+
+        // ١. داواکردنی وردەکاری تەنها بۆ هەفتەی یەکەم
+        $resWeek1 = $this->getJson("/workshop/employees/{$employee->id}/month-details?from={$week1Start}&to={$week1End}&mode=week");
+        $resWeek1->assertStatus(200);
+        $resWeek1->assertJson([
+            'ok' => true,
+            'stats' => [
+                'present_count' => 6,
+                'total_earned' => 200000,
+                'total_wages_paid' => 0,
+                'remaining_balance' => 200000,
+            ],
+            'period' => [
+                'mode' => 'week',
+                'from' => $week1Start,
+                'to' => $week1End,
+                'is_range' => true,
+            ],
+        ]);
+
+        // ٢. پارەدانی مووچەی هەفتەی یەکەم (٢٠٠،٠٠٠ د.ع)
+        $payRes = $this->postJson('/workshop/employees/record-payment', [
+            'employee_id' => $employee->id,
+            'amount' => 200000,
+            'currency' => 'IQD',
+            'cash_box_id' => $cashBox->id,
+            'paid_at' => $week1End,
+            'payment_type' => 'wage',
+            'note' => 'مووچەی هەفتەی یەکەم',
+        ]);
+        $payRes->assertStatus(200);
+        $paymentId = $payRes->json('payment.id');
+
+        // ٣. لە پاش پارەدان، شایستەی ماوەی هەفتەی یەکەم دەبێتە 0 (تەواو دراوە)
+        $resWeek1AfterPay = $this->getJson("/workshop/employees/{$employee->id}/month-details?from={$week1Start}&to={$week1End}&mode=week");
+        $resWeek1AfterPay->assertJson([
+            'stats' => [
+                'total_earned' => 200000,
+                'total_wages_paid' => 200000,
+                'remaining_balance' => 0,
+            ],
+        ]);
+
+        // ٤. کاتێک دەچێتە هەفتەی دووەم (کە هێشتا دەوامی نەکردووە)، شایستەی هەفتەی پێشوو نامێنێت و دەبێتە 0!
+        $week2Start = '2026-09-12';
+        $week2End = '2026-09-18';
+        $resWeek2 = $this->getJson("/workshop/employees/{$employee->id}/month-details?from={$week2Start}&to={$week2End}&mode=week");
+        $resWeek2->assertJson([
+            'stats' => [
+                'present_count' => 0,
+                'total_earned' => 0,
+                'total_wages_paid' => 0,
+                'remaining_balance' => 0,
+            ],
+        ]);
+
+        // ٥. پشکنینی گۆڕینی جۆری وەسڵ (toggle payment type)
+        $toggleRes = $this->postJson("/workshop/employees/payments/{$paymentId}/toggle-type");
+        $toggleRes->assertStatus(200);
+        $toggleRes->assertJson([
+            'ok' => true,
+            'payment' => [
+                'payment_type' => 'advance',
+            ],
+        ]);
+
+        // دووبارە گۆڕینەوەی بۆ مووچە
+        $toggleRes2 = $this->postJson("/workshop/employees/payments/{$paymentId}/toggle-type");
+        $toggleRes2->assertStatus(200);
+        $toggleRes2->assertJson([
+            'ok' => true,
+            'payment' => [
+                'payment_type' => 'wage',
+            ],
+        ]);
+    }
 }
 

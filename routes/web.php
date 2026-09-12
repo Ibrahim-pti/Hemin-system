@@ -146,6 +146,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/workshop/employees/{employee}/month-details', [WorkshopController::class, 'employeeMonthDetails'])->name('workshop.employees.month-details');
     Route::post('/workshop/employees/batch-mark-day', [WorkshopController::class, 'batchMarkDay'])->name('workshop.employees.batch-mark-day');
     Route::post('/workshop/employees/record-payment', [WorkshopController::class, 'recordEmployeePayment'])->name('workshop.employees.record-payment');
+    Route::post('/workshop/employees/payments/{payment}/toggle-type', [WorkshopController::class, 'toggleEmployeePaymentType'])->name('workshop.employees.payments.toggle-type');
     Route::delete('/workshop/employees/payments/{payment}', [WorkshopController::class, 'destroyEmployeePayment'])->name('workshop.employees.payments.destroy');
     Route::delete('/workshop/employees/{employee}', [WorkshopController::class, 'destroyEmployee'])->name('workshop.employees.destroy');
 

@@ -1349,9 +1349,22 @@ class WorkshopController extends Controller
             abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی بینینی حیساباتی دارایی هەیە.');
         }
 
-        $yearMonth = $request->input('month', now()->format('Y-m'));
-        $startDate = \Carbon\Carbon::parse("{$yearMonth}-01")->startOfMonth()->toDateString();
-        $endDate = \Carbon\Carbon::parse("{$yearMonth}-01")->endOfMonth()->toDateString();
+        $isRange = $request->filled('from') && $request->filled('to');
+        if ($isRange) {
+            $startDate = $request->date('from')->toDateString();
+            $endDate = $request->date('to')->toDateString();
+            $yearMonth = \Carbon\Carbon::parse($startDate)->format('Y-m');
+            $periodMode = $request->input('mode', 'week');
+        } else {
+            $yearMonth = $request->input('month', now()->format('Y-m'));
+            $startDate = \Carbon\Carbon::parse("{$yearMonth}-01")->startOfMonth()->toDateString();
+            $endDate = \Carbon\Carbon::parse("{$yearMonth}-01")->endOfMonth()->toDateString();
+            $periodMode = 'month';
+        }
+
+        $periodLabel = $isRange
+            ? 'هەفتەی ' . str_replace('-', '/', $startDate) . ' تا ' . str_replace('-', '/', $endDate)
+            : 'مانگی ' . \Carbon\Carbon::parse("{$yearMonth}-01")->translatedFormat('F Y');
 
         $shiftSettings = [
             'work_hours' => (float) Setting::get('workshop_work_hours', 8),
@@ -1366,12 +1379,14 @@ class WorkshopController extends Controller
         ];
 
         $attendances = $employee->attendances()
-            ->whereBetween('work_date', [$startDate, $endDate])
+            ->whereDate('work_date', '>=', $startDate)
+            ->whereDate('work_date', '<=', $endDate)
             ->orderBy('work_date')
             ->get();
 
         $payments = $employee->payments()
-            ->whereBetween('paid_at', [$startDate, $endDate])
+            ->whereDate('paid_at', '>=', $startDate)
+            ->whereDate('paid_at', '<=', $endDate)
             ->orderByDesc('paid_at')
             ->get();
 
@@ -1482,6 +1497,13 @@ class WorkshopController extends Controller
                 'wage_currency' => $employee->wage_currency ?? 'IQD',
             ],
             'month' => $yearMonth,
+            'period' => [
+                'mode' => $periodMode,
+                'from' => $startDate,
+                'to' => $endDate,
+                'label' => $periodLabel,
+                'is_range' => $isRange,
+            ],
             'stats' => [
                 'present_count' => $presentCount,
                 'half_day_count' => $halfDayCount,
@@ -1718,6 +1740,44 @@ class WorkshopController extends Controller
                 'balance' => (float) $cashBox->balance(),
             ] : null,
         ]);
+    }
+
+    /** گۆڕینی جۆری وەسڵی پارەدان (مووچە ⇄ پێدانی قەرز) */
+    public function toggleEmployeePaymentType(\App\Models\Payment $payment)
+    {
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'تەنها بەڕێوەبەر دەسەڵاتی دەستکاری پارەدانی هەیە.');
+        }
+
+        if ($payment->direction === 'out') {
+            $newType = $payment->payment_type === 'advance' ? 'wage' : 'advance';
+            $payment->payment_type = $newType;
+            $partyName = $payment->party_name ?? $payment->party?->name ?? 'کارمەند';
+            $payment->note = $newType === 'wage' ? "مووچەی {$partyName}" : "پێدانی قەرز بۆ {$partyName}";
+            $payment->save();
+
+            $newCategory = $newType === 'wage' ? 'wage' : 'other';
+            \App\Models\CashTransaction::where('reference_type', \App\Models\Payment::class)
+                ->where('reference_id', $payment->id)
+                ->update([
+                    'category' => $newCategory,
+                    'note' => $payment->note,
+                ]);
+
+            $typeLabel = $newType === 'wage' ? 'مووچە' : 'پێدانی قەرز';
+            return response()->json([
+                'ok' => true,
+                'message' => "جۆری وەسڵ گۆڕدرا بۆ ({$typeLabel}).",
+                'payment' => [
+                    'id' => $payment->id,
+                    'payment_type' => $newType,
+                    'type_label' => $typeLabel,
+                    'note' => $payment->note,
+                ],
+            ]);
+        }
+
+        return response()->json(['ok' => false, 'message' => 'تەنها وەسڵی دەرچوونی پارە دەتوانرێت جۆرەکەی بگۆڕدرێت.'], 422);
     }
 
     /** سڕینەوەی وەستا یان کرێکار لە سیستەم */
