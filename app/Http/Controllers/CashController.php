@@ -157,4 +157,18 @@ class CashController extends Controller
 
         return back()->with('ok', 'ڕۆژەکە داخرا.');
     }
+
+    /** سڕینەوەی جووڵەی قاسە. */
+    public function destroyTransaction(CashTransaction $transaction)
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($transaction) {
+            if ($transaction->reference_type === \App\Models\Payment::class && $transaction->reference) {
+                app(\App\Services\PaymentService::class)->remove($transaction->reference);
+            } else {
+                $transaction->delete();
+            }
+        });
+
+        return back()->with('ok', 'جووڵەی قاسەکە بە سەرکەوتوویی سڕدرایەوە.');
+    }
 }

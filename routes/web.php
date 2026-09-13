@@ -125,6 +125,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/cash/transaction', [CashController::class, 'storeTransaction'])->name('cash.transaction');
         Route::post('/cash/opening-balance', [CashController::class, 'updateOpeningBalance'])->name('cash.opening-balance');
         Route::post('/cash/close', [CashController::class, 'close'])->name('cash.close');
+        Route::delete('/cash/transaction/{transaction}', [CashController::class, 'destroyTransaction'])->name('cash.transaction.destroy');
     });
 
     // ── کار ──
