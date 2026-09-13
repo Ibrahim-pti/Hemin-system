@@ -230,7 +230,7 @@ class DebtController extends Controller
             'attachments.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic,heif,bmp,pdf', 'max:25600'],
             'image_base64' => ['nullable', 'string'],
             'attachments_base64' => ['nullable', 'array'],
-            'attachments_base64.*' => ['string'],
+            'attachments_base64.*' => ['nullable', 'string'],
             'date' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ], [
@@ -288,7 +288,7 @@ class DebtController extends Controller
         // کۆکردنەوەی وێنەکانی Base64 (fallback بۆ مۆبایل و کامێرا)
         $base64List = [];
         if ($request->filled('attachments_base64')) {
-            $base64List = array_merge($base64List, (array) $request->input('attachments_base64'));
+            $base64List = array_merge($base64List, array_filter((array) $request->input('attachments_base64')));
         }
         if ($request->filled('image_base64')) {
             $base64List[] = (string) $request->input('image_base64');
