@@ -343,4 +343,31 @@ class CustomerOldDebtWithoutWorkshopTest extends TestCase
         $this->assertNotNull($oldDebt->image);
         \Illuminate\Support\Facades\Storage::disk('public')->assertExists($oldDebt->image);
     }
+
+    public function test_old_debt_accepts_empty_or_null_attachments_base64(): void
+    {
+        $customer = Customer::create([
+            'name' => 'کاک هاوڕێ',
+            'phone' => '07505556677',
+            'opening_balance' => 0,
+            'opening_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->post(route('debts.old-debt'), [
+            'customer_id' => $customer->id,
+            'amount' => 50000,
+            'currency' => 'IQD',
+            'status' => 'debt',
+            'attachments_base64' => ['', null],
+            'note' => 'تێستی هەبوونی خانەی بەتاڵی base64',
+        ]);
+
+        $response->assertSessionDoesntHaveErrors('attachments_base64.0');
+        $response->assertSessionHas('ok');
+        $this->assertDatabaseHas('customer_old_debts', [
+            'customer_id' => $customer->id,
+            'amount' => 50000,
+        ]);
+    }
 }
