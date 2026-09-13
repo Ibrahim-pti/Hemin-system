@@ -26,20 +26,20 @@ class CashController extends Controller
 
         // ژماردنی ئاماری دینار بە جیا
         $iqdBalance = $iqdBox ? $iqdBox->balance() : 0;
-        $iqdIn = $iqdBox ? (float) $iqdBox->transactions()->where('direction', 'in')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount') : 0;
-        $iqdOut = $iqdBox ? (float) $iqdBox->transactions()->where('direction', 'out')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount') : 0;
+        $iqdIn = $iqdBox ? (float) $iqdBox->transactions()->where('direction', 'in')->whereDate('occurred_at', '>=', $dateFrom)->whereDate('occurred_at', '<=', $dateTo)->sum('amount') : 0;
+        $iqdOut = $iqdBox ? (float) $iqdBox->transactions()->where('direction', 'out')->whereDate('occurred_at', '>=', $dateFrom)->whereDate('occurred_at', '<=', $dateTo)->sum('amount') : 0;
         $iqdNet = $iqdIn - $iqdOut;
 
         // ژماردنی ئاماری دۆلار بە جیا (بۆ ئەوەی تێکەڵ بە دینار نەبێت)
         $usdBalance = $usdBox ? $usdBox->balance() : 0;
-        $usdIn = $usdBox ? (float) $usdBox->transactions()->where('direction', 'in')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount') : 0;
-        $usdOut = $usdBox ? (float) $usdBox->transactions()->where('direction', 'out')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount') : 0;
+        $usdIn = $usdBox ? (float) $usdBox->transactions()->where('direction', 'in')->whereDate('occurred_at', '>=', $dateFrom)->whereDate('occurred_at', '<=', $dateTo)->sum('amount') : 0;
+        $usdOut = $usdBox ? (float) $usdBox->transactions()->where('direction', 'out')->whereDate('occurred_at', '>=', $dateFrom)->whereDate('occurred_at', '<=', $dateTo)->sum('amount') : 0;
         $usdNet = $usdIn - $usdOut;
 
         $boxStats = $boxes->map(function (CashBox $box) use ($dateFrom, $dateTo) {
             $currentBalance = $box->balance();
-            $periodIn = (float) $box->transactions()->where('direction', 'in')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount');
-            $periodOut = (float) $box->transactions()->where('direction', 'out')->whereBetween('occurred_at', [$dateFrom, $dateTo])->sum('amount');
+            $periodIn = (float) $box->transactions()->where('direction', 'in')->whereDate('occurred_at', '>=', $dateFrom)->whereDate('occurred_at', '<=', $dateTo)->sum('amount');
+            $periodOut = (float) $box->transactions()->where('direction', 'out')->whereDate('occurred_at', '>=', $dateFrom)->whereDate('occurred_at', '<=', $dateTo)->sum('amount');
 
             return [
                 'box' => $box,
@@ -52,7 +52,8 @@ class CashController extends Controller
 
         $query = CashTransaction::query()
             ->with(['cashBox', 'user', 'reference'])
-            ->whereBetween('occurred_at', [$dateFrom, $dateTo]);
+            ->whereDate('occurred_at', '>=', $dateFrom)
+            ->whereDate('occurred_at', '<=', $dateTo);
 
         if ($boxId) {
             $query->where('cash_box_id', $boxId);

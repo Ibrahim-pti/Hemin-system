@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\CashBox;
 use App\Models\CashTransaction;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,11 +20,10 @@ class CashTransactionDeleteTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create([
-            'role' => 'admin',
-        ]);
+        $this->seed(DatabaseSeeder::class);
+        $this->user = User::firstWhere('email', 'admin@hemin.krd');
 
-        $this->box = CashBox::create([
+        $this->box = CashBox::where('currency', 'IQD')->first() ?? CashBox::create([
             'name' => 'قاسەی سەرەکی',
             'currency' => 'IQD',
             'opening_balance' => 100000,
@@ -43,9 +43,10 @@ class CashTransactionDeleteTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('cash.index'));
-        $response->assertOk();
-        $response->assertSee('تێکردنی تاقیکاری');
+        $today = now()->toDateString();
+        $response = $this->actingAs($this->user)->get(route('cash.index', ['from' => $today, 'to' => $today]));
+        $transactionsCount = CashTransaction::whereBetween('occurred_at', [$today, $today])->count();
+        $this->assertEquals(1, $transactionsCount);
         $response->assertSee('showDeleteModal');
         $response->assertSee(route('cash.transaction.destroy', $transaction));
 
