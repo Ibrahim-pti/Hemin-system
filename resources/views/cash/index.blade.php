@@ -7,6 +7,9 @@
     showWithdrawModal: false,
     depositAmount: '',
     withdrawAmount: '',
+    showDeleteModal: false,
+    deleteUrl: '',
+    deleteNote: '',
 }" style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%;">
 
     {{-- ١. سەردێڕی سەرەوە لەگەڵ دوو دوگمەی کردار --}}
@@ -229,6 +232,7 @@
                         <th style="padding: 0.9rem 1.25rem; text-align: center;">بڕی پارە</th>
                         <th style="padding: 0.9rem 1.25rem; text-align: center;">قاسە</th>
                         <th style="padding: 0.9rem 1.25rem; text-align: center;">بەکارهێنەر</th>
+                        <th style="padding: 0.9rem 1.25rem; text-align: center;">کردار</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -306,10 +310,22 @@
                             <td style="padding: 0.9rem 1.25rem; text-align: center; color: #475569; font-size: 0.82rem; font-weight: 600;">
                                 {{ $t->user?->name ?? '—' }}
                             </td>
+
+                            {{-- کرداری سڕینەوە --}}
+                            <td style="padding: 0.9rem 1.25rem; text-align: center; white-space: nowrap;">
+                                <button type="button"
+                                        @click="showDeleteModal = true; deleteUrl = '{{ route('cash.transaction.destroy', $t) }}'; deleteNote = '{{ addslashes($t->note ?: ($isIn ? 'تێکردنی پارە' : 'دەرهێنانی پارە')) }}'"
+                                        style="width: 2.1rem; height: 2.1rem; border-radius: 0.55rem; background: #fff1f2; color: #e11d48; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; border: 1px solid #fecdd3; cursor: pointer; transition: all 0.15s;"
+                                        onmouseover="this.style.background='#ffe4e6'; this.style.borderColor='#fca5a5'"
+                                        onmouseout="this.style.background='#fff1f2'; this.style.borderColor='#fecdd3'"
+                                        title="سڕینەوە">
+                                    🗑️
+                                </button>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="padding: 3rem 1rem; text-align: center; color: #94a3b8; font-size: 0.9rem;">
+                            <td colspan="8" style="padding: 3rem 1rem; text-align: center; color: #94a3b8; font-size: 0.9rem;">
                                 هیچ جووڵەیەکی پارە لەم ماوەیەدا تۆمارنەکراوە.
                             </td>
                         </tr>
