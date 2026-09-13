@@ -523,5 +523,39 @@
         </div>
     </template>
 
+    {{-- ٧. مۆداڵی دڵنیابوونەوە لە سڕینەوەی جووڵەی قاسە --}}
+    <template x-teleport="body">
+        <div x-show="showDeleteModal" x-cloak
+             style="position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem;"
+             x-transition.opacity>
+            <div @click.away="showDeleteModal = false"
+                 style="background: #ffffff; border-radius: 1.25rem; max-width: 24rem; width: 100%; padding: 1.75rem; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid #f1f5f9;"
+                 x-transition.scale>
+                <div style="width: 3.5rem; height: 3.5rem; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                    ⚠️
+                </div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0 0 0.5rem;">دڵنیایت لە سڕینەوە؟</h3>
+                <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; margin: 0 0 1.25rem;">
+                    ئەم جووڵەیەی ناو قاسە بە تەواوی دەسڕدرێتەوە و باڵانسی قاسەکە نوێ دەبێتەوە.
+                </p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 0.6rem;">
+                    <form :action="deleteUrl" method="POST" style="margin: 0;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                                style="background: #dc2626; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 0.65rem; font-size: 0.85rem; font-weight: 800; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);">
+                            <span>🗑️</span>
+                            <span>بەڵێ، بسڕەوە</span>
+                        </button>
+                    </form>
+                    <button type="button" @click="showDeleteModal = false"
+                            style="background: #f1f5f9; color: #475569; padding: 0.6rem 1.25rem; border-radius: 0.65rem; font-size: 0.85rem; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer;">
+                        پاشگەزبوونەوە
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
 </div>
 @endsection
