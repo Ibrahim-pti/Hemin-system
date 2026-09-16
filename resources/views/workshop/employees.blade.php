@@ -171,6 +171,67 @@
         color: #ffffff;
     }
     .head-month-box input { color-scheme: dark; }
+
+    /* ── کارتەکانی خەمڵاندن و چاودێری دارایی مووچەی کارمەندان ── */
+    .payroll-card-weekly {
+        background: linear-gradient(135deg, #047857 0%, #0f766e 55%, #134e4a 100%) !important;
+        border: 1.5px solid #10b981 !important;
+        box-shadow: 0 4px 16px 0 rgba(6, 95, 70, 0.28) !important;
+        color: #ffffff !important;
+    }
+    .payroll-card-weekly .payroll-label {
+        color: #a7f3d0 !important;
+    }
+    .payroll-card-weekly .payroll-value {
+        color: #ffffff !important;
+    }
+    .payroll-card-weekly .payroll-btn {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        color: #ffffff !important;
+    }
+    .payroll-card-weekly .payroll-btn:hover {
+        background: rgba(255, 255, 255, 0.35) !important;
+    }
+
+    .payroll-card-earned {
+        background: linear-gradient(145deg, #f0fdfa 0%, #ffffff 100%) !important;
+        border: 1.5px solid #5eead4 !important;
+        box-shadow: 0 2px 10px 0 rgba(15, 118, 110, 0.08) !important;
+    }
+    .payroll-card-earned .card-lbl { color: #0f766e !important; }
+    .payroll-card-earned .card-val { color: #0d9488 !important; }
+    .payroll-card-earned .card-ico {
+        background: #ccfbf1 !important;
+        color: #0f766e !important;
+        border: 1px solid #99f6e4 !important;
+    }
+
+    .payroll-card-paid {
+        background: linear-gradient(145deg, #f0fdf4 0%, #ffffff 100%) !important;
+        border: 1.5px solid #86efac !important;
+        box-shadow: 0 2px 10px 0 rgba(22, 163, 74, 0.08) !important;
+    }
+    .payroll-card-paid .card-lbl { color: #15803d !important; }
+    .payroll-card-paid .card-val { color: #16a34a !important; }
+    .payroll-card-paid .card-ico {
+        background: #dcfce7 !important;
+        color: #15803d !important;
+        border: 1px solid #86efac !important;
+    }
+
+    .payroll-card-remaining {
+        background: linear-gradient(145deg, #fffbeb 0%, #ffffff 100%) !important;
+        border: 1.5px solid #fcd34d !important;
+        box-shadow: 0 2px 10px 0 rgba(217, 119, 6, 0.08) !important;
+    }
+    .payroll-card-remaining .card-lbl { color: #b45309 !important; }
+    .payroll-card-remaining .card-val { color: #d97706 !important; }
+    .payroll-card-remaining .card-ico {
+        background: #fef3c7 !important;
+        color: #b45309 !important;
+        border: 1px solid #fcd34d !important;
+    }
 </style>
 
 <div x-data="workshopEmployeesApp()" x-init="init()" class="space-y-3 sm:space-y-3.5 select-none" dir="rtl">
@@ -256,23 +317,102 @@
         </div>
     </div>
 
+    @if($canSeeMoney)
+    {{-- کورتە و خەمڵاندنی دارایی مووچەی کارمەندان بۆ بەڕێوەبەر --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        {{-- کارتی سەرەکی: خەمڵاندنی پارەی پێویستی حەفتانە --}}
+        <div class="payroll-card-weekly relative overflow-hidden rounded-2xl p-3.5 sm:p-4 shadow-md flex flex-col justify-between"
+             style="background: linear-gradient(135deg, #047857 0%, #0f766e 55%, #134e4a 100%) !important; border: 1.5px solid #10b981 !important; color: #ffffff !important;">
+            <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <span class="size-2 rounded-full animate-pulse" style="background-color: #34d399;"></span>
+                        <span class="payroll-label text-[11px] sm:text-xs font-black" style="color: #a7f3d0;">پێویستی مووچەی حەفتانە</span>
+                    </div>
+                    <div class="payroll-value mt-1 font-mono font-black text-xl sm:text-2xl tracking-tight" style="color: #ffffff;" x-text="formatNumber(weeklyPayrollEstimate) + ' د.ع'"></div>
+                </div>
+                <button type="button" @click="showPayrollBreakdownModal = true"
+                        title="بینینی وردەکاری و لیستی هەر کارمەندێک"
+                        class="payroll-btn px-2.5 py-1.5 rounded-xl text-[10px] font-black transition-all cursor-pointer shrink-0 active:scale-95 flex items-center gap-1"
+                        style="background: rgba(255, 255, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.4); color: #ffffff;">
+                    <span>وردەکاری</span>
+                    <span>📋</span>
+                </button>
+            </div>
+            <div class="mt-2.5 pt-2 border-t flex items-center justify-between text-[10px] font-bold"
+                 style="border-color: rgba(255, 255, 255, 0.2); color: #d1fae5;">
+                <span x-text="'بۆ ' + filteredEmployees.length + ' کارمەند (٦ ڕۆژ)'"></span>
+                <span :title="'هاوتای تەواوی مانگ: ' + formatNumber(monthlyPayrollEstimate) + ' د.ع'" style="opacity: 0.95;">
+                    مانگانە: <b class="font-mono text-white" x-text="formatNumber(monthlyPayrollEstimate)"></b>
+                </span>
+            </div>
+        </div>
+
+        {{-- کارتی شایستەی ئەم ماوەیە بەپێی دەوام --}}
+        <div class="payroll-card-earned rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col justify-between"
+             style="background: linear-gradient(145deg, #f0fdfa 0%, #ffffff 100%); border: 1.5px solid #5eead4;">
+            <div class="flex items-center justify-between gap-2">
+                <span class="card-lbl text-[11px] font-black" style="color: #0f766e;">شایستەی ئەم ماوەیە</span>
+                <span class="card-ico size-7 rounded-xl text-xs flex items-center justify-center font-bold"
+                      style="background-color: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4;">💼</span>
+            </div>
+            <div class="card-val my-1 font-mono font-black text-base sm:text-xl" style="color: #0f766e;" x-text="formatNumber(rangeEarnedTotal) + ' د.ع'"></div>
+            <div class="text-[10px] font-bold" style="color: #64748b;">
+                دەوام + کاتی زیادە - لێبڕین
+            </div>
+        </div>
+
+        {{-- کارتی دراو لەم ماوەیە --}}
+        <div class="payroll-card-paid rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col justify-between"
+             style="background: linear-gradient(145deg, #f0fdf4 0%, #ffffff 100%); border: 1.5px solid #86efac;">
+            <div class="flex items-center justify-between gap-2">
+                <span class="card-lbl text-[11px] font-black" style="color: #15803d;">مووچەی دراو</span>
+                <span class="card-ico size-7 rounded-xl text-xs flex items-center justify-center font-bold"
+                      style="background-color: #dcfce7; color: #15803d; border: 1px solid #86efac;">✓</span>
+            </div>
+            <div class="card-val my-1 font-mono font-black text-base sm:text-xl" style="color: #16a34a;" x-text="formatNumber(rangePaidTotal) + ' د.ع'"></div>
+            <div class="text-[10px] font-bold" style="color: #64748b;">
+                پارەدانەکانی ئەم ماوەیە
+            </div>
+        </div>
+
+        {{-- کارتی ماوە بۆ پاکتاو / دانەوە --}}
+        <div class="payroll-card-remaining rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col justify-between"
+             style="background: linear-gradient(145deg, #fffbeb 0%, #ffffff 100%); border: 1.5px solid #fcd34d;">
+            <div class="flex items-center justify-between gap-2">
+                <span class="card-lbl text-[11px] font-black" style="color: #b45309;">ماوە بۆ پێدان</span>
+                <span class="card-ico size-7 rounded-xl text-xs flex items-center justify-center font-bold"
+                      style="background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d;">⏳</span>
+            </div>
+            <div class="card-val my-1 font-mono font-black text-base sm:text-xl" style="color: #d97706;" x-text="formatNumber(rangeRemainingTotal) + ' د.ع'"></div>
+            <div class="text-[10px] font-bold" style="color: #92400e;">
+                شایستەی ماوەی کارمەندان
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- ٢. کورتەی خێرای ئەم ماوەیە --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
-        <div class="bg-white rounded-2xl border border-slate-200 px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2">
-            <span class="text-[10px] sm:text-[11px] font-black text-slate-500 truncate">کارمەند</span>
+        <div class="rounded-2xl border px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2"
+             style="background-color: #f8fafc; border: 1.5px solid #cbd5e1;">
+            <span class="text-[10px] sm:text-[11px] font-black text-slate-600 truncate">کارمەند</span>
             <span class="font-mono font-black text-base sm:text-lg text-slate-900" x-text="filteredEmployees.length"></span>
         </div>
-        <div class="bg-white rounded-2xl border border-emerald-200 px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2">
-            <span class="text-[10px] sm:text-[11px] font-black text-emerald-700 truncate">ئامادە</span>
-            <span class="font-mono font-black text-base sm:text-lg text-emerald-800" x-text="rangeTotals.present"></span>
+        <div class="rounded-2xl border px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2"
+             style="background-color: #f0fdf4; border: 1.5px solid #86efac;">
+            <span class="text-[10px] sm:text-[11px] font-black truncate" style="color: #15803d;">ئامادە</span>
+            <span class="font-mono font-black text-base sm:text-lg" style="color: #15803d;" x-text="rangeTotals.present"></span>
         </div>
-        <div class="bg-white rounded-2xl border border-amber-200 px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2">
-            <span class="text-[10px] sm:text-[11px] font-black text-amber-700 truncate">نیو ڕۆژ</span>
-            <span class="font-mono font-black text-base sm:text-lg text-amber-800" x-text="rangeTotals.half"></span>
+        <div class="rounded-2xl border px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2"
+             style="background-color: #fffbeb; border: 1.5px solid #fde68a;">
+            <span class="text-[10px] sm:text-[11px] font-black truncate" style="color: #b45309;">نیو ڕۆژ</span>
+            <span class="font-mono font-black text-base sm:text-lg" style="color: #b45309;" x-text="rangeTotals.half"></span>
         </div>
-        <div class="bg-white rounded-2xl border border-rose-200 px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2">
-            <span class="text-[10px] sm:text-[11px] font-black text-rose-700 truncate">غیاب</span>
-            <span class="font-mono font-black text-base sm:text-lg text-rose-800" x-text="rangeTotals.absent"></span>
+        <div class="rounded-2xl border px-2.5 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between gap-2"
+             style="background-color: #fff1f2; border: 1.5px solid #fecdd3;">
+            <span class="text-[10px] sm:text-[11px] font-black truncate" style="color: #be123c;">غیاب</span>
+            <span class="font-mono font-black text-base sm:text-lg" style="color: #be123c;" x-text="rangeTotals.absent"></span>
         </div>
     </div>
 
@@ -380,10 +520,17 @@
                                     <span class="hidden sm:block text-[10px] text-slate-400 font-bold truncate" x-text="row.job_title_label"></span>
                                     @if($canSeeMoney)
                                     <template x-if="row.daily_wage > 0">
-                                        <span class="mt-0.5 inline-flex items-center justify-center px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold rounded-md bg-teal-50 text-teal-800 border border-teal-200/80 truncate max-w-full"
-                                              :title="'مووچەی دیاریکراوی ' + (row.salary_type === 'weekly' ? 'حەفتانە' : (row.salary_type === 'monthly' ? 'مانگانە' : 'ڕۆژانە')) + ' جێگیرە لە سیستەم'">
-                                            <span x-text="(row.salary_type === 'weekly' ? 'حەفتانە: ' : (row.salary_type === 'monthly' ? 'مانگانە: ' : 'ڕۆژانە: ')) + formatNumber(row.daily_wage) + ' د.ع'"></span>
-                                        </span>
+                                        <div class="mt-0.5 flex flex-col items-center gap-0.5">
+                                            <span class="inline-flex items-center justify-center px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold rounded-md bg-teal-50 text-teal-800 border border-teal-200/80 truncate max-w-full"
+                                                  :title="'مووچەی دیاریکراوی ' + (row.salary_type === 'weekly' ? 'حەفتانە' : (row.salary_type === 'monthly' ? 'مانگانە' : 'ڕۆژانە')) + ' جێگیرە لە سیستەم'">
+                                                <span x-text="(row.salary_type === 'weekly' ? 'حەفتانە: ' : (row.salary_type === 'monthly' ? 'مانگانە: ' : 'ڕۆژانە: ')) + formatNumber(row.daily_wage) + ' د.ع'"></span>
+                                            </span>
+                                            <template x-if="row.salary_type !== 'weekly'">
+                                                <span class="text-[9px] text-slate-500 font-semibold" :title="'خەمڵاندنی حەفتانە بۆ ٦ ڕۆژ'">
+                                                    (حەفتانە: <b class="font-mono text-teal-900" x-text="formatNumber(row.weekly_estimate)"></b>)
+                                                </span>
+                                            </template>
+                                        </div>
                                     </template>
                                     @endif
                                 </button>
@@ -1372,6 +1519,93 @@
         </div>
     </div>
 
+    {{-- ٩. مۆداڵی وردەکاری خەمڵاندنی مووچەی کارمەندان (Payroll Breakdown Modal) --}}
+    @if($canSeeMoney)
+    <div x-show="showPayrollBreakdownModal" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+        <div @click.away="showPayrollBreakdownModal = false" class="modal-sheet bg-white rounded-3xl w-full max-w-3xl border border-slate-200 overflow-hidden text-xs flex flex-col max-h-[90vh]">
+            {{-- سەرپەڕە --}}
+            <div class="p-4 bg-teal-800 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <span class="size-9 rounded-2xl bg-teal-700 text-white flex items-center justify-center text-lg">💰</span>
+                    <div>
+                        <h2 class="text-sm sm:text-base font-black text-white">وردەکاری خەمڵاندنی مووچەی کارمەندان</h2>
+                        <p class="text-[11px] text-teal-200 font-bold">خەمڵاندنی حەفتانە لەسەر بنەمای ٦ ڕۆژی دەوام هەژمار دەکرێت (پشووی هەینی هەژمار ناکرێت)</p>
+                    </div>
+                </div>
+                <button type="button" @click="showPayrollBreakdownModal = false" class="text-teal-200 hover:text-white text-lg font-bold cursor-pointer">✕</button>
+            </div>
+
+            {{-- خشتەی کارمەندەکان --}}
+            <div class="flex-1 overflow-y-auto p-3 sm:p-4">
+                <div class="rounded-2xl border border-slate-200 overflow-hidden">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-black">
+                            <tr>
+                                <th class="p-2.5 text-center w-10">#</th>
+                                <th class="p-2.5">کارمەند</th>
+                                <th class="p-2.5 text-center">شێوازی مووچە</th>
+                                <th class="p-2.5 text-center">مووچەی دیاریکراو</th>
+                                <th class="p-2.5 text-center text-emerald-800 bg-emerald-50/60">پێویستی حەفتانە</th>
+                                <th class="p-2.5 text-center text-slate-700">هاوتای مانگانە</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-medium">
+                            <template x-for="(emp, idx) in filteredEmployees" :key="emp.id">
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="p-2.5 text-center font-mono text-slate-400 font-bold" x-text="idx + 1"></td>
+                                    <td class="p-2.5">
+                                        <div class="font-black text-slate-900" x-text="emp.name"></div>
+                                        <div class="text-[10px] text-slate-400 font-bold" x-text="emp.job_title_label"></div>
+                                    </td>
+                                    <td class="p-2.5 text-center">
+                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-black"
+                                              :class="{
+                                                  'bg-teal-50 text-teal-800 border border-teal-200': emp.salary_type === 'weekly',
+                                                  'bg-blue-50 text-blue-800 border border-blue-200': emp.salary_type === 'monthly',
+                                                  'bg-amber-50 text-amber-800 border border-amber-200': emp.salary_type === 'daily'
+                                              }"
+                                              x-text="emp.salary_type === 'weekly' ? 'حەفتانە' : (emp.salary_type === 'monthly' ? 'مانگانە' : 'ڕۆژانە')">
+                                        </span>
+                                    </td>
+                                    <td class="p-2.5 text-center font-mono font-black text-slate-800" x-text="formatNumber(emp.daily_wage) + ' د.ع'"></td>
+                                    <td class="p-2.5 text-center font-mono font-black text-emerald-800 bg-emerald-50/40" x-text="formatNumber(emp.weekly_estimate) + ' د.ع'"></td>
+                                    <td class="p-2.5 text-center font-mono font-black text-slate-700" x-text="formatNumber(emp.monthly_estimate) + ' د.ع'"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                        <tfoot class="bg-slate-100 border-t-2 border-slate-300 font-black text-slate-900">
+                            <tr>
+                                <td colspan="4" class="p-3 text-left pl-4 font-black">کۆی گشتی خەمڵاندن:</td>
+                                <td class="p-3 text-center font-mono font-black text-sm text-emerald-900 bg-emerald-100/70" x-text="formatNumber(weeklyPayrollEstimate) + ' د.ع'"></td>
+                                <td class="p-3 text-center font-mono font-black text-sm text-slate-900" x-text="formatNumber(monthlyPayrollEstimate) + ' د.ع'"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                {{-- ڕوونکردنەوەی شێوازی هەژمارکردن --}}
+                <div class="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-600 space-y-1 font-bold">
+                    <div class="text-slate-800 font-black flex items-center gap-1">
+                        <span>ℹ️</span>
+                        <span>شێوازی خەمڵاندن:</span>
+                    </div>
+                    <div>• <b>مووچەی حەفتانە:</b> هەفتەی کارکردن بریتییە لە ٦ ڕۆژ (شەممە تا پێنجشەممە، هەینی پشووە).</div>
+                    <div>• <b>مووچەی ڕۆژانە:</b> پێویستی حەفتانە = مووچەی ١ ڕۆژ × ٦ ڕۆژ.</div>
+                    <div>• <b>مووچەی مانگانە:</b> بۆ حەفتانە دابەشی ٢٦ ڕۆژی دەوام دەکرێت و جارانی ٦ ڕۆژ دەکرێت.</div>
+                </div>
+            </div>
+
+            {{-- خوارەوە --}}
+            <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+                <div class="text-xs font-black text-slate-700">
+                    کۆی پێویست بۆ هەفتانە: <span class="font-mono text-emerald-800" x-text="formatNumber(weeklyPayrollEstimate) + ' د.ع'"></span>
+                </div>
+                <button type="button" @click="showPayrollBreakdownModal = false" class="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-black text-slate-700 cursor-pointer transition-all">داخستن</button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- 🔔 پەیامی سەرکەوتن یان ئاگاداری (Floating Toast Notification) لە خوارەوە بەبێ Alert --}}
     <div x-show="toast.show"
          x-transition:enter="transition ease-out duration-300 transform"
@@ -1412,6 +1646,7 @@ function workshopEmployeesApp() {
         matrix: {!! json_encode($employeesMatrix, JSON_UNESCAPED_UNICODE) !!},
         cashBoxes: {!! json_encode($cashBoxes, JSON_UNESCAPED_UNICODE) !!},
         drawerTab: 'details',
+        showPayrollBreakdownModal: false,
 
         toast: {
             show: false,
@@ -1598,6 +1833,23 @@ function workshopEmployeesApp() {
                 });
             });
             return { present, half, absent };
+        },
+
+        /* خەمڵاندنی تێچووی مووچەی هەفتانە و مانگانە بۆ بەڕێوەبەر */
+        get weeklyPayrollEstimate() {
+            return this.filteredEmployees.reduce((sum, e) => sum + (parseFloat(e.weekly_estimate) || 0), 0);
+        },
+        get monthlyPayrollEstimate() {
+            return this.filteredEmployees.reduce((sum, e) => sum + (parseFloat(e.monthly_estimate) || 0), 0);
+        },
+        get rangeEarnedTotal() {
+            return this.filteredEmployees.reduce((sum, e) => sum + (parseFloat(e.total_earned) || 0), 0);
+        },
+        get rangePaidTotal() {
+            return this.filteredEmployees.reduce((sum, e) => sum + (parseFloat(e.total_paid) || 0), 0);
+        },
+        get rangeRemainingTotal() {
+            return this.filteredEmployees.reduce((sum, e) => sum + (parseFloat(e.remaining_balance) || 0), 0);
         },
 
         /* گۆڕینی جۆری ماوە (هەفتە / مانگ) */

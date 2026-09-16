@@ -585,6 +585,17 @@ class WorkshopController extends Controller
                 'note' => $p->note,
             ])->values()->all();
 
+            $empWeeklyEstimate = match ($salaryType) {
+                'weekly' => $dailyWage,
+                'monthly' => round(($dailyWage / 26) * 6, 2),
+                default => round($dailyWage * 6, 2),
+            };
+            $empMonthlyEstimate = match ($salaryType) {
+                'monthly' => $dailyWage,
+                'weekly' => round(($dailyWage / 6) * 26, 2),
+                default => round($dailyWage * 26, 2),
+            };
+
             return [
                 'id' => $emp->id,
                 'name' => $emp->name,
@@ -595,6 +606,8 @@ class WorkshopController extends Controller
                 'salary_type_label' => $canSeeMoney ? $emp->salary_type_label : '',
                 'daily_wage' => $canSeeMoney ? $dailyWage : 0,
                 'effective_daily_wage' => $canSeeMoney ? $effectiveDailyWage : 0,
+                'weekly_estimate' => $canSeeMoney ? $empWeeklyEstimate : 0,
+                'monthly_estimate' => $canSeeMoney ? $empMonthlyEstimate : 0,
                 'wage_currency' => $emp->wage_currency ?? 'IQD',
                 'hire_date' => $emp->hire_date?->format('Y/m/d'),
                 'note' => $emp->note ?? '',
@@ -665,6 +678,31 @@ class WorkshopController extends Controller
             ];
         }
 
+        // خەمڵاندنی تێچووی مووچەی حەفتانە و مانگانەی هەموو کارمەندەکان
+        $totalWeeklyPayrollEstimate = (float) $employees->sum(function (Employee $emp) {
+            $amount = (float) $emp->daily_wage;
+            $type = $emp->salary_type ?? 'daily';
+            if ($type === 'weekly') {
+                return $amount;
+            }
+            if ($type === 'monthly') {
+                return round(($amount / 26) * 6, 2);
+            }
+            return round($amount * 6, 2);
+        });
+
+        $totalMonthlyPayrollEstimate = (float) $employees->sum(function (Employee $emp) {
+            $amount = (float) $emp->daily_wage;
+            $type = $emp->salary_type ?? 'daily';
+            if ($type === 'monthly') {
+                return $amount;
+            }
+            if ($type === 'weekly') {
+                return round(($amount / 6) * 26, 2);
+            }
+            return round($amount * 26, 2);
+        });
+
         // کۆی گشتییەکانی سەرجەم ماوەکە
         $totalEmployeesCount = count($employeesMatrix);
         $totalPresentManDays = array_sum(array_column($employeesMatrix, 'present_count'));
@@ -697,6 +735,8 @@ class WorkshopController extends Controller
             'holidayLabel',
             'shiftSettings',
             'totalEmployeesCount',
+            'totalWeeklyPayrollEstimate',
+            'totalMonthlyPayrollEstimate',
             'totalPresentManDays',
             'totalHalfDays',
             'totalOvertimeHours',
