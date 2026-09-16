@@ -321,30 +321,24 @@
     {{-- کورتە و خەمڵاندنی دارایی مووچەی کارمەندان بۆ بەڕێوەبەر --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {{-- کارتی سەرەکی: خەمڵاندنی پارەی پێویستی حەفتانە --}}
-        <div class="payroll-card-weekly relative overflow-hidden rounded-2xl p-3.5 sm:p-4 shadow-md flex flex-col justify-between"
+        <div class="payroll-card-weekly relative overflow-hidden rounded-2xl p-3 sm:p-3.5 shadow-md flex flex-col justify-between"
              style="background: linear-gradient(135deg, #047857 0%, #0f766e 55%, #134e4a 100%) !important; border: 1.5px solid #10b981 !important; color: #ffffff !important;">
-            <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0">
-                    <div class="flex items-center gap-1.5">
-                        <span class="size-2 rounded-full animate-pulse" style="background-color: #34d399;"></span>
-                        <span class="payroll-label text-[11px] sm:text-xs font-black" style="color: #a7f3d0;">پێویستی مووچەی حەفتانە</span>
-                    </div>
-                    <div class="payroll-value mt-1 font-mono font-black text-xl sm:text-2xl tracking-tight" style="color: #ffffff;" x-text="formatNumber(weeklyPayrollEstimate) + ' د.ع'"></div>
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                    <span class="size-2 rounded-full animate-pulse" style="background-color: #34d399;"></span>
+                    <span class="payroll-label text-[11px] font-black" style="color: #a7f3d0;">پێویستی مووچەی حەفتانە</span>
                 </div>
                 <button type="button" @click="showPayrollBreakdownModal = true"
                         title="بینینی وردەکاری و لیستی هەر کارمەندێک"
-                        class="payroll-btn px-2.5 py-1.5 rounded-xl text-[10px] font-black transition-all cursor-pointer shrink-0 active:scale-95 flex items-center gap-1"
+                        class="payroll-btn px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer shrink-0 active:scale-95 flex items-center gap-1"
                         style="background: rgba(255, 255, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.4); color: #ffffff;">
                     <span>وردەکاری</span>
                     <span>📋</span>
                 </button>
             </div>
-            <div class="mt-2.5 pt-2 border-t flex items-center justify-between text-[10px] font-bold"
-                 style="border-color: rgba(255, 255, 255, 0.2); color: #d1fae5;">
-                <span x-text="'بۆ ' + filteredEmployees.length + ' کارمەند (٦ ڕۆژ)'"></span>
-                <span :title="'هاوتای تەواوی مانگ: ' + formatNumber(monthlyPayrollEstimate) + ' د.ع'" style="opacity: 0.95;">
-                    مانگانە: <b class="font-mono text-white" x-text="formatNumber(monthlyPayrollEstimate)"></b>
-                </span>
+            <div class="payroll-value my-1 font-mono font-black text-base sm:text-xl tracking-tight" style="color: #ffffff;" x-text="formatNumber(weeklyPayrollEstimate) + ' د.ع'"></div>
+            <div class="text-[10px] font-bold truncate" style="color: #a7f3d0;">
+                تێچووی پێویستی هەفتانە
             </div>
         </div>
 
