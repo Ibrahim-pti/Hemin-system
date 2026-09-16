@@ -11,22 +11,58 @@
 
 @section('content')
 
+<div x-data="{
+    tab: '{{ $activeTab ?? request('tab', 'invoices') }}',
+    setTab(t) {
+        this.tab = t;
+        try {
+            const url = new URL(window.location);
+            url.searchParams.set('tab', t);
+            window.history.replaceState({}, '', url);
+        } catch (e) {}
+    },
+    payModal: false,
+    payPurchase: { id: null, invoice_no: '', supplier_name: '', remaining: 0, currency: 'IQD', total: 0, paid: 0 },
+    payForm: { amount: '', cash_box_id: '{{ $cashBoxes->first()?->id ?? '' }}', paid_at: '{{ now()->toDateString() }}', note: '' },
+    openPayment(p) {
+        this.payPurchase = p;
+        this.payForm.amount = p.remaining.toLocaleString('en-US');
+        this.payForm.note = 'پارەدانی قەرزی پسوولەی #' + p.invoice_no;
+        this.payModal = true;
+    },
+    closePayment() {
+        this.payModal = false;
+    },
+    fillFullAmount() {
+        this.payForm.amount = this.payPurchase.remaining.toLocaleString('en-US');
+    },
+    formatAmount(e) {
+        let clean = e.target.value.replace(/[^0-9.]/g, '');
+        let parts = clean.split('.');
+        if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+        let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
+        let dec = parts.length > 1 ? '.' + parts[1] : '';
+        e.target.value = int ? int + dec : '';
+        this.payForm.amount = e.target.value;
+    }
+}">
+
 {{-- سویچەری دراو (دۆلار / دینار / هەمووی) و نرخی ڕۆژ --}}
 <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
     <div class="flex items-center gap-2">
         <span class="text-xs font-bold text-slate-500">پیشاندان بە دراو:</span>
         <div class="inline-flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
-            <a href="{{ request()->fullUrlWithQuery(['currency' => 'all']) }}"
+            <a :href="'{{ route('purchases.index') }}?currency=all&tab=' + tab + '{{ request('q') ? '&q=' . urlencode(request('q')) : '' }}{{ request('supplier_id') ? '&supplier_id=' . request('supplier_id') : '' }}'"
                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                 <span>🌐</span>
                 <span>هەمووی (دۆلار و دینار)</span>
             </a>
-            <a href="{{ request()->fullUrlWithQuery(['currency' => 'USD']) }}"
+            <a :href="'{{ route('purchases.index') }}?currency=USD&tab=' + tab + '{{ request('q') ? '&q=' . urlencode(request('q')) : '' }}{{ request('supplier_id') ? '&supplier_id=' . request('supplier_id') : '' }}'"
                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'USD' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                 <span>💵</span>
                 <span>تەنها دۆلار ($)</span>
             </a>
-            <a href="{{ request()->fullUrlWithQuery(['currency' => 'IQD']) }}"
+            <a :href="'{{ route('purchases.index') }}?currency=IQD&tab=' + tab + '{{ request('q') ? '&q=' . urlencode(request('q')) : '' }}{{ request('supplier_id') ? '&supplier_id=' . request('supplier_id') : '' }}'"
                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'IQD' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                 <span>🇮🇶</span>
                 <span>تەنها دینار (د.ع)</span>
@@ -141,36 +177,9 @@
     </div>
 </div>
 
-<div x-data="{
-    tab: '{{ request('tab', 'invoices') }}',
-    payModal: false,
-    payPurchase: { id: null, invoice_no: '', supplier_name: '', remaining: 0, currency: 'IQD', total: 0, paid: 0 },
-    payForm: { amount: '', cash_box_id: '{{ $cashBoxes->first()?->id ?? '' }}', paid_at: '{{ now()->toDateString() }}', note: '' },
-    openPayment(p) {
-        this.payPurchase = p;
-        this.payForm.amount = p.remaining.toLocaleString('en-US');
-        this.payForm.note = 'پارەدانی قەرزی پسوولەی #' + p.invoice_no;
-        this.payModal = true;
-    },
-    closePayment() {
-        this.payModal = false;
-    },
-    fillFullAmount() {
-        this.payForm.amount = this.payPurchase.remaining.toLocaleString('en-US');
-    },
-    formatAmount(e) {
-        let clean = e.target.value.replace(/[^0-9.]/g, '');
-        let parts = clean.split('.');
-        if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
-        let int = parts[0] ? parseInt(parts[0], 10).toLocaleString('en-US') : '';
-        let dec = parts.length > 1 ? '.' + parts[1] : '';
-        e.target.value = int ? int + dec : '';
-        this.payForm.amount = e.target.value;
-    }
-}">
     {{-- ٢. سویچەری نێوان تابەکان --}}
     <div class="flex items-center gap-2 mb-4">
-        <button @click="tab = 'invoices'"
+        <button @click="setTab('invoices')"
                 :class="tab === 'invoices' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
                 class="px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
             <span>🧾 هەموو پسوولەکانی کڕین</span>
@@ -178,7 +187,7 @@
                   class="px-2 py-0.5 rounded-full text-xs font-mono font-bold">{{ $totalPurchasesCount }}</span>
         </button>
 
-        <button @click="tab = 'suppliers'"
+        <button @click="setTab('suppliers')"
                 :class="tab === 'suppliers' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
                 class="px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
             <span>🏢 کۆمپانیا و کەشف حیساب</span>
@@ -198,6 +207,7 @@
             {{-- فۆرمی گەڕان و فلتەر --}}
             <form method="GET" class="w-full sm:w-72">
                 <input type="hidden" name="tab" value="invoices">
+                <input type="hidden" name="currency" value="{{ $currency }}">
                 <div class="relative">
                     <input type="search" name="q" value="{{ request('tab') === 'invoices' ? request('q') : '' }}"
                            class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50"
@@ -405,6 +415,7 @@
             {{-- فۆرمی گەڕان لە کۆمپانیاکان --}}
             <form method="GET" class="w-full sm:w-72">
                 <input type="hidden" name="tab" value="suppliers">
+                <input type="hidden" name="currency" value="{{ $currency }}">
                 <div class="relative">
                     <input type="search" name="q" value="{{ request('tab') === 'suppliers' ? request('q') : '' }}"
                            class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50/50"
@@ -422,9 +433,30 @@
                         <th class="py-3 px-4">کۆمپانیا / فرۆشیار</th>
                         <th class="py-3 px-4 text-center">تەلەفۆن</th>
                         <th class="py-3 px-4 text-center">ژمارەی کڕین</th>
-                        <th class="py-3 px-4 text-center">کۆی کڕین</th>
-                        <th class="py-3 px-4 text-center">دراوە</th>
-                        <th class="py-3 px-4 text-center">قەرزی ماوە</th>
+                        <th class="py-3 px-4 text-center">
+                            کۆی کڕین
+                            @if ($currency === 'USD')
+                                <span class="text-emerald-600 font-mono text-[10px]">($)</span>
+                            @elseif ($currency === 'IQD')
+                                <span class="text-indigo-600 font-mono text-[10px]">(د.ع)</span>
+                            @endif
+                        </th>
+                        <th class="py-3 px-4 text-center">
+                            دراوە
+                            @if ($currency === 'USD')
+                                <span class="text-emerald-600 font-mono text-[10px]">($)</span>
+                            @elseif ($currency === 'IQD')
+                                <span class="text-indigo-600 font-mono text-[10px]">(د.ع)</span>
+                            @endif
+                        </th>
+                        <th class="py-3 px-4 text-center">
+                            قەرزی ماوە
+                            @if ($currency === 'USD')
+                                <span class="text-rose-600 font-mono text-[10px]">($)</span>
+                            @elseif ($currency === 'IQD')
+                                <span class="text-indigo-600 font-mono text-[10px]">(د.ع)</span>
+                            @endif
+                        </th>
                         <th class="py-3 px-4 text-center">دوایین کڕین</th>
                         <th class="py-3 px-4 text-center w-24">کردار</th>
                     </tr>
@@ -470,26 +502,54 @@
                             </td>
 
                             {{-- کۆی کڕین --}}
-                            <td class="py-3.5 px-4 text-center num font-bold text-slate-800">
-                                {{ fmt_money($sup->total_purchases) }}
+                            <td class="py-3.5 px-4 text-center num">
+                                @if ($currency === 'USD')
+                                    <span class="font-bold text-slate-800 font-mono">${{ number_format($sup->total_purchases_usd, 2) }}</span>
+                                @elseif ($currency === 'IQD')
+                                    <span class="font-bold text-slate-800 font-mono">{{ fmt_money($sup->total_purchases_iqd) }}</span>
+                                @else
+                                    <div class="font-bold text-slate-800 font-mono">${{ number_format($sup->total_purchases_usd, 2) }}</div>
+                                    <div class="text-2xs text-slate-400 font-mono mt-0.5">({{ fmt_money($sup->total_purchases_iqd) }})</div>
+                                @endif
                             </td>
 
                             {{-- دراوە --}}
-                            <td class="py-3.5 px-4 text-center num font-semibold text-emerald-700">
-                                <span class="inline-block size-1.5 rounded-full bg-emerald-500 ml-1"></span>
-                                {{ fmt_money($sup->total_paid) }}
+                            <td class="py-3.5 px-4 text-center num">
+                                @if ($currency === 'USD')
+                                    <span class="font-semibold text-emerald-700 font-mono">${{ number_format($sup->total_paid_usd, 2) }}</span>
+                                @elseif ($currency === 'IQD')
+                                    <span class="font-semibold text-emerald-700 font-mono">{{ fmt_money($sup->total_paid_iqd) }}</span>
+                                @else
+                                    <div class="font-semibold text-emerald-700 font-mono">${{ number_format($sup->total_paid_usd, 2) }}</div>
+                                    <div class="text-2xs text-slate-400 font-mono mt-0.5">({{ fmt_money($sup->total_paid_iqd) }})</div>
+                                @endif
                             </td>
 
                             {{-- قەرزی ماوە --}}
                             <td class="py-3.5 px-4 text-center">
-                                @if ($sup->balance <= 0)
+                                @if ($sup->balance_iqd <= 0)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                         <span>✓</span> <span>بێ قەرز</span>
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 num">
-                                        <span>{{ fmt_money($sup->balance) }}</span>
-                                    </span>
+                                    @if ($currency === 'USD')
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 num font-mono">
+                                            ${{ number_format($sup->balance_usd, 2) }}
+                                        </span>
+                                    @elseif ($currency === 'IQD')
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 num font-mono">
+                                            {{ fmt_money($sup->balance_iqd) }}
+                                        </span>
+                                    @else
+                                        <div class="inline-flex flex-col items-center">
+                                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 num font-mono">
+                                                ${{ number_format($sup->balance_usd, 2) }}
+                                            </span>
+                                            <span class="text-2xs text-slate-400 num font-mono mt-0.5">
+                                                {{ fmt_money($sup->balance_iqd) }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 @endif
                             </td>
 

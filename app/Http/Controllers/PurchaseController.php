@@ -26,6 +26,7 @@ class PurchaseController extends Controller
 
     public function index(Request $request): View
     {
+        $activeTab = $request->string('tab', 'invoices')->toString();
         $currency = $request->string('currency', 'all')->toString();
         $currentRate = ExchangeRate::current() ?: 1500;
 
@@ -63,11 +64,15 @@ class PurchaseController extends Controller
             ->withCount(['purchases' => fn ($q) => $q->where('status', 'confirmed')])
             ->get();
 
-        $suppliersSummary = $allSuppliers->map(function ($supplier) {
-            $totalPurchases = (float) $supplier->totalPurchases();
-            $totalPaid = (float) $supplier->totalPaid();
-            $balance = (float) $supplier->balance();
+        $suppliersSummary = $allSuppliers->map(function ($supplier) use ($currentRate) {
+            $totalPurchasesIqd = (float) $supplier->totalPurchases();
+            $totalPaidIqd = (float) $supplier->totalPaid();
+            $balanceIqd = (float) $supplier->balance();
             $lastPurchase = $supplier->purchases()->latest('purchase_date')->first();
+
+            $totalPurchasesUsd = $currentRate > 0 ? round($totalPurchasesIqd / $currentRate, 2) : 0;
+            $totalPaidUsd = $currentRate > 0 ? round($totalPaidIqd / $currentRate, 2) : 0;
+            $balanceUsd = $currentRate > 0 ? round($balanceIqd / $currentRate, 2) : 0;
 
             return (object) [
                 'id' => $supplier->id,
@@ -75,9 +80,15 @@ class PurchaseController extends Controller
                 'phone' => $supplier->phone,
                 'address' => $supplier->address,
                 'purchases_count' => $supplier->purchases_count,
-                'total_purchases' => $totalPurchases,
-                'total_paid' => $totalPaid,
-                'balance' => $balance,
+                'total_purchases' => $totalPurchasesIqd,
+                'total_purchases_iqd' => $totalPurchasesIqd,
+                'total_purchases_usd' => $totalPurchasesUsd,
+                'total_paid' => $totalPaidIqd,
+                'total_paid_iqd' => $totalPaidIqd,
+                'total_paid_usd' => $totalPaidUsd,
+                'balance' => $balanceIqd,
+                'balance_iqd' => $balanceIqd,
+                'balance_usd' => $balanceUsd,
                 'last_purchase_date' => $lastPurchase?->purchase_date,
             ];
         })->sortByDesc('balance')->values();
@@ -94,6 +105,7 @@ class PurchaseController extends Controller
 
         return view('purchases.index', compact(
             'purchases',
+            'activeTab',
             'currency',
             'currentRate',
             'totalPurchasesCount',
