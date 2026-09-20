@@ -370,4 +370,73 @@ class CustomerOldDebtWithoutWorkshopTest extends TestCase
             'amount' => 50000,
         ]);
     }
+
+    public function test_old_debt_does_not_duplicate_images_when_both_files_and_base64_are_submitted(): void
+    {
+        Storage::fake('public');
+
+        $customer = Customer::create([
+            'name' => 'کاک هێمن دەفتەر',
+            'phone' => '07501112233',
+            'opening_balance' => 0,
+            'opening_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $file1 = UploadedFile::fake()->image('receipt_1.jpg');
+        $file2 = UploadedFile::fake()->image('receipt_2.jpg');
+        $base64Sample1 = 'data:image/jpeg;base64,' . base64_encode('fake image content 1');
+        $base64Sample2 = 'data:image/jpeg;base64,' . base64_encode('fake image content 2');
+
+        $response = $this->actingAs($this->user)->post(route('debts.old-debt'), [
+            'customer_id' => $customer->id,
+            'amount' => 120000,
+            'currency' => 'IQD',
+            'status' => 'debt',
+            'attachments' => [$file1, $file2],
+            'attachments_base64' => [$base64Sample1, $base64Sample2],
+            'image_base64' => $base64Sample1,
+            'note' => 'تێستی ڕێگریکردن لە دووبارەبوونەوەی وێنەکان',
+        ]);
+
+        $response->assertSessionHas('ok');
+        $oldDebt = CustomerOldDebt::where('customer_id', $customer->id)->firstOrFail();
+        $attachments = $oldDebt->allAttachments();
+
+        // دەبێت ڕێک ۲ وێنە هەبێت و هەمان وێنە چەندبارە نەبووبێتەوە بۆ ٤ یان ٥ دانە
+        $this->assertCount(2, $attachments);
+    }
+
+    public function test_old_debt_does_not_duplicate_images_when_only_base64_fallback_is_submitted(): void
+    {
+        Storage::fake('public');
+
+        $customer = Customer::create([
+            'name' => 'کاک دیار',
+            'phone' => '07504445566',
+            'opening_balance' => 0,
+            'opening_currency' => 'IQD',
+            'is_active' => true,
+        ]);
+
+        $base64Sample1 = 'data:image/jpeg;base64,' . base64_encode('fake image content 1');
+        $base64Sample2 = 'data:image/jpeg;base64,' . base64_encode('fake image content 2');
+
+        $response = $this->actingAs($this->user)->post(route('debts.old-debt'), [
+            'customer_id' => $customer->id,
+            'amount' => 90000,
+            'currency' => 'IQD',
+            'status' => 'debt',
+            'attachments_base64' => [$base64Sample1, $base64Sample2],
+            'image_base64' => $base64Sample1, // پێشتر ئەمە بە تەنیا دانەیەکی زیاد دەکرد
+            'note' => 'تێستی فۆڵباک بە بەیس٦٤ بەبێ دووبارەبوونەوە',
+        ]);
+
+        $response->assertSessionHas('ok');
+        $oldDebt = CustomerOldDebt::where('customer_id', $customer->id)->firstOrFail();
+        $attachments = $oldDebt->allAttachments();
+
+        $this->assertCount(2, $attachments);
+    }
 }
+

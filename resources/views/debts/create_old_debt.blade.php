@@ -22,7 +22,6 @@
     <input type="hidden" name="currency" :value="currency">
     <input type="hidden" name="status" :value="paymentType">
     <input type="hidden" name="customer_id" :value="customerId">
-    <input type="hidden" name="image_base64" :value="(attachmentsList.find(i => i.base64 && i.base64.length > 50)?.base64) || ''">
     <template x-for="(item, idx) in attachmentsList.filter(i => i.base64 && i.base64.length > 50)" :key="'b64_' + item.id">
         <input type="hidden" name="attachments_base64[]" :value="item.base64">
     </template>

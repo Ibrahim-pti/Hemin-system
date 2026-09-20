@@ -285,26 +285,27 @@ class DebtController extends Controller
             }
         }
 
-        // کۆکردنەوەی وێنەکانی Base64 (fallback بۆ مۆبایل و کامێرا)
-        $base64List = [];
-        if ($request->filled('attachments_base64')) {
-            $base64List = array_merge($base64List, array_filter((array) $request->input('attachments_base64')));
-        }
-        if ($request->filled('image_base64')) {
-            $base64List[] = (string) $request->input('image_base64');
-        }
+        // کۆکردنەوەی وێنەکانی Base64 تەنها ئەگەر هیچ فایلێک لە ڕێگەی ئینپووتی فایلەکانەوە وەرنەگیرابێت (fallback بۆ مۆبایل و کامێرا)
+        if (empty($storedFiles)) {
+            $base64List = [];
+            if ($request->filled('attachments_base64')) {
+                $base64List = array_values(array_filter((array) $request->input('attachments_base64')));
+            } elseif ($request->filled('image_base64')) {
+                $base64List = [(string) $request->input('image_base64')];
+            }
 
-        foreach ($base64List as $base64Data) {
-            if (is_string($base64Data) && preg_match('/^data:image\/(\w+);base64,/', $base64Data, $typeMatch)) {
-                $rawBase64 = substr($base64Data, strpos($base64Data, ',') + 1);
-                $ext = strtolower($typeMatch[1]);
-                if (in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'heic'])) {
-                    $decoded = base64_decode($rawBase64);
-                    if ($decoded !== false) {
-                        $ext = $ext === 'jpeg' ? 'jpg' : $ext;
-                        $fileName = 'old_debts/' . \Illuminate\Support\Str::random(40) . '.' . $ext;
-                        \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $decoded);
-                        $storedFiles[] = $fileName;
+            foreach ($base64List as $base64Data) {
+                if (is_string($base64Data) && preg_match('/^data:image\/(\w+);base64,/', $base64Data, $typeMatch)) {
+                    $rawBase64 = substr($base64Data, strpos($base64Data, ',') + 1);
+                    $ext = strtolower($typeMatch[1]);
+                    if (in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'heic'])) {
+                        $decoded = base64_decode($rawBase64);
+                        if ($decoded !== false) {
+                            $ext = $ext === 'jpeg' ? 'jpg' : $ext;
+                            $fileName = 'old_debts/' . \Illuminate\Support\Str::random(40) . '.' . $ext;
+                            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $decoded);
+                            $storedFiles[] = $fileName;
+                        }
                     }
                 }
             }
