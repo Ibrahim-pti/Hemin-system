@@ -13,8 +13,8 @@
     @vite(['resources/css/app.css'])
     <style>
         @page {
-            size: A5 portrait;
-            margin: 4mm;
+            size: auto;
+            margin: 6mm;
         }
 
         body {
@@ -228,7 +228,8 @@
                 <tbody>
                     @php
                         $filledRows = $order->items->count();
-                        $minRows = 14;
+                        $minRows = max($filledRows + 1, 5);
+                        $emptyRows = max(0, $minRows - $filledRows);
                         $remaining = $order->remaining();
                         $paid = $order->paidAmount();
                     @endphp
@@ -269,9 +270,9 @@
                         </tr>
                     @endforeach
 
-                    {{-- دێڕی بەتاڵ بۆ پڕکردنەوەی وەسڵەکە وەک دەفتەری وەسڵ --}}
-                    @for ($i = $filledRows; $i < $minRows; $i++)
-                        <tr style="height: 23px;">
+                    {{-- دێڕی بەتاڵ بۆ پڕکردنەوەی وەسڵەکە --}}
+                    @for ($i = 0; $i < $emptyRows; $i++)
+                        <tr style="height: 18px;">
                             <td>&nbsp;</td>
                             <td></td>
                             <td></td>
