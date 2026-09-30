@@ -228,36 +228,52 @@ class PurchaseController extends Controller
         }
 
         $data = $request->validate([
-            'amount' => ['required', 'numeric', 'gt:0'],
-            'cash_box_id' => ['nullable', 'exists:cash_boxes,id'],
-            'paid_at' => ['required', 'date'],
-            'note' => ['nullable', 'string', 'max:255'],
+            'amount'        => ['required', 'numeric', 'gt:0'],
+            'currency'      => ['nullable', 'in:IQD,USD'],
+            'exchange_rate' => ['nullable', 'numeric', 'gt:0'],
+            'cash_box_id'   => ['nullable', 'exists:cash_boxes,id'],
+            'paid_at'       => ['required', 'date'],
+            'note'          => ['nullable', 'string', 'max:255'],
         ], [
             'amount.required' => 'تکایە بڕی پارە بنووسە.',
-            'amount.gt' => 'بڕی پارە دەبێت لە سفر زیاتر بێت.',
-            'paid_at.required' => 'بەرواری پارەدان دیاری بکە.',
+            'amount.gt'       => 'بڕی پارە دەبێت لە سفر زیاتر بێت.',
+            'paid_at.required'=> 'بەرواری پارەدان دیاری بکە.',
         ]);
 
-        $amount = (float) $data['amount'];
-        $remaining = (float) $purchase->remaining();
+        $amount       = (float) $data['amount'];
+        $currency     = $data['currency'] ?? $purchase->currency;
+        $exchangeRate = (float) ($data['exchange_rate'] ?? $purchase->exchange_rate ?? ExchangeRate::current() ?? 1500);
 
-        if ($amount > ($remaining + 0.01)) {
+        // گۆڕینی بۆ دینار بۆ پشکنینی قەرز
+        if ($currency === 'USD') {
+            $amountIqd = $amount * $exchangeRate;
+        } else {
+            $amountIqd = $amount;
+        }
+
+        // قەرزی ماوەی پسوولە هەمیشە بە دراوی پسوولەکەوەیە
+        $remaining    = (float) $purchase->remaining();
+        $remainingIqd = $purchase->currency === 'USD'
+            ? $remaining * ($purchase->exchange_rate ?? $exchangeRate)
+            : $remaining;
+
+        if ($amountIqd > ($remainingIqd + 0.01)) {
             return back()->with('err', 'بڕی پارەی دراو ناتوانێت لە قەرزی ماوەی پسوولەکە زیاتر بێت (ماوە: ' . number_format($remaining) . ' ' . $purchase->currency . ').');
         }
 
-        DB::transaction(function () use ($purchase, $data, $amount) {
+        DB::transaction(function () use ($purchase, $data, $amount, $currency, $exchangeRate) {
             $this->payments->record([
-                'direction' => 'out',
-                'party' => $purchase->supplier,
-                'party_name' => $purchase->supplier?->name,
-                'purchase_id' => $purchase->id,
-                'amount' => $amount,
-                'currency' => $purchase->currency,
-                'exchange_rate' => $purchase->exchange_rate ?? null,
-                'cash_box_id' => $data['cash_box_id'] ?? null,
-                'paid_at' => $data['paid_at'],
-                'category' => 'supplier_payment',
-                'note' => $data['note'] ?: 'پارەدانی قەرزی پسوولەی کڕینی #' . $purchase->invoice_no,
+                'direction'     => 'out',
+                'party'         => $purchase->supplier,
+                'party_name'    => $purchase->supplier?->name,
+                'purchase_id'   => $purchase->id,
+                'amount'        => $amount,
+                'currency'      => $currency,
+                'exchange_rate' => $currency === 'USD' ? $exchangeRate : null,
+                'cash_box_id'   => $data['cash_box_id'] ?? null,
+                'paid_at'       => $data['paid_at'],
+                'category'      => 'supplier_payment',
+                'note'          => $data['note'] ?: 'پارەدانی قەرزی پسوولەی کڕینی #' . $purchase->invoice_no,
             ]);
 
             $purchase->paid_amount = $purchase->paidTotal();
