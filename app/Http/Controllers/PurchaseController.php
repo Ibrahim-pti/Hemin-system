@@ -103,6 +103,26 @@ class PurchaseController extends Controller
         $purchases = (clone $query)->paginate(15)->withQueryString();
         $cashBoxes = CashBox::where('is_active', true)->get();
 
+        // پارەدانەکانی فرۆشیارەکان (direction=out) بۆ تابی کەشف حیساب
+        $supplierPayments = Payment::where('direction', 'out')
+            ->with(['purchase', 'cashBox', 'user'])
+            ->when(
+                $request->input('tab') === 'suppliers' && $request->filled('pq'),
+                fn ($q) => $q->where(fn ($w) => $w
+                    ->where('party_name', 'like', '%' . $request->input('pq') . '%')
+                    ->orWhere('voucher_no', 'like', '%' . $request->input('pq') . '%')
+                    ->orWhere('note', 'like', '%' . $request->input('pq') . '%')
+                )
+            )
+            ->when($request->filled('pay_supplier_id'), fn ($q) => $q->where('party_type', Supplier::class)->where('party_id', $request->input('pay_supplier_id')))
+            ->orderByDesc('paid_at')
+            ->orderByDesc('id')
+            ->paginate(20, ['*'], 'ppage')
+            ->withQueryString();
+
+        $totalSupplierPaymentsIqd = Payment::where('direction', 'out')->sum('amount_iqd');
+        $totalSupplierPaymentsCount = Payment::where('direction', 'out')->count();
+
         return view('purchases.index', compact(
             'purchases',
             'activeTab',
@@ -126,7 +146,10 @@ class PurchaseController extends Controller
             'totalSuppliersWithDebtCount',
             'totalCompanyDebt',
             'suppliersList',
-            'cashBoxes'
+            'cashBoxes',
+            'supplierPayments',
+            'totalSupplierPaymentsIqd',
+            'totalSupplierPaymentsCount'
         ));
     }
 
