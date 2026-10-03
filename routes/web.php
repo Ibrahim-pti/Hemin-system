@@ -92,6 +92,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/purchases/{purchase}/confirm', [PurchaseController::class, 'confirm'])->name('purchases.confirm');
         Route::post('/purchases/{purchase}/unconfirm', [PurchaseController::class, 'unconfirm'])->name('purchases.unconfirm');
         Route::post('/purchases/{purchase}/payments', [PurchaseController::class, 'storePayment'])->name('purchases.payments.store');
+        Route::post('/suppliers/{supplier}/payments', [PurchaseController::class, 'storeSupplierPayment'])->name('suppliers.payments.store');
     });
 
     // ── کڕیار و وەسڵ ──

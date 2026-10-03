@@ -22,19 +22,43 @@
         } catch (e) {}
     },
     payModal: false,
-    payPurchase: { id: null, invoice_no: '', supplier_name: '', remaining: 0, currency: 'IQD', total: 0, paid: 0 },
-    payForm: { amount: '', cash_box_id: '{{ $cashBoxes->first()?->id ?? '' }}', paid_at: '{{ now()->toDateString() }}', note: '' },
-    openPayment(p) {
-        this.payPurchase = p;
-        this.payForm.amount = p.remaining.toLocaleString('en-US');
-        this.payForm.note = 'پارەدانی قەرزی پسوولەی #' + p.invoice_no;
+    paySupplier: { id: null, name: '', balance_iqd: 0, balance_usd: 0 },
+    payForm: { currency: 'IQD', amount: '', cash_box_id: '{{ $cashBoxes->first()?->id ?? '' }}', paid_at: '{{ now()->toDateString() }}', note: '' },
+    get currentRemainingText() {
+        if (this.payForm.currency === 'USD') {
+            return '$' + Number(this.paySupplier.balance_usd || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        return Math.round(this.paySupplier.balance_iqd || 0).toLocaleString('en-US') + ' د.ع';
+    },
+    openSupplierPayment(s) {
+        this.paySupplier = s;
+        if ('{{ $currency }}' === 'USD' || (s.balance_usd > 0 && s.balance_iqd <= 0)) {
+            this.payForm.currency = 'USD';
+            this.payForm.amount = Number(s.balance_usd || 0).toFixed(2);
+        } else {
+            this.payForm.currency = 'IQD';
+            this.payForm.amount = Math.round(s.balance_iqd || 0).toLocaleString('en-US');
+        }
+        this.payForm.note = 'پارەدانی قەرز بە کۆمپانیای ' + s.name;
         this.payModal = true;
     },
     closePayment() {
         this.payModal = false;
     },
+    setPayCurrency(c) {
+        this.payForm.currency = c;
+        if (c === 'USD') {
+            this.payForm.amount = Number(this.paySupplier.balance_usd || 0).toFixed(2);
+        } else {
+            this.payForm.amount = Math.round(this.paySupplier.balance_iqd || 0).toLocaleString('en-US');
+        }
+    },
     fillFullAmount() {
-        this.payForm.amount = this.payPurchase.remaining.toLocaleString('en-US');
+        if (this.payForm.currency === 'USD') {
+            this.payForm.amount = Number(this.paySupplier.balance_usd || 0).toFixed(2);
+        } else {
+            this.payForm.amount = Math.round(this.paySupplier.balance_iqd || 0).toLocaleString('en-US');
+        }
     },
     formatAmount(e) {
         let clean = e.target.value.replace(/[^0-9.]/g, '');
@@ -355,23 +379,6 @@
                                         </a>
                                     @endif
 
-                                    @if ($remaining > 0)
-                                        <button type="button"
-                                                @click="openPayment({
-                                                    id: {{ $purchase->id }},
-                                                    invoice_no: '{{ $purchase->invoice_no }}',
-                                                    supplier_name: '{{ addslashes($purchase->supplier?->name ?? 'نەناسراو') }}',
-                                                    remaining: {{ (float) $remaining }},
-                                                    currency: '{{ $purchase->currency }}',
-                                                    total: {{ (float) $purchase->total }},
-                                                    paid: {{ (float) $paid }}
-                                                })"
-                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-2xs transition-all cursor-pointer">
-                                            <span>💳</span>
-                                            <span>پارەدان</span>
-                                        </button>
-                                    @endif
-
                                     <form method="POST" action="{{ route('purchases.destroy', $purchase) }}"
                                           onsubmit="return confirm('دڵنیایت لە سڕینەوەی پسوولەی کڕینی #{{ $purchase->invoice_no }}؟')"
                                           class="inline">
@@ -559,20 +566,27 @@
                             </td>
 
                             {{-- کردار --}}
-                            <td class="py-3.5 px-4 text-center">
-                                <div class="flex items-center justify-center gap-1.5">
+                            <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                <div class="inline-flex items-center justify-center gap-1.5" onclick="event.stopPropagation()">
                                     <a href="{{ route('suppliers.show', $sup->id) }}"
-                                       class="size-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 inline-flex items-center justify-center transition-colors shadow-2xs"
-                                       title="پڕۆفایل و کەشف حیساب">
-                                        👁️
+                                       class="btn btn-ghost !py-1 !px-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50"
+                                       title="پڕۆفایل و کەشف حیسابی تەواوی ئەم کۆمپانیایە">
+                                        کەشف حیساب
                                     </a>
 
                                     @if ($sup->balance > 0)
-                                        <a href="{{ route('payments.create', ['type' => 'out', 'supplier' => $sup->id]) }}"
-                                           class="size-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 inline-flex items-center justify-center transition-colors shadow-2xs"
-                                           title="تۆمارکردنی حەقدی و پارەدان">
-                                            💳
-                                        </a>
+                                        <button type="button"
+                                                @click="openSupplierPayment({
+                                                    id: {{ $sup->id }},
+                                                    name: '{{ addslashes($sup->name) }}',
+                                                    balance_iqd: {{ (float) $sup->balance_iqd }},
+                                                    balance_usd: {{ (float) $sup->balance_usd }}
+                                                })"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-2xs transition-all cursor-pointer"
+                                                title="تۆمارکردنی پارەدان بەم کۆمپانیایە">
+                                            <span>💳</span>
+                                            <span>پارەدان</span>
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -749,7 +763,7 @@
 
     </div>
 
-    {{-- مۆداڵی پارەدانی قەرزی پسوولە --}}
+    {{-- مۆداڵی پارەدانی قەرزی فرۆشیار / کۆمپانیا --}}
     <div x-show="payModal"
          x-cloak
          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity"
@@ -766,10 +780,9 @@
                         💳
                     </div>
                     <div>
-                        <h3 class="font-black text-sm sm:text-base">تۆمارکردنی پارەدان بە فرۆشیار</h3>
+                        <h3 class="font-black text-sm sm:text-base">تۆمارکردنی پارەدان بە کۆمپانیا</h3>
                         <p class="text-xs text-emerald-100 mt-0.5">
-                            پسوولەی <span class="font-mono font-bold text-white">#<span x-text="payPurchase.invoice_no"></span></span>
-                            • فرۆشیار: <span class="font-bold text-white" x-text="payPurchase.supplier_name"></span>
+                            کۆمپانیا / فرۆشیار: <span class="font-bold text-white" x-text="paySupplier.name"></span>
                         </p>
                     </div>
                 </div>
@@ -780,25 +793,44 @@
 
             {{-- کارتی زانیاری قەرز --}}
             <div class="p-4 sm:p-5 bg-slate-50/80 border-b border-slate-100">
-                <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span class="text-slate-400 block text-[11px] font-medium mb-0.5">کۆی پسوولە</span>
-                        <span class="font-mono font-bold text-slate-800" x-text="payPurchase.total.toLocaleString('en-US')"></span>
-                    </div>
-                    <div class="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span class="text-slate-400 block text-[11px] font-medium mb-0.5">دراوە</span>
-                        <span class="font-mono font-bold text-emerald-600" x-text="payPurchase.paid.toLocaleString('en-US')"></span>
+                <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                    <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200">
+                        <span class="text-rose-600 block text-[11px] font-bold mb-0.5">قەرزی ماوە بە دۆلار</span>
+                        <span class="font-mono font-black text-rose-700 text-sm" x-text="'$' + Number(paySupplier.balance_usd || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span>
                     </div>
                     <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200">
-                        <span class="text-rose-600 block text-[11px] font-bold mb-0.5">ماوە (قەرز)</span>
-                        <span class="font-mono font-black text-rose-700" x-text="payPurchase.remaining.toLocaleString('en-US')"></span>
+                        <span class="text-rose-600 block text-[11px] font-bold mb-0.5">قەرزی ماوە بە دینار</span>
+                        <span class="font-mono font-black text-rose-700 text-sm" x-text="Math.round(paySupplier.balance_iqd || 0).toLocaleString('en-US') + ' د.ع'"></span>
                     </div>
                 </div>
             </div>
 
             {{-- فۆڕمی پارەدان --}}
-            <form method="POST" :action="'/purchases/' + payPurchase.id + '/payments'" class="p-4 sm:p-5 space-y-4">
+            <form method="POST" :action="'/suppliers/' + paySupplier.id + '/payments'" class="p-4 sm:p-5 space-y-4">
                 @csrf
+                <input type="hidden" name="currency_filter" value="{{ $currency }}">
+
+                {{-- هەڵبژاردنی دراوی دانەوە --}}
+                <div>
+                    <label class="label font-bold mb-1.5 block">دراوی پارەدان <span class="text-rose-500">*</span></label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button"
+                                @click="setPayCurrency('IQD')"
+                                :class="payForm.currency === 'IQD' ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                                class="py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>🇮🇶</span>
+                            <span>دیناری عێراقی (IQD)</span>
+                        </button>
+                        <button type="button"
+                                @click="setPayCurrency('USD')"
+                                :class="payForm.currency === 'USD' ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                                class="py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>💵</span>
+                            <span>دۆلاری ئەمریکی ($)</span>
+                        </button>
+                    </div>
+                    <input type="hidden" name="currency" :value="payForm.currency">
+                </div>
 
                 {{-- بڕی پارەی دراو --}}
                 <div>
@@ -807,7 +839,7 @@
                             بڕی پارەی دراو <span class="text-rose-500">*</span>
                         </label>
                         <button type="button" @click="fillFullAmount()" class="text-xs text-teal-700 hover:text-teal-800 font-bold underline cursor-pointer">
-                            دانەوەی هەمووی (<span x-text="payPurchase.remaining.toLocaleString('en-US')"></span>)
+                            دانەوەی هەمووی (<span x-text="currentRemainingText"></span>)
                         </button>
                     </div>
                     <div class="relative">
@@ -820,8 +852,7 @@
                                @input="formatAmount($event)"
                                class="field num font-black text-emerald-700 text-base !py-2.5 pl-14 w-full"
                                placeholder="0">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-xs font-bold text-slate-400 pointer-events-none" x-text="payPurchase.currency">
-                            د.ع
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-xs font-bold text-slate-400 pointer-events-none" x-text="payForm.currency === 'USD' ? '$' : 'د.ع'">
                         </span>
                     </div>
                 </div>

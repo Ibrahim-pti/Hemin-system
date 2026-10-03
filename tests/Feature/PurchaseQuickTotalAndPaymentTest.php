@@ -342,4 +342,79 @@ class PurchaseQuickTotalAndPaymentTest extends TestCase
         $indexRes->assertOk();
         $indexRes->assertSee('+3');
     }
+
+    public function test_invoices_tab_does_not_have_payment_button_and_suppliers_tab_has_it(): void
+    {
+        // Create an unpaid purchase for the supplier
+        $purchase = Purchase::create([
+            'invoice_no' => Purchase::nextInvoiceNo(),
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'purchase_date' => now()->toDateString(),
+            'currency' => 'IQD',
+            'exchange_rate' => 1,
+            'subtotal' => 300000,
+            'discount_amount' => 0,
+            'total' => 300000,
+            'paid_amount' => 0,
+            'status' => 'confirmed',
+            'user_id' => $this->admin->id,
+        ]);
+
+        // 1. Visit invoices tab: should NOT have openPayment or payment button in invoices table
+        $resInvoices = $this->get('/purchases?tab=invoices');
+        $resInvoices->assertOk();
+        $resInvoices->assertDontSee("openPayment({");
+
+        // 2. Visit suppliers tab: SHOULD have openSupplierPayment
+        $resSuppliers = $this->get('/purchases?tab=suppliers');
+        $resSuppliers->assertOk();
+        $resSuppliers->assertSee('openSupplierPayment({');
+        $resSuppliers->assertSee('تۆمارکردنی پارەدان بە کۆمپانیا');
+    }
+
+    public function test_supplier_debt_can_be_paid_via_supplier_payment_route(): void
+    {
+        $purchase = Purchase::create([
+            'invoice_no' => Purchase::nextInvoiceNo(),
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'purchase_date' => now()->toDateString(),
+            'currency' => 'IQD',
+            'exchange_rate' => 1,
+            'subtotal' => 450000,
+            'discount_amount' => 0,
+            'total' => 450000,
+            'paid_amount' => 0,
+            'status' => 'confirmed',
+            'user_id' => $this->admin->id,
+        ]);
+
+        $this->assertEquals(450000, (float) $this->supplier->balance());
+        $this->assertEquals(450000, (float) $purchase->remaining());
+
+        // Pay 450,000 to the supplier
+        $res = $this->post("/suppliers/{$this->supplier->id}/payments", [
+            'amount' => '450,000',
+            'currency' => 'IQD',
+            'paid_at' => now()->toDateString(),
+            'note' => 'دانەوەی قەرزی کۆمپانیا',
+        ]);
+
+        $res->assertSessionHas('ok');
+        $res->assertRedirect(route('purchases.index', ['tab' => 'suppliers', 'currency' => 'all']));
+
+        // Verify supplier balance is 0 and purchase remaining is 0
+        $this->assertEquals(0, (float) $this->supplier->balance());
+        $purchase->refresh();
+        $this->assertEquals(0, (float) $purchase->remaining());
+        $this->assertEquals(450000, (float) $purchase->paid_amount);
+
+        // Verify payment record
+        $lastPayment = $this->supplier->payments()->latest('id')->first();
+        $this->assertNotNull($lastPayment);
+        $this->assertEquals(450000, (float) $lastPayment->amount);
+        $this->assertEquals('out', $lastPayment->direction);
+        $this->assertEquals($purchase->id, $lastPayment->purchase_id);
+    }
 }

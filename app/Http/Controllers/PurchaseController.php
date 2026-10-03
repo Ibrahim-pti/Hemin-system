@@ -306,6 +306,127 @@ class PurchaseController extends Controller
         return back()->with('ok', 'پارەدان بە سەرکەوتوویی تۆمارکرا و لە قەرزی پسوولەکە و فرۆشیارەکە کەمکرایەوە.');
     }
 
+    /**
+     * تۆمارکردنی پارەدان بە کۆمپانیا / فرۆشیار لە تابی کۆمپانیا و کەشف حیساب.
+     */
+    public function storeSupplierPayment(Request $request, Supplier $supplier)
+    {
+        if ($request->filled('amount')) {
+            $request->merge([
+                'amount' => (float) str_replace(',', '', (string) $request->input('amount')),
+            ]);
+        }
+
+        $data = $request->validate([
+            'amount'        => ['required', 'numeric', 'gt:0'],
+            'currency'      => ['required', 'in:IQD,USD'],
+            'exchange_rate' => ['nullable', 'numeric', 'gt:0'],
+            'cash_box_id'   => ['nullable', 'exists:cash_boxes,id'],
+            'paid_at'       => ['required', 'date'],
+            'note'          => ['nullable', 'string', 'max:255'],
+        ], [
+            'amount.required'  => 'تکایە بڕی پارە بنووسە.',
+            'amount.gt'        => 'بڕی پارە دەبێت لە سفر زیاتر بێت.',
+            'paid_at.required' => 'بەرواری پارەدان دیاری بکە.',
+        ]);
+
+        $amount       = (float) $data['amount'];
+        $currency     = $data['currency'];
+        $currentRate  = ExchangeRate::current() ?: 1500;
+        $exchangeRate = (float) ($data['exchange_rate'] ?? $currentRate);
+
+        $balanceIqd = (float) $supplier->balance();
+        if ($balanceIqd <= 0) {
+            return back()->with('err', 'ئەم فرۆشیارە هیچ قەرزێکی ماوەی نییە.');
+        }
+
+        $amountIqd = $currency === 'USD' ? $amount * $exchangeRate : $amount;
+        if ($amountIqd > ($balanceIqd + 500)) {
+            $maxAllowed = $currency === 'USD' ? round($balanceIqd / $exchangeRate, 2) : $balanceIqd;
+            return back()->with('err', 'بڕی پارەی دراو ناتوانێت لە تەواوی قەرزی فرۆشیارەکە زیاتر بێت (ماوە: ' . number_format($maxAllowed, 2) . ' ' . $currency . ').');
+        }
+
+        DB::transaction(function () use ($supplier, $data, $amount, $currency, $exchangeRate) {
+            // دەرهێنانی هەموو پسوولە پەسەندکراوە ماوەکانی ئەم فرۆشیارە (لە کۆنەوە بۆ نوێ)
+            $unpaidPurchases = $supplier->purchases()
+                ->where('status', 'confirmed')
+                ->orderBy('purchase_date')
+                ->orderBy('id')
+                ->get()
+                ->filter(fn ($p) => $p->remaining() > 0.001);
+
+            $remainingToPay = $amount;
+
+            foreach ($unpaidPurchases as $purchase) {
+                if ($remainingToPay <= 0.001) {
+                    break;
+                }
+
+                $pRem = (float) $purchase->remaining();
+
+                if ($purchase->currency === $currency) {
+                    $payForThis = min($remainingToPay, $pRem);
+                    $remainingToPay -= $payForThis;
+                } else {
+                    $rate = (float) ($purchase->exchange_rate ?: $exchangeRate);
+                    if ($currency === 'USD' && $purchase->currency === 'IQD') {
+                        $remInUsd = $rate > 0 ? $pRem / $rate : 0;
+                        $payForThis = min($remainingToPay, $remInUsd);
+                        $remainingToPay -= $payForThis;
+                    } elseif ($currency === 'IQD' && $purchase->currency === 'USD') {
+                        $remInIqd = $pRem * $rate;
+                        $payForThis = min($remainingToPay, $remInIqd);
+                        $remainingToPay -= $payForThis;
+                    } else {
+                        $payForThis = min($remainingToPay, $pRem);
+                        $remainingToPay -= $payForThis;
+                    }
+                }
+
+                if ($payForThis > 0.001) {
+                    $this->payments->record([
+                        'direction'     => 'out',
+                        'party'         => $supplier,
+                        'party_name'    => $supplier->name,
+                        'purchase_id'   => $purchase->id,
+                        'amount'        => $payForThis,
+                        'currency'      => $currency,
+                        'exchange_rate' => $currency === 'USD' ? $exchangeRate : null,
+                        'cash_box_id'   => $data['cash_box_id'] ?? null,
+                        'paid_at'       => $data['paid_at'],
+                        'category'      => 'supplier_payment',
+                        'note'          => $data['note'] ?: ('پارەدانی قەرزی پسوولەی #' . $purchase->invoice_no),
+                    ]);
+
+                    $purchase->paid_amount = $purchase->paidTotal();
+                    $purchase->save();
+                }
+            }
+
+            // ئەگەر بڕێک مابێتەوە کە لەسەر پسوولەی دیاریکراو نەبێت (وەک قەرزی سەرەتایی یان ئیشی دەرەکی)
+            if ($remainingToPay > 0.001) {
+                $this->payments->record([
+                    'direction'     => 'out',
+                    'party'         => $supplier,
+                    'party_name'    => $supplier->name,
+                    'purchase_id'   => null,
+                    'amount'        => $remainingToPay,
+                    'currency'      => $currency,
+                    'exchange_rate' => $currency === 'USD' ? $exchangeRate : null,
+                    'cash_box_id'   => $data['cash_box_id'] ?? null,
+                    'paid_at'       => $data['paid_at'],
+                    'category'      => 'supplier_payment',
+                    'note'          => $data['note'] ?: ('پارەدانی قەرزی فرۆشیار: ' . $supplier->name),
+                ]);
+            }
+        });
+
+        return redirect()->route('purchases.index', [
+            'tab' => 'suppliers',
+            'currency' => $request->input('currency_filter', 'all'),
+        ])->with('ok', 'پارەدان بە بڕی ' . number_format($amount, 2) . ' ' . $currency . ' بە سەرکەوتوویی بۆ ' . $supplier->name . ' تۆمارکرا.');
+    }
+
     public function print(Purchase $purchase): View
     {
         $purchase->load(['supplier', 'warehouse', 'items.item.unit', 'payments.user', 'user']);
