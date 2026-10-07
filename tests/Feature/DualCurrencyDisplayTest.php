@@ -121,4 +121,76 @@ class DualCurrencyDisplayTest extends TestCase
         $iqdResponse->assertStatus(200);
         $iqdResponse->assertSee('کۆی کڕین بە دینار');
     }
+
+    public function test_customer_balances_remain_strictly_separated_by_currency()
+    {
+        $customer = Customer::create([
+            'name' => 'Separation Customer Test',
+            'phone' => '07500000000',
+            'is_active' => true,
+        ]);
+
+        // Order in USD: $100
+        \App\Models\Order::create([
+            'invoice_no' => 'ORD-USD-1',
+            'customer_id' => $customer->id,
+            'currency' => 'USD',
+            'exchange_rate' => 1500,
+            'status' => 'confirmed',
+            'subtotal' => 100,
+            'total' => 100,
+            'order_date' => now(),
+        ]);
+
+        // Order in IQD: 150,000 IQD
+        \App\Models\Order::create([
+            'invoice_no' => 'ORD-IQD-1',
+            'customer_id' => $customer->id,
+            'currency' => 'IQD',
+            'exchange_rate' => 1,
+            'status' => 'confirmed',
+            'subtotal' => 150000,
+            'total' => 150000,
+            'order_date' => now(),
+        ]);
+
+        // Assert initial separate balances
+        $balances = $customer->balances();
+        $this->assertEquals(100.0, $balances['USD']);
+        $this->assertEquals(150000.0, $balances['IQD']);
+
+        // Payment in USD: $40
+        \App\Models\Payment::create([
+            'voucher_no' => 'PAY-USD-1',
+            'party_type' => Customer::class,
+            'party_id' => $customer->id,
+            'currency' => 'USD',
+            'amount' => 40,
+            'amount_iqd' => 60000,
+            'direction' => 'in',
+            'paid_at' => now(),
+            'user_id' => $this->admin->id,
+        ]);
+
+        $balancesAfterUsdPayment = $customer->fresh()->balances();
+        $this->assertEquals(60.0, $balancesAfterUsdPayment['USD']);
+        $this->assertEquals(150000.0, $balancesAfterUsdPayment['IQD']); // IQD is untouched
+
+        // Payment in IQD: 50,000 IQD
+        \App\Models\Payment::create([
+            'voucher_no' => 'PAY-IQD-1',
+            'party_type' => Customer::class,
+            'party_id' => $customer->id,
+            'currency' => 'IQD',
+            'amount' => 50000,
+            'amount_iqd' => 50000,
+            'direction' => 'in',
+            'paid_at' => now(),
+            'user_id' => $this->admin->id,
+        ]);
+
+        $balancesAfterIqdPayment = $customer->fresh()->balances();
+        $this->assertEquals(60.0, $balancesAfterIqdPayment['USD']); // USD is untouched
+        $this->assertEquals(100000.0, $balancesAfterIqdPayment['IQD']);
+    }
 }

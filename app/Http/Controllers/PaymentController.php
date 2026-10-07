@@ -34,12 +34,25 @@ class PaymentController extends Controller
             ->withQueryString();
 
         $allCustomers = Customer::active()->get();
-        $totalDebt = (float) $allCustomers->sum(fn ($c) => max(0, $c->balance()));
+        $totalDebtIqd = 0.0;
+        $totalDebtUsd = 0.0;
+        foreach ($allCustomers as $c) {
+            $b = $c->balances();
+            if ($b['IQD'] > 0) $totalDebtIqd += $b['IQD'];
+            if ($b['USD'] > 0) $totalDebtUsd += $b['USD'];
+        }
 
-        $totalIn = (float) Payment::where('direction', 'in')
+        $totalInIqd = (float) Payment::where('direction', 'in')
+            ->where('currency', 'IQD')
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
             ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
-            ->sum('amount_iqd');
+            ->sum('amount');
+
+        $totalInUsd = (float) Payment::where('direction', 'in')
+            ->where('currency', 'USD')
+            ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
+            ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
+            ->sum('amount');
 
         $totalCount = Payment::where('direction', 'in')
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
@@ -48,9 +61,13 @@ class PaymentController extends Controller
 
         return view('payments.index', [
             'payments' => $payments,
-            'totalIn' => $totalIn,
+            'totalIn' => $totalInIqd,
+            'totalInIqd' => $totalInIqd,
+            'totalInUsd' => $totalInUsd,
             'totalCount' => $totalCount,
-            'totalDebt' => $totalDebt,
+            'totalDebt' => $totalDebtIqd,
+            'totalDebtIqd' => $totalDebtIqd,
+            'totalDebtUsd' => $totalDebtUsd,
             'customers' => $allCustomers,
         ]);
     }
@@ -66,11 +83,14 @@ class PaymentController extends Controller
         }
 
         $customers = Customer::active()->orderBy('name')->get()->map(function ($c) {
+            $b = $c->balances();
             return [
                 'id' => $c->id,
                 'name' => $c->name,
                 'phone' => $c->phone,
-                'balance' => $c->balance(),
+                'balance_iqd' => (float) ($b['IQD'] ?? 0),
+                'balance_usd' => (float) ($b['USD'] ?? 0),
+                'balances_formatted' => fmt_dual($b),
             ];
         });
 
@@ -140,6 +160,15 @@ class PaymentController extends Controller
 
         $customer = Customer::findOrFail($data['customer_id']);
 
+        if (!empty($data['order_id'])) {
+            $order = Order::findOrFail($data['order_id']);
+            if (($order->currency ?: 'IQD') !== $data['currency']) {
+                return back()->withInput()->withErrors([
+                    'currency' => "دراوی وەسڵەکە ({$order->currency}) لەگەڵ دراوی ئەم حەقدییە یەک ناگرێتەوە. قەرزی دۆلار بە دۆلار و قەرزی دینار بە دینار دەدرێتەوە.",
+                ]);
+            }
+        }
+
         $exchangeRate = null;
         if ($data['currency'] === 'USD' && !empty($data['exchange_rate'])) {
             $rawRate = (float) str_replace(',', '', (string) $data['exchange_rate']);
@@ -175,16 +204,18 @@ class PaymentController extends Controller
         $payment->load(['party', 'order', 'cashBox', 'user']);
 
         // باڵانسی ماوەی ئەو لایەنە دوای ئەم حەقدییە.
-        $balance = match (true) {
-            $payment->party instanceof Customer => $payment->party->balance(),
-            $payment->party instanceof Supplier => $payment->party->balance(),
+        $balances = match (true) {
+            $payment->party instanceof Customer => $payment->party->balances(),
+            $payment->party instanceof Supplier => $payment->party->balances(),
             default => null,
         };
+        $balance = $balances ? ($balances[$payment->currency] ?? 0) : null;
 
         return view('payments.print', [
             'payment' => $payment,
             'settings' => Setting::all_(),
             'balance' => $balance,
+            'balances' => $balances,
         ]);
     }
 

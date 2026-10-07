@@ -190,8 +190,11 @@
                 <tbody class="divide-y divide-slate-100 text-sm">
                     @forelse ($customers as $index => $customer)
                         @php
-                            $bal = $customer->balance();
-                            $balUsd = $currentRate > 0 ? round($bal / $currentRate, 2) : 0;
+                            $bals = $customer->balances();
+                            $bIqd = (float) ($bals['IQD'] ?? 0);
+                            $bUsd = (float) ($bals['USD'] ?? 0);
+                            $bal = $bIqd;
+                            $balUsd = $bUsd;
 
                             $custOrders = $customer->orders;
                             $custUsdSales = (float) $custOrders->where('currency', 'USD')->sum('total');
@@ -263,18 +266,22 @@
                                 @endif
                             </td>
                             <td class="py-3.5 px-4 text-center">
-                                @if ($bal <= 0)
+                                @if ($bUsd <= 0.005 && $bIqd <= 0.5)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                         <span>✓</span> <span>بێ قەرز</span>
                                     </span>
                                 @else
-                                    <div class="inline-flex flex-col items-center">
-                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 num font-mono">
-                                            ${{ number_format($balUsd, 2) }}
-                                        </span>
-                                        <span class="text-2xs text-slate-400 num font-mono mt-0.5">
-                                            {{ fmt_money($bal) }}
-                                        </span>
+                                    <div class="inline-flex flex-col items-center gap-0.5">
+                                        @if ($bUsd > 0.005)
+                                            <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 num font-mono">
+                                                ${{ number_format($bUsd, 2) }}
+                                            </span>
+                                        @endif
+                                        @if ($bIqd > 0.5)
+                                            <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 num font-mono">
+                                                {{ fmt_money($bIqd) }}
+                                            </span>
+                                        @endif
                                     </div>
                                 @endif
                             </td>

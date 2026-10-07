@@ -47,13 +47,13 @@ class PurchaseController extends Controller
         $usdPurchasesCount = (int) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->count();
         $iqdPurchasesCount = (int) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'IQD')->count();
 
-        $totalPurchasesIqd = (float) Purchase::where('status', 'confirmed')->sum(Purchase::totalIqdExpression());
+        $totalPurchasesIqd = (float) Purchase::where('status', 'confirmed')->where('currency', 'IQD')->sum('total');
         $totalPurchasesUsd = (float) Purchase::where('status', 'confirmed')->where('currency', 'USD')->sum('total');
-        $totalPurchasesAllInUsd = $currentRate > 0 ? round($totalPurchasesIqd / $currentRate, 2) : $totalPurchasesUsd;
+        $totalPurchasesAllInUsd = $totalPurchasesUsd;
 
-        $totalPaidIqd = (float) Payment::where('direction', 'out')->sum('amount_iqd');
+        $totalPaidIqd = (float) Payment::where('direction', 'out')->where('currency', 'IQD')->sum('amount');
         $totalPaidUsd = (float) Payment::where('direction', 'out')->where('currency', 'USD')->sum('amount');
-        $totalPaidAllInUsd = $currentRate > 0 ? round($totalPaidIqd / $currentRate, 2) : $totalPaidUsd;
+        $totalPaidAllInUsd = $totalPaidUsd;
 
         $totalRemainingDebt = max(0, $totalPurchasesIqd - $totalPaidIqd);
         $draftCount = Purchase::where('status', 'draft')->count();
@@ -64,15 +64,18 @@ class PurchaseController extends Controller
             ->withCount(['purchases' => fn ($q) => $q->where('status', 'confirmed')])
             ->get();
 
-        $suppliersSummary = $allSuppliers->map(function ($supplier) use ($currentRate) {
-            $totalPurchasesIqd = (float) $supplier->totalPurchases();
-            $totalPaidIqd = (float) $supplier->totalPaid();
-            $balanceIqd = (float) $supplier->balance();
-            $lastPurchase = $supplier->purchases()->latest('purchase_date')->first();
+        $suppliersSummary = $allSuppliers->map(function ($supplier) {
+            $pTotals = $supplier->totalPurchases();
+            $paidTotals = $supplier->totalPaid();
+            $bTotals = $supplier->balances();
 
-            $totalPurchasesUsd = $currentRate > 0 ? round($totalPurchasesIqd / $currentRate, 2) : 0;
-            $totalPaidUsd = $currentRate > 0 ? round($totalPaidIqd / $currentRate, 2) : 0;
-            $balanceUsd = $currentRate > 0 ? round($balanceIqd / $currentRate, 2) : 0;
+            $totalPurchasesIqd = (float) ($pTotals['IQD'] ?? 0);
+            $totalPurchasesUsd = (float) ($pTotals['USD'] ?? 0);
+            $totalPaidIqd = (float) ($paidTotals['IQD'] ?? 0);
+            $totalPaidUsd = (float) ($paidTotals['USD'] ?? 0);
+            $balanceIqd = (float) ($bTotals['IQD'] ?? 0);
+            $balanceUsd = (float) ($bTotals['USD'] ?? 0);
+            $lastPurchase = $supplier->purchases()->latest('purchase_date')->first();
 
             return (object) [
                 'id' => $supplier->id,
@@ -89,14 +92,15 @@ class PurchaseController extends Controller
                 'balance' => $balanceIqd,
                 'balance_iqd' => $balanceIqd,
                 'balance_usd' => $balanceUsd,
+                'has_debt' => $supplier->hasDebt(),
                 'last_purchase_date' => $lastPurchase?->purchase_date,
             ];
-        })->sortByDesc('balance')->values();
+        })->sortByDesc(fn ($s) => max($s->balance_iqd, $s->balance_usd))->values();
 
         $totalSuppliersCount = $allSuppliers->count();
-        $totalSuppliersWithDebtCount = $suppliersSummary->where('balance', '>', 0)->count();
-        $totalCompanyDebtIqd = (float) $suppliersSummary->where('balance', '>', 0)->sum('balance');
-        $totalCompanyDebtUsd = $currentRate > 0 ? round($totalCompanyDebtIqd / $currentRate, 2) : 0;
+        $totalSuppliersWithDebtCount = $suppliersSummary->where('has_debt', true)->count();
+        $totalCompanyDebtIqd = (float) $suppliersSummary->sum(fn ($s) => max(0, $s->balance_iqd));
+        $totalCompanyDebtUsd = (float) $suppliersSummary->sum(fn ($s) => max(0, $s->balance_usd));
         $totalCompanyDebt = $totalCompanyDebtIqd;
 
         $suppliersList = Supplier::active()->orderBy('name')->get();
@@ -264,24 +268,14 @@ class PurchaseController extends Controller
         ]);
 
         $amount       = (float) $data['amount'];
-        $currency     = $data['currency'] ?? $purchase->currency;
-        $exchangeRate = (float) ($data['exchange_rate'] ?? $purchase->exchange_rate ?? ExchangeRate::current() ?? 1500);
-
-        // گۆڕینی بۆ دینار بۆ پشکنینی قەرز
-        if ($currency === 'USD') {
-            $amountIqd = $amount * $exchangeRate;
-        } else {
-            $amountIqd = $amount;
-        }
+        $currency     = $purchase->currency;
+        $exchangeRate = !empty($data['exchange_rate']) ? (float) $data['exchange_rate'] : null;
 
         // قەرزی ماوەی پسوولە هەمیشە بە دراوی پسوولەکەوەیە
-        $remaining    = (float) $purchase->remaining();
-        $remainingIqd = $purchase->currency === 'USD'
-            ? $remaining * ($purchase->exchange_rate ?? $exchangeRate)
-            : $remaining;
+        $remaining = (float) $purchase->remaining();
 
-        if ($amountIqd > ($remainingIqd + 0.01)) {
-            return back()->with('err', 'بڕی پارەی دراو ناتوانێت لە قەرزی ماوەی پسوولەکە زیاتر بێت (ماوە: ' . number_format($remaining) . ' ' . $purchase->currency . ').');
+        if ($amount > ($remaining + 0.01)) {
+            return back()->with('err', 'بڕی پارەی دراو ناتوانێت لە قەرزی ماوەی پسوولەکە زیاتر بێت (ماوە: ' . fmt_money($remaining, $purchase->currency) . ').');
         }
 
         DB::transaction(function () use ($purchase, $data, $amount, $currency, $exchangeRate) {
@@ -332,24 +326,23 @@ class PurchaseController extends Controller
 
         $amount       = (float) $data['amount'];
         $currency     = $data['currency'];
-        $currentRate  = ExchangeRate::current() ?: 1500;
-        $exchangeRate = (float) ($data['exchange_rate'] ?? $currentRate);
+        $exchangeRate = !empty($data['exchange_rate']) ? (float) $data['exchange_rate'] : null;
 
-        $balanceIqd = (float) $supplier->balance();
-        if ($balanceIqd <= 0) {
-            return back()->with('err', 'ئەم فرۆشیارە هیچ قەرزێکی ماوەی نییە.');
+        $balances = $supplier->balances();
+        $balanceInCurrency = (float) ($balances[$currency] ?? 0);
+        if ($balanceInCurrency <= 0) {
+            return back()->with('err', 'ئەم فرۆشیارە هیچ قەرزێکی ماوەی بە ' . $currency . ' نییە.');
         }
 
-        $amountIqd = $currency === 'USD' ? $amount * $exchangeRate : $amount;
-        if ($amountIqd > ($balanceIqd + 500)) {
-            $maxAllowed = $currency === 'USD' ? round($balanceIqd / $exchangeRate, 2) : $balanceIqd;
-            return back()->with('err', 'بڕی پارەی دراو ناتوانێت لە تەواوی قەرزی فرۆشیارەکە زیاتر بێت (ماوە: ' . number_format($maxAllowed, 2) . ' ' . $currency . ').');
+        if ($amount > ($balanceInCurrency + 0.01)) {
+            return back()->with('err', 'بڕی پارەی دراو ناتوانێت لە تەواوی قەرزی فرۆشیارەکە بە ' . $currency . ' زیاتر بێت (ماوە: ' . fmt_money($balanceInCurrency, $currency) . ').');
         }
 
         DB::transaction(function () use ($supplier, $data, $amount, $currency, $exchangeRate) {
-            // دەرهێنانی هەموو پسوولە پەسەندکراوە ماوەکانی ئەم فرۆشیارە (لە کۆنەوە بۆ نوێ)
+            // دەرهێنانی پسوولە پەسەندکراوە ماوەکانی ئەم فرۆشیارە بە هەمان دراو
             $unpaidPurchases = $supplier->purchases()
                 ->where('status', 'confirmed')
+                ->where('currency', $currency)
                 ->orderBy('purchase_date')
                 ->orderBy('id')
                 ->get()
@@ -363,25 +356,8 @@ class PurchaseController extends Controller
                 }
 
                 $pRem = (float) $purchase->remaining();
-
-                if ($purchase->currency === $currency) {
-                    $payForThis = min($remainingToPay, $pRem);
-                    $remainingToPay -= $payForThis;
-                } else {
-                    $rate = (float) ($purchase->exchange_rate ?: $exchangeRate);
-                    if ($currency === 'USD' && $purchase->currency === 'IQD') {
-                        $remInUsd = $rate > 0 ? $pRem / $rate : 0;
-                        $payForThis = min($remainingToPay, $remInUsd);
-                        $remainingToPay -= $payForThis;
-                    } elseif ($currency === 'IQD' && $purchase->currency === 'USD') {
-                        $remInIqd = $pRem * $rate;
-                        $payForThis = min($remainingToPay, $remInIqd);
-                        $remainingToPay -= $payForThis;
-                    } else {
-                        $payForThis = min($remainingToPay, $pRem);
-                        $remainingToPay -= $payForThis;
-                    }
-                }
+                $payForThis = min($remainingToPay, $pRem);
+                $remainingToPay -= $payForThis;
 
                 if ($payForThis > 0.001) {
                     $this->payments->record([

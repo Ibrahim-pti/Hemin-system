@@ -74,6 +74,26 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    public static function totalIqdExpression(): string
+    {
+        return 'total';
+    }
+
+    public function getTotalIqdAttribute(): float
+    {
+        return (float) $this->total;
+    }
+
+    public function paidTotalIqd(): float
+    {
+        return $this->paidTotal();
+    }
+
+    public function remainingIqd(): float
+    {
+        return $this->remaining();
+    }
+
     /**
      * کۆی ئەوەی دراوە بەم وەسڵە — تەنها حەقدییەکانی هەمان دراوی وەسڵەکە.
      * دۆلار و دینار بۆ یەکتری ناگۆڕدرێن.

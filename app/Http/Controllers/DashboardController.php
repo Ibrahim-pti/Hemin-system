@@ -86,33 +86,31 @@ class DashboardController extends Controller
         return view('dashboard', $data);
     }
 
-    /** کۆی قەرزی کڕیاران بۆ کارگە (بە دینار). */
-    private function receivables(): float
+    /** کۆی قەرزی کڕیاران بۆ کارگە (بە دۆلار و دینار بە جیا). */
+    private function receivables(): array
     {
-        $invoiced = (float) Order::whereNotIn('status', ['draft', 'cancelled'])
-            ->sum(Order::totalIqdExpression());
+        $customers = Customer::all();
+        $totals = ['IQD' => 0.0, 'USD' => 0.0];
+        foreach ($customers as $c) {
+            $b = $c->balances();
+            if (($b['IQD'] ?? 0) > 0) $totals['IQD'] += $b['IQD'];
+            if (($b['USD'] ?? 0) > 0) $totals['USD'] += $b['USD'];
+        }
 
-        $received = (float) Payment::where('direction', 'in')
-            ->where('party_type', Customer::class)
-            ->sum('amount_iqd');
-
-        $opening = Customer::all()->sum(fn (Customer $c) => $c->openingIqd());
-
-        return $opening + $invoiced - $received;
+        return $totals;
     }
 
-    /** کۆی قەرزی کارگە بۆ فرۆشیاران (بە دینار). */
-    private function payables(): float
+    /** کۆی قەرزی کارگە بۆ فرۆشیاران (بە دۆلار و دینار بە جیا). */
+    private function payables(): array
     {
-        $purchased = (float) Purchase::where('status', 'confirmed')
-            ->sum(Purchase::totalIqdExpression());
+        $suppliers = Supplier::all();
+        $totals = ['IQD' => 0.0, 'USD' => 0.0];
+        foreach ($suppliers as $s) {
+            $b = $s->balances();
+            if (($b['IQD'] ?? 0) > 0) $totals['IQD'] += $b['IQD'];
+            if (($b['USD'] ?? 0) > 0) $totals['USD'] += $b['USD'];
+        }
 
-        $paid = (float) Payment::where('direction', 'out')
-            ->where('party_type', Supplier::class)
-            ->sum('amount_iqd');
-
-        $opening = Supplier::all()->sum(fn (Supplier $s) => $s->openingIqd());
-
-        return $opening + $purchased - $paid;
+        return $totals;
     }
 }

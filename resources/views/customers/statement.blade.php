@@ -177,8 +177,8 @@
                         </svg>
                     </div>
                     <div style="font-size: 0.82rem; font-weight: 700; color: #86198f;">حیسابی پێشوو (سەرەتایی)</div>
-                    <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #9333ea; line-height: 1.2;">
-                        {{ fmt_num($openingBalance) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
+                    <div class="num" style="font-size: 1.35rem; font-weight: 900; color: #9333ea; line-height: 1.2;">
+                        {{ $openingBalance }}
                     </div>
                 </div>
 
@@ -192,8 +192,8 @@
                         </svg>
                     </div>
                     <div style="font-size: 0.82rem; font-weight: 700; color: #166534;">فرۆشتنەکان (لەم ماوەیەدا)</div>
-                    <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #15803d; line-height: 1.2;">
-                        {{ fmt_num($totalOrdersAmount ?? ($totalPurchases - $openingBalance)) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
+                    <div class="num" style="font-size: 1.35rem; font-weight: 900; color: #15803d; line-height: 1.2;">
+                        {{ $totalOrdersAmount }}
                     </div>
                 </div>
 
@@ -207,22 +207,23 @@
                         </svg>
                     </div>
                     <div style="font-size: 0.82rem; font-weight: 700; color: #075985;">پارەی دراو (حەقدی)</div>
-                    <div class="num" style="font-size: 1.45rem; font-weight: 900; color: #0369a1; line-height: 1.2;">
-                        {{ fmt_num($totalPaid) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
+                    <div class="num" style="font-size: 1.35rem; font-weight: 900; color: #0369a1; line-height: 1.2;">
+                        {{ $totalPaid }}
                     </div>
                 </div>
 
                 {{-- ٤. قەرزی ماوە (Red or Green) --}}
-                <div style="background: {{ $remainingDebt > 0 ? '#fff1f2' : '#f0fdf4' }}; border: 1.5px solid {{ $remainingDebt > 0 ? '#fecdd3' : '#a7f3d0' }}; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
-                    <div style="color: {{ $remainingDebt > 0 ? '#e11d48' : '#10b981' }}; margin-bottom: 0.15rem;">
+                @php $hasDebtRem = !empty($remainingBalances) && \App\Support\Money::hasPositive($remainingBalances); @endphp
+                <div style="background: {{ $hasDebtRem ? '#fff1f2' : '#f0fdf4' }}; border: 1.5px solid {{ $hasDebtRem ? '#fecdd3' : '#a7f3d0' }}; border-radius: 1rem; padding: 1.25rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;">
+                    <div style="color: {{ $hasDebtRem ? '#e11d48' : '#10b981' }}; margin-bottom: 0.15rem;">
                         <svg style="width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="1" y="4" width="22" height="16" rx="2"/>
                             <line x1="1" y1="10" x2="23" y2="10"/>
                         </svg>
                     </div>
-                    <div style="font-size: 0.82rem; font-weight: 700; color: {{ $remainingDebt > 0 ? '#9f1239' : '#166534' }};">قەرزی ماوەی کۆتایی</div>
-                    <div class="num" style="font-size: 1.45rem; font-weight: 900; color: {{ $remainingDebt > 0 ? '#dc2626' : '#15803d' }}; line-height: 1.2;">
-                        {{ fmt_num($remainingDebt) }} <span style="font-size: 0.85rem; font-weight: 700;">د.ع</span>
+                    <div style="font-size: 0.82rem; font-weight: 700; color: {{ $hasDebtRem ? '#9f1239' : '#166534' }};">قەرزی ماوەی کۆتایی</div>
+                    <div class="num" style="font-size: 1.35rem; font-weight: 900; color: {{ $hasDebtRem ? '#dc2626' : '#15803d' }}; line-height: 1.2;">
+                        {{ $remainingDebt }}
                     </div>
                 </div>
 
@@ -284,12 +285,12 @@
 
                                     {{-- نرخ (کۆی وەسڵ) --}}
                                     <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 700; color: #334155; font-size: 0.85rem;">
-                                        {{ fmt_num($order->total_iqd) }}
+                                        {{ fmt_money($order->total, $order->currency) }}
                                     </td>
 
                                     {{-- دراو --}}
                                     <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 800; color: #10b981; font-size: 0.85rem;">
-                                        {{ fmt_num($paid) }}
+                                        {{ fmt_money($paid, $order->currency) }}
                                     </td>
 
                                     {{-- دۆخ --}}
@@ -348,7 +349,7 @@
 
                                     {{-- بڕی پارەدان --}}
                                     <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 800; color: #10b981; font-size: 0.85rem;">
-                                        {{ fmt_num($payment->amount_iqd) }}
+                                        {{ fmt_money($payment->amount, $payment->currency) }}
                                     </td>
 
                                     {{-- وەسڵی پەیوەندیدار --}}

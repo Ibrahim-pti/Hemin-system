@@ -54,6 +54,16 @@ class ExternalJob extends Model
         return $this->belongsTo(User::class);
     }
 
+    public static function costIqdExpression(): string
+    {
+        return 'cost';
+    }
+
+    public function getCostIqdAttribute(): float
+    {
+        return (float) $this->cost;
+    }
+
     public function getContractorLabelAttribute(): string
     {
         return $this->supplier?->name ?? $this->contractor_name ?? '—';

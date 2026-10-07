@@ -82,12 +82,12 @@
                      :class="currentCustomerDebt > 0 ? 'bg-rose-50/60 border-rose-200' : 'bg-emerald-50/60 border-emerald-200'">
                     <div>
                         <div class="text-xs font-bold text-slate-500">قەرزی ئێستای ئەم موشتەرییە:</div>
-                        <div class="text-xs text-slate-400 mt-0.5" x-text="selectedCustomer ? 'تەواوی باڵانسی ماوە' : 'موشتەری هەڵبژێرە'"></div>
+                        <div class="text-xs text-slate-400 mt-0.5" x-text="selectedCustomer ? (currentCustomer?.balances_formatted || 'تەواوی باڵانسی ماوە') : 'موشتەری هەڵبژێرە'"></div>
                     </div>
                     <div class="num text-xl font-black"
-                         :class="currentCustomerDebt > 0 ? 'text-rose-600' : 'text-emerald-700'"
-                         x-text="money(currentCustomerDebt)">
-                        0 د.ع
+                         :class="currentCustomerDebt > 0 ? 'text-rose-600' : 'text-emerald-700'">
+                        <span x-text="formatNumber(currentCustomerDebt)">0</span>
+                        <span class="text-xs" x-text="currency === 'USD' ? ' $' : ' د.ع'"></span>
                     </div>
                 </div>
             </div>
@@ -103,7 +103,7 @@
                     <option value="">— تەواوی حسابی موشتەری (گشتی) —</option>
                     <template x-for="ord in filteredOrders" :key="ord.id">
                         <option :value="ord.id"
-                                x-text="'وەسڵی #' + ord.invoice_no + ' — ماوە: ' + (ord.remaining > 0 ? Number(ord.remaining).toLocaleString('en-US') + ' د.ع' : 'تەواوی پارەکەی دراوە') + ' (کۆی گشتی: ' + Number(ord.total).toLocaleString('en-US') + ' ' + (ord.currency === 'USD' ? '$' : 'د.ع') + ')'"
+                                x-text="'وەسڵی #' + ord.invoice_no + ' — ماوە: ' + (ord.remaining > 0 ? Number(ord.remaining).toLocaleString('en-US') + ' ' + (ord.currency === 'USD' ? '$' : 'د.ع') : 'تەواوی پارەکەی دراوە') + ' (کۆی گشتی: ' + Number(ord.total).toLocaleString('en-US') + ' ' + (ord.currency === 'USD' ? '$' : 'د.ع') + ')'"
                                 :selected="selectedOrder == ord.id">
                         </option>
                     </template>
@@ -149,10 +149,10 @@
                         <option value="USD">دۆلاری ئەمریکی ($ USD)</option>
                     </select>
 
-                    {{-- حیساباتی دۆلار ئەگەر USD بێت --}}
-                    <div x-show="currency === 'USD'" x-cloak class="mt-3 bg-amber-50/70 border border-amber-200 rounded-xl p-3 space-y-2">
+                    {{-- زانیاری نرخی دۆلار ئەگەر USD بێت --}}
+                    <div x-show="currency === 'USD'" x-cloak class="mt-3 bg-amber-50/70 border border-amber-200 rounded-xl p-3 space-y-1.5">
                         <div class="flex items-center justify-between text-xs">
-                            <span class="font-bold text-slate-700">نرخی ١٠٠$ دۆلار:</span>
+                            <span class="font-bold text-slate-700">نرخی ١٠٠$ دۆلار (بۆ زانیاری):</span>
                             <div class="flex items-center gap-1.5 bg-white border border-slate-300 rounded-lg px-2 py-1">
                                 <input type="text" name="exchange_rate" x-model="exchangeRate"
                                        class="w-20 text-center font-mono font-bold text-xs outline-none">
@@ -162,10 +162,6 @@
                                     🔄
                                 </button>
                             </div>
-                        </div>
-                        <div class="flex items-center justify-between text-xs pt-1 border-t border-amber-200/60">
-                            <span class="font-bold text-emerald-800">کۆی گشتی بە دینار:</span>
-                            <span class="num font-black text-emerald-700 text-sm" x-text="money(amountIqd)">0 د.ع</span>
                         </div>
                     </div>
                 </div>
@@ -228,7 +224,11 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
         },
 
         get currentCustomerDebt() {
-            return this.currentCustomer ? Math.max(0, parseFloat(this.currentCustomer.balance) || 0) : 0;
+            if (!this.currentCustomer) return 0;
+            if (this.currency === 'USD') {
+                return Math.max(0, parseFloat(this.currentCustomer.balance_usd) || 0);
+            }
+            return Math.max(0, parseFloat(this.currentCustomer.balance_iqd) || 0);
         },
 
         get selectedOrderObj() {
@@ -240,20 +240,6 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
             return this.orders.filter(o => String(o.customer_id) === String(this.selectedCustomer));
         },
 
-        get cleanRate() {
-            const r = parseFloat(this.exchangeRate.toString().replace(/[^0-9.]/g, ''));
-            return isNaN(r) || r <= 0 ? 150000 : r;
-        },
-
-        get amountIqd() {
-            const amt = parseFloat(this.amount);
-            if (isNaN(amt) || amt <= 0) return 0;
-            if (this.currency === 'USD') {
-                return amt * (this.cleanRate / 100);
-            }
-            return amt;
-        },
-
         get currentTargetDebt() {
             if (this.selectedOrderObj) {
                 const rem = parseFloat(this.selectedOrderObj.remaining);
@@ -261,10 +247,6 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
                     return rem;
                 }
                 return parseFloat(this.selectedOrderObj.total) || 0;
-            }
-            if (this.currency === 'USD') {
-                const ratePer1 = this.cleanRate > 0 ? (this.cleanRate / 100) : 1500;
-                return Math.round(this.currentCustomerDebt / ratePer1);
             }
             return this.currentCustomerDebt;
         },
@@ -313,9 +295,14 @@ function customerPaymentForm(customers, orders, initialCustomer, initialOrder, i
                 });
         },
 
+        formatNumber(val) {
+            const n = parseFloat(val) || 0;
+            return n.toLocaleString('en-US');
+        },
+
         money(val) {
             const n = parseFloat(val) || 0;
-            return n.toLocaleString('en-US') + ' د.ع';
+            return n.toLocaleString('en-US') + (this.currency === 'USD' ? ' $' : ' د.ع');
         }
     };
 }

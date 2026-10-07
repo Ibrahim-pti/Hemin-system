@@ -47,9 +47,9 @@
                         </td>
                         <td class="num whitespace-nowrap">{{ fmt_date($order->order_date) }}</td>
                         <td>{{ $order->customer?->name }}</td>
-                        <td class="num">{{ fmt_money($order->total_iqd) }}</td>
+                        <td class="num">{{ fmt_money($order->total, $order->currency) }}</td>
                         <td class="num {{ $order->remaining() > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
-                            {{ fmt_money($order->remaining()) }}
+                            {{ fmt_money($order->remaining(), $order->currency) }}
                         </td>
                         <td>{{ $order->status_label }}</td>
                     </tr>

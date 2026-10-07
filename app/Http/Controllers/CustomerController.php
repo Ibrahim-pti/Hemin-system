@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Order;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -27,14 +29,14 @@ class CustomerController extends Controller
         $allCustomers = Customer::orderBy('name')->get(['id', 'name', 'phone']);
         $totalCustomers = Customer::count();
 
-        $totalSalesIqd = (float) \App\Models\Order::whereNotIn('status', ['draft', 'cancelled'])->sum(\App\Models\Order::totalIqdExpression());
-        $totalSalesUsd = (float) \App\Models\Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->sum('total');
-        $totalSalesAllInUsd = $currentRate > 0 ? round($totalSalesIqd / $currentRate, 2) : $totalSalesUsd;
+        $totalSalesIqd = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'IQD')->sum('total');
+        $totalSalesUsd = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->sum('total');
+        $totalSalesAllInUsd = $totalSalesUsd;
 
-        $totalDebtIqd = (float) Customer::all()->sum(fn ($c) => max(0, $c->balance()));
-        $totalDebtUsd = $currentRate > 0 ? round($totalDebtIqd / $currentRate, 2) : 0;
+        $totalDebtIqd = (float) Customer::all()->sum(fn ($c) => max(0, $c->balances()['IQD'] ?? 0));
+        $totalDebtUsd = (float) Customer::all()->sum(fn ($c) => max(0, $c->balances()['USD'] ?? 0));
 
-        $debtorCount = Customer::all()->filter(fn ($c) => $c->balance() > 0)->count();
+        $debtorCount = Customer::all()->filter(fn ($c) => $c->hasDebt())->count();
 
         $totalSales = $totalSalesIqd;
         $totalDebt = $totalDebtIqd;
@@ -181,34 +183,15 @@ class CustomerController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        // باڵانسی سەرەتایی پێش بەرواری دیاریکراو
-        $oldDebtsBefore = (float) $customer->oldDebts()
-            ->whereDate('date', '<', $from)
-            ->get()
-            ->sum(fn ($d) => $d->remainingIqd());
+        $openingBalances = $customer->openingBalances();
+        $ordersTotals = Money::sumBy($orders, 'total');
+        $oldDebtsTotals = Money::sumBy($oldDebts, fn ($d) => $d->amount);
+        $totalPurchases = Money::add($openingBalances, $ordersTotals, $oldDebtsTotals);
 
-        $baseOpening = $customer->opening_currency === 'USD'
-            ? (float) $customer->opening_balance * (\App\Models\ExchangeRate::current() ?: 1500)
-            : (float) $customer->opening_balance;
-
-        $openingBalance = $baseOpening
-            + $oldDebtsBefore
-            + (float) $customer->orders()
-                ->whereNotIn('status', ['draft', 'cancelled'])
-                ->whereDate('order_date', '<', $from)
-                ->sum(\App\Models\Order::totalIqdExpression())
-            - (float) $customer->payments()
-                ->where('direction', 'in')
-                ->whereDate('paid_at', '<', $from)
-                ->sum('amount_iqd');
-
-        $totalOrdersAmount = (float) $orders->sum(fn ($o) => $o->total_iqd);
-        $totalOldDebtsInPeriod = (float) $oldDebts->sum(fn ($d) => $d->totalIqd());
-        $totalPurchases = $openingBalance + $totalOrdersAmount + $totalOldDebtsInPeriod;
-
-        $totalPaidAmount = (float) $payments->sum('amount_iqd') + (float) $oldDebts->sum(fn ($d) => $d->paidIqd());
-        $debtPayments = $totalPaidAmount;
-        $remainingDebt = max(0, $totalPurchases - $totalPaidAmount);
+        $paymentsTotals = Money::sumBy($payments, 'amount');
+        $oldDebtsPaidTotals = Money::sumBy($oldDebts, fn ($d) => $d->paid());
+        $totalPaidAmount = Money::add($paymentsTotals, $oldDebtsPaidTotals);
+        $remainingDebt = Money::sub($totalPurchases, $totalPaidAmount);
 
         return view('customers.statement', [
             'customer' => $customer,
@@ -216,12 +199,13 @@ class CustomerController extends Controller
             'orders' => $orders,
             'payments' => $payments,
             'oldDebts' => $oldDebts,
-            'openingBalance' => $openingBalance,
-            'totalOrdersAmount' => $totalOrdersAmount,
-            'totalPurchases' => $totalPurchases,
-            'totalPaid' => $totalPaidAmount,
-            'debtPayments' => $debtPayments,
-            'remainingDebt' => $remainingDebt,
+            'openingBalance' => fmt_dual($openingBalances),
+            'totalOrdersAmount' => fmt_dual($ordersTotals),
+            'totalPurchases' => fmt_dual($totalPurchases),
+            'totalPaid' => fmt_dual($totalPaidAmount),
+            'debtPayments' => fmt_dual($totalPaidAmount),
+            'remainingDebt' => fmt_dual($remainingDebt),
+            'remainingBalances' => $remainingDebt,
             'from' => $from,
             'to' => $to,
         ]);

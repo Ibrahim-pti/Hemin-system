@@ -232,8 +232,8 @@
         {{-- کارتی ٩: کۆی قەرزەکان --}}
         <div style="grid-column: span 2; background: #ffffff; border-radius: 1rem; padding: 1.15rem 1.25rem; border: 1px solid #fecdd3; border-right: 4px solid #f43f5e; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
             <div>
-                <div class="num" style="font-size: 1.65rem; font-weight: 800; color: #dc2626; line-height: 1.2;">
-                    {{ fmt_num($receivables ?? 0) }}
+                <div class="num" style="font-size: 1.45rem; font-weight: 800; color: #dc2626; line-height: 1.2;">
+                    {{ is_array($receivables ?? null) ? fmt_dual($receivables) : fmt_num($receivables ?? 0) }}
                 </div>
                 <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">
                     کۆی قەرزەکان (کڕیاران)
@@ -375,8 +375,8 @@
                                     <td style="padding: 0.75rem 1rem; font-weight: 700; color: #1e293b;">
                                         {{ $order->customer?->name ?? '—' }}
                                     </td>
-                                    <td class="num" style="padding: 0.75rem 1rem; text-align: center; font-weight: 700; color: #334155;">
-                                        {{ fmt_num($order->total_iqd) }}
+                                    <td class="num font-mono" style="padding: 0.75rem 1rem; text-align: center; font-weight: 700; color: #334155;">
+                                        {{ fmt_money($order->total, $order->currency) }}
                                     </td>
                                     <td style="padding: 0.75rem 1rem; text-align: center;">
                                         <span style="background: #f1f5f9; color: #475569; padding: 0.2rem 0.6rem; border-radius: 0.4rem; font-size: 0.72rem; font-weight: 700;">
@@ -420,8 +420,8 @@
                                                 {{ $payment->voucher_no }}
                                             </a>
                                         </td>
-                                        <td class="num" style="padding: 0.75rem 1rem; text-align: center; font-weight: 800; color: #10b981;">
-                                            {{ fmt_num($payment->amount_iqd) }}
+                                        <td class="num font-mono" style="padding: 0.75rem 1rem; text-align: center; font-weight: 800; color: #10b981;">
+                                            {{ fmt_money($payment->amount, $payment->currency) }}
                                         </td>
                                         <td style="padding: 0.75rem 1rem; text-align: center;">
                                             <span style="background: {{ $payment->direction === 'in' ? '#dcfce7' : '#fee2e2' }}; color: {{ $payment->direction === 'in' ? '#16a34a' : '#dc2626' }}; padding: 0.2rem 0.6rem; border-radius: 0.4rem; font-size: 0.72rem; font-weight: 700;">

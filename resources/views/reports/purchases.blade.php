@@ -47,9 +47,9 @@
                         </td>
                         <td class="num whitespace-nowrap">{{ fmt_date($purchase->purchase_date) }}</td>
                         <td>{{ $purchase->supplier?->name }}</td>
-                        <td class="num">{{ fmt_money($purchase->total_iqd) }}</td>
+                        <td class="num">{{ fmt_money($purchase->total, $purchase->currency) }}</td>
                         <td class="num {{ $purchase->remaining() > 0 ? 'text-[--color-danger]' : 'text-[--color-ok]' }}">
-                            {{ fmt_money($purchase->remaining()) }}
+                            {{ fmt_money($purchase->remaining(), $purchase->currency) }}
                         </td>
                     </tr>
                 @endforeach

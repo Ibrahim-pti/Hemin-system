@@ -45,7 +45,7 @@ class CashTransactionDeleteTest extends TestCase
 
         $today = now()->toDateString();
         $response = $this->actingAs($this->user)->get(route('cash.index', ['from' => $today, 'to' => $today]));
-        $transactionsCount = CashTransaction::whereBetween('occurred_at', [$today, $today])->count();
+        $transactionsCount = CashTransaction::whereDate('occurred_at', $today)->count();
         $this->assertEquals(1, $transactionsCount);
         $response->assertSee('showDeleteModal');
         $response->assertSee(route('cash.transaction.destroy', $transaction));

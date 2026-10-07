@@ -243,20 +243,8 @@
                         </td>
                     </tr>
 
-                    {{-- ئەگەر بە دۆلار بێت، دێڕی نرخی دۆلار --}}
-                    @if ($payment->currency === 'USD')
-                        <tr style="height: 28px; background-color: #fffbeb;">
-                            <td class="num text-center font-bold text-amber-900 text-xs">
-                                {{ fmt_money($payment->amount_iqd) }}
-                            </td>
-                            <td colspan="3" style="padding: 2px 8px; font-size: 10.5px; font-weight: 700; color: #78350f;">
-                                بە نرخی ١٠٠$ = {{ fmt_num($payment->exchange_rate) }} د.ع (کۆی گشتی بە دینار)
-                            </td>
-                        </tr>
-                    @endif
-
                     {{-- دێڕی بەتاڵ بۆ شێوازی دەفتەر --}}
-                    @for ($i = 0; $i < ($payment->currency === 'USD' ? 6 : 7); $i++)
+                    @for ($i = 0; $i < 7; $i++)
                         <tr style="height: 24px;">
                             <td>&nbsp;</td>
                             <td></td>
@@ -278,15 +266,26 @@
                                         </span>
                                     </div>
                                     <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #047857; transform: translateY(2px);">
-                                        {{ $payment->currency === 'USD' ? 'دۆلار' : 'دینار' }}
+                                        {{ $payment->currency === 'USD' ? 'دۆلار ($)' : 'دینار (د.ع)' }}
                                     </span>
                                 </div>
 
-                                {{-- باڵانسی ماوەی کڕیار دوای ئەم حەقدییە --}}
-                                @if ($balance !== null)
+                                {{-- باڵانسی ماوەی دوای ئەم حەقدییە --}}
+                                @if (isset($balances) && is_array($balances))
+                                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; line-height: 1;">
+                                        <span style="font-weight: 900; shrink: 0; color: {{ ($balance > 0) ? '#b91c1c' : '#047857' }}; transform: translateY(2px);">
+                                            باڵانسی ماوە دوای ئەم حەقدییە
+                                        </span>
+                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center; line-height: 1;">
+                                            <span class="num" style="font-weight: 900; font-size: 13px; color: {{ ($balance > 0) ? '#b91c1c' : '#047857' }}; display: inline-block; transform: translateY(2px);">
+                                                {{ fmt_dual($balances) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                @elseif ($balance !== null)
                                     <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; line-height: 1;">
                                         <span style="font-weight: 900; shrink: 0; color: {{ $balance > 0 ? '#b91c1c' : '#047857' }}; transform: translateY(2px);">
-                                            باڵانسی ماوەی کڕیار دوای ئەم حەقدییە
+                                            باڵانسی ماوە دوای ئەم حەقدییە
                                         </span>
                                         <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center; line-height: 1;">
                                             <span class="num" style="font-weight: 900; font-size: 13px; color: {{ $balance > 0 ? '#b91c1c' : '#047857' }}; display: inline-block; transform: translateY(2px);">
@@ -294,7 +293,7 @@
                                             </span>
                                         </div>
                                         <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #0f172a; transform: translateY(2px);">
-                                            دینار {{ $balance > 0 ? '(قەرزە)' : '(پاکتاو)' }}
+                                            {{ $payment->currency === 'USD' ? '$' : 'د.ع' }} {{ $balance > 0 ? '(قەرزە)' : '(پاکتاو)' }}
                                         </span>
                                     </div>
                                 @endif

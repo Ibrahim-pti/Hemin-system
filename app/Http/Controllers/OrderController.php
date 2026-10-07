@@ -57,16 +57,16 @@ class OrderController extends Controller
 
         $currentRate = ExchangeRate::current() ?: 1500;
 
-        $totalSalesIqd = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->sum(Order::totalIqdExpression());
+        $totalSalesIqd = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'IQD')->sum('total');
         $totalSalesUsd = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->sum('total');
-        $totalSalesAllInUsd = $currentRate > 0 ? round($totalSalesIqd / $currentRate, 2) : $totalSalesUsd;
+        $totalSalesAllInUsd = $totalSalesUsd;
 
-        $totalReceivedIqd = (float) Payment::where('direction', 'in')->sum('amount_iqd');
+        $totalReceivedIqd = (float) Payment::where('direction', 'in')->where('currency', 'IQD')->sum('amount');
         $totalReceivedUsd = (float) Payment::where('direction', 'in')->where('currency', 'USD')->sum('amount');
-        $totalReceivedAllInUsd = $currentRate > 0 ? round($totalReceivedIqd / $currentRate, 2) : $totalReceivedUsd;
+        $totalReceivedAllInUsd = $totalReceivedUsd;
 
-        $totalDebtIqd = (float) $allCustomers->sum(fn ($c) => max(0, $c->balance()));
-        $totalDebtUsd = $currentRate > 0 ? round($totalDebtIqd / $currentRate, 2) : 0;
+        $totalDebtIqd = (float) $allCustomers->sum(fn ($c) => max(0, $c->balances()['IQD'] ?? 0));
+        $totalDebtUsd = (float) $allCustomers->sum(fn ($c) => max(0, $c->balances()['USD'] ?? 0));
 
         $totalSales = $totalSalesIqd;
         $totalReceived = $totalReceivedIqd;

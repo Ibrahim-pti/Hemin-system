@@ -98,8 +98,18 @@
                 <div class="text-xl sm:text-2xl font-black text-emerald-700 font-mono">{{ fmt_money($totalSalesIqd) }}</div>
                 <div class="text-2xs text-slate-400 font-medium mt-0.5">بە دینار</div>
             @else
-                <div class="text-xl sm:text-2xl font-black text-emerald-700 font-mono">${{ number_format($totalSalesAllInUsd, 2) }}</div>
-                <div class="text-2xs text-slate-400 font-mono mt-0.5">({{ fmt_money($totalSalesIqd) }})</div>
+                <div class="text-xl sm:text-2xl font-black text-emerald-700 font-mono">
+                    @if ($totalSalesUsd > 0)
+                        <span>${{ number_format($totalSalesUsd, 2) }}</span>
+                    @endif
+                    @if ($totalSalesUsd > 0 && $totalSalesIqd > 0)
+                        <span class="text-xs font-bold text-slate-400 mx-1">·</span>
+                    @endif
+                    @if ($totalSalesIqd > 0 || $totalSalesUsd == 0)
+                        <span>{{ fmt_money($totalSalesIqd) }}</span>
+                    @endif
+                </div>
+                <div class="text-2xs text-slate-400 font-mono mt-0.5">دۆلار و دینار بە جیا</div>
             @endif
         </div>
 
@@ -116,8 +126,18 @@
                 <div class="text-xl sm:text-2xl font-black text-rose-600 font-mono">{{ fmt_money($totalDebtIqd) }}</div>
                 <div class="text-2xs text-slate-400 font-medium mt-0.5">بە دینار</div>
             @else
-                <div class="text-xl sm:text-2xl font-black text-rose-600 font-mono">${{ number_format($totalDebtUsd, 2) }}</div>
-                <div class="text-2xs text-slate-400 font-mono mt-0.5">({{ fmt_money($totalDebtIqd) }})</div>
+                <div class="text-xl sm:text-2xl font-black text-rose-600 font-mono">
+                    @if ($totalDebtUsd > 0)
+                        <span>${{ number_format($totalDebtUsd, 2) }}</span>
+                    @endif
+                    @if ($totalDebtUsd > 0 && $totalDebtIqd > 0)
+                        <span class="text-xs font-bold text-slate-400 mx-1">·</span>
+                    @endif
+                    @if ($totalDebtIqd > 0 || $totalDebtUsd == 0)
+                        <span>{{ fmt_money($totalDebtIqd) }}</span>
+                    @endif
+                </div>
+                <div class="text-2xs text-slate-400 font-mono mt-0.5">دۆلار و دینار بە جیا</div>
             @endif
         </div>
 
@@ -212,46 +232,60 @@
                             {{-- باڵانس --}}
                             <td class="p-3.5 text-left">
                                 @php
-                                    $balUsd = $currentRate > 0 ? round(abs($bal) / $currentRate, 2) : 0;
+                                    $bals = $customer->balances();
+                                    $bIqd = (float) ($bals['IQD'] ?? 0);
+                                    $bUsd = (float) ($bals['USD'] ?? 0);
                                 @endphp
-                                @if($bal > 0)
-                                    <div class="inline-flex flex-col items-start">
-                                        @if ($currency === 'USD')
-                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
-                                                ${{ number_format($balUsd, 2) }}
-                                            </span>
-                                        @elseif ($currency === 'IQD')
-                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
-                                                {{ fmt_money($bal) }}
-                                            </span>
-                                        @else
-                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
-                                                ${{ number_format($balUsd, 2) }}
-                                            </span>
-                                            <span class="text-[10px] text-slate-400 font-mono mt-0.5">({{ fmt_money($bal) }})</span>
-                                        @endif
-                                    </div>
-                                @elseif($bal < 0)
-                                    <div class="inline-flex flex-col items-start">
-                                        @if ($currency === 'USD')
-                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                ${{ number_format($balUsd, 2) }} (زیادە)
-                                            </span>
-                                        @elseif ($currency === 'IQD')
-                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                {{ fmt_money(abs($bal)) }} (زیادە)
-                                            </span>
-                                        @else
-                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                ${{ number_format($balUsd, 2) }}
-                                            </span>
-                                            <span class="text-[10px] text-slate-400 font-mono mt-0.5">({{ fmt_money(abs($bal)) }} زیادە)</span>
-                                        @endif
-                                    </div>
+                                @if ($currency === 'USD')
+                                    @if ($bUsd > 0.005)
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                            ${{ number_format($bUsd, 2) }}
+                                        </span>
+                                    @elseif ($bUsd < -0.005)
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            ${{ number_format(abs($bUsd), 2) }} (زیادە)
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-bold text-xs text-slate-400 bg-slate-100">0</span>
+                                    @endif
+                                @elseif ($currency === 'IQD')
+                                    @if ($bIqd > 0.5)
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                            {{ fmt_money($bIqd) }}
+                                        </span>
+                                    @elseif ($bIqd < -0.5)
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            {{ fmt_money(abs($bIqd)) }} (زیادە)
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-bold text-xs text-slate-400 bg-slate-100">0</span>
+                                    @endif
                                 @else
-                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-bold text-xs text-slate-400 bg-slate-100">
-                                        0
-                                    </span>
+                                    <div class="inline-flex flex-col items-start gap-1">
+                                        @if ($bUsd > 0.005)
+                                            <span class="px-2 py-0.5 rounded font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                                ${{ number_format($bUsd, 2) }}
+                                            </span>
+                                        @elseif ($bUsd < -0.005)
+                                            <span class="px-2 py-0.5 rounded font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                ${{ number_format(abs($bUsd), 2) }} (زیادە)
+                                            </span>
+                                        @endif
+
+                                        @if ($bIqd > 0.5)
+                                            <span class="px-2 py-0.5 rounded font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                                                {{ fmt_money($bIqd) }}
+                                            </span>
+                                        @elseif ($bIqd < -0.5)
+                                            <span class="px-2 py-0.5 rounded font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                {{ fmt_money(abs($bIqd)) }} (زیادە)
+                                            </span>
+                                        @endif
+
+                                        @if (abs($bUsd) <= 0.005 && abs($bIqd) <= 0.5)
+                                            <span class="px-2.5 py-0.5 rounded-md font-mono font-bold text-xs text-slate-400 bg-slate-100">0</span>
+                                        @endif
+                                    </div>
                                 @endif
                             </td>
 

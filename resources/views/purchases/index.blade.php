@@ -720,11 +720,6 @@
                                     <span class="text-emerald-700">
                                         {{ fmt_money($sp->amount, $sp->currency) }}
                                     </span>
-                                    @if ($sp->currency === 'USD' && $sp->exchange_rate > 0)
-                                        <div class="text-[10px] text-slate-400 font-mono font-normal mt-0.5">
-                                            ≈ {{ fmt_money($sp->amount_iqd) }}
-                                        </div>
-                                    @endif
                                 </td>
 
                                 {{-- تێبینی --}}

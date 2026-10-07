@@ -146,7 +146,7 @@ class PurchaseQuickTotalAndPaymentTest extends TestCase
         $this->assertEquals(1200, (float) $purchase->total);
         $this->assertEquals(1200, (float) $purchase->paid_amount);
         $this->assertEquals(0, (float) $purchase->remaining());
-        $this->assertEquals(1800000, (float) $purchase->total_iqd);
+        $this->assertEquals(1200, (float) $purchase->total_iqd);
 
         // Payment check
         $payment = $purchase->payments()->first();

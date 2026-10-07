@@ -4,40 +4,28 @@
 @section('content')
 @php
     $currentRate = \App\Models\ExchangeRate::current() ?: 1500;
-    $purchaseRemIqd = (float)$purchase->remaining();
-    $purchaseRemUsd = $purchase->currency === 'IQD'
-        ? ($currentRate > 0 ? round($purchaseRemIqd / $currentRate, 2) : 0)
-        : (float)$purchase->remaining();
+    $purchaseRem = (float) $purchase->remaining();
 @endphp
 <div class="space-y-4 sm:space-y-6"
      x-data="{
          payModal: false,
-         payCurrency: '{{ $purchase->currency }}',
-         payRate: {{ $currentRate }},
          purchaseCurrency: '{{ $purchase->currency }}',
-         remainingIqd: {{ $purchaseRemIqd }},
-         remainingUsd: {{ $purchaseRemUsd }},
+         remaining: {{ $purchaseRem }},
          payForm: {
              amount: '',
              currency: '{{ $purchase->currency }}',
-             exchange_rate: '{{ $currentRate }}',
+             exchange_rate: '{{ $currentRate * 100 }}',
              cash_box_id: '{{ $cashBoxes->first()?->id ?? '' }}',
              paid_at: '{{ now()->toDateString() }}',
              note: 'پارەدانی قەرزی پسوولەی #{{ $purchase->invoice_no }}'
          },
-         get remainingInPayCurrency() {
-             if (this.payForm.currency === 'IQD') return this.remainingIqd;
-             return this.remainingUsd;
-         },
          get afterPayment() {
              let paid = parseFloat(String(this.payForm.amount).replace(/,/g, '')) || 0;
-             let paidIqd = this.payForm.currency === 'IQD' ? paid : paid * parseFloat(this.payForm.exchange_rate || this.payRate);
-             let remAfter = this.remainingIqd - paidIqd;
+             let remAfter = this.remaining - paid;
              return remAfter < 0 ? 0 : remAfter;
          },
          setFullAmount() {
-             let rem = this.remainingInPayCurrency;
-             this.payForm.amount = rem.toLocaleString('en-US');
+             this.payForm.amount = this.remaining.toLocaleString('en-US');
          },
          formatAmount(e) {
              let clean = e.target.value.replace(/[^0-9.]/g, '');
@@ -461,9 +449,9 @@
                     <span class="text-xs text-slate-500 font-medium">📊 باقی دوای ئەم پارەدانە:</span>
                     <div class="flex items-center gap-2">
                         <span class="font-mono font-black text-sm"
-                              :class="afterPayment <= 0.5 ? 'text-emerald-600' : 'text-amber-700'"
-                              x-text="afterPayment.toLocaleString('en-US', {maximumFractionDigits: 0}) + ' د.ع'"></span>
-                        <span x-show="afterPayment <= 0.5" class="text-[10px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">✔ پاکتاو</span>
+                              :class="afterPayment <= 0.01 ? 'text-emerald-600' : 'text-amber-700'"
+                              x-text="afterPayment.toLocaleString('en-US', {maximumFractionDigits: 2}) + ' ' + (purchaseCurrency === 'USD' ? '$' : 'د.ع')"></span>
+                        <span x-show="afterPayment <= 0.01" class="text-[10px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">✔ پاکتاو</span>
                     </div>
                 </div>
             </div>
@@ -472,28 +460,14 @@
             <form method="POST" action="{{ route('purchases.payments.store', $purchase) }}" class="p-4 sm:p-5 space-y-4">
                 @csrf
 
-                {{-- هەڵبژاردنی دراو --}}
+                {{-- دراوی پارەدانەوە --}}
                 <div>
-                    <label class="label font-bold mb-2 block">دراوی پارەدانەوە <span class="text-rose-500">*</span></label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button"
-                                @click="payForm.currency = 'IQD'; payForm.amount = ''"
-                                :class="payForm.currency === 'IQD'
-                                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-md scale-[1.02]'
-                                    : 'bg-white text-slate-700 border-slate-200 hover:border-emerald-400 hover:bg-emerald-50'"
-                                class="py-2.5 rounded-xl text-sm font-black border-2 transition-all cursor-pointer flex items-center justify-center gap-1.5">
-                            🇮🇶 دینار (IQD)
-                        </button>
-                        <button type="button"
-                                @click="payForm.currency = 'USD'; payForm.amount = ''"
-                                :class="payForm.currency === 'USD'
-                                    ? 'bg-amber-500 text-white border-amber-500 shadow-md scale-[1.02]'
-                                    : 'bg-white text-slate-700 border-slate-200 hover:border-amber-400 hover:bg-amber-50'"
-                                class="py-2.5 rounded-xl text-sm font-black border-2 transition-all cursor-pointer flex items-center justify-center gap-1.5">
-                            🇺🇸 دۆلار (USD)
-                        </button>
+                    <label class="label font-bold mb-2 block">دراوی پارەدانەوە</label>
+                    <div class="py-2.5 px-4 rounded-xl text-sm font-black border-2 border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <span>{{ $purchase->currency === 'USD' ? '🇺🇸 دۆلاری ئەمریکی ($ USD)' : '🇮🇶 دیناری عێراقی (د.ع IQD)' }}</span>
+                        <span class="text-xs text-slate-500 font-bold">(دراوی فەرمیی پسوولەکە)</span>
                     </div>
-                    <input type="hidden" name="currency" x-model="payForm.currency">
+                    <input type="hidden" name="currency" value="{{ $purchase->currency }}">
                 </div>
 
                 {{-- بڕی پارەی دراو --}}
@@ -505,8 +479,8 @@
                         <button type="button" @click="setFullAmount()"
                                 class="text-xs text-teal-700 hover:text-teal-800 font-black bg-teal-50 hover:bg-teal-100 px-2 py-0.5 rounded-lg border border-teal-200 transition-all cursor-pointer flex items-center gap-1">
                             ⚡ هەمووی
-                            (<span class="font-mono" x-text="remainingInPayCurrency.toLocaleString('en-US', {maximumFractionDigits: 2})"></span>
-                            <span x-text="payForm.currency"></span>)
+                            (<span class="font-mono" x-text="remaining.toLocaleString('en-US', {maximumFractionDigits: 2})"></span>
+                            <span>{{ $purchase->currency === 'USD' ? '$' : 'د.ع' }}</span>)
                         </button>
                     </div>
                     <div class="relative">
@@ -526,27 +500,23 @@
                     </div>
                 </div>
 
-                {{-- نرخی دۆلار (تەنها کاتێک USD هەڵبژێردرێت) --}}
-                <div x-show="payForm.currency === 'USD'" x-cloak
-                     class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
-                    <label class="text-xs font-black text-amber-800 block" for="show_modal_pay_rate">
-                        💱 نرخی ١ دۆلار بە دینار <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <input id="show_modal_pay_rate"
-                               name="exchange_rate"
-                               type="number"
-                               step="1"
-                               min="1"
-                               x-model="payForm.exchange_rate"
-                               class="field num font-bold !py-2 pl-14 w-full bg-white"
-                               placeholder="{{ number_format($currentRate) }}">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-amber-600 pointer-events-none">د.ع</span>
+                {{-- نرخی دۆلار (تەنها کاتێک USD بێت و بۆ زانیاری) --}}
+                @if ($purchase->currency === 'USD')
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+                        <label class="text-xs font-black text-amber-800 block" for="show_modal_pay_rate">
+                            نرخی ١٠٠$ دۆلار (بۆ زانیاری)
+                        </label>
+                        <div class="relative">
+                            <input id="show_modal_pay_rate"
+                                   name="exchange_rate"
+                                   type="text"
+                                   x-model="payForm.exchange_rate"
+                                   class="field num font-bold !py-2 pl-14 w-full bg-white"
+                                   placeholder="{{ number_format($currentRate * 100) }}">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-amber-600 pointer-events-none">د.ع</span>
+                        </div>
                     </div>
-                    <p class="text-[11px] text-amber-700 font-medium">
-                        نرخی سیستەم: <span class="font-mono font-black">{{ number_format($currentRate) }}</span> د.ع
-                    </p>
-                </div>
+                @endif
 
                 {{-- هەڵبژاردنی قاسە --}}
                 <div>

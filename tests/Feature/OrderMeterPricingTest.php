@@ -138,7 +138,7 @@ class OrderMeterPricingTest extends TestCase
         $this->assertEquals(500, (float) $order->total);
         $this->assertEquals(200, (float) $order->paidTotal());
         $this->assertEquals(300, (float) $order->remaining());
-        $this->assertEquals(750000, (float) $order->total_iqd); // 500 * 1500
+        $this->assertEquals(500, (float) $order->total_iqd); // Total remains 500 without currency conversion
 
         // Index page check
         $indexRes = $this->get('/orders');

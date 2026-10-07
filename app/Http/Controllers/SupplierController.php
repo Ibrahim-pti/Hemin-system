@@ -32,16 +32,16 @@ class SupplierController extends Controller
             ->withQueryString();
 
         $allSuppliers = Supplier::all();
-        $totalPurchasesIqd = (float) Purchase::whereNotIn('status', ['draft', 'cancelled'])->sum(Purchase::totalIqdExpression());
+        $totalPurchasesIqd = (float) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'IQD')->sum('total');
         $totalPurchasesUsd = (float) Purchase::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'USD')->sum('total');
-        $totalPurchasesAllInUsd = $currentRate > 0 ? round($totalPurchasesIqd / $currentRate, 2) : $totalPurchasesUsd;
+        $totalPurchasesAllInUsd = $totalPurchasesUsd;
 
-        $totalPaidIqd = (float) Payment::where('direction', 'out')->sum('amount_iqd');
+        $totalPaidIqd = (float) Payment::where('direction', 'out')->where('currency', 'IQD')->sum('amount');
         $totalPaidUsd = (float) Payment::where('direction', 'out')->where('currency', 'USD')->sum('amount');
-        $totalPaidAllInUsd = $currentRate > 0 ? round($totalPaidIqd / $currentRate, 2) : $totalPaidUsd;
+        $totalPaidAllInUsd = $totalPaidUsd;
 
-        $totalDebtIqd = (float) $allSuppliers->sum(fn($s) => max(0, $s->balance()));
-        $totalDebtUsd = $currentRate > 0 ? round($totalDebtIqd / $currentRate, 2) : 0;
+        $totalDebtIqd = (float) $allSuppliers->sum(fn ($s) => max(0, $s->balances()['IQD'] ?? 0));
+        $totalDebtUsd = (float) $allSuppliers->sum(fn ($s) => max(0, $s->balances()['USD'] ?? 0));
 
         $totalPurchases = $totalPurchasesIqd;
         $totalPaid = $totalPaidIqd;
@@ -246,10 +246,10 @@ class SupplierController extends Controller
                 'type' => 'opening',
                 'title' => 'باڵانسی سەرەتایی',
                 'details' => 'باڵانسی تۆمارکراوی سەرەتا',
-                'total' => (float) $supplier->openingIqd(),
+                'total' => (float) $supplier->opening_balance,
                 'paid' => 0,
-                'remaining' => (float) $supplier->openingIqd(),
-                'amount_due' => (float) $supplier->openingIqd(),
+                'remaining' => (float) $supplier->opening_balance,
+                'amount_due' => (float) $supplier->opening_balance,
                 'amount_paid' => 0,
                 'status' => 'opening',
                 'currency' => $supplier->opening_currency,
@@ -260,15 +260,15 @@ class SupplierController extends Controller
 
         foreach ($purchases as $p) {
             $itemNames = $p->items->map(fn($i) => ($i->item?->name ?? 'کاڵا') . ' (' . fmt_qty($i->qty) . ' ' . ($i->item?->unit?->name ?? '') . ')')->join('، ');
-            $paid = (float) $p->paidTotalIqd();
-            $remaining = (float) $p->remainingIqd();
+            $paid = (float) $p->paidTotal();
+            $remaining = (float) $p->remaining();
 
             $entries->push((object)[
                 'date' => $p->purchase_date?->toDateString(),
                 'type' => 'purchase',
                 'title' => 'پسوولەی کڕین #' . $p->invoice_no,
                 'details' => $itemNames ?: ($p->note ?: 'مەوادی هەمەجۆری کارگە'),
-                'total' => (float) $p->total_iqd,
+                'total' => (float) $p->total,
                 'paid' => $paid,
                 'remaining' => $remaining,
                 'amount_due' => $remaining,
@@ -281,17 +281,18 @@ class SupplierController extends Controller
         }
 
         foreach ($jobs as $j) {
+            $rem = (float) $j->remaining();
             $entries->push((object)[
                 'date' => $j->created_at?->toDateString(),
                 'type' => 'job',
                 'title' => 'ئیشی دەرەکی ' . $j->job_no,
                 'details' => $j->title,
-                'total' => (float) $j->cost_iqd,
-                'paid' => 0,
-                'remaining' => (float) $j->cost_iqd,
-                'amount_due' => (float) $j->cost_iqd,
+                'total' => (float) $j->cost,
+                'paid' => (float) $j->paid_amount,
+                'remaining' => $rem,
+                'amount_due' => $rem,
                 'amount_paid' => 0,
-                'status' => 'debt',
+                'status' => $rem <= 0.01 ? 'cash' : 'debt',
                 'currency' => $j->currency,
                 'image' => null,
                 'reference' => null,
@@ -311,10 +312,10 @@ class SupplierController extends Controller
                 'title' => 'پارەدانی قەرز ' . $pay->voucher_no,
                 'details' => $pay->note ?: 'پارەدانی قەرز بە شێوازی نەقد',
                 'total' => 0,
-                'paid' => (float) $pay->amount_iqd,
+                'paid' => (float) $pay->amount,
                 'remaining' => 0,
                 'amount_due' => 0,
-                'amount_paid' => (float) $pay->amount_iqd,
+                'amount_paid' => (float) $pay->amount,
                 'status' => 'payment',
                 'currency' => $pay->currency,
                 'image' => null,
