@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Support\Money;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -44,39 +45,50 @@ class Customer extends Model
         return $this->hasMany(CustomerOldDebt::class)->latest('date')->latest('id');
     }
 
-    /** باڵانسی سەرەتایی بە دینار (لەگەڵ حیساباتی پێشتر). */
-    public function openingIqd(): float
+    /**
+     * باڵانسی سەرەتایی (لەگەڵ حیساباتی پێشتر) — بە جیا بۆ هەر دراوێک.
+     *
+     * @return array{IQD: float, USD: float}
+     */
+    public function openingBalances(): array
     {
-        $base = 0.0;
-        if ($this->opening_currency === 'USD') {
-            $base = (float) $this->opening_balance * (ExchangeRate::current() ?: 1500);
-        } else {
-            $base = (float) $this->opening_balance;
-        }
+        $base = Money::of($this->opening_balance, $this->opening_currency);
 
-        $oldDebtsRemaining = (float) $this->oldDebts()->get()->sum(fn ($d) => $d->remainingIqd());
+        $oldDebts = Money::sumBy($this->oldDebts()->get(), fn ($d) => $d->remaining());
 
-        return $base + $oldDebtsRemaining;
+        return Money::add($base, $oldDebts);
+    }
+
+    /** کۆی وەسڵەکان بە جیا بۆ هەر دراوێک. */
+    public function invoicedTotals(): array
+    {
+        return Money::sumQuery(
+            $this->orders()->whereNotIn('status', ['draft', 'cancelled']),
+            'total'
+        );
+    }
+
+    /** کۆی حەقدییە وەرگیراوەکان بە جیا بۆ هەر دراوێک. */
+    public function paidTotals(): array
+    {
+        return Money::sumQuery($this->payments()->where('direction', 'in'), 'amount');
     }
 
     /**
-     * قەرزی ئێستا بە دینار.
+     * قەرزی ئێستا — بە جیا بۆ هەر دراوێک (دۆلار و دینار هەرگیز تێکەڵ ناکرێن).
      * ئەرێنی = کڕیار قەرزاری کارگەیە. نەرێنی = کارگە قەرزاری کڕیارە.
      *
      * تێبینی: پێشەکی لە کاتی وەسڵدا وەک حەقدییەکی جیا تۆمار دەکرێت،
      * بۆیە لێرەدا دووجار ژمێردراو نییە.
+     *
+     * @return array{IQD: float, USD: float}
      */
-    public function balance(): float
+    public function balances(): array
     {
-        $invoiced = $this->orders()
-            ->whereNotIn('status', ['draft', 'cancelled'])
-            ->sum(Order::totalIqdExpression());
-
-        $paid = $this->payments()
-            ->where('direction', 'in')
-            ->sum('amount_iqd');
-
-        return $this->openingIqd() + (float) $invoiced - (float) $paid;
+        return Money::sub(
+            Money::add($this->openingBalances(), $this->invoicedTotals()),
+            $this->paidTotals()
+        );
     }
 
     public function scopeActive(Builder $query): Builder

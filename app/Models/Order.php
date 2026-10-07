@@ -4,8 +4,6 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 
-use App\Models\Concerns\ConvertsCurrency;
-use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Order extends Model
 {
     use Auditable;
-    use ConvertsCurrency, SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
         'invoice_no', 'customer_id', 'order_date', 'delivery_date', 'status',
@@ -76,36 +74,20 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function totalIqdExpression(): Expression
-    {
-        return static::iqdExpression('total');
-    }
-
-    public function getTotalIqdAttribute(): float
-    {
-        return $this->toIqd($this->total);
-    }
-
-    /** کۆی ئەوەی دراوە بەم وەسڵە بەپێی دراوی وەسڵەکە. */
+    /**
+     * کۆی ئەوەی دراوە بەم وەسڵە — تەنها حەقدییەکانی هەمان دراوی وەسڵەکە.
+     * دۆلار و دینار بۆ یەکتری ناگۆڕدرێن.
+     */
     public function paidTotal(): float
     {
-        if ($this->currency === 'USD') {
-            $rate = (float) ($this->exchange_rate ?: ExchangeRate::forDate($this->order_date?->toDateString() ?: now()->toDateString())) ?: 1;
-            return (float) $this->payments()->where('direction', 'in')->get()->sum(function ($p) use ($rate) {
-                if ($p->currency === 'USD') {
-                    return (float) $p->amount;
-                }
-                return $rate > 0 ? (float) $p->amount_iqd / $rate : (float) $p->amount;
-            });
-        }
+        $payments = $this->relationLoaded('payments')
+            ? $this->payments
+            : $this->payments()->get();
 
-        return (float) $this->payments()->where('direction', 'in')->sum('amount_iqd');
-    }
-
-    /** کۆی ئەوەی دراوە بە دینار. */
-    public function paidTotalIqd(): float
-    {
-        return (float) $this->payments()->where('direction', 'in')->sum('amount_iqd');
+        return (float) $payments
+            ->where('direction', 'in')
+            ->filter(fn ($p) => ($p->currency ?: 'IQD') === ($this->currency ?: 'IQD'))
+            ->sum('amount');
     }
 
     /** کۆی ئەوەی دراوە — وەک ناوە کۆنەکە پارێزراوە. */
@@ -118,12 +100,6 @@ class Order extends Model
     public function remaining(): float
     {
         return max(0, (float) $this->total - $this->paidTotal());
-    }
-
-    /** ئەوەی ماوە بە دینار. */
-    public function remainingIqd(): float
-    {
-        return max(0, (float) $this->total_iqd - $this->paidTotalIqd());
     }
 
     public function getStatusLabelAttribute(): string

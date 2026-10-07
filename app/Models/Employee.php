@@ -91,15 +91,21 @@ class Employee extends Model
             ->sum('wage_snapshot');
     }
 
-    /** ئەوەی پێی دراوە لە ماوەکەدا (تەنها مووچە). */
+    /** ئەوەی پێی دراوە لە ماوەکەدا (تەنها مووچە) — بە دراوی حەقدەستی کارمەند. */
     public function paidBetween(string $from, string $to): float
     {
         return (float) $this->payments()
             ->where('direction', 'out')
             ->whereBetween('paid_at', [$from, $to])
             ->get()
-            ->filter(fn ($p) => $p->isWage())
-            ->sum('amount_iqd');
+            ->filter(fn ($p) => $p->isWage() && $this->isWageCurrency($p))
+            ->sum('amount');
+    }
+
+    /** دۆلار و دینار تێکەڵ ناکرێن — تەنها پارەدانی دراوی حەقدەست دەژمێردرێت. */
+    public function isWageCurrency($payment): bool
+    {
+        return ($payment->currency ?: 'IQD') === ($this->wage_currency ?: 'IQD');
     }
 
     /** کۆی ئەو قەرز و پێشەکییانەی دراوە بە کارمەند */
@@ -109,7 +115,7 @@ class Employee extends Model
         if ($from && $to) {
             $query->whereBetween('paid_at', [$from, $to]);
         }
-        return (float) $query->get()->filter(fn ($p) => $p->isAdvance())->sum('amount_iqd');
+        return (float) $query->get()->filter(fn ($p) => $p->isAdvance() && $this->isWageCurrency($p))->sum('amount');
     }
 
     /** کۆی ئەو قەرزانەی کارمەند داویەتییەوە بە قاسە */
@@ -119,7 +125,7 @@ class Employee extends Model
         if ($from && $to) {
             $query->whereBetween('paid_at', [$from, $to]);
         }
-        return (float) $query->get()->filter(fn ($p) => $p->isDebtRepayment())->sum('amount_iqd');
+        return (float) $query->get()->filter(fn ($p) => $p->isDebtRepayment() && $this->isWageCurrency($p))->sum('amount');
     }
 
     /** باڵانسی تەواوی قەرزی ماوە لەسەر کارمەند */

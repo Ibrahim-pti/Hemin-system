@@ -520,7 +520,7 @@ class WorkshopController extends Controller
             $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $totalDeductions, 2);
 
             $rangePayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $from && $p->paid_at->toDateString() <= $to);
-            $totalWagesPaid = (float) $rangePayments->where('direction', 'out')->filter(fn ($p) => $p->isWage())->sum('amount_iqd');
+            $totalWagesPaid = (float) $rangePayments->where('direction', 'out')->filter(fn ($p) => $p->isWage() && $emp->isWageCurrency($p))->sum('amount');
             $totalPaid = $totalWagesPaid;
             $remainingBalance = max(0, round($totalEarned - $totalWagesPaid, 2));
             $loanBalance = $emp->loanBalance();
@@ -568,7 +568,7 @@ class WorkshopController extends Controller
             $monthTotalEarned = round($monthBaseEarned + $monthOvertimeEarned + $monthFuel + $monthBonus - ($monthDeductions + $monthAbsentPenalty), 2);
 
             $monthPayments = $emp->payments->filter(fn ($p) => $p->paid_at && $p->paid_at->toDateString() >= $monthStart && $p->paid_at->toDateString() <= $monthEnd);
-            $monthWagesPaid = (float) $monthPayments->where('direction', 'out')->filter(fn ($p) => $p->isWage())->sum('amount_iqd');
+            $monthWagesPaid = (float) $monthPayments->where('direction', 'out')->filter(fn ($p) => $p->isWage() && $emp->isWageCurrency($p))->sum('amount');
             $monthTotalPaid = $monthWagesPaid;
             $monthRemaining = max(0, round($monthTotalEarned - $monthWagesPaid, 2));
 
@@ -1522,9 +1522,9 @@ class WorkshopController extends Controller
         $totalEarned = round($baseEarned + $overtimeEarned + $totalFuel + $totalBonus - $allDeductions);
 
         // جیاکردنەوەی تەواوی مووچە لە قەرز: قەرز مووچە کەم ناکاتەوە!
-        $monthLoanTaken = (float) $payments->where('direction', 'out')->filter(fn ($p) => $p->isAdvance())->sum('amount_iqd');
-        $monthLoanRepaid = (float) $payments->where('direction', 'in')->filter(fn ($p) => $p->isDebtRepayment())->sum('amount_iqd');
-        $totalWagesPaid = (float) $payments->where('direction', 'out')->filter(fn ($p) => $p->isWage())->sum('amount_iqd');
+        $monthLoanTaken = (float) $payments->where('direction', 'out')->filter(fn ($p) => $p->isAdvance() && $employee->isWageCurrency($p))->sum('amount');
+        $monthLoanRepaid = (float) $payments->where('direction', 'in')->filter(fn ($p) => $p->isDebtRepayment() && $employee->isWageCurrency($p))->sum('amount');
+        $totalWagesPaid = (float) $payments->where('direction', 'out')->filter(fn ($p) => $p->isWage() && $employee->isWageCurrency($p))->sum('amount');
         $remainingWage = max(0, round($totalEarned - $totalWagesPaid));
 
         $totalLoanTaken = $employee->totalLoanTaken();

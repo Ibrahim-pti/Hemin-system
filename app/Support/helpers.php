@@ -13,6 +13,17 @@ if (! function_exists('fmt_money')) {
     }
 }
 
+if (! function_exists('fmt_dual')) {
+    /**
+     * پیشاندانی کۆی دوو دراو بە جیا — هیچ گۆڕینێک نییە.
+     * نموونە: «150,000 د.ع · $200.00»
+     */
+    function fmt_dual(array $totals, string $separator = ' · ', bool $hideZero = true): string
+    {
+        return \App\Support\Money::format($totals, $separator, $hideZero);
+    }
+}
+
 if (! function_exists('fmt_num')) {
     /** ژمارەی ساکار بێ ناوی دراو. */
     function fmt_num(float|string|null $amount, int $decimals = 0): string

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Support\Money;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -43,43 +44,42 @@ class Supplier extends Model
         return $this->morphMany(Payment::class, 'party');
     }
 
-    public function openingIqd(): float
+    /** باڵانسی سەرەتایی بە دراوی خۆی. */
+    public function openingBalances(): array
     {
-        if ($this->opening_currency === 'USD') {
-            return (float) $this->opening_balance * ExchangeRate::current();
-        }
-
-        return (float) $this->opening_balance;
+        return Money::of($this->opening_balance, $this->opening_currency);
     }
 
-    public function totalPurchases(): float
+    /** کۆی کڕینە پەسەندکراوەکان بە جیا بۆ هەر دراوێک. */
+    public function totalPurchases(): array
     {
-        return (float) $this->purchases()
-            ->where('status', 'confirmed')
-            ->sum(Purchase::totalIqdExpression());
+        return Money::sumQuery($this->purchases()->where('status', 'confirmed'), 'total');
     }
 
-    public function totalPaid(): float
+    /** کۆی پارەی دراو بە جیا بۆ هەر دراوێک. */
+    public function totalPaid(): array
     {
-        return (float) $this->payments()
-            ->where('direction', 'out')
-            ->sum('amount_iqd');
+        return Money::sumQuery($this->payments()->where('direction', 'out'), 'amount');
     }
 
-    public function totalJobs(): float
+    /** کۆی ئیشە دەرەکییەکان بە جیا بۆ هەر دراوێک. */
+    public function totalJobs(): array
     {
-        return (float) $this->externalJobs()
-            ->where('status', '!=', 'cancelled')
-            ->sum(ExternalJob::costIqdExpression());
+        return Money::sumQuery($this->externalJobs()->where('status', '!=', 'cancelled'), 'cost');
     }
 
     /**
-     * قەرزی ئێستا بە دینار.
+     * قەرزی ئێستا — بە جیا بۆ هەر دراوێک (هیچ گۆڕینێک نییە).
      * ئەرێنی = کارگە قەرزاری ئەم فرۆشیارەیە.
+     *
+     * @return array{IQD: float, USD: float}
      */
-    public function balance(): float
+    public function balances(): array
     {
-        return $this->openingIqd() + $this->totalPurchases() + $this->totalJobs() - $this->totalPaid();
+        return Money::sub(
+            Money::add($this->openingBalances(), $this->totalPurchases(), $this->totalJobs()),
+            $this->totalPaid()
+        );
     }
 
     public function scopeActive(Builder $query): Builder

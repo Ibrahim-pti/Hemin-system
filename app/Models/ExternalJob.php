@@ -4,8 +4,6 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 
-use App\Models\Concerns\ConvertsCurrency;
-use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -16,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ExternalJob extends Model
 {
     use Auditable;
-    use ConvertsCurrency, SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
         'job_no', 'title', 'order_id', 'supplier_id', 'contractor_name',
@@ -56,16 +54,6 @@ class ExternalJob extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function costIqdExpression(): Expression
-    {
-        return static::iqdExpression('cost');
-    }
-
-    public function getCostIqdAttribute(): float
-    {
-        return $this->toIqd($this->cost);
-    }
-
     public function getContractorLabelAttribute(): string
     {
         return $this->supplier?->name ?? $this->contractor_name ?? '—';
@@ -76,9 +64,10 @@ class ExternalJob extends Model
         return self::STATUSES[$this->status] ?? $this->status;
     }
 
+    /** ئەوەی ماوە — بە دراوی ئیشەکە خۆی. */
     public function remaining(): float
     {
-        return $this->cost_iqd - $this->toIqd($this->paid_amount);
+        return (float) $this->cost - (float) $this->paid_amount;
     }
 
     public static function nextJobNo(): string

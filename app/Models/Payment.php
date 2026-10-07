@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 
-use App\Models\Concerns\ConvertsCurrency;
 use App\Support\KurdishNumber;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Payment extends Model
 {
     use Auditable;
-    use ConvertsCurrency, SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
         'voucher_no', 'direction', 'party_type', 'party_id', 'party_name',

@@ -49,33 +49,11 @@ class CustomerOldDebt extends Model
         return max(0.0, (float) $this->amount - (float) $this->paid_amount);
     }
 
-    public function remainingIqd(): float
-    {
-        $rem = $this->remaining();
-        if ($this->currency === 'USD') {
-            return $rem * (ExchangeRate::current() ?: 1500);
-        }
-
-        return $rem;
-    }
-
-    public function totalIqd(): float
-    {
-        if ($this->currency === 'USD') {
-            return (float) $this->amount * (ExchangeRate::current() ?: 1500);
-        }
-
-        return (float) $this->amount;
-    }
-
-    public function paidIqd(): float
+    /** ئەوەی دراوە — بە دراوی قەرزەکە خۆی (هیچ گۆڕینێک نییە). */
+    public function paid(): float
     {
         if ($this->status === 'paid') {
-            return $this->totalIqd();
-        }
-
-        if ($this->currency === 'USD') {
-            return (float) $this->paid_amount * (ExchangeRate::current() ?: 1500);
+            return (float) $this->amount;
         }
 
         return (float) $this->paid_amount;
