@@ -139,12 +139,21 @@
                     @yield('actions')
 
                     {{-- بەکارهێنەر --}}
-                    <div class="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-2 sm:px-2.5 py-1.5 text-slate-700">
-                        <div class="flex size-6 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 font-bold text-xs border border-blue-500/20">
-                            {{ mb_substr(auth()->user()->name, 0, 1) }}
+                    @can('manage_settings')
+                        <a href="{{ route('settings.index') }}" class="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 hover:bg-blue-50 hover:border-blue-200 px-2 sm:px-2.5 py-1.5 text-slate-700 transition-colors cursor-pointer" title="ڕێکخستنەکان و گۆڕینی پاسۆرد">
+                            <div class="flex size-6 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 font-bold text-xs border border-blue-500/20">
+                                {{ mb_substr(auth()->user()->name, 0, 1) }}
+                            </div>
+                            <span class="text-xs font-bold text-slate-800 hidden sm:inline">{{ auth()->user()->name }}</span>
+                        </a>
+                    @else
+                        <div class="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-2 sm:px-2.5 py-1.5 text-slate-700">
+                            <div class="flex size-6 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 font-bold text-xs border border-blue-500/20">
+                                {{ mb_substr(auth()->user()->name, 0, 1) }}
+                            </div>
+                            <span class="text-xs font-bold text-slate-800 hidden sm:inline">{{ auth()->user()->name }}</span>
                         </div>
-                        <span class="text-xs font-bold text-slate-800 hidden sm:inline">{{ auth()->user()->name }}</span>
-                    </div>
+                    @endcan
 
                     <button @click="$dispatch('open-calculator')" class="btn btn-ghost !px-2.5 sm:!px-3 !py-1.5 text-xs text-slate-600 hover:bg-slate-100 hidden sm:inline-flex" title="حاسیبە">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
