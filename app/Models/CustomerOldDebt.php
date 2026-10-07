@@ -59,6 +59,21 @@ class CustomerOldDebt extends Model
         return (float) $this->paid_amount;
     }
 
+    public function remainingIqd(): float
+    {
+        return $this->remaining();
+    }
+
+    public function totalIqd(): float
+    {
+        return (float) $this->amount;
+    }
+
+    public function paidIqd(): float
+    {
+        return $this->paid();
+    }
+
     public function allAttachments(): array
     {
         $list = $this->attachments;
