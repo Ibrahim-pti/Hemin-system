@@ -54,9 +54,24 @@ class Customer extends Model
     {
         $base = Money::of($this->opening_balance, $this->opening_currency);
 
-        $oldDebts = Money::sumBy($this->oldDebts()->get(), fn ($d) => $d->remaining());
+        $oldDebts = Money::sumBy($this->oldDebts()->get(), fn ($d) => $d->remaining(), fn ($d) => $d->currency);
 
         return Money::add($base, $oldDebts);
+    }
+
+    public function openingBalance(?string $currency = null): float
+    {
+        $b = $this->openingBalances();
+        if ($currency !== null) {
+            return (float) ($b[Money::cur($currency)] ?? 0);
+        }
+
+        return (float) ($b['IQD'] ?? 0);
+    }
+
+    public function openingIqd(): float
+    {
+        return $this->openingBalance('IQD');
     }
 
     /** کۆی وەسڵەکان بە جیا بۆ هەر دراوێک. */
@@ -89,6 +104,21 @@ class Customer extends Model
             Money::add($this->openingBalances(), $this->invoicedTotals()),
             $this->paidTotals()
         );
+    }
+
+    public function balance(?string $currency = null): float
+    {
+        $b = $this->balances();
+        if ($currency !== null) {
+            return (float) ($b[Money::cur($currency)] ?? 0);
+        }
+
+        return (float) ($b['IQD'] ?? 0);
+    }
+
+    public function hasDebt(): bool
+    {
+        return Money::hasPositive($this->balances());
     }
 
     public function scopeActive(Builder $query): Builder

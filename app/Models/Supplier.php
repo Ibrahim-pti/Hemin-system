@@ -82,6 +82,21 @@ class Supplier extends Model
         );
     }
 
+    public function balance(?string $currency = null): float
+    {
+        $b = $this->balances();
+        if ($currency !== null) {
+            return (float) ($b[Money::cur($currency)] ?? 0);
+        }
+
+        return (float) ($b['IQD'] ?? 0);
+    }
+
+    public function hasDebt(): bool
+    {
+        return Money::hasPositive($this->balances());
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
