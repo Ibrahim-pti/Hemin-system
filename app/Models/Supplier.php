@@ -44,10 +44,24 @@ class Supplier extends Model
         return $this->morphMany(Payment::class, 'party');
     }
 
-    /** باڵانسی سەرەتایی بە دراوی خۆی. */
     public function openingBalances(): array
     {
         return Money::of($this->opening_balance, $this->opening_currency);
+    }
+
+    public function openingBalance(?string $currency = null): float
+    {
+        $b = $this->openingBalances();
+        if ($currency !== null) {
+            return (float) ($b[Money::cur($currency)] ?? 0);
+        }
+
+        return (float) ($b['IQD'] ?? 0);
+    }
+
+    public function openingIqd(): float
+    {
+        return $this->openingBalance('IQD');
     }
 
     /** کۆی کڕینە پەسەندکراوەکان بە جیا بۆ هەر دراوێک. */
