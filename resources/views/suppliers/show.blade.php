@@ -90,23 +90,31 @@
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-3 mt-5 pt-5 border-t border-slate-100">
             {{-- کۆی کڕینەکان --}}
             <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-100 border-r-4 border-r-blue-500 text-center">
-                <div class="text-2xl font-black text-slate-900 num">{{ fmt_money($totalPurchases) }}</div>
+                <div class="text-xl sm:text-2xl font-black text-slate-900 num font-mono">
+                    {{ is_array($totalPurchases) ? fmt_dual($totalPurchases) : fmt_money($totalPurchases) }}
+                </div>
                 <div class="text-xs font-bold text-slate-500 mt-1">کۆی گشتی کڕینەکان</div>
             </div>
 
             {{-- کۆی پارەی دراو --}}
             <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-100 border-r-4 border-r-emerald-500 text-center">
-                <div class="text-2xl font-black text-emerald-700 num">{{ fmt_money($totalPaid) }}</div>
+                <div class="text-xl sm:text-2xl font-black text-emerald-700 num font-mono">
+                    {{ is_array($totalPaid) ? fmt_dual($totalPaid) : fmt_money($totalPaid) }}
+                </div>
                 <div class="text-xs font-bold text-slate-500 mt-1">کۆی پارەی دراو</div>
             </div>
 
             {{-- قەرزی ماوە --}}
-            <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-100 border-r-4 {{ $currentBalance > 0 ? 'border-r-rose-500 bg-rose-50/30' : 'border-r-emerald-500 bg-emerald-50/30' }} text-center">
-                <div class="text-2xl font-black num {{ $currentBalance > 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                    {{ fmt_money(abs($currentBalance)) }}
+            @php
+                $supplierBals = $supplier->balances();
+                $hasDebt = $supplier->hasDebt();
+            @endphp
+            <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-100 border-r-4 {{ $hasDebt ? 'border-r-rose-500 bg-rose-50/30' : 'border-r-emerald-500 bg-emerald-50/30' }} text-center">
+                <div class="text-xl sm:text-2xl font-black num font-mono {{ $hasDebt ? 'text-rose-600' : 'text-emerald-700' }}">
+                    {{ fmt_dual($supplierBals) }}
                 </div>
-                <div class="text-xs font-bold mt-1 {{ $currentBalance > 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                    {{ $currentBalance > 0 ? 'قەرزی ماوە لەسەر کارگە' : '✓ حساب پاکە (بێ قەرز)' }}
+                <div class="text-xs font-bold mt-1 {{ $hasDebt ? 'text-rose-600' : 'text-emerald-700' }}">
+                    {{ $hasDebt ? 'قەرزی ماوە لەسەر کارگە' : '✓ حساب پاکە (بێ قەرز)' }}
                 </div>
             </div>
         </div>
@@ -298,13 +306,13 @@
                                 کۆی گشتی حسابات
                             </td>
                             <td class="py-4 px-4 text-center num font-black text-slate-900">
-                                {{ fmt_money($totalPurchases) }}
+                                {{ is_array($totalPurchases) ? fmt_dual($totalPurchases) : fmt_money($totalPurchases) }}
                             </td>
                             <td class="py-4 px-4 text-center num font-black text-emerald-700">
-                                {{ fmt_money($totalPaid) }}
+                                {{ is_array($totalPaid) ? fmt_dual($totalPaid) : fmt_money($totalPaid) }}
                             </td>
-                            <td class="py-4 px-4 text-center num font-black text-base {{ $currentBalance > 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                                {{ fmt_money(abs($currentBalance)) }}
+                            <td class="py-4 px-4 text-center num font-black text-base {{ ($hasDebt ?? false) ? 'text-rose-600' : 'text-emerald-700' }}">
+                                {{ fmt_dual($supplierBals ?? $supplier->balances()) }}
                             </td>
                             <td colspan="2"></td>
                         </tr>
