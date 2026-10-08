@@ -290,7 +290,13 @@
 
                 {{-- پێشەکی / پارەی دراو --}}
                 <div>
-                    <label class="label" for="prepaid_amount">پێشەکی (بڕی پارەی دراو)</label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="label mb-0" for="prepaid_amount">پێشەکی (بڕی پارەی دراو)</label>
+                        <div class="flex items-center gap-1.5 text-xs">
+                            <button type="button" @click="setFullPaid()" class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold border border-emerald-200 cursor-pointer transition-colors" title="کامل وەسڵەکە بە نەقد دراوە">کامل نەقد</button>
+                            <button type="button" @click="setZeroPaid()" class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold border border-slate-200 cursor-pointer transition-colors" title="بە قەرزە و پارە نەدراوە">بە قەرز (٠)</button>
+                        </div>
+                    </div>
                     <div class="relative">
                         <input id="prepaid_amount" name="prepaid_amount" type="text" inputmode="numeric" class="field num font-bold text-emerald-700 w-full"
                                dir="ltr"
@@ -298,7 +304,7 @@
                                x-model="prepaid"
                                placeholder="0">
                     </div>
-                    <p class="mt-1 text-xs text-[--color-ink-soft]">بە شێوەی خۆکار تەواوی پارەکەیە (ئەگەر قەرز بوو دەتوانیت دەستکاری بکەیت).</p>
+                    <p class="mt-1 text-xs text-[--color-ink-soft]">ئەگەر کڕیار پێشەکی داوە لێرە بنووسە، ئەگینا بە قەرز دەمێنێتەوە.</p>
                 </div>
             </div>
         </div>
@@ -614,25 +620,12 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
                 });
             }
 
-            if (!this.prepaidManuallySet) {
-                this.prepaid = this.total ? this.total.toLocaleString('en-US') : '';
-            }
             if (this.currency === 'USD') {
                 this.fetchLiveRate();
             }
             this.$watch('currency', (val) => {
                 if (val === 'USD') {
                     this.fetchLiveRate();
-                }
-            });
-            this.$watch('lines', () => {
-                if (!this.prepaidManuallySet) {
-                    this.$nextTick(() => { this.prepaid = this.total ? this.total.toLocaleString('en-US') : ''; });
-                }
-            }, { deep: true });
-            this.$watch('discountAmount', () => {
-                if (!this.prepaidManuallySet) {
-                    this.$nextTick(() => { this.prepaid = this.total ? this.total.toLocaleString('en-US') : ''; });
                 }
             });
         },
@@ -642,12 +635,12 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
         },
 
         setFullPaid() {
-            this.prepaid = this.total;
+            this.prepaid = this.total ? this.total.toLocaleString('en-US') : '';
             this.prepaidManuallySet = true;
         },
 
         setZeroPaid() {
-            this.prepaid = 0;
+            this.prepaid = '';
             this.prepaidManuallySet = true;
         },
 

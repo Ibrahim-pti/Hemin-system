@@ -179,9 +179,13 @@ class OrderController extends Controller
         $data = $this->validated($request, $order);
 
         DB::transaction(function () use ($order, $data, $request) {
-            $order->update($this->header($data, Customer::find($data['customer_id'])));
+            $customer = Customer::find($data['customer_id']);
+            $order->update($this->header($data, $customer));
             $order->items()->delete();
             $this->syncLines($order, $data['lines'], $request->file('lines', []));
+
+            $prepaid = (float) str_replace(',', '', (string) ($data['prepaid_amount'] ?? 0));
+            $this->syncPrepaidPayment($order, $customer, $prepaid);
         });
 
         return redirect()->route('orders.print', $order)->with('ok', 'وەسڵەکە نوێکرایەوە.');
@@ -451,6 +455,33 @@ class OrderController extends Controller
             'category' => 'customer_payment',
             'note' => 'پێشەکی وەسڵی ژمارە '.$order->invoice_no,
         ]);
+    }
+
+    /** نوێکردنەوە یان سڕینەوەی حەقدی پێشەکی لە کاتی دەستکاری وەسڵدا */
+    private function syncPrepaidPayment(Order $order, ?Customer $customer, float $amount): void
+    {
+        $prepaidPayment = $order->payments()
+            ->where('category', 'customer_payment')
+            ->where('note', 'like', 'پێشەکی وەسڵی ژمارە%')
+            ->first();
+
+        if ($amount > 0) {
+            if ($prepaidPayment) {
+                $prepaidPayment->update([
+                    'amount' => $amount,
+                    'currency' => $order->currency,
+                    'exchange_rate' => $order->exchange_rate,
+                    'paid_at' => $order->order_date->toDateString(),
+                    'party_id' => $customer?->id,
+                ]);
+            } else {
+                $this->recordPrepaid($order, $customer, $amount);
+            }
+        } else {
+            if ($prepaidPayment) {
+                $prepaidPayment->delete();
+            }
+        }
     }
 
     /** کەمکردنەوەی مەخزەن بۆ ئەو دێڕانەی کاڵایەکی دیاریکراویان هەیە. */
