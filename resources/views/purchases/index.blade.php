@@ -630,7 +630,12 @@
                                         کەشف حیساب
                                     </a>
 
-                                    @if ($sup->balance > 0)
+                                    @php
+                                        $hasPayableDebt = ($currency === 'USD' && $sup->balance_usd > 0)
+                                            || ($currency === 'IQD' && $sup->balance_iqd > 0)
+                                            || (!in_array($currency, ['USD', 'IQD']) && ($sup->balance_usd > 0 || $sup->balance_iqd > 0));
+                                    @endphp
+                                    @if ($hasPayableDebt)
                                         <button type="button"
                                                 @click="openSupplierPayment({
                                                     id: {{ $sup->id }},
