@@ -113,7 +113,7 @@
 
             {{-- ٣. بڕی پارەی حەقدی، داشکان و دراو --}}
             <div class="space-y-3">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                     {{-- ١. بڕی پارەی وەرگیراو --}}
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
