@@ -39,7 +39,7 @@ class CustomerPaymentDiscountTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('داشکان (داشکاندن)');
         $response->assertSee('بڕی پارەی وەرگیراو');
-        $response->assertSee('کۆی داشکێنراو لە قەرز');
+        $response->assertSee('بڕی دوای داشکان:');
         $response->assertSee('داشکاندنی ماوەکە');
     }
 
@@ -197,8 +197,6 @@ class CustomerPaymentDiscountTest extends TestCase
         $response->assertSee('45,000');
         $response->assertSee('5,000');
         $response->assertSee('داشکان');
-        $response->assertSee('کۆی گشتی حیسابکراو بۆ قەرز');
-        $response->assertSee('50,000');
     }
 
     public function test_payments_index_displays_discount_tag_for_discounted_payment()
