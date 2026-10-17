@@ -203,24 +203,12 @@
                     </div>
                 </div>
 
-                {{-- کارتی وردەکاری حیساباتی داشکان و کاش پێکەوە --}}
+                {{-- کارتی پیشاندانی ژمارەی دوای داشکان --}}
                 <div class="p-3.5 rounded-xl border flex flex-wrap items-center justify-between gap-3 text-xs"
-                     :class="cleanDiscount > 0 ? 'bg-amber-50/80 border-amber-300' : 'bg-slate-50 border-slate-200'">
-                    <div class="flex items-center gap-3 sm:gap-5 flex-wrap">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-slate-500 font-bold">بڕی وەرگیراو (کاش):</span>
-                            <span class="num font-black text-emerald-700 text-sm" x-text="money(cleanAmount)">0</span>
-                        </div>
-                        <template x-if="cleanDiscount > 0">
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-amber-800 font-bold">+ داشکان:</span>
-                                <span class="num font-black text-amber-700 text-sm" x-text="money(cleanDiscount)">0</span>
-                            </div>
-                        </template>
-                        <div class="flex items-center gap-1.5 border-r border-slate-300 pr-3 sm:pr-5">
-                            <span class="text-slate-800 font-extrabold">کۆی داشکێنراو لە قەرز:</span>
-                            <span class="num font-black text-blue-800 text-sm" x-text="money(totalSettled)">0</span>
-                        </div>
+                     :class="cleanDiscount > 0 ? 'bg-emerald-50/80 border-emerald-300' : 'bg-slate-50 border-slate-200'">
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-700 font-extrabold text-xs sm:text-sm">بڕی دوای داشکان:</span>
+                        <span class="num font-black text-emerald-700 text-base sm:text-lg" x-text="money(cleanAmount)">0</span>
                     </div>
                     <div x-show="currentTargetDebt > 0" class="text-left font-bold">
                         <span class="text-slate-500">قەرزی ماوە دوای ئەم حەقدییە:</span>

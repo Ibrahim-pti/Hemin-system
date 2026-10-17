@@ -278,26 +278,13 @@
                                 @if (($payment->discount ?? 0) > 0)
                                     {{-- داشکان --}}
                                     <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; line-height: 1;">
-                                        <span style="font-weight: 900; shrink: 0; color: #b45309; transform: translateY(2px);">داشکان (لێخۆشبوون لە قەرز)</span>
+                                        <span style="font-weight: 900; shrink: 0; color: #b45309; transform: translateY(2px);">داشکان</span>
                                         <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center; line-height: 1;">
                                             <span class="num" style="font-weight: 900; font-size: 13px; color: #b45309; display: inline-block; transform: translateY(2px);">
                                                 {{ fmt_num($payment->discount) }}
                                             </span>
                                         </div>
                                         <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #b45309; transform: translateY(2px);">
-                                            {{ $payment->currency === 'USD' ? 'دۆلار ($)' : 'دینار (د.ع)' }}
-                                        </span>
-                                    </div>
-
-                                    {{-- کۆی داشکێنراو لە قەرز --}}
-                                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; line-height: 1;">
-                                        <span style="font-weight: 900; shrink: 0; color: #1e3a5f; transform: translateY(2px);">کۆی گشتی حیسابکراو بۆ قەرز</span>
-                                        <div style="flex: 1; margin: 0 8px; border-bottom: 1.5px dotted #000000; text-align: center; line-height: 1;">
-                                            <span class="num" style="font-weight: 900; font-size: 13px; color: #1e3a5f; display: inline-block; transform: translateY(2px);">
-                                                {{ fmt_num($payment->amount + $payment->discount) }}
-                                            </span>
-                                        </div>
-                                        <span style="font-weight: 900; font-size: 11px; shrink: 0; color: #1e3a5f; transform: translateY(2px);">
                                             {{ $payment->currency === 'USD' ? 'دۆلار ($)' : 'دینار (د.ع)' }}
                                         </span>
                                     </div>
