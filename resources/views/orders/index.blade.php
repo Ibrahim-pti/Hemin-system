@@ -201,8 +201,8 @@
                             $custIqdSales = (float) $custOrders->where('currency', 'IQD')->sum('total');
 
                             $custPayments = $customer->payments;
-                            $custUsdPaid = (float) $custPayments->where('currency', 'USD')->sum('amount');
-                            $custIqdPaid = (float) $custPayments->where('currency', 'IQD')->sum('amount');
+                            $custUsdPaid = (float) $custPayments->where('currency', 'USD')->sum(fn ($p) => (float) $p->amount + (float) ($p->discount ?? 0));
+                            $custIqdPaid = (float) $custPayments->where('currency', 'IQD')->sum(fn ($p) => (float) $p->amount + (float) ($p->discount ?? 0));
 
                             $lastOrder = $customer->orders->sortByDesc('order_date')->first();
                             $firstLetter = mb_substr($customer->name, 0, 1, 'UTF-8');

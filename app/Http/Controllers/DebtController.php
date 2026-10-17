@@ -34,13 +34,13 @@ class DebtController extends Controller
                 $orderTotalIqd = (float) $order->total_iqd;
                 $invoicedTotal += $orderTotalIqd;
 
-                $orderPaid = (float) $order->payments->where('direction', 'in')->sum('amount_iqd');
+                $orderPaid = (float) $order->payments->where('direction', 'in')->sum(fn ($p) => (float) $p->amount_iqd + (float) ($p->discount_iqd ?? 0));
                 if (($orderTotalIqd - $orderPaid) > 0.5) {
                     $activeOrdersCount++;
                 }
             }
 
-            $paidTotal = (float) $c->payments->sum('amount_iqd');
+            $paidTotal = (float) $c->payments->sum(fn ($p) => (float) $p->amount_iqd + (float) ($p->discount_iqd ?? 0));
             $totalAmount = $openingIqd + $invoicedTotal;
             $remaining = $totalAmount - $paidTotal;
 

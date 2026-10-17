@@ -173,8 +173,15 @@
                             </td>
 
                             {{-- بڕی پارە --}}
-                            <td class="py-3.5 px-4 text-center num font-black text-emerald-700 text-base whitespace-nowrap">
-                                +{{ fmt_money($payment->amount, $payment->currency) }}
+                            <td class="py-3.5 px-4 text-center num whitespace-nowrap">
+                                <span class="font-black text-emerald-700 text-base block">
+                                    +{{ fmt_money($payment->amount, $payment->currency) }}
+                                </span>
+                                @if (($payment->discount ?? 0) > 0)
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 mt-1">
+                                        داشکان: {{ fmt_money($payment->discount, $payment->currency) }}
+                                    </span>
+                                @endif
                             </td>
 
                             {{-- تێبینی --}}

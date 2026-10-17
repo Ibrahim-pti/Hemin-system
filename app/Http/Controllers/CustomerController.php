@@ -188,7 +188,7 @@ class CustomerController extends Controller
         $oldDebtsTotals = Money::sumBy($oldDebts, fn ($d) => $d->amount);
         $totalPurchases = Money::add($openingBalances, $ordersTotals, $oldDebtsTotals);
 
-        $paymentsTotals = Money::sumBy($payments, 'amount');
+        $paymentsTotals = Money::sumBy($payments, fn ($p) => (float) $p->amount + (float) ($p->discount ?? 0));
         $oldDebtsPaidTotals = Money::sumBy($oldDebts, fn ($d) => $d->paid());
         $totalPaidAmount = Money::add($paymentsTotals, $oldDebtsPaidTotals);
         $remainingDebt = Money::sub($totalPurchases, $totalPaidAmount);

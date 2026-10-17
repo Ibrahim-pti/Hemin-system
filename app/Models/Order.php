@@ -107,7 +107,31 @@ class Order extends Model
         return (float) $payments
             ->where('direction', 'in')
             ->filter(fn ($p) => ($p->currency ?: 'IQD') === ($this->currency ?: 'IQD'))
+            ->sum(fn ($p) => (float) $p->amount + (float) ($p->discount ?? 0));
+    }
+
+    public function paidCashTotal(): float
+    {
+        $payments = $this->relationLoaded('payments')
+            ? $this->payments
+            : $this->payments()->get();
+
+        return (float) $payments
+            ->where('direction', 'in')
+            ->filter(fn ($p) => ($p->currency ?: 'IQD') === ($this->currency ?: 'IQD'))
             ->sum('amount');
+    }
+
+    public function paymentDiscountTotal(): float
+    {
+        $payments = $this->relationLoaded('payments')
+            ? $this->payments
+            : $this->payments()->get();
+
+        return (float) $payments
+            ->where('direction', 'in')
+            ->filter(fn ($p) => ($p->currency ?: 'IQD') === ($this->currency ?: 'IQD'))
+            ->sum('discount');
     }
 
     /** کۆی ئەوەی دراوە — وەک ناوە کۆنەکە پارێزراوە. */

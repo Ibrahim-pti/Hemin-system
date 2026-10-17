@@ -348,8 +348,15 @@
                                     </td>
 
                                     {{-- بڕی پارەدان --}}
-                                    <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-weight: 800; color: #10b981; font-size: 0.85rem;">
-                                        {{ fmt_money($payment->amount, $payment->currency) }}
+                                    <td class="num" style="padding: 0.85rem 0.85rem; text-align: center; font-size: 0.85rem;">
+                                        <span style="font-weight: 800; color: #10b981; display: block;">
+                                            {{ fmt_money($payment->amount, $payment->currency) }}
+                                        </span>
+                                        @if (($payment->discount ?? 0) > 0)
+                                            <span style="font-size: 0.72rem; font-weight: 700; color: #b45309; display: block; margin-top: 2px;">
+                                                + {{ fmt_money($payment->discount, $payment->currency) }} داشکان
+                                            </span>
+                                        @endif
                                     </td>
 
                                     {{-- وەسڵی پەیوەندیدار --}}

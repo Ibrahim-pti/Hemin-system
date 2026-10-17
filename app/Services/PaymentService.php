@@ -32,6 +32,8 @@ class PaymentService
             $rate = $rawRate ? ($rawRate > 5000 ? $rawRate / 100 : $rawRate) : null;
             $amount = (float) $data['amount'];
             $amountIqd = $currency === 'USD' ? $amount * (float) $rate : $amount;
+            $discount = (float) ($data['discount'] ?? 0);
+            $discountIqd = $currency === 'USD' ? $discount * (float) $rate : $discount;
 
             $party = $data['party'] ?? null;
 
@@ -44,9 +46,11 @@ class PaymentService
                 'order_id' => $data['order_id'] ?? null,
                 'purchase_id' => $data['purchase_id'] ?? null,
                 'amount' => $amount,
+                'discount' => $discount,
                 'currency' => $currency,
                 'exchange_rate' => $rate,
                 'amount_iqd' => $amountIqd,
+                'discount_iqd' => $discountIqd,
                 'cash_box_id' => $data['cash_box_id'] ?? $this->defaultBoxId($currency),
                 'paid_at' => $paidAt,
                 'user_id' => Auth::id(),
@@ -54,7 +58,7 @@ class PaymentService
                 'payment_type' => $data['payment_type'] ?? null,
             ]);
 
-            if ($payment->cash_box_id) {
+            if ($payment->cash_box_id && $amount > 0) {
                 CashTransaction::create([
                     'cash_box_id' => $payment->cash_box_id,
                     'direction' => $payment->direction,

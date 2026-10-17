@@ -54,6 +54,18 @@ class PaymentController extends Controller
             ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
             ->sum('amount');
 
+        $totalDiscountIqd = (float) Payment::where('direction', 'in')
+            ->where('currency', 'IQD')
+            ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
+            ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
+            ->sum('discount');
+
+        $totalDiscountUsd = (float) Payment::where('direction', 'in')
+            ->where('currency', 'USD')
+            ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
+            ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
+            ->sum('discount');
+
         $totalCount = Payment::where('direction', 'in')
             ->when($request->date('from'), fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
             ->when($request->date('to'), fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))
@@ -64,6 +76,8 @@ class PaymentController extends Controller
             'totalIn' => $totalInIqd,
             'totalInIqd' => $totalInIqd,
             'totalInUsd' => $totalInUsd,
+            'totalDiscountIqd' => $totalDiscountIqd,
+            'totalDiscountUsd' => $totalDiscountUsd,
             'totalCount' => $totalCount,
             'totalDebt' => $totalDebtIqd,
             'totalDebtIqd' => $totalDebtIqd,
@@ -130,10 +144,15 @@ class PaymentController extends Controller
             $request->merge(['customer_id' => $request->input('party_id')]);
         }
 
-        // پاککردنەوەی فاریزە (کۆما) لە بڕی پارە و نرخی ئاڵوگۆڕ
+        // پاککردنەوەی فاریزە (کۆما) لە بڕی پارە، داشکان، و نرخی ئاڵوگۆڕ
         if ($request->filled('amount')) {
             $request->merge([
                 'amount' => (float) str_replace(',', '', (string) $request->input('amount')),
+            ]);
+        }
+        if ($request->filled('discount')) {
+            $request->merge([
+                'discount' => (float) str_replace(',', '', (string) $request->input('discount')),
             ]);
         }
         if ($request->filled('exchange_rate')) {
@@ -145,7 +164,8 @@ class PaymentController extends Controller
         $data = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
             'order_id' => ['nullable', 'exists:orders,id'],
-            'amount' => ['required', 'numeric', 'gt:0'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'discount' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['required', 'in:IQD,USD'],
             'exchange_rate' => ['nullable', 'numeric', 'min:0'],
             'cash_box_id' => ['nullable', 'exists:cash_boxes,id'],
@@ -155,8 +175,18 @@ class PaymentController extends Controller
             'customer_id.required' => 'کڕیار هەڵبژێرە.',
             'customer_id.exists' => 'کڕیاری دیاریکراو نەدۆزرایەوە.',
             'amount.required' => 'بڕی پارە بنووسە.',
-            'amount.gt' => 'بڕ دەبێت لە ٠ زیاتر بێت.',
+            'amount.min' => 'بڕی پارەی وەرگیراو نابێت کەمتر بێت لە ٠.',
+            'discount.min' => 'بڕی داشکان نابێت کەمتر بێت لە ٠.',
         ]);
+
+        $amount = (float) ($data['amount'] ?? 0);
+        $discount = (float) ($data['discount'] ?? 0);
+
+        if (($amount + $discount) <= 0) {
+            return back()->withInput()->withErrors([
+                'amount' => 'دەبێت بڕی پارەی وەرگیراو یان داشکان لە ٠ زیاتر بێت.',
+            ]);
+        }
 
         $customer = Customer::findOrFail($data['customer_id']);
 
@@ -177,7 +207,8 @@ class PaymentController extends Controller
 
         $payment = $this->payments->record([
             'direction' => 'in',
-            'amount' => $data['amount'],
+            'amount' => $amount,
+            'discount' => $discount,
             'currency' => $data['currency'],
             'exchange_rate' => $exchangeRate,
             'paid_at' => $data['paid_at'],

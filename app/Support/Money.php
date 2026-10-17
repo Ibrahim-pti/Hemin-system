@@ -118,9 +118,13 @@ final class Money
         $builder = $query instanceof Relation ? $query->getQuery() : $query;
         $table = $builder->getModel()->getTable();
 
+        $colSql = (str_contains($column, '(') || str_contains($column, '+') || str_contains($column, '.'))
+            ? $column
+            : "{$table}.{$column}";
+
         $rows = (clone $builder)->toBase()
             ->reorder()
-            ->selectRaw("{$table}.currency as cur, SUM({$table}.{$column}) as total")
+            ->selectRaw("{$table}.currency as cur, SUM({$colSql}) as total")
             ->groupBy("{$table}.currency")
             ->pluck('total', 'cur');
 

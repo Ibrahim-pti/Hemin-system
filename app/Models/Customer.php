@@ -83,10 +83,25 @@ class Customer extends Model
         );
     }
 
-    /** کۆی حەقدییە وەرگیراوەکان بە جیا بۆ هەر دراوێک. */
+    /** کۆی حەقدییە وەرگیراوەکان بە جیا بۆ هەر دراوێک (کاش + داشکان بۆ کەمکردنەوەی قەرز). */
     public function paidTotals(): array
     {
+        return Money::sumQuery(
+            $this->payments()->where('direction', 'in'),
+            'payments.amount + COALESCE(payments.discount, 0)'
+        );
+    }
+
+    /** کۆی کاشی وەرگیراو بە جیا بۆ هەر دراوێک. */
+    public function paidCashTotals(): array
+    {
         return Money::sumQuery($this->payments()->where('direction', 'in'), 'amount');
+    }
+
+    /** کۆی داشکان لە حەقدی بە جیا بۆ هەر دراوێک. */
+    public function discountTotals(): array
+    {
+        return Money::sumQuery($this->payments()->where('direction', 'in'), 'discount');
     }
 
     /**

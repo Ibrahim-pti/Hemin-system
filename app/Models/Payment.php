@@ -21,9 +21,14 @@ class Payment extends Model
 
     protected $fillable = [
         'voucher_no', 'direction', 'party_type', 'party_id', 'party_name',
-        'order_id', 'purchase_id', 'amount', 'currency', 'payment_type', 'exchange_rate',
-        'amount_iqd', 'cash_box_id', 'paid_at', 'user_id', 'note',
+        'order_id', 'purchase_id', 'amount', 'discount', 'currency', 'payment_type', 'exchange_rate',
+        'amount_iqd', 'discount_iqd', 'cash_box_id', 'paid_at', 'user_id', 'note',
     ];
+
+    public function getTotalSettledAttribute(): float
+    {
+        return (float) $this->amount + (float) ($this->discount ?? 0);
+    }
 
     public function isAdvance(): bool
     {
@@ -81,7 +86,9 @@ class Payment extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'discount' => 'decimal:2',
             'amount_iqd' => 'decimal:2',
+            'discount_iqd' => 'decimal:2',
             'exchange_rate' => 'decimal:2',
             'paid_at' => 'date',
         ];
