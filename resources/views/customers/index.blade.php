@@ -23,22 +23,22 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="grid grid-cols-2 sm:flex sm:items-center sm:flex-wrap gap-2 w-full lg:w-auto">
             {{-- دوگمەی حیسابی پێشوو --}}
             <a href="{{ route('debts.old-debt.create') }}"
-               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white inline-flex items-center gap-1.5 transition-all shadow-sm">
+               class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white inline-flex items-center justify-center gap-1.5 transition-all shadow-sm">
                 <span>📜</span>
                 <span>حیسابی پێشوو</span>
             </a>
 
             <a href="{{ route('orders.create') }}"
-               class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 inline-flex items-center gap-1.5 transition-all">
+               class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 inline-flex items-center justify-center gap-1.5 transition-all">
                 <span>➕</span>
                 <span>وەسڵی نوێ</span>
             </a>
 
             <a href="{{ route('customers.create') }}"
-               class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-1.5 transition-all shadow-sm">
+               class="col-span-2 sm:col-span-1 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center justify-center gap-1.5 transition-all shadow-sm">
                 <span>+</span>
                 <span>زیادکردنی کڕیار</span>
             </a>
@@ -46,22 +46,22 @@
     </div>
 
     {{-- پیشاندان بە دراو و نرخی ئاڵوگۆڕ --}}
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-500">پیشاندان بە دراو:</span>
-            <div class="inline-flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+            <span class="text-xs font-bold text-slate-500 shrink-0">پیشاندان بە دراو:</span>
+            <div class="flex flex-wrap sm:inline-flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs w-full sm:w-auto">
                 <a href="{{ request()->fullUrlWithQuery(['currency' => 'all']) }}"
-                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                   class="flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap {{ $currency === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                     <span>🌐</span>
                     <span>هەمووی (دۆلار و دینار)</span>
                 </a>
                 <a href="{{ request()->fullUrlWithQuery(['currency' => 'USD']) }}"
-                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'USD' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                   class="flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap {{ $currency === 'USD' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                     <span>💵</span>
                     <span>تەنها دۆلار ($)</span>
                 </a>
                 <a href="{{ request()->fullUrlWithQuery(['currency' => 'IQD']) }}"
-                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 {{ $currency === 'IQD' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                   class="flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap {{ $currency === 'IQD' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                     <span>🇮🇶</span>
                     <span>تەنها دینار (د.ع)</span>
                 </a>
@@ -69,7 +69,7 @@
         </div>
 
         @if ($currentRate > 0)
-            <div class="text-xs font-mono font-bold text-slate-600 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-2">
+            <div class="text-xs font-mono font-bold text-slate-600 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-center sm:justify-start gap-2 self-start sm:self-auto">
                 <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>نرخی ١٠٠$:</span>
                 <span class="text-emerald-700 font-black">{{ number_format($currentRate * 100, 0) }} د.ع</span>
@@ -78,7 +78,7 @@
     </div>
 
     {{-- ٢. ٤ کارتی ئاماری سەرەکی --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         {{-- کۆی کڕیاران --}}
         <div class="bg-white rounded-2xl p-4 border border-slate-200/80 border-r-4 border-r-blue-500 shadow-xs">
             <div class="text-xs font-bold text-slate-500 mb-1">کۆی کڕیاران</div>
@@ -154,7 +154,7 @@
     {{-- ٣. خشتەی کڕیاران --}}
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         {{-- شریتی سەرەوەی خشتە و گەڕان --}}
-        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/60">
+        <div class="p-4 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-50/60">
             <div class="flex items-center gap-2">
                 <span class="text-base">📋</span>
                 <h3 class="font-black text-sm text-slate-800">تۆماری کڕیاران</h3>
@@ -164,14 +164,14 @@
             </div>
 
             {{-- خانەی گەڕان و ژمارەی پیشاندان --}}
-            <form method="GET" class="flex flex-wrap items-center gap-2">
+            <form method="GET" class="flex flex-col sm:flex-row sm:items-center gap-2 w-full lg:w-auto">
                 @if ($currency !== 'all')
                     <input type="hidden" name="currency" value="{{ $currency }}">
                 @endif
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center justify-between sm:justify-start gap-2">
                     <label for="per_page" class="text-xs font-bold text-slate-500 whitespace-nowrap">نیشاندان:</label>
                     <select id="per_page" name="per_page" onchange="this.form.submit()"
-                            class="text-xs px-2.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-bold text-slate-700 cursor-pointer">
+                            class="text-xs px-2.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-bold text-slate-700 cursor-pointer flex-1 sm:flex-none">
                         <option value="15" @selected($perPage === '15')>15 کڕیار</option>
                         <option value="30" @selected($perPage === '30')>30 کڕیار</option>
                         <option value="50" @selected($perPage === '50')>50 کڕیار</option>
@@ -179,21 +179,132 @@
                         <option value="all" @selected($perPage === 'all')>هەمووی</option>
                     </select>
                 </div>
-                <input type="text" name="q" value="{{ request('q') }}"
-                       class="text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-right w-full sm:w-64"
-                       placeholder=" 🔍 گەڕان بە ناو، مۆبایل، ناونیشان...">
-                @if(request('q') || $perPage !== '30')
-                    <a href="{{ route('customers.index', $currency !== 'all' ? ['currency' => $currency] : []) }}"
-                       class="px-2.5 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 rounded-xl bg-slate-100"
-                       title="پاککردنەوە">
-                        ✕
-                    </a>
-                @endif
+                <div class="flex items-center gap-2 flex-1 sm:flex-none min-w-0">
+                    <input type="text" name="q" value="{{ request('q') }}"
+                           class="text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-right w-full sm:w-64"
+                           placeholder=" 🔍 گەڕان بە ناو، مۆبایل، ناونیشان...">
+                    @if(request('q') || $perPage !== '30')
+                        <a href="{{ route('customers.index', $currency !== 'all' ? ['currency' => $currency] : []) }}"
+                           class="px-2.5 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 rounded-xl bg-slate-100 shrink-0"
+                           title="پاککردنەوە">
+                            ✕
+                        </a>
+                    @endif
+                </div>
             </form>
         </div>
 
+        {{-- پیشاندانی کارتەکان لەسەر مۆبایل --}}
+        <div class="md:hidden divide-y divide-slate-100">
+            @forelse ($customers as $index => $customer)
+                @php
+                    $bals = $customer->balances();
+                    $bIqd = (float) ($bals['IQD'] ?? 0);
+                    $bUsd = (float) ($bals['USD'] ?? 0);
+                @endphp
+                <div class="p-4 space-y-3 hover:bg-slate-50/70 transition-colors">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-mono font-bold text-slate-400">#{{ $customers->firstItem() + $index }}</span>
+                                <a href="{{ route('customers.show', $customer) }}" class="font-black text-slate-900 text-sm hover:text-blue-600 transition-colors truncate">
+                                    {{ $customer->name }}
+                                </a>
+                            </div>
+                            @if ($customer->note)
+                                <div class="text-xs text-slate-400 mt-0.5 line-clamp-1">{{ $customer->note }}</div>
+                            @endif
+                        </div>
+                        <span class="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 font-mono font-bold text-[11px] border border-slate-200/60 shrink-0">
+                            {{ $customer->orders_count ?? 0 }} وەسڵ
+                        </span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                        <div class="flex flex-wrap items-center gap-3">
+                            @if ($customer->phone)
+                                <span class="font-mono font-bold text-slate-700" dir="ltr">📞 {{ $customer->phone }}</span>
+                            @endif
+                            @if ($customer->address)
+                                <span>📍 {{ $customer->address }}</span>
+                            @endif
+                        </div>
+
+                        <div>
+                            @if ($currency === 'USD')
+                                @if ($bUsd > 0.005)
+                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">${{ number_format($bUsd, 2) }}</span>
+                                @elseif ($bUsd < -0.005)
+                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">${{ number_format(abs($bUsd), 2) }} (زیادە)</span>
+                                @else
+                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-bold text-xs text-slate-400 bg-slate-100">0</span>
+                                @endif
+                            @elseif ($currency === 'IQD')
+                                @if ($bIqd > 0.5)
+                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">{{ fmt_money($bIqd) }}</span>
+                                @elseif ($bIqd < -0.5)
+                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">{{ fmt_money(abs($bIqd)) }} (زیادە)</span>
+                                @else
+                                    <span class="px-2.5 py-0.5 rounded-md font-mono font-bold text-xs text-slate-400 bg-slate-100">0</span>
+                                @endif
+                            @else
+                                <div class="flex flex-wrap items-center gap-1">
+                                    @if ($bUsd > 0.005)
+                                        <span class="px-2 py-0.5 rounded font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">${{ number_format($bUsd, 2) }}</span>
+                                    @elseif ($bUsd < -0.005)
+                                        <span class="px-2 py-0.5 rounded font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">${{ number_format(abs($bUsd), 2) }} (زیادە)</span>
+                                    @endif
+                                    @if ($bIqd > 0.5)
+                                        <span class="px-2 py-0.5 rounded font-mono font-black text-xs bg-rose-50 text-rose-700 border border-rose-200">{{ fmt_money($bIqd) }}</span>
+                                    @elseif ($bIqd < -0.5)
+                                        <span class="px-2 py-0.5 rounded font-mono font-black text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">{{ fmt_money(abs($bIqd)) }} (زیادە)</span>
+                                    @endif
+                                    @if (abs($bUsd) <= 0.005 && abs($bIqd) <= 0.5)
+                                        <span class="px-2.5 py-0.5 rounded-md font-mono font-bold text-xs text-slate-400 bg-slate-100">0</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                        <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}"
+                           class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all"
+                           title="تۆمارکردنی حیسابی پێشوو">
+                            📜
+                        </a>
+                        <a href="{{ route('customers.show', $customer) }}"
+                           class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
+                           title="پڕۆفایل">
+                            👤
+                        </a>
+                        <a href="{{ route('customers.edit', $customer) }}"
+                           class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-all"
+                           title="دەستکاری">
+                            ✏️
+                        </a>
+                        <form method="POST" action="{{ route('customers.destroy', $customer) }}"
+                              onsubmit="return confirm('ئایا دڵنیایت لە سڕینەوەی ئەم کڕیارە؟')" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer"
+                                    title="سڕینەوە">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <div class="py-12 text-center text-sm text-slate-400 font-medium">
+                    <div class="text-3xl mb-2">👥</div>
+                    <div>هیچ کڕیارێک نەدۆزرایەوە.</div>
+                </div>
+            @endforelse
+        </div>
+
         {{-- خشتەی پڕۆفێشناڵ بە دابەشبوونی دروستی ستوونەکان --}}
-        <div class="overflow-x-auto">
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-right text-xs">
                 <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-black">
                     <tr>
