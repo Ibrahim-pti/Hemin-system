@@ -7,8 +7,8 @@
     {{-- ١. هێڵی سەرەوە: ناونیشان و دوگمەکانی کردار --}}
     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
-            <div class="size-12 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-md shadow-blue-500/20 shrink-0">
-                👥
+            <div class="size-12 rounded-2xl bg-linear-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0">
+                @include('partials.icon', ['name' => 'customers', 'class' => 'size-6'])
             </div>
             <div>
                 <div class="flex items-center gap-2 flex-wrap">
