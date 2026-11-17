@@ -163,14 +163,29 @@
                 </span>
             </div>
 
-            {{-- خانەی گەڕان --}}
-            <form method="GET" class="flex items-center gap-2">
+            {{-- خانەی گەڕان و ژمارەی پیشاندان --}}
+            <form method="GET" class="flex flex-wrap items-center gap-2">
+                @if ($currency !== 'all')
+                    <input type="hidden" name="currency" value="{{ $currency }}">
+                @endif
+                <div class="flex items-center gap-1.5">
+                    <label for="per_page" class="text-xs font-bold text-slate-500 whitespace-nowrap">نیشاندان:</label>
+                    <select id="per_page" name="per_page" onchange="this.form.submit()"
+                            class="text-xs px-2.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-bold text-slate-700 cursor-pointer">
+                        <option value="15" @selected($perPage === '15')>15 کڕیار</option>
+                        <option value="30" @selected($perPage === '30')>30 کڕیار</option>
+                        <option value="50" @selected($perPage === '50')>50 کڕیار</option>
+                        <option value="100" @selected($perPage === '100')>100 کڕیار</option>
+                        <option value="all" @selected($perPage === 'all')>هەمووی</option>
+                    </select>
+                </div>
                 <input type="text" name="q" value="{{ request('q') }}"
-                       class="text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-right w-full sm:w-72"
+                       class="text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:border-blue-500 font-medium text-right w-full sm:w-64"
                        placeholder=" 🔍 گەڕان بە ناو، مۆبایل، ناونیشان...">
-                @if(request('q'))
-                    <a href="{{ route('customers.index') }}"
-                       class="px-2.5 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 rounded-xl bg-slate-100">
+                @if(request('q') || $perPage !== '30')
+                    <a href="{{ route('customers.index', $currency !== 'all' ? ['currency' => $currency] : []) }}"
+                       class="px-2.5 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 rounded-xl bg-slate-100"
+                       title="پاککردنەوە">
                         ✕
                     </a>
                 @endif

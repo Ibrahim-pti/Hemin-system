@@ -12,11 +12,22 @@ class CustomerController extends Controller
 {
     public function index(Request $request): View
     {
-        $customers = Customer::query()
+        $perPage = $request->string('per_page', '30')->toString();
+        if (!in_array($perPage, ['15', '30', '50', '100', 'all'], true)) {
+            $perPage = '30';
+        }
+
+        $customersQuery = Customer::query()
             ->search($request->string('q')->toString())
             ->withCount('orders')
-            ->orderBy('name')
-            ->paginate(30)
+            ->orderBy('name');
+
+        $perPageCount = $perPage === 'all'
+            ? max(1, (clone $customersQuery)->count())
+            : (int) $perPage;
+
+        $customers = $customersQuery
+            ->paginate($perPageCount)
             ->withQueryString();
 
         $currency = $request->string('currency', 'all')->toString();
@@ -45,6 +56,7 @@ class CustomerController extends Controller
             'customers',
             'allCustomers',
             'currency',
+            'perPage',
             'currentRate',
             'totalCustomers',
             'totalSales',
