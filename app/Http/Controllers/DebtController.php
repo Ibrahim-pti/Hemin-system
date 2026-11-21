@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\Order;
-use App\Models\Supplier;
+use App\Models\CustomerOldDebt;
+use App\Models\ExchangeRate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class DebtController extends Controller
@@ -21,50 +23,50 @@ class DebtController extends Controller
                 $q->where('direction', 'in');
             },
         ])
-        ->orderBy('name')
-        ->get()
-        ->map(function (Customer $c) {
-            $openingIqd = $c->openingIqd();
-            $orders = $c->orders;
+            ->orderBy('name')
+            ->get()
+            ->map(function (Customer $c) {
+                $openingIqd = $c->openingIqd();
+                $orders = $c->orders;
 
-            $invoicedTotal = 0;
-            $activeOrdersCount = 0;
+                $invoicedTotal = 0;
+                $activeOrdersCount = 0;
 
-            foreach ($orders as $order) {
-                $orderTotalIqd = (float) $order->total_iqd;
-                $invoicedTotal += $orderTotalIqd;
+                foreach ($orders as $order) {
+                    $orderTotalIqd = (float) $order->total_iqd;
+                    $invoicedTotal += $orderTotalIqd;
 
-                $orderPaid = (float) $order->payments->where('direction', 'in')->sum(fn ($p) => (float) $p->amount_iqd + (float) ($p->discount_iqd ?? 0));
-                if (($orderTotalIqd - $orderPaid) > 0.5) {
-                    $activeOrdersCount++;
+                    $orderPaid = (float) $order->payments->where('direction', 'in')->sum(fn ($p) => (float) $p->amount_iqd + (float) ($p->discount_iqd ?? 0));
+                    if (($orderTotalIqd - $orderPaid) > 0.5) {
+                        $activeOrdersCount++;
+                    }
                 }
-            }
 
-            $paidTotal = (float) $c->payments->sum(fn ($p) => (float) $p->amount_iqd + (float) ($p->discount_iqd ?? 0));
-            $totalAmount = $openingIqd + $invoicedTotal;
-            $remaining = $totalAmount - $paidTotal;
+                $paidTotal = (float) $c->payments->sum(fn ($p) => (float) $p->amount_iqd + (float) ($p->discount_iqd ?? 0));
+                $totalAmount = $openingIqd + $invoicedTotal;
+                $remaining = $totalAmount - $paidTotal;
 
-            return [
-                'model' => $c,
-                'id' => $c->id,
-                'name' => $c->name,
-                'phone' => $c->phone,
-                'address' => $c->address,
-                'orders_count' => $orders->count(),
-                'active_orders_count' => $activeOrdersCount,
-                'opening_iqd' => $openingIqd,
-                'total_amount' => $totalAmount,
-                'total_paid' => $paidTotal,
-                'remaining' => $remaining,
-                'is_active_debtor' => $remaining > 0.5,
-            ];
-        });
+                return [
+                    'model' => $c,
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'phone' => $c->phone,
+                    'address' => $c->address,
+                    'orders_count' => $orders->count(),
+                    'active_orders_count' => $activeOrdersCount,
+                    'opening_iqd' => $openingIqd,
+                    'total_amount' => $totalAmount,
+                    'total_paid' => $paidTotal,
+                    'remaining' => $remaining,
+                    'is_active_debtor' => $remaining > 0.5,
+                ];
+            });
 
         $currency = $request->string('currency', 'all')->toString();
-        if (!in_array($currency, ['all', 'USD', 'IQD'], true)) {
+        if (! in_array($currency, ['all', 'USD', 'IQD'], true)) {
             $currency = 'all';
         }
-        $currentRate = \App\Models\ExchangeRate::current() ?: 1500;
+        $currentRate = ExchangeRate::current() ?: 1500;
 
         $customers = Customer::with([
             'orders' => function ($q) {
@@ -75,54 +77,54 @@ class DebtController extends Controller
             },
             'oldDebts',
         ])
-        ->orderBy('name')
-        ->get()
-        ->map(function (Customer $c) {
-            $openings = $c->openingBalances();
-            $invoiced = $c->invoicedTotals();
-            $paid = $c->paidTotals();
-            $balances = $c->balances();
+            ->orderBy('name')
+            ->get()
+            ->map(function (Customer $c) {
+                $openings = $c->openingBalances();
+                $invoiced = $c->invoicedTotals();
+                $paid = $c->paidTotals();
+                $balances = $c->balances();
 
-            $activeOrdersCount = $c->orders->filter(fn ($o) => $o->remaining() > 0.001)->count();
+                $activeOrdersCount = $c->orders->filter(fn ($o) => $o->remaining() > 0.001)->count();
 
-            $remIqd = (float) ($balances['IQD'] ?? 0);
-            $remUsd = (float) ($balances['USD'] ?? 0);
-            $totIqd = (float) (($openings['IQD'] ?? 0) + ($invoiced['IQD'] ?? 0));
-            $totUsd = (float) (($openings['USD'] ?? 0) + ($invoiced['USD'] ?? 0));
-            $paidIqd = (float) ($paid['IQD'] ?? 0);
-            $paidUsd = (float) ($paid['USD'] ?? 0);
+                $remIqd = (float) ($balances['IQD'] ?? 0);
+                $remUsd = (float) ($balances['USD'] ?? 0);
+                $totIqd = (float) (($openings['IQD'] ?? 0) + ($invoiced['IQD'] ?? 0));
+                $totUsd = (float) (($openings['USD'] ?? 0) + ($invoiced['USD'] ?? 0));
+                $paidIqd = (float) ($paid['IQD'] ?? 0);
+                $paidUsd = (float) ($paid['USD'] ?? 0);
 
-            $hasDebt = $c->hasDebt();
+                $hasDebt = $c->hasDebt();
 
-            return [
-                'model' => $c,
-                'id' => $c->id,
-                'name' => $c->name,
-                'phone' => $c->phone,
-                'address' => $c->address,
-                'orders_count' => $c->orders->count(),
-                'active_orders_count' => $activeOrdersCount,
-                'opening_iqd' => (float) ($openings['IQD'] ?? 0),
-                'opening_usd' => (float) ($openings['USD'] ?? 0),
-                'total_amount_iqd' => $totIqd,
-                'total_amount_usd' => $totUsd,
-                'total_paid_iqd' => $paidIqd,
-                'total_paid_usd' => $paidUsd,
-                'remaining_iqd' => $remIqd,
-                'remaining_usd' => $remUsd,
-                // Fallbacks for generic references
-                'total_amount' => $totIqd,
-                'total_paid' => $paidIqd,
-                'remaining' => $remIqd,
-                'is_active_debtor' => $hasDebt,
-                'formatted_remaining' => fmt_dual($balances),
-                'formatted_total' => fmt_dual([
-                    'IQD' => $totIqd,
-                    'USD' => $totUsd,
-                ]),
-                'formatted_paid' => fmt_dual($paid),
-            ];
-        });
+                return [
+                    'model' => $c,
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'phone' => $c->phone,
+                    'address' => $c->address,
+                    'orders_count' => $c->orders->count(),
+                    'active_orders_count' => $activeOrdersCount,
+                    'opening_iqd' => (float) ($openings['IQD'] ?? 0),
+                    'opening_usd' => (float) ($openings['USD'] ?? 0),
+                    'total_amount_iqd' => $totIqd,
+                    'total_amount_usd' => $totUsd,
+                    'total_paid_iqd' => $paidIqd,
+                    'total_paid_usd' => $paidUsd,
+                    'remaining_iqd' => $remIqd,
+                    'remaining_usd' => $remUsd,
+                    // Fallbacks for generic references
+                    'total_amount' => $totIqd,
+                    'total_paid' => $paidIqd,
+                    'remaining' => $remIqd,
+                    'is_active_debtor' => $hasDebt,
+                    'formatted_remaining' => fmt_dual($balances),
+                    'formatted_total' => fmt_dual([
+                        'IQD' => $totIqd,
+                        'USD' => $totUsd,
+                    ]),
+                    'formatted_paid' => fmt_dual($paid),
+                ];
+            });
 
         $totalRemainingDebtIqd = (float) $customers->where('remaining_iqd', '>', 0.001)->sum('remaining_iqd');
         $totalRemainingDebtUsd = (float) $customers->where('remaining_usd', '>', 0.001)->sum('remaining_usd');
@@ -144,7 +146,7 @@ class DebtController extends Controller
         $totalPaid = $totalPaidIqd;
 
         // هەموو کڕیارە چالاکەکان بۆ مۆداڵی قەرزی کۆن
-        $allCustomersList = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
+        $allCustomersList = Customer::active()->orderBy('name')->get(['id', 'name', 'phone', 'address']);
 
         // هەڵبژاردنی کڕیار بۆ بینینی وردەکاری قەرزەکانی
         $selectedCustomer = null;
@@ -240,7 +242,7 @@ class DebtController extends Controller
     /** پەڕەی تایبەتی تۆمارکردنی قەرزی کۆن و حیساباتی پێشتر */
     public function createOldDebt(Request $request): View
     {
-        $customers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
+        $customers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone', 'address']);
         $selectedCustomer = null;
         if ($request->filled('customer_id')) {
             $selectedCustomer = Customer::find($request->customer_id);
@@ -266,10 +268,10 @@ class DebtController extends Controller
             ]);
         }
 
-        if (!$request->filled('currency')) {
+        if (! $request->filled('currency')) {
             $request->merge(['currency' => 'IQD']);
         }
-        if (!$request->filled('status')) {
+        if (! $request->filled('status')) {
             $request->merge(['status' => 'debt']);
         }
 
@@ -280,7 +282,7 @@ class DebtController extends Controller
                 ->withErrors(['image' => 'قەبارەی وێنە یان فایلەکە زۆر گەورەیە و لە توانای سێرڤەر زیاترە.']);
         }
 
-        if (!$request->hasFile('image')) {
+        if (! $request->hasFile('image')) {
             if ($request->hasFile('image_camera')) {
                 $request->files->set('image', $request->file('image_camera'));
             } elseif ($request->hasFile('image_pdf')) {
@@ -317,7 +319,7 @@ class DebtController extends Controller
             'attachments.*.max' => 'قەبارەی هیچ فایلێک نابێت لە ۲۵ مێگابایت زیاتر بێت.',
         ]);
 
-        if (!empty($data['customer_id'])) {
+        if (! empty($data['customer_id'])) {
             $customer = Customer::findOrFail($data['customer_id']);
         } else {
             $customer = Customer::create([
@@ -378,8 +380,8 @@ class DebtController extends Controller
                         $decoded = base64_decode($rawBase64);
                         if ($decoded !== false) {
                             $ext = $ext === 'jpeg' ? 'jpg' : $ext;
-                            $fileName = 'old_debts/' . \Illuminate\Support\Str::random(40) . '.' . $ext;
-                            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $decoded);
+                            $fileName = 'old_debts/'.Str::random(40).'.'.$ext;
+                            Storage::disk('public')->put($fileName, $decoded);
                             $storedFiles[] = $fileName;
                         }
                     }
@@ -388,16 +390,16 @@ class DebtController extends Controller
         }
 
         $storedFiles = array_values(array_unique($storedFiles));
-        $primaryImage = !empty($storedFiles) ? $storedFiles[0] : null;
+        $primaryImage = ! empty($storedFiles) ? $storedFiles[0] : null;
 
-        \App\Models\CustomerOldDebt::create([
+        CustomerOldDebt::create([
             'customer_id' => $customer->id,
             'amount' => $amount,
             'paid_amount' => $paidAmount,
             'currency' => $data['currency'],
             'status' => $status,
             'image' => $primaryImage,
-            'attachments' => !empty($storedFiles) ? $storedFiles : null,
+            'attachments' => ! empty($storedFiles) ? $storedFiles : null,
             'note' => $data['note'] ?? null,
             'date' => $data['date'] ?? now()->toDateString(),
             'user_id' => auth()->id(),
@@ -407,17 +409,17 @@ class DebtController extends Controller
     }
 
     /** سڕینەوەی تۆماری قەرزی کۆن */
-    public function destroyOldDebt(\App\Models\CustomerOldDebt $oldDebt)
+    public function destroyOldDebt(CustomerOldDebt $oldDebt)
     {
         $allFiles = $oldDebt->allAttachments();
         foreach ($allFiles as $filePath) {
-            if ($filePath && \Illuminate\Support\Facades\Storage::disk('public')->exists($filePath)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($filePath);
+            if ($filePath && Storage::disk('public')->exists($filePath)) {
+                Storage::disk('public')->delete($filePath);
             }
         }
 
         $oldDebt->delete();
 
-        return back()->with('ok', "حیسابی پێشوو سڕدرایەوە.");
+        return back()->with('ok', 'حیسابی پێشوو سڕدرایەوە.');
     }
 }

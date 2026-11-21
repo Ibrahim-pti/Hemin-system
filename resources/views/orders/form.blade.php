@@ -68,7 +68,7 @@
                     <option value="">— هەڵبژێرە —</option>
                     <option value="__NEW__" class="font-bold text-blue-600 bg-blue-50">➕ زیادکردنی کڕیاری نوێ</option>
                     <template x-for="c in customersList" :key="c.id">
-                        <option :value="c.id" x-text="c.name + (c.phone ? ' — ' + c.phone : '')" :selected="c.id == customerId"></option>
+                        <option :value="c.id" x-text="c.name + (c.address ? ' — ' + c.address : '') + (c.phone ? ' (' + c.phone + ')' : '')" :selected="c.id == customerId"></option>
                     </template>
                 </select>
             </div>
@@ -557,9 +557,7 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
                 this.openCustomerModal();
             } else {
                 const cust = this.customersList.find(c => String(c.id) === String(this.customerId));
-                if (cust && cust.address) {
-                    this.address = cust.address;
-                }
+                this.address = cust?.address || '';
                 this.applyCustomerDiscount();
             }
         },
@@ -626,6 +624,17 @@ function orderForm(initialLines, initialDiscount, initialCurrency, customerDisco
             this.$watch('currency', (val) => {
                 if (val === 'USD') {
                     this.fetchLiveRate();
+                }
+            });
+
+            this.$nextTick(() => {
+                if (this.customerId) {
+                    const sel = document.getElementById('customer_id');
+                    if (sel) sel.value = String(this.customerId);
+                    if (!this.address) {
+                        const cust = this.customersList.find(c => String(c.id) === String(this.customerId));
+                        if (cust && cust.address) this.address = cust.address;
+                    }
                 }
             });
         },

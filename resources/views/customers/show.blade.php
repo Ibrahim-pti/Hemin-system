@@ -7,6 +7,10 @@
             <span>&larr;</span>
             <span>گەڕانەوە</span>
         </a>
+        <a href="{{ route('orders.create', ['customer' => $customer->id]) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+            <span>+</span>
+            <span>وەسڵی نوێ</span>
+        </a>
         <a href="{{ route('debts.old-debt.create', ['customer_id' => $customer->id]) }}" class="btn !py-1.5 !px-3 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-sm">
             <span>📜</span>
             <span>+ حیسابی پێشوو</span>

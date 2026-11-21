@@ -16,7 +16,7 @@
 <form method="POST"
       action="{{ route('debts.old-debt') }}"
       enctype="multipart/form-data"
-      x-data="oldDebtForm(@js($initialCustomerName), @js($initialCustomerPhone), @js($initialAmount), @js($initialPaid), @js($initialPaymentType), @js($initialCurrency))"
+      x-data="oldDebtForm(@js($initialCustomerId), @js($initialCustomerName), @js($initialCustomerPhone), @js($initialAmount), @js($initialPaid), @js($initialPaymentType), @js($initialCurrency))"
       class="space-y-4">
     @csrf
     <input type="hidden" name="currency" :value="currency">
@@ -48,22 +48,30 @@
 
             {{-- ناوی کڕیار --}}
             <div class="sm:col-span-2">
-                <label class="label" for="customer_input">
+                <label class="label" for="customer_select">
                     ناوی کڕیار <span class="text-[--color-danger]">*</span>
                 </label>
-                <input id="customer_input" type="text" list="customers_datalist"
-                       class="field font-bold text-sm"
-                       x-model="customerName"
-                       @input="onCustomerInput($event)"
-                       placeholder="ناوی کڕیار بنووسە یان هەڵیبژێرە..." required autocomplete="off">
-                <datalist id="customers_datalist">
+                <select id="customer_select"
+                        class="field font-bold text-sm cursor-pointer"
+                        x-model="selectedCustomerValue"
+                        @change="onCustomerSelect()"
+                        required>
+                    <option value="">— کڕیارێک هەڵبژێرە —</option>
+                    <option value="__NEW__" class="font-bold text-blue-600 bg-blue-50">➕ کڕیاری نوێ بنووسە...</option>
                     @foreach ($customers as $c)
-                        <option data-id="{{ $c->id }}" data-phone="{{ $c->phone }}" value="{{ $c->name }}">
-                            {{ $c->phone ? '(' . $c->phone . ')' : '' }}
+                        <option value="{{ $c->id }}">
+                            {{ $c->name }}{{ $c->address ? ' — ' . $c->address : '' }}{{ $c->phone ? ' (' . $c->phone . ')' : '' }}
                         </option>
                     @endforeach
-                </datalist>
-                <input type="hidden" name="new_customer_name" :value="isNewCustomer ? customerName : ''">
+                </select>
+                <div x-show="isNewCustomer" x-cloak class="mt-2">
+                    <input id="new_customer_name" type="text"
+                           class="field font-bold text-sm"
+                           x-model="customerName"
+                           :name="isNewCustomer ? 'new_customer_name' : ''"
+                           :required="isNewCustomer"
+                           placeholder="ناوی کڕیاری نوێ بنووسە...">
+                </div>
             </div>
 
             {{-- ژمارەی مۆبایل --}}
@@ -337,18 +345,22 @@
 </form>
 
 <script>
-function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, initPaymentType, initCurrency) {
-    const customersMap = {
+function oldDebtForm(initCustomerId, initCustomerName, initCustomerPhone, initAmount, initPaid, initPaymentType, initCurrency) {
+    const customersById = {
         @foreach ($customers as $c)
-            @js($c->name): { id: @js($c->id), phone: @js($c->phone) },
+            @js((string) $c->id): { id: @js((string) $c->id), name: @js($c->name), phone: @js($c->phone), address: @js($c->address) },
         @endforeach
     };
 
+    const hasInitId = Boolean(initCustomerId && customersById[String(initCustomerId)]);
+    const hasInitNew = !hasInitId && Boolean(initCustomerName);
+
     return {
-        customerName: initCustomerName || '',
-        customerPhone: initCustomerPhone || '',
-        customerId: customersMap[initCustomerName] ? customersMap[initCustomerName].id : '',
-        isNewCustomer: !customersMap[initCustomerName],
+        customerName: hasInitNew ? initCustomerName : '',
+        customerPhone: initCustomerPhone || (hasInitId ? (customersById[String(initCustomerId)].phone || '') : ''),
+        customerId: hasInitId ? String(initCustomerId) : '',
+        selectedCustomerValue: hasInitId ? String(initCustomerId) : (hasInitNew ? '__NEW__' : ''),
+        isNewCustomer: hasInitNew,
         rawAmount: initAmount ? Number(initAmount).toLocaleString() : '',
         paid: initPaid ? Number(initPaid).toLocaleString() : '',
         paymentType: initPaymentType || 'debt',
@@ -362,15 +374,23 @@ function oldDebtForm(initCustomerName, initCustomerPhone, initAmount, initPaid, 
         fileName: '',
         fileSize: '',
 
-        onCustomerInput(e) {
-            const val = e.target.value.trim();
-            if (customersMap[val]) {
-                this.customerId = customersMap[val].id;
-                this.customerPhone = customersMap[val].phone || this.customerPhone;
-                this.isNewCustomer = false;
-            } else {
+        onCustomerSelect() {
+            const val = String(this.selectedCustomerValue || '');
+            if (val === '__NEW__') {
                 this.customerId = '';
                 this.isNewCustomer = true;
+                this.customerPhone = '';
+                this.$nextTick(() => {
+                    document.getElementById('new_customer_name')?.focus();
+                });
+            } else if (val && customersById[val]) {
+                this.customerId = val;
+                this.isNewCustomer = false;
+                this.customerPhone = customersById[val].phone || '';
+            } else {
+                this.customerId = '';
+                this.isNewCustomer = false;
+                this.customerPhone = '';
             }
         },
 

@@ -825,7 +825,7 @@
                                 @change="isNewCustomer = ($event.target.value === '__NEW__')">
                             <option value="">— کڕیاری ئێستا هەڵبژێرە —</option>
                             @foreach ($allCustomersList as $cust)
-                                <option value="{{ $cust->id }}">{{ $cust->name }} {{ $cust->phone ? "({$cust->phone})" : '' }}</option>
+                                <option value="{{ $cust->id }}">{{ $cust->name }}{{ $cust->address ? " — {$cust->address}" : '' }}{{ $cust->phone ? " ({$cust->phone})" : '' }}</option>
                             @endforeach
                             <option value="__NEW__">+ کڕیاری نوێ بنووسە...</option>
                         </select>

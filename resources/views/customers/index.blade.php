@@ -501,7 +501,7 @@
                             class="field w-full font-bold text-slate-800 rounded-xl">
                         <option value="">— کڕیارێک هەڵبژێرە —</option>
                         @foreach ($allCustomers as $cust)
-                            <option value="{{ $cust->id }}">{{ $cust->name }} {{ $cust->phone ? "({$cust->phone})" : '' }}</option>
+                            <option value="{{ $cust->id }}">{{ $cust->name }}{{ $cust->address ? " — {$cust->address}" : '' }}{{ $cust->phone ? " ({$cust->phone})" : '' }}</option>
                         @endforeach
                         <option value="__NEW__">➕ کڕیاری نوێ بنووسە...</option>
                     </select>

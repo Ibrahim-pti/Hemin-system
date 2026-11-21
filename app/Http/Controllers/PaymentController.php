@@ -102,6 +102,7 @@ class PaymentController extends Controller
                 'id' => $c->id,
                 'name' => $c->name,
                 'phone' => $c->phone,
+                'address' => $c->address,
                 'balance_iqd' => (float) ($b['IQD'] ?? 0),
                 'balance_usd' => (float) ($b['USD'] ?? 0),
                 'balances_formatted' => fmt_dual($b),

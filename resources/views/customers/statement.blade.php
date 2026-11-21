@@ -47,7 +47,7 @@
                         <option value="">-- کڕیار هەڵبژێرە --</option>
                         @foreach ($allCustomers as $c)
                             <option value="{{ $c->id }}" {{ $customer && $c->id == $customer->id ? 'selected' : '' }}>
-                                {{ $c->name }} {{ $c->phone ? ' - ' . $c->phone : '' }}
+                                {{ $c->name }}{{ $c->address ? ' — ' . $c->address : '' }}{{ $c->phone ? ' (' . $c->phone . ')' : '' }}
                             </option>
                         @endforeach
                     </select>

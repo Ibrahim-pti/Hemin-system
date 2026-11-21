@@ -37,7 +37,7 @@ class CustomerController extends Controller
 
         $currentRate = \App\Models\ExchangeRate::current() ?: 1500;
 
-        $allCustomers = Customer::orderBy('name')->get(['id', 'name', 'phone']);
+        $allCustomers = Customer::orderBy('name')->get(['id', 'name', 'phone', 'address']);
         $totalCustomers = Customer::count();
 
         $totalSalesIqd = (float) Order::whereNotIn('status', ['draft', 'cancelled'])->where('currency', 'IQD')->sum('total');
@@ -139,7 +139,7 @@ class CustomerController extends Controller
      */
     public function statementIndex(Request $request): View
     {
-        $allCustomers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
+        $allCustomers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone', 'address']);
         $customerId = $request->input('customer_id') ?: $request->input('customer');
         $customer = $customerId ? Customer::find($customerId) : null;
 
@@ -164,7 +164,7 @@ class CustomerController extends Controller
 
     public function statement(Customer $customer, Request $request): View
     {
-        $allCustomers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone']);
+        $allCustomers = Customer::active()->orderBy('name')->get(['id', 'name', 'phone', 'address']);
 
         return $this->buildStatementView($customer, $request, $allCustomers);
     }
