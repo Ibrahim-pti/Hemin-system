@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CashBox;
+use App\Models\CashTransaction;
 use App\Models\Customer;
 use App\Models\ExchangeRate;
 use App\Models\Item;
@@ -461,26 +463,63 @@ class OrderController extends Controller
     private function syncPrepaidPayment(Order $order, ?Customer $customer, float $amount): void
     {
         $prepaidPayment = $order->payments()
-            ->where('category', 'customer_payment')
+            ->where('direction', 'in')
             ->where('note', 'like', 'پێشەکی وەسڵی ژمارە%')
             ->first();
 
         if ($amount > 0) {
             if ($prepaidPayment) {
+                $paidAt = $order->order_date->toDateString();
+                $rawRate = $order->currency === 'USD'
+                    ? ((float) ($order->exchange_rate ?: ExchangeRate::forDate($paidAt)))
+                    : null;
+                $rate = $rawRate ? ($rawRate > 5000 ? $rawRate / 100 : $rawRate) : null;
+                $amountIqd = $order->currency === 'USD' ? $amount * (float) $rate : $amount;
+                $cashBoxId = CashBox::where('currency', $order->currency)
+                    ->where('is_active', true)
+                    ->value('id') ?? $prepaidPayment->cash_box_id;
+
                 $prepaidPayment->update([
                     'amount' => $amount,
                     'currency' => $order->currency,
-                    'exchange_rate' => $order->exchange_rate,
-                    'paid_at' => $order->order_date->toDateString(),
-                    'party_id' => $customer?->id,
+                    'exchange_rate' => $rate,
+                    'amount_iqd' => $amountIqd,
+                    'paid_at' => $paidAt,
+                    'party_type' => $customer ? $customer::class : null,
+                    'party_id' => $customer?->getKey(),
+                    'party_name' => $customer?->name,
+                    'cash_box_id' => $cashBoxId,
                 ]);
+
+                if ($cashBoxId) {
+                    $updated = CashTransaction::where('reference_type', Payment::class)
+                        ->where('reference_id', $prepaidPayment->id)
+                        ->update([
+                            'cash_box_id' => $cashBoxId,
+                            'amount' => $amount,
+                            'occurred_at' => $paidAt,
+                            'note' => $prepaidPayment->note,
+                        ]);
+
+                    if ($updated === 0) {
+                        CashTransaction::create([
+                            'cash_box_id' => $cashBoxId,
+                            'direction' => 'in',
+                            'amount' => $amount,
+                            'category' => 'customer_payment',
+                            'reference_type' => Payment::class,
+                            'reference_id' => $prepaidPayment->id,
+                            'occurred_at' => $paidAt,
+                            'user_id' => auth()->id(),
+                            'note' => $prepaidPayment->note,
+                        ]);
+                    }
+                }
             } else {
                 $this->recordPrepaid($order, $customer, $amount);
             }
-        } else {
-            if ($prepaidPayment) {
-                $prepaidPayment->delete();
-            }
+        } elseif ($prepaidPayment) {
+            $this->payments->remove($prepaidPayment);
         }
     }
 
